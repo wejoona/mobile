@@ -15,6 +15,7 @@ import 'package:usdc_wallet/features/notifications/providers/notifications_provi
     as notification_feed;
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 import 'package:usdc_wallet/features/payment_links/repositories/payment_links_repository.dart';
+import 'package:usdc_wallet/features/payment_links/providers/pay_link_provider.dart';
 import 'package:usdc_wallet/features/settings/repositories/devices_repository.dart';
 import 'package:usdc_wallet/features/settings/repositories/sessions_repository.dart';
 import 'package:usdc_wallet/features/send/providers/send_provider.dart';
@@ -546,6 +547,48 @@ void main() {
       expect(links.single.id, 'link_1');
       expect(links.single.shortCode, 'ABC123');
     });
+
+    test(
+      'payment link provider pays backend code route with major-unit amount',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'id': 'link_1',
+            'code': 'ABC123',
+            'shortCode': 'ABC123',
+            'creatorName': 'Awa',
+            'amount': 12.5,
+            'currency': 'USDC',
+            'status': 'pending',
+            'isExpired': false,
+          })
+          ..queueResponse({
+            'transactionId': 'txn_1',
+            'amount': 12.5,
+            'status': 'completed',
+          });
+        final container = ProviderContainer(
+          overrides: [dioProvider.overrideWithValue(dio)],
+        );
+        addTearDown(container.dispose);
+
+        final notifier = container.read(payLinkProvider.notifier);
+        await notifier.loadLink('ABC123');
+        notifier.state = container
+            .read(payLinkProvider)
+            .copyWith(
+              pinToken: 'pin_token',
+              idempotencyKey: 'pay-link-idempotency',
+            );
+        await notifier.pay();
+
+        expect(dio.requestHistory[0].method, 'GET');
+        expect(dio.requestHistory[0].path, '/payment-links/code/ABC123');
+        expect(dio.requestHistory[1].method, 'POST');
+        expect(dio.requestHistory[1].path, '/payment-links/code/ABC123/pay');
+        expect(dio.requestHistory[1].data, {'amount': 12.5});
+      },
+    );
 
     test('PIN client contract stays on user PIN routes', () {
       final walletApiSource = File(

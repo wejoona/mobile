@@ -4,7 +4,6 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
-import 'package:usdc_wallet/core/utils/amount_conversion.dart';
 import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 
 /// State for paying a payment link (from deep link or QR).
@@ -18,9 +17,25 @@ class PayLinkState {
   final String? pinToken;
   final String? idempotencyKey;
 
-  const PayLinkState({this.isLoading = false, this.isProcessing = false, this.error, this.linkDetail, this.isComplete = false, this.pinToken, this.idempotencyKey});
+  const PayLinkState({
+    this.isLoading = false,
+    this.isProcessing = false,
+    this.error,
+    this.linkDetail,
+    this.isComplete = false,
+    this.pinToken,
+    this.idempotencyKey,
+  });
 
-  PayLinkState copyWith({bool? isLoading, bool? isProcessing, String? error, PaymentLinkDetail? linkDetail, bool? isComplete, String? pinToken, String? idempotencyKey}) => PayLinkState(
+  PayLinkState copyWith({
+    bool? isLoading,
+    bool? isProcessing,
+    String? error,
+    PaymentLinkDetail? linkDetail,
+    bool? isComplete,
+    String? pinToken,
+    String? idempotencyKey,
+  }) => PayLinkState(
     isLoading: isLoading ?? this.isLoading,
     isProcessing: isProcessing ?? this.isProcessing,
     error: error,
@@ -41,17 +56,29 @@ class PaymentLinkDetail {
   final String? description;
   final bool isExpired;
 
-  const PaymentLinkDetail({required this.id, required this.code, required this.creatorName, required this.amount, this.currency = 'USDC', this.description, this.isExpired = false});
+  const PaymentLinkDetail({
+    required this.id,
+    required this.code,
+    required this.creatorName,
+    required this.amount,
+    this.currency = 'USDC',
+    this.description,
+    this.isExpired = false,
+  });
 
-  factory PaymentLinkDetail.fromJson(Map<String, dynamic> json) => PaymentLinkDetail(
-    id: json['id'] as String,
-    code: json['code'] as String? ?? json['shortCode'] as String? ?? json['id'] as String,
-    creatorName: json['creatorName'] as String? ?? 'Unknown',
-    amount: (json['amount'] as num).toDouble(),
-    currency: json['currency'] as String? ?? 'USDC',
-    description: json['description'] as String?,
-    isExpired: json['isExpired'] as bool? ?? false,
-  );
+  factory PaymentLinkDetail.fromJson(Map<String, dynamic> json) =>
+      PaymentLinkDetail(
+        id: json['id'] as String,
+        code:
+            json['code'] as String? ??
+            json['shortCode'] as String? ??
+            json['id'] as String,
+        creatorName: json['creatorName'] as String? ?? 'Unknown',
+        amount: (json['amount'] as num).toDouble(),
+        currency: json['currency'] as String? ?? 'USDC',
+        description: json['description'] as String?,
+        isExpired: json['isExpired'] as bool? ?? false,
+      );
 }
 
 /// Pay link notifier.
@@ -60,12 +87,14 @@ class PayLinkNotifier extends Notifier<PayLinkState> {
   PayLinkState build() => const PayLinkState();
 
   /// Load payment link details.
-  Future<void> loadLink(String linkId) async {
+  Future<void> loadLink(String linkCode) async {
     state = state.copyWith(isLoading: true);
     try {
       final dio = ref.read(dioProvider);
-      final response = await dio.get('/payment-links/$linkId');
-      final detail = PaymentLinkDetail.fromJson(response.data as Map<String, dynamic>);
+      final response = await dio.get('/payment-links/code/$linkCode');
+      final detail = PaymentLinkDetail.fromJson(
+        response.data as Map<String, dynamic>,
+      );
       state = state.copyWith(isLoading: false, linkDetail: detail);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -86,7 +115,10 @@ class PayLinkNotifier extends Notifier<PayLinkState> {
         );
         return true;
       }
-      state = state.copyWith(isLoading: false, error: result.message ?? 'PIN verification failed');
+      state = state.copyWith(
+        isLoading: false,
+        error: result.message ?? 'PIN verification failed',
+      );
       return false;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -109,9 +141,7 @@ class PayLinkNotifier extends Notifier<PayLinkState> {
       final code = state.linkDetail!.code;
       await dio.post(
         '/payment-links/code/$code/pay',
-        data: {
-          'amount': toCents(state.linkDetail!.amount),
-        },
+        data: {'amount': state.linkDetail!.amount},
         options: Options(
           headers: transactionHeaders(
             pinToken: state.pinToken!,
@@ -129,4 +159,6 @@ class PayLinkNotifier extends Notifier<PayLinkState> {
   void reset() => state = const PayLinkState();
 }
 
-final payLinkProvider = NotifierProvider<PayLinkNotifier, PayLinkState>(PayLinkNotifier.new);
+final payLinkProvider = NotifierProvider<PayLinkNotifier, PayLinkState>(
+  PayLinkNotifier.new,
+);
