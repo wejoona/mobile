@@ -804,6 +804,20 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settings_notTrusted => 'Non fiable';
 
   @override
+  String get settings_blocked => 'Bloqué';
+
+  @override
+  String get settings_inactive => 'Inactif';
+
+  @override
+  String get settings_deviceBlockedDescription =>
+      'Cet appareil a été bloqué par la sécurité Korido.';
+
+  @override
+  String get settings_deviceInactiveDescription =>
+      'Cet appareil est déconnecté et ne peut plus accéder à votre compte.';
+
+  @override
   String get settings_neverActive => 'Jamais';
 
   @override

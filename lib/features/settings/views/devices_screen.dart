@@ -8,7 +8,6 @@ import 'package:usdc_wallet/design/components/dialogs/index.dart'
     hide AlertDialog;
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/domain/entities/device.dart';
 import 'package:usdc_wallet/features/settings/models/devices_state.dart';
 import 'package:usdc_wallet/features/settings/providers/devices_provider.dart';
@@ -107,7 +106,10 @@ class DevicesScreen extends ConsumerWidget {
         vertical: AppSpacing.md,
       ),
       children: [
-        _DevicesSummary(count: devices.length),
+        _DevicesSummary(
+          count: devices.length,
+          blockedCount: devices.where((device) => device.cannotAccess).length,
+        ),
         const SizedBox(height: AppSpacing.xl),
         _SectionHeader(title: l10n.settings_thisDevice),
         const SizedBox(height: AppSpacing.sm),
@@ -254,9 +256,10 @@ class DevicesScreen extends ConsumerWidget {
 }
 
 class _DevicesSummary extends StatelessWidget {
-  const _DevicesSummary({required this.count});
+  const _DevicesSummary({required this.count, required this.blockedCount});
 
   final int count;
+  final int blockedCount;
 
   @override
   Widget build(BuildContext context) {
@@ -290,7 +293,9 @@ class _DevicesSummary extends StatelessWidget {
                     ? l10n.settings_oneDeviceAccess
                     : l10n.settings_multipleDevicesAccess(count),
                 variant: AppTextVariant.bodySmall,
-                color: colors.textSecondary,
+                color: blockedCount > 0
+                    ? colors.warningText
+                    : colors.textSecondary,
               ),
             ],
           ),
@@ -330,6 +335,8 @@ class _CurrentDeviceCard extends ConsumerWidget {
     final deviceName = localInfo['name'] ?? device?.deviceName ?? modelName;
     final osInfo = localInfo['os'] ?? device?.osDisplay ?? '';
     final platform = localInfo['platform'] ?? device?.platform ?? '';
+    final isBlocked = device?.isBlocked ?? false;
+    final isInactive = device?.isActive == false;
 
     return AppCard(
       variant: AppCardVariant.goldAccent,
@@ -369,11 +376,24 @@ class _CurrentDeviceCard extends ConsumerWidget {
                   ],
                 ),
               ),
-              _StatusBadge(
-                label: l10n.settings_activeNow,
-                color: colors.successText,
-                background: colors.successBg,
-              ),
+              if (isBlocked)
+                _StatusBadge(
+                  label: l10n.settings_blocked,
+                  color: colors.errorText,
+                  background: colors.errorBg,
+                )
+              else if (isInactive)
+                _StatusBadge(
+                  label: l10n.settings_inactive,
+                  color: colors.warningText,
+                  background: colors.warningBg,
+                )
+              else
+                _StatusBadge(
+                  label: l10n.settings_activeNow,
+                  color: colors.successText,
+                  background: colors.successBg,
+                ),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
@@ -400,6 +420,9 @@ class _OtherDeviceCard extends ConsumerWidget {
     return AppCard(
       variant: AppCardVariant.flat,
       borderRadius: AppRadius.lg,
+      borderColor: device.isBlocked
+          ? colors.error.withValues(alpha: 0.28)
+          : null,
       child: Row(
         children: [
           _DeviceIcon(
@@ -436,13 +459,25 @@ class _OtherDeviceCard extends ConsumerWidget {
                   runSpacing: AppSpacing.xs,
                   children: [
                     _StatusBadge(
-                      label: device.isTrusted
+                      label: device.isBlocked
+                          ? l10n.settings_blocked
+                          : !device.isActive
+                          ? l10n.settings_inactive
+                          : device.isTrusted
                           ? l10n.settings_trusted
                           : l10n.settings_notTrusted,
-                      color: device.isTrusted
+                      color: device.isBlocked
+                          ? colors.errorText
+                          : !device.isActive
+                          ? colors.warningText
+                          : device.isTrusted
                           ? colors.successText
                           : colors.warningText,
-                      background: device.isTrusted
+                      background: device.isBlocked
+                          ? colors.errorBg
+                          : !device.isActive
+                          ? colors.warningBg
+                          : device.isTrusted
                           ? colors.successBg
                           : colors.warningBg,
                     ),
@@ -475,6 +510,19 @@ class _DeviceMenu extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
+
+    if (device.cannotAccess) {
+      return Tooltip(
+        message: device.isBlocked
+            ? l10n.settings_deviceBlockedDescription
+            : l10n.settings_deviceInactiveDescription,
+        child: Icon(
+          device.isBlocked ? Icons.shield_rounded : Icons.block_rounded,
+          color: device.isBlocked ? colors.errorText : colors.warningText,
+          size: 20,
+        ),
+      );
+    }
 
     return PopupMenuButton<String>(
       icon: Icon(

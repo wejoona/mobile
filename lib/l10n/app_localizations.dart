@@ -1578,6 +1578,30 @@ abstract class AppLocalizations {
   /// **'Not trusted'**
   String get settings_notTrusted;
 
+  /// Blocked device badge
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked'**
+  String get settings_blocked;
+
+  /// Inactive device badge
+  ///
+  /// In en, this message translates to:
+  /// **'Inactive'**
+  String get settings_inactive;
+
+  /// Tooltip for blacklisted devices
+  ///
+  /// In en, this message translates to:
+  /// **'This device was blocked by Korido security.'**
+  String get settings_deviceBlockedDescription;
+
+  /// Tooltip for inactive devices
+  ///
+  /// In en, this message translates to:
+  /// **'This device is signed out and cannot access your account.'**
+  String get settings_deviceInactiveDescription;
+
   /// Never active relative time
   ///
   /// In en, this message translates to:

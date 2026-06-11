@@ -786,6 +786,20 @@ class AppLocalizationsAr extends AppLocalizations {
   String get settings_notTrusted => 'غير موثوق';
 
   @override
+  String get settings_blocked => 'Blocked';
+
+  @override
+  String get settings_inactive => 'Inactive';
+
+  @override
+  String get settings_deviceBlockedDescription =>
+      'This device was blocked by Korido security.';
+
+  @override
+  String get settings_deviceInactiveDescription =>
+      'This device is signed out and cannot access your account.';
+
+  @override
   String get settings_neverActive => 'أبداً';
 
   @override

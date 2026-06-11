@@ -1032,6 +1032,22 @@
   "@settings_notTrusted": {
     "description": "Untrusted device badge"
   },
+  "settings_blocked": "Blocked",
+  "@settings_blocked": {
+    "description": "Blocked device badge"
+  },
+  "settings_inactive": "Inactive",
+  "@settings_inactive": {
+    "description": "Inactive device badge"
+  },
+  "settings_deviceBlockedDescription": "This device was blocked by Korido security.",
+  "@settings_deviceBlockedDescription": {
+    "description": "Tooltip for blacklisted devices"
+  },
+  "settings_deviceInactiveDescription": "This device is signed out and cannot access your account.",
+  "@settings_deviceInactiveDescription": {
+    "description": "Tooltip for inactive devices"
+  },
   "settings_neverActive": "Never",
   "@settings_neverActive": {
     "description": "Never active relative time"

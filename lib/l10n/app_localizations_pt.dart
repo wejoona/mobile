@@ -794,6 +794,20 @@ class AppLocalizationsPt extends AppLocalizations {
   String get settings_notTrusted => 'Não confiável';
 
   @override
+  String get settings_blocked => 'Blocked';
+
+  @override
+  String get settings_inactive => 'Inactive';
+
+  @override
+  String get settings_deviceBlockedDescription =>
+      'This device was blocked by Korido security.';
+
+  @override
+  String get settings_deviceInactiveDescription =>
+      'This device is signed out and cannot access your account.';
+
+  @override
   String get settings_neverActive => 'Nunca';
 
   @override

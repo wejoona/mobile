@@ -730,27 +730,33 @@ void main() {
       'devices repository accepts backend device fields used by screen',
       () async {
         final dio = MockDio()
-          ..queueResponse([
-            {
-              'id': 'device_1',
-              'userId': 'user_1',
-              'deviceIdentifier': 'ios-vendor-id',
-              'displayName': 'iPhone 17',
-              'brand': 'Apple',
-              'model': 'iPhone17,2',
-              'os': 'iOS',
-              'osVersion': '26.0',
-              'appVersion': '1.2.3',
-              'platform': 'ios',
-              'isTrusted': true,
-              'trustedAt': '2026-06-04T08:00:00.000Z',
-              'isActive': true,
-              'lastLoginAt': '2026-06-04T10:00:00.000Z',
-              'lastIpAddress': '127.0.0.1',
-              'loginCount': 4,
-              'createdAt': '2026-06-03T10:00:00.000Z',
+          ..queueResponse({
+            'data': {
+              'devices': [
+                {
+                  'id': 'device_1',
+                  'userId': 'user_1',
+                  'deviceIdentifier': 'ios-vendor-id',
+                  'displayName': 'iPhone 17',
+                  'brand': 'Apple',
+                  'model': 'iPhone17,2',
+                  'os': 'iOS',
+                  'osVersion': '26.0',
+                  'appVersion': '1.2.3',
+                  'platform': 'ios',
+                  'isTrusted': true,
+                  'trustedAt': '2026-06-04T08:00:00.000Z',
+                  'isActive': false,
+                  'isBlocked': true,
+                  'blockedReason': 'Lost phone',
+                  'lastLoginAt': '2026-06-04T10:00:00.000Z',
+                  'lastIpAddress': '127.0.0.1',
+                  'loginCount': 4,
+                  'createdAt': '2026-06-03T10:00:00.000Z',
+                },
+              ],
             },
-          ]);
+          });
         final repository = DevicesRepository(dio);
 
         final devices = await repository.getDevices();
@@ -762,6 +768,9 @@ void main() {
         expect(devices.single.deviceName, 'iPhone 17');
         expect(devices.single.appVersion, '1.2.3');
         expect(devices.single.isTrusted, isTrue);
+        expect(devices.single.isBlocked, isTrue);
+        expect(devices.single.cannotAccess, isTrue);
+        expect(devices.single.blockedReason, 'Lost phone');
         expect(devices.single.loginCount, 4);
       },
     );

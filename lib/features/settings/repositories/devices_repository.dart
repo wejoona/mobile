@@ -46,7 +46,7 @@ class DevicesRepository {
   /// Get all active devices for the current user
   Future<List<Device>> getDevices() async {
     final response = await _dio.get('/devices');
-    final raw = response.data;
+    final raw = _unwrapDevicePayload(response.data);
     final List<dynamic> devicesJson;
     if (raw is Map<String, dynamic>) {
       devicesJson =
@@ -92,3 +92,19 @@ final devicesRepositoryProvider = Provider<DevicesRepository>((ref) {
   final dio = ref.watch(dioProvider);
   return DevicesRepository(dio);
 });
+
+Object? _unwrapDevicePayload(Object? raw) {
+  if (raw is Map<String, dynamic>) {
+    final data = raw['data'];
+    if (data is Map<String, dynamic>) {
+      return data;
+    }
+  } else if (raw is Map) {
+    final map = Map<String, dynamic>.from(raw);
+    final data = map['data'];
+    if (data is Map) {
+      return Map<String, dynamic>.from(data);
+    }
+  }
+  return raw;
+}

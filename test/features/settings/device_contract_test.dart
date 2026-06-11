@@ -77,5 +77,28 @@ void main() {
       expect(device.lastIpAddress, '41.85.162.74');
       expect(device.loginCount, 3);
     });
+
+    test('parses blocked device state from admin/security payloads', () {
+      final blockedAt = DateTime.utc(2026, 6, 11, 9);
+
+      final device = Device.fromJson({
+        'id': 'device-3',
+        'userId': 'user-3',
+        'deviceIdentifier': 'ios-blocked',
+        'displayName': 'Old iPhone',
+        'platform': 'ios',
+        'status': 'blacklisted',
+        'isActive': false,
+        'blacklistReason': 'Lost phone',
+        'blacklistedAt': blockedAt.toIso8601String(),
+      });
+
+      expect(device.isBlocked, isTrue);
+      expect(device.isActive, isFalse);
+      expect(device.cannotAccess, isTrue);
+      expect(device.isRecentlyActive, isFalse);
+      expect(device.blockedReason, 'Lost phone');
+      expect(device.blockedAt, blockedAt);
+    });
   });
 }

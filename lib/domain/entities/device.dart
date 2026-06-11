@@ -14,6 +14,9 @@ class Device {
   final bool isTrusted;
   final bool isCurrent;
   final bool isActive;
+  final bool isBlocked;
+  final String? blockedReason;
+  final DateTime? blockedAt;
   final DateTime? trustedAt;
   final DateTime lastActiveAt;
   final DateTime createdAt;
@@ -34,6 +37,9 @@ class Device {
     this.isTrusted = false,
     this.isCurrent = false,
     this.isActive = true,
+    this.isBlocked = false,
+    this.blockedReason,
+    this.blockedAt,
     this.trustedAt,
     required this.lastActiveAt,
     required this.createdAt,
@@ -45,7 +51,11 @@ class Device {
 
   /// Whether the device has been active recently (within 7 days).
   bool get isRecentlyActive =>
+      isActive &&
+      !isBlocked &&
       DateTime.now().difference(lastActiveAt).inDays < 7;
+
+  bool get cannotAccess => isBlocked || !isActive;
 
   /// Display label: "iPhone 16 Pro Max" or "Samsung Galaxy S24".
   String get displayLabel {
@@ -124,6 +134,19 @@ class Device {
       isTrusted: _bool(json, const ['isTrusted', 'is_trusted']),
       isCurrent: _bool(json, const ['isCurrent', 'is_current']),
       isActive: _bool(json, const ['isActive', 'is_active'], fallback: true),
+      isBlocked: _isBlocked(json),
+      blockedReason: _nullableString(json, const [
+        'blockedReason',
+        'blocked_reason',
+        'blacklistReason',
+        'blacklist_reason',
+      ]),
+      blockedAt: _dateOrNull(json, const [
+        'blockedAt',
+        'blocked_at',
+        'blacklistedAt',
+        'blacklisted_at',
+      ]),
       trustedAt: _dateOrNull(json, const ['trustedAt', 'trusted_at']),
       lastActiveAt: lastActiveAt ?? DateTime.now(),
       createdAt: createdAt ?? DateTime.now(),
@@ -159,6 +182,9 @@ class Device {
     'isTrusted': isTrusted,
     'isCurrent': isCurrent,
     'isActive': isActive,
+    'isBlocked': isBlocked,
+    'blockedReason': blockedReason,
+    'blockedAt': blockedAt?.toIso8601String(),
     'trustedAt': trustedAt?.toIso8601String(),
     'lastActiveAt': lastActiveAt.toIso8601String(),
     'createdAt': createdAt.toIso8601String(),
@@ -196,6 +222,26 @@ bool _bool(
     if (value is String) return value.toLowerCase() == 'true';
   }
   return fallback;
+}
+
+bool _isBlocked(Map<String, dynamic> json) {
+  if (_bool(json, const [
+    'isBlocked',
+    'is_blocked',
+    'blacklisted',
+    'isBlacklisted',
+    'is_blacklisted',
+  ])) {
+    return true;
+  }
+
+  final status = _nullableString(json, const ['status', 'deviceStatus']);
+  return status != null &&
+      const {
+        'blocked',
+        'blacklisted',
+        'revoked_by_admin',
+      }.contains(status.toLowerCase());
 }
 
 int? _int(Map<String, dynamic> json, List<String> keys) {
