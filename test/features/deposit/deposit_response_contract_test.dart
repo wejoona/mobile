@@ -140,6 +140,32 @@ void main() {
       },
     );
 
+    test(
+      'requests deposit channels with region and currency context',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'country': 'US',
+            'currency': 'USD',
+            'status': 'available',
+            'channels': <Map<String, dynamic>>[],
+          });
+        final service = DepositService(dio);
+
+        await service.getProvidersAvailability(
+          countryCode: 'US',
+          currency: 'USD',
+        );
+
+        final request = dio.requestHistory.single;
+        expect(request.path, '/wallet/deposit/channels');
+        expect(request.queryParameters, {
+          'countryCode': 'US',
+          'currency': 'USD',
+        });
+      },
+    );
+
     test('parses canonical /wallet/deposit response', () {
       final response = DepositResponse.fromJson({
         'depositId': 'dep_123',

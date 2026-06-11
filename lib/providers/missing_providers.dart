@@ -126,9 +126,22 @@ class FilteredPaginatedTransactionsNotifier
 final exchangeRateProvider = FutureProvider.autoDispose<ExchangeRate>((
   ref,
 ) async {
+  final selectedCountry = ref.watch(selectedCountryProvider);
+  if (selectedCountry.primaryCurrency == 'USD') {
+    return ExchangeRate(
+      fromCurrency: 'USD',
+      toCurrency: 'USD',
+      rate: 1,
+      timestamp: DateTime.now(),
+    );
+  }
+
   final depositService = ref.watch(depositServiceProvider);
   try {
-    return await depositService.getExchangeRate(from: 'XOF', to: 'USD');
+    return await depositService.getExchangeRate(
+      from: selectedCountry.primaryCurrency,
+      to: 'USD',
+    );
   } catch (_) {
     // Fallback to approximate BCEAO peg rate
     return ExchangeRate(
@@ -199,7 +212,10 @@ final depositProvidersAvailabilityProvider =
     FutureProvider<DepositProvidersAvailability>((ref) async {
       final depositService = ref.watch(depositServiceProvider);
       final selectedCountry = ref.watch(selectedCountryProvider);
-      final payload = await depositService.getProvidersAvailability();
+      final payload = await depositService.getProvidersAvailability(
+        countryCode: selectedCountry.code,
+        currency: selectedCountry.primaryCurrency,
+      );
       return DepositProvidersAvailability(
         providers: payload.providers
             .where((json) => json['available'] as bool? ?? true)
@@ -233,20 +249,26 @@ bool _matchesSelectedCountry(
     'supportedCountries',
   ]);
   final singleCountry = json['country'] ?? json['countryCode'];
+  final selectedCode = selectedCountry.code.toUpperCase();
   final countryMatches =
       countries.isEmpty && singleCountry == null ||
-      countries.contains(selectedCountry.code) ||
-      singleCountry == selectedCountry.code;
+      countries.map((code) => code.toUpperCase()).contains(selectedCode) ||
+      singleCountry?.toString().toUpperCase() == selectedCode;
 
   final currencies = _stringList(json, const [
     'supportedCurrencies',
     'currencies',
   ]);
   final singleCurrency = json['currency'];
+  final selectedCurrencies = selectedCountry.supportedDepositCurrencies
+      .map((currency) => currency.toUpperCase())
+      .toSet();
   final currencyMatches =
       currencies.isEmpty && singleCurrency == null ||
-      currencies.any(selectedCountry.supportedDepositCurrencies.contains) ||
-      selectedCountry.supportedDepositCurrencies.contains(singleCurrency);
+      currencies
+          .map((currency) => currency.toUpperCase())
+          .any(selectedCurrencies.contains) ||
+      selectedCurrencies.contains(singleCurrency?.toString().toUpperCase());
 
   final rail = (json['rail'] ?? json['type'] ?? json['paymentRail'])
       ?.toString()

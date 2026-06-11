@@ -21,8 +21,18 @@ class DepositService {
   }
 
   /// Get available deposit providers plus capability metadata.
-  Future<DepositProvidersPayload> getProvidersAvailability() async {
-    final response = await _dio.get('/wallet/deposit/channels');
+  Future<DepositProvidersPayload> getProvidersAvailability({
+    String? countryCode,
+    String? currency,
+  }) async {
+    final response = await _dio.get(
+      '/wallet/deposit/channels',
+      queryParameters: {
+        if (countryCode != null && countryCode.isNotEmpty)
+          'countryCode': countryCode,
+        if (currency != null && currency.isNotEmpty) 'currency': currency,
+      },
+    );
     final data = response.data;
     if (data is Map<String, dynamic> && data['channels'] != null) {
       return DepositProvidersPayload.fromJson(data, listKey: 'channels');
@@ -180,10 +190,5 @@ class DepositProvidersPayload {
       retryable: json['retryable'] as bool? ?? false,
       supportReviewRequired: json['supportReviewRequired'] as bool? ?? false,
     );
-  }
-
-  static String _idempotencyKey(String prefix) {
-    final timestamp = DateTime.now().microsecondsSinceEpoch;
-    return '$prefix-$timestamp';
   }
 }
