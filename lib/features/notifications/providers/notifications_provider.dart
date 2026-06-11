@@ -12,7 +12,7 @@ final notificationsProvider = FutureProvider<List<AppNotification>>((
   final timer = Timer(const Duration(minutes: 1), () => link.close());
   ref.onDispose(() => timer.cancel());
 
-  return repository.getNotifications();
+  return repository.getNotifications(pageSize: 100);
 });
 
 /// Unread notification count.

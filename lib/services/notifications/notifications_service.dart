@@ -10,9 +10,15 @@ class NotificationsService {
   NotificationsService(this._dio);
 
   /// GET /notifications
-  Future<List<AppNotification>> getNotifications() async {
+  Future<List<AppNotification>> getNotifications({
+    int page = 1,
+    int pageSize = 50,
+  }) async {
     try {
-      final response = await _dio.get('/notifications');
+      final response = await _dio.get(
+        '/notifications',
+        queryParameters: {'limit': pageSize, 'offset': (page - 1) * pageSize},
+      );
       final data = _notificationItems(response.data);
 
       return data

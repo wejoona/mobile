@@ -125,6 +125,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     final walletState = ref.watch(walletStateMachineProvider);
     final txState = ref.watch(transactionStateMachineProvider);
     final userName = ref.watch(userDisplayNameProvider);
+    ref.watch(notificationPollingProvider);
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
     final isLandscape = OrientationHelper.isLandscape(context);

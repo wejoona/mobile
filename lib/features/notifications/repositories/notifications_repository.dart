@@ -13,7 +13,7 @@ class NotificationsRepository {
     int page = 1,
     int pageSize = 20,
   }) async {
-    return _service.getNotifications();
+    return _service.getNotifications(page: page, pageSize: pageSize);
   }
 
   /// Mark a notification as read.
@@ -32,8 +32,9 @@ class NotificationsRepository {
   }
 }
 
-final notificationsRepositoryProvider =
-    Provider<NotificationsRepository>((ref) {
+final notificationsRepositoryProvider = Provider<NotificationsRepository>((
+  ref,
+) {
   final service = ref.watch(notificationsServiceProvider);
   return NotificationsRepository(service);
 });

@@ -33,6 +33,10 @@ void main() {
 
     final notifications = await container.read(notificationsProvider.future);
 
+    final request = dio.requestHistory.single;
+    expect(request.path, '/notifications');
+    expect(request.queryParameters['limit'], 100);
+    expect(request.queryParameters['offset'], 0);
     expect(notifications, hasLength(1));
     expect(notifications.single.type, NotificationType.security);
     expect(notifications.single.isRead, isFalse);
