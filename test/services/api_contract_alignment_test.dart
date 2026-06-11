@@ -1630,6 +1630,16 @@ void main() {
         requestPermissionBody,
         isNot(contains('Permission.contacts.request')),
       );
+
+      final contactActionsSource = File(
+        'lib/features/contacts/providers/contacts_provider.dart',
+      ).readAsStringSync();
+      expect(
+        contactActionsSource,
+        contains('defaultCountryPrefix: _defaultCountryPrefix'),
+        reason:
+            'manual contact sync must hash local numbers with the active market prefix',
+      );
     });
 
     test('contact lookup accepts backend nested user envelope', () async {

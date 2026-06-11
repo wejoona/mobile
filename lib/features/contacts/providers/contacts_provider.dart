@@ -47,10 +47,23 @@ final contactSearchProvider = Provider.family<List<Contact>, String>((
 class ContactActions {
   final Dio _dio;
   final ContactsService _contactsService;
-  ContactActions(this._dio, this._contactsService);
+  final String _defaultCountryPrefix;
+
+  ContactActions(
+    this._dio,
+    this._contactsService, {
+    required String defaultCountryPrefix,
+  }) : _defaultCountryPrefix = defaultCountryPrefix;
 
   Future<void> syncPhoneContacts(List<String> phones) async {
-    final hashes = phones.map(_contactsService.hashPhone).toList();
+    final hashes = phones
+        .map(
+          (phone) => _contactsService.hashPhone(
+            phone,
+            defaultCountryPrefix: _defaultCountryPrefix,
+          ),
+        )
+        .toList();
     await _contactsService.syncPhoneHashes(_dio, hashes);
   }
 
@@ -66,9 +79,14 @@ class ContactActions {
 }
 
 final contactActionsProvider = Provider<ContactActions>((ref) {
+  final userCountryCode = ref.watch(userStateMachineProvider).countryCode;
+  final selectedCountry = ref.watch(selectedCountryProvider);
+  final country =
+      SupportedCountries.findByCode(userCountryCode) ?? selectedCountry;
   return ContactActions(
     ref.watch(dioProvider),
     ref.watch(contactsServiceProvider),
+    defaultCountryPrefix: country.prefix,
   );
 });
 
