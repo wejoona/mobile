@@ -34,6 +34,19 @@ class WalletStateMachine extends Notifier<WalletState> {
       }
     }
 
+    // Some backend wallet shapes expose a single generic/USD balance for the
+    // omnibus wallet. Home still needs a primary spendable balance instead of
+    // rendering zero when no explicit USDC row exists.
+    if (usdcBalance == 0 && response.availableBalance > 0) {
+      usdcBalance = response.availableBalance;
+    }
+    if (pending == 0 && response.balances.isNotEmpty) {
+      pending = response.balances.fold<double>(
+        0,
+        (total, balance) => total + balance.pending,
+      );
+    }
+
     state = state.copyWith(
       status: WalletStatus.loaded,
       walletId: response.walletId,
