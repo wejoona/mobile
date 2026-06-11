@@ -85,7 +85,7 @@ class ExternalTransferResult {
       txHash:
           json['txHash'] as String? ?? json['transactionHash'] as String? ?? '',
       status: json['status'] as String,
-      fee: (json['fee'] as num?)?.toDouble() ?? 0,
+      fee: _readAmount(json, const ['feeDecimal', 'fee']),
       network: NetworkOption.fromString(
         json['network'] as String? ??
             json['recipientBlockchain'] as String? ??
@@ -107,6 +107,18 @@ class ExternalTransferResult {
     'network': network.value,
     'timestamp': timestamp.toIso8601String(),
   };
+}
+
+double _readAmount(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is num) return value.toDouble();
+    if (value is String) {
+      final parsed = double.tryParse(value);
+      if (parsed != null) return parsed;
+    }
+  }
+  return 0;
 }
 
 /// Address Validation Result
