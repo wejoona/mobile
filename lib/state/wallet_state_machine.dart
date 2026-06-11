@@ -18,6 +18,38 @@ class WalletStateMachine extends Notifier<WalletState> {
 
   WalletService get _service => ref.read(walletServiceProvider);
 
+  bool _keepCachedBalanceOnFailure() {
+    final cached = ref.read(localCacheServiceProvider).getCachedWallet();
+    if (cached != null) {
+      state = state.copyWith(
+        status: WalletStatus.loaded,
+        walletId: cached.walletId,
+        walletAddress: cached.address,
+        blockchain: cached.blockchain,
+        usdBalance: cached.usdBalance,
+        usdcBalance: cached.usdcBalance,
+        pendingBalance: cached.pendingBalance,
+        lastUpdated: cached.cachedAt,
+        isCached: true,
+        error: null,
+      );
+      debugPrint('[WalletState] Keeping cached balance (${cached.cachedAt})');
+      return true;
+    }
+
+    if (state.hasBalanceData) {
+      state = state.copyWith(
+        status: WalletStatus.loaded,
+        isCached: true,
+        error: null,
+      );
+      debugPrint('[WalletState] Keeping previous balance after refresh error');
+      return true;
+    }
+
+    return false;
+  }
+
   void _applyBalanceResponse(WalletBalanceResponse response) {
     var usdBalance = 0.0;
     var usdcBalance = 0.0;
@@ -138,6 +170,8 @@ class WalletStateMachine extends Notifier<WalletState> {
       if (e.statusCode == 404 && e.message.contains('Wallet not found')) {
         state = state.copyWith(status: WalletStatus.initial, error: null);
         await createWallet();
+      } else if (_keepCachedBalanceOnFailure()) {
+        return;
       } else {
         state = state.copyWith(status: WalletStatus.error, error: e.message);
 
