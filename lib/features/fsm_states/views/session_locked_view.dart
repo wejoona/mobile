@@ -58,17 +58,17 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
     }
     setState(() => _isUnlocking = true);
 
-    Future.delayed(const Duration(milliseconds: 360), () {
-      if (!mounted) {
-        return;
+    final router = GoRouter.of(context);
+    ref.read(authProvider.notifier).unlock();
+    ref.read(sessionServiceProvider.notifier).unlockSession();
+    ref
+        .read(appFsmProvider.notifier)
+        .dispatch(const AppSessionEvent(SessionUnlock()));
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        router.go('/home');
       }
-      final router = GoRouter.of(context);
-      ref.read(authProvider.notifier).unlock();
-      ref.read(sessionServiceProvider.notifier).unlockSession();
-      ref
-          .read(appFsmProvider.notifier)
-          .dispatch(const AppSessionEvent(SessionUnlock()));
-      router.go('/home');
     });
   }
 

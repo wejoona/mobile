@@ -3,13 +3,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:usdc_wallet/config/countries.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
 import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/contacts/contacts_service.dart';
+import 'package:usdc_wallet/state/user_state_machine.dart';
 
 class ContactPickerBottomSheet extends ConsumerStatefulWidget {
   const ContactPickerBottomSheet({super.key});
@@ -78,6 +81,7 @@ class _ContactPickerBottomSheetState
     final deviceContacts = await contactsService.getDeviceContacts();
     var contacts = contactsService.deviceContactsToSyncedContacts(
       deviceContacts,
+      defaultCountryPrefix: _defaultCountryPrefix(),
     );
 
     try {
@@ -91,6 +95,14 @@ class _ContactPickerBottomSheetState
 
     _sortContacts(contacts);
     return contacts;
+  }
+
+  String _defaultCountryPrefix() {
+    final userCountryCode = ref.read(userStateMachineProvider).countryCode;
+    final selectedCountry = ref.read(selectedCountryProvider);
+    final country =
+        SupportedCountries.findByCode(userCountryCode) ?? selectedCountry;
+    return country.prefix;
   }
 
   Future<void> _requestContactsPermission() async {
