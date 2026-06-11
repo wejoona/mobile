@@ -19,7 +19,8 @@ import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
 import 'package:usdc_wallet/features/deposit/models/provider_data.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
-import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
+import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart'
+    hide TransactionItem, TransactionPage;
 import 'package:usdc_wallet/services/sdk/usdc_wallet_sdk.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
 
@@ -56,20 +57,14 @@ class FilteredPaginatedTransactionsNotifier
         '/wallet/transactions',
         queryParameters: params,
       );
-      final data = response.data as Map<String, dynamic>;
+      final page = TransactionPage.fromJson(_asStringMap(response.data));
       if (!mounted) {
         return;
       }
-      final items =
-          ((data['transactions'] ?? data['data'] ?? data['items']) as List?)
-              ?.map((e) => Transaction.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [];
-      final hasMore = data['hasMore'] as bool? ?? items.length >= 20;
       state = FilteredPaginatedTransactionsState(
         isLoading: false,
-        transactions: items,
-        hasMore: hasMore,
+        transactions: page.transactions,
+        hasMore: page.hasMore,
         page: 1,
       );
     } catch (e) {
@@ -98,20 +93,14 @@ class FilteredPaginatedTransactionsNotifier
         '/wallet/transactions',
         queryParameters: params,
       );
-      final data = response.data as Map<String, dynamic>;
+      final page = TransactionPage.fromJson(_asStringMap(response.data));
       if (!mounted) {
         return;
       }
-      final items =
-          ((data['transactions'] ?? data['data'] ?? data['items']) as List?)
-              ?.map((e) => Transaction.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [];
-      final hasMore = data['hasMore'] as bool? ?? items.length >= 20;
       state = state.copyWith(
         isLoading: false,
-        transactions: [...state.transactions, ...items],
-        hasMore: hasMore,
+        transactions: [...state.transactions, ...page.transactions],
+        hasMore: page.hasMore,
         page: nextPage,
       );
     } catch (e) {
@@ -121,6 +110,12 @@ class FilteredPaginatedTransactionsNotifier
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
+}
+
+Map<String, dynamic> _asStringMap(Object? value) {
+  if (value is Map<String, dynamic>) return value;
+  if (value is Map) return Map<String, dynamic>.from(value);
+  throw const FormatException('Expected JSON object');
 }
 
 /// Exchange rate provider — wired to GET /wallet/exchange-rate.
