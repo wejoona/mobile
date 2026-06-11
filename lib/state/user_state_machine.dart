@@ -342,8 +342,34 @@ class UserStateMachine extends Notifier<UserState> {
     ref.read(localSyncServiceProvider).cacheUserFromState(state);
   }
 
+  /// Apply a freshly uploaded server avatar and discard stale local files.
+  Future<void> applyServerAvatar({
+    String? avatarUrl,
+    String? avatarThumb,
+    bool clearLocalCache = true,
+  }) async {
+    final hasAvatarUrl = avatarUrl != null && avatarUrl.isNotEmpty;
+    final hasAvatarThumb = avatarThumb != null && avatarThumb.isNotEmpty;
+    if (!hasAvatarUrl && !hasAvatarThumb) {
+      return;
+    }
+
+    if (clearLocalCache) {
+      await _clearLocalAvatarCache();
+    }
+
+    updateProfile(avatarUrl: avatarUrl, avatarThumb: avatarThumb);
+  }
+
   /// Clear all avatar references after the backend confirms removal.
   Future<void> clearAvatar() async {
+    await _clearLocalAvatarCache();
+
+    state = state.copyWith(clearAvatarUrl: true, clearAvatarThumb: true);
+    ref.read(localSyncServiceProvider).cacheUserFromState(state);
+  }
+
+  Future<void> _clearLocalAvatarCache() async {
     final localAvatar = await _storage.read(key: 'local_avatar_path');
     if (localAvatar != null) {
       final file = File(localAvatar);
@@ -356,9 +382,6 @@ class UserStateMachine extends Notifier<UserState> {
 
     await _storage.delete(key: 'local_avatar_path');
     await ref.read(avatarCacheServiceProvider).clearCache();
-
-    state = state.copyWith(clearAvatarUrl: true, clearAvatarThumb: true);
-    ref.read(localSyncServiceProvider).cacheUserFromState(state);
   }
 
   /// Logout

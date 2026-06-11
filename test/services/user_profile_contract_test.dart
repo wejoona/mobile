@@ -154,5 +154,28 @@ void main() {
       expect(initStateBody, contains('_avatarUrl = userState.avatarUrl'));
       expect(initStateBody, contains('_avatarThumb = userState.avatarThumb'));
     });
+
+    test('avatar upload paths clear stale local avatar cache', () {
+      final userStateSource = File(
+        'lib/state/user_state_machine.dart',
+      ).readAsStringSync();
+      final profileProviderSource = File(
+        'lib/features/profile/providers/profile_provider.dart',
+      ).readAsStringSync();
+      final profileEditSource = File(
+        'lib/features/settings/views/profile_edit_screen.dart',
+      ).readAsStringSync();
+
+      expect(userStateSource, contains('Future<void> applyServerAvatar'));
+      expect(userStateSource, contains('await _clearLocalAvatarCache();'));
+      expect(userStateSource, contains("delete(key: 'local_avatar_path')"));
+      expect(profileProviderSource, contains('await _applyAvatarUploadResult'));
+      expect(profileProviderSource, contains('applyServerAvatar('));
+      expect(profileEditSource, contains('await ref'));
+      expect(
+        profileEditSource,
+        contains('avatarChanged: _selectedImage != null'),
+      );
+    });
   });
 }

@@ -444,12 +444,13 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         throw StateError('Avatar upload did not return an image reference');
       }
 
-      ref
+      await ref
           .read(profileProvider.notifier)
           .applyProfileSnapshot(
             profile,
             avatarUrl: nextAvatarUrl,
             avatarThumb: nextAvatarThumb,
+            avatarChanged: _selectedImage != null,
           );
 
       if (mounted) {

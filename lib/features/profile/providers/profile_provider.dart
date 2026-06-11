@@ -75,10 +75,10 @@ class ProfileNotifier extends Notifier<ProfileState> {
     try {
       final service = ref.read(userServiceProvider);
       final result = await service.uploadAvatar(file.path);
-      _applyAvatarUploadResult(result);
+      await _applyAvatarUploadResult(result);
       state = state.copyWith(isUploading: false, error: null);
       await loadProfile();
-      _applyAvatarUploadResult(result);
+      await _applyAvatarUploadResult(result, clearLocalCache: false);
     } on ApiException catch (e) {
       state = state.copyWith(isUploading: false, error: _friendlyError(e));
     } catch (e) {
@@ -89,11 +89,12 @@ class ProfileNotifier extends Notifier<ProfileState> {
     }
   }
 
-  void applyProfileSnapshot(
+  Future<void> applyProfileSnapshot(
     UserProfile profile, {
     String? avatarUrl,
     String? avatarThumb,
-  }) {
+    bool avatarChanged = false,
+  }) async {
     final mergedProfile = UserProfile.fromJson({
       ...profile.toJson(),
       'avatarUrl': avatarUrl ?? profile.avatarUrl,
@@ -101,6 +102,11 @@ class ProfileNotifier extends Notifier<ProfileState> {
     });
 
     _syncUserState(mergedProfile);
+    if (avatarChanged) {
+      await _applyAvatarUploadResult(
+        AvatarUploadResult(avatarUrl: avatarUrl, avatarThumb: avatarThumb),
+      );
+    }
     state = state.copyWith(
       user: User.fromJson(mergedProfile.toJson()),
       isLoading: false,
@@ -150,7 +156,10 @@ class ProfileNotifier extends Notifier<ProfileState> {
         );
   }
 
-  void _applyAvatarUploadResult(AvatarUploadResult result) {
+  Future<void> _applyAvatarUploadResult(
+    AvatarUploadResult result, {
+    bool clearLocalCache = true,
+  }) async {
     final hasAvatarUrl =
         result.avatarUrl != null && result.avatarUrl!.isNotEmpty;
     final hasAvatarThumb =
@@ -159,11 +168,12 @@ class ProfileNotifier extends Notifier<ProfileState> {
       return;
     }
 
-    ref
+    await ref
         .read(userStateMachineProvider.notifier)
-        .updateProfile(
+        .applyServerAvatar(
           avatarUrl: result.avatarUrl,
           avatarThumb: result.avatarThumb,
+          clearLocalCache: clearLocalCache,
         );
 
     final currentUser = state.user;
