@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/core/utils/transaction_headers.dart';
+import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
-import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/utils/logger.dart';
-import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 
 /// Transfers Service - mirrors backend TransfersController
 /// Uses risk-based adaptive security (Visa 3DS / Apple style)
@@ -269,10 +269,13 @@ class TransferResult {
           '',
       type: _stringValue(payload, const ['type', 'transferType']) ?? 'internal',
       status: _stringValue(payload, const ['status']) ?? 'pending',
-      amount: _numValue(payload, const ['amount', 'amountDecimal']) ?? 0,
-      fee: _numValue(payload, const ['fee', 'feeDecimal']) ?? 0,
+      amount: _numValue(payload, const ['amountDecimal', 'amount']) ?? 0,
+      fee: _numValue(payload, const ['feeDecimal', 'fee']) ?? 0,
       currency: _stringValue(payload, const ['currency']) ?? 'USDC',
-      recipientPhone: _stringValue(payload, const ['recipientPhone', 'toPhone']),
+      recipientPhone: _stringValue(payload, const [
+        'recipientPhone',
+        'toPhone',
+      ]),
       recipientAddress: _stringValue(payload, const ['recipientAddress']),
       txHash: _stringValue(payload, const ['txHash', 'transactionHash']),
       createdAt:
@@ -300,11 +303,7 @@ class TransferPage {
 
   factory TransferPage.fromJson(Map<String, dynamic> json) {
     final payload = _payloadMap(json);
-    final itemsData = _listValue(payload, const [
-      'items',
-      'transfers',
-      'data',
-    ]);
+    final itemsData = _listValue(payload, const ['items', 'transfers', 'data']);
     final pageSize =
         _intValue(payload, const ['pageSize', 'page_size', 'limit']) ??
         itemsData.length;
@@ -314,9 +313,7 @@ class TransferPage {
         _intValue(payload, const ['page']) ??
         (pageSize > 0 ? (offset ~/ pageSize) + 1 : 1);
     return TransferPage(
-      items: itemsData
-          .map((e) => Transfer.fromJson(_asStringMap(e)))
-          .toList(),
+      items: itemsData.map((e) => Transfer.fromJson(_asStringMap(e))).toList(),
       total: total,
       page: page,
       pageSize: pageSize,
