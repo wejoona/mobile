@@ -836,22 +836,24 @@ void main() {
       () async {
         final dio = MockDio()
           ..queueResponse({
-            'sessions': [
-              {
-                'id': 'session_1',
-                'userId': 'user_1',
-                'deviceId': 'device_1',
-                'ipAddress': '::ffff:10.42.0.248',
-                'userAgent': 'Korido/1.0.0 (iOS; iPhone17,2; 26.2)',
-                'location': null,
-                'isActive': true,
-                'lastActivityAt': '2026-06-04T10:00:00.000Z',
-                'expiresAt': '2026-06-11T10:00:00.000Z',
-                'createdAt': '2026-06-04T09:00:00.000Z',
-              },
-            ],
-            'items': [],
-            'total': 1,
+            'data': {
+              'sessions': [
+                {
+                  'id': 'session_1',
+                  'userId': 'user_1',
+                  'deviceId': 'device_1',
+                  'ipAddress': '::ffff:10.42.0.248',
+                  'userAgent': 'Korido/1.0.0 (iOS; iPhone17,2; 26.2)',
+                  'location': null,
+                  'isActive': true,
+                  'lastActivityAt': '2026-06-04T10:00:00.000Z',
+                  'expiresAt': '2026-06-11T10:00:00.000Z',
+                  'createdAt': '2026-06-04T09:00:00.000Z',
+                },
+              ],
+              'items': [],
+              'total': 1,
+            },
           })
           ..queueResponse({'success': true});
         final repository = SessionsRepository(dio);

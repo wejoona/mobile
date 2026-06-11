@@ -13,7 +13,7 @@ class SessionsRepository {
   Future<List<Session>> getSessions() async {
     try {
       final response = await _dio.get('/sessions');
-      final raw = response.data;
+      final raw = _unwrapSessionPayload(response.data);
       final List items;
       if (raw is Map) {
         items = (raw['sessions'] ?? raw['items'] ?? raw['data'] ?? []) as List;
@@ -60,3 +60,15 @@ final sessionsRepositoryProvider = Provider<SessionsRepository>((ref) {
   final dio = ref.watch(dioProvider);
   return SessionsRepository(dio);
 });
+
+Object? _unwrapSessionPayload(Object? raw) {
+  if (raw is Map<String, dynamic>) {
+    final data = raw['data'];
+    if (data is Map<String, dynamic>) return data;
+  } else if (raw is Map) {
+    final map = Map<String, dynamic>.from(raw);
+    final data = map['data'];
+    if (data is Map) return Map<String, dynamic>.from(data);
+  }
+  return raw;
+}
