@@ -42,6 +42,16 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
     await notifier.syncContacts();
   }
 
+  Future<void> _manualSync() async {
+    final notifier = ref.read(contactsProvider.notifier);
+    final state = ref.read(contactsProvider);
+    if (state.permissionRequired) {
+      await notifier.requestPermission();
+      return;
+    }
+    await notifier.syncContacts();
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -81,9 +91,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () async {
-          await ref.read(contactsProvider.notifier).syncContacts();
-        },
+        onRefresh: _manualSync,
         backgroundColor: context.colors.container,
         color: context.colors.gold,
         child: state.isLoading
@@ -92,6 +100,12 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
               )
             : Column(
                 children: [
+                  if (state.permissionRequired)
+                    Padding(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      child: _ContactsPermissionCard(onAction: _manualSync),
+                    ),
+
                   if (!state.permissionRequired)
                     Padding(
                       padding: EdgeInsets.all(AppSpacing.md),
@@ -190,12 +204,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                             showAction:
                                 state.permissionRequired ||
                                 _searchQuery.isEmpty,
-                            onAction: () async {
-                              final notifier = ref.read(
-                                contactsProvider.notifier,
-                              );
-                              await notifier.requestPermission();
-                            },
+                            onAction: _manualSync,
                           ),
                       ],
                     ),
@@ -280,6 +289,65 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
     } else {
       return l10n.contacts_synced_days_ago(diff.inDays);
     }
+  }
+}
+
+class _ContactsPermissionCard extends StatelessWidget {
+  const _ContactsPermissionCard({required this.onAction});
+
+  final Future<void> Function() onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
+
+    return AppCard(
+      variant: AppCardVariant.goldAccent,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: colors.goldSubtle,
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              border: Border.all(color: colors.borderGold),
+            ),
+            child: Icon(Icons.contacts_outlined, color: colors.gold, size: 22),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  l10n.contacts_permission_title,
+                  variant: AppTextVariant.titleSmall,
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                AppText(
+                  l10n.contacts_permission_benefit2_desc,
+                  variant: AppTextVariant.bodySmall,
+                  color: colors.textSecondary,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                AppButton(
+                  label: l10n.contacts_permission_allow,
+                  icon: Icons.person_search_rounded,
+                  isFullWidth: true,
+                  onPressed: () => unawaited(onAction()),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
