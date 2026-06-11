@@ -21,7 +21,6 @@ import 'package:usdc_wallet/features/wallet/widgets/cached_data_chip.dart';
 import 'package:usdc_wallet/features/wallet/widgets/wallet_home_actions.dart';
 import 'package:usdc_wallet/features/wallet/widgets/wallet_home_status_widgets.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/currency/currency_provider.dart';
 import 'package:usdc_wallet/services/currency/currency_service.dart';
 import 'package:usdc_wallet/state/index.dart';
@@ -68,6 +67,15 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         parent: _balanceAnimationController,
         curve: Curves.easeOut,
       ),
+    );
+    unawaited(
+      Future<void>.microtask(() async {
+        final wallet = ref.read(walletStateMachineProvider);
+        if (wallet.status == WalletStatus.initial ||
+            (wallet.status == WalletStatus.error && !wallet.hasBalanceData)) {
+          await ref.read(walletStateMachineProvider.notifier).fetch();
+        }
+      }),
     );
     // Fetch limits on init
     unawaited(
@@ -156,18 +164,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
           Expanded(
             child: SafeArea(
               child: AppRefreshIndicator(
-                onRefresh: () async {
-                  await Future.wait([
-                    ref
-                        .read(walletStateMachineProvider.notifier)
-                        .refresh()
-                        .timeout(const Duration(seconds: 15), onTimeout: () {}),
-                    ref
-                        .read(transactionStateMachineProvider.notifier)
-                        .refresh(refreshWallet: false)
-                        .timeout(const Duration(seconds: 12), onTimeout: () {}),
-                  ]);
-                },
+                onRefresh: _refreshHomeData,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   child: ConstrainedContent(
@@ -1088,13 +1085,34 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     _isCreatingWallet = true;
 
     try {
-      final dio = ref.read(dioProvider);
-      await dio.post('/wallet/create');
-      await ref.read(walletStateMachineProvider.notifier).fetch();
+      await ref.read(walletStateMachineProvider.notifier).createWallet();
     } on Object catch (error, stackTrace) {
       _logger.error('Auto wallet creation failed', error, stackTrace);
     } finally {
       _isCreatingWallet = false;
+    }
+  }
+
+  Future<void> _refreshHomeData() async {
+    try {
+      await Future.wait([
+        ref
+            .read(walletStateMachineProvider.notifier)
+            .refresh()
+            .timeout(const Duration(seconds: 15)),
+        ref
+            .read(transactionStateMachineProvider.notifier)
+            .refresh(refreshWallet: false)
+            .timeout(const Duration(seconds: 12)),
+      ]);
+    } on Object catch (error, stackTrace) {
+      _logger.error('Home refresh did not complete cleanly', error, stackTrace);
+    }
+
+    final wallet = ref.read(walletStateMachineProvider);
+    if (wallet.status == WalletStatus.initial ||
+        (wallet.status == WalletStatus.error && !wallet.hasBalanceData)) {
+      await ref.read(walletStateMachineProvider.notifier).fetch(force: true);
     }
   }
 

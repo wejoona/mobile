@@ -146,6 +146,48 @@ void main() {
     });
 
     test(
+      'manual refresh creates a wallet when the API reports no wallet',
+      () async {
+        final dio = MockDio()
+          ..queueErrorResponse(
+            statusCode: 404,
+            data: {
+              'success': false,
+              'error': {'code': 'NOT_FOUND', 'message': 'Wallet not found'},
+            },
+          )
+          ..queueResponse({
+            'id': 'wallet-created-from-refresh',
+            'circleWalletAddress': null,
+            'currency': 'USDC',
+            'balance': 0,
+            'balanceDecimal': '0.000000',
+            'status': 'active',
+          });
+
+        final container = ProviderContainer(
+          overrides: [
+            dioProvider.overrideWithValue(dio),
+            appFsmProvider.overrideWith(_NoopAppFsmNotifier.new),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await container.read(walletStateMachineProvider.notifier).refresh();
+
+        expect(dio.requestHistory.map((request) => request.path), [
+          '/wallet',
+          '/wallet/create',
+        ]);
+
+        final state = container.read(walletStateMachineProvider);
+        expect(state.status, WalletStatus.loaded);
+        expect(state.walletId, 'wallet-created-from-refresh');
+        expect(state.usdcBalance, 0);
+      },
+    );
+
+    test(
       'concurrent manual refreshes share the in-flight wallet request',
       () async {
         final dio = MockDio()
