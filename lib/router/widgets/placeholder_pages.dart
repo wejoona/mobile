@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 
-/// Placeholder page for routes not yet implemented.
+/// Neutral fallback for routes that cannot be resolved from their arguments.
 class RoutePlaceholderPage extends StatelessWidget {
   const RoutePlaceholderPage({required String title, super.key})
     : _title = title;
@@ -14,22 +15,80 @@ class RoutePlaceholderPage extends StatelessWidget {
   final String _title;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: Text(_title),
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: () => context.pop(),
+  Widget build(BuildContext context) {
+    final colors = ThemeColors.of(context);
+
+    return Scaffold(
+      backgroundColor: colors.canvas,
+      appBar: AppBar(
+        title: AppText(
+          _title,
+          variant: AppTextVariant.titleLarge,
+          color: colors.textPrimary,
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/home');
+            }
+          },
+        ),
       ),
-    ),
-    body: Center(
-      child: Text(
-        '$_title\n(Coming Soon)',
-        textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 18),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: colors.surface,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: colors.borderSubtle),
+                  ),
+                  child: Icon(
+                    Icons.search_off_rounded,
+                    color: colors.textTertiary,
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                AppText(
+                  _title,
+                  variant: AppTextVariant.titleLarge,
+                  color: colors.textPrimary,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                AppText(
+                  'This page could not be opened. The item may have moved, expired, or is not available for your account.',
+                  color: colors.textSecondary,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.xxl),
+                AppButton(
+                  label: context.canPop() ? 'Go back' : 'Go home',
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.go('/home');
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 /// Placeholder for FSM state screens.
