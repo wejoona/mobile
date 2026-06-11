@@ -71,9 +71,17 @@ class Transaction {
       walletId: _stringValue(json, const ['walletId', 'wallet_id']) ?? '',
       type: _parseTransactionType(_stringValue(json, const ['type', 'kind'])),
       status: _parseTransactionStatus(json['status'] as String?),
-      amount: _numValue(json, const ['amount', 'amountUsd', 'amount_usd']) ?? 0,
+      amount:
+          _numValue(json, const [
+            'amountDecimal',
+            'amount_decimal',
+            'amount',
+            'amountUsd',
+            'amount_usd',
+          ]) ??
+          0,
       currency: json['currency'] as String? ?? 'USD',
-      fee: (json['fee'] as num?)?.toDouble(),
+      fee: _numValue(json, const ['feeDecimal', 'fee_decimal', 'fee']),
       description: json['description'] as String? ?? json['note'] as String?,
       externalReference:
           json['externalReference'] as String? ??

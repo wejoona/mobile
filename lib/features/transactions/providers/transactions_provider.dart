@@ -143,7 +143,7 @@ class TransactionItem {
     id: json['id'] as String? ?? json['transactionId'] as String? ?? '',
     type: (json['type'] as String? ?? 'deposit').toLowerCase(),
     amount:
-        _numValue(json, const ['amount', 'amountDecimal', 'amount_decimal']) ??
+        _numValue(json, const ['amountDecimal', 'amount_decimal', 'amount']) ??
         0,
     currency: json['currency'] as String? ?? 'USDC',
     status: _normalizeTransactionStatus(json['status'] as String?),

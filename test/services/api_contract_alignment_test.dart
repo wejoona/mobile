@@ -1005,6 +1005,34 @@ void main() {
       expect(withdrawal.isDebit, isTrue);
     });
 
+    test('transaction parsers prefer backend decimal money fields', () {
+      final transaction = wallet_tx.Transaction.fromJson({
+        'id': 'tx_decimal',
+        'walletId': 'wallet_1',
+        'type': 'deposit',
+        'status': 'completed',
+        'amount': 42500000,
+        'amountDecimal': '42.500000',
+        'fee': 1000000,
+        'feeDecimal': '1.000000',
+        'currency': 'USDC',
+        'createdAt': '2026-06-04T12:00:00.000Z',
+      });
+      final item = TransactionItem.fromJson({
+        'id': 'tx_item_decimal',
+        'type': 'deposit',
+        'status': 'completed',
+        'amount': 42500000,
+        'amountDecimal': '42.500000',
+        'currency': 'USDC',
+        'createdAt': '2026-06-04T12:00:00.000Z',
+      });
+
+      expect(transaction.amount, 42.5);
+      expect(transaction.fee, 1);
+      expect(item.amount, 42.5);
+    });
+
     test(
       'transaction parser normalizes backend status and transfer aliases',
       () {
