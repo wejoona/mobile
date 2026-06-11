@@ -10,7 +10,6 @@ import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/state/index.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Biometric Prompt View — themed lock screen with Face ID / Touch ID.
 /// Matches the native Korido security overlay design.
@@ -75,12 +74,11 @@ class _BiometricPromptViewState extends ConsumerState<BiometricPromptView> {
   }
 
   void _completeUnlock() {
+    final router = GoRouter.of(context);
     ref.read(authProvider.notifier).unlock();
     ref.read(sessionServiceProvider.notifier).unlockSession();
-    ref
-        .read(appFsmProvider.notifier)
-        .dispatch(const AppSessionEvent(SessionBiometricSuccess()));
-    if (mounted) context.go('/home');
+    ref.read(appFsmProvider.notifier).unlockSession();
+    router.go('/home');
   }
 
   @override
