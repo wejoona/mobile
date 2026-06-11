@@ -19,5 +19,22 @@ void main() {
       expect(loadBody, isNot(contains('requestPermission()')));
       expect(manualSyncBody, contains('requestPermission()'));
     });
+
+    test('contacts screen search uses backend Korido lookup', () {
+      final source = File(
+        'lib/features/contacts/views/contacts_list_screen.dart',
+      ).readAsStringSync();
+      final searchBody = RegExp(
+        r'void _handleSearchChanged\(String value\) \{([\s\S]*?)\n  Future<void> _lookupKoridoUsers',
+      ).firstMatch(source)!.group(1)!;
+      final lookupBody = RegExp(
+        r'Future<void> _lookupKoridoUsers\(String query\) async \{([\s\S]*?)\n  Future<void> _manualSync',
+      ).firstMatch(source)!.group(1)!;
+
+      expect(searchBody, contains('_lookupKoridoUsers(trimmed)'));
+      expect(lookupBody, contains('lookupKoridoUsers(query)'));
+      expect(lookupBody, contains('localPhones'));
+      expect(lookupBody, contains('localUserIds'));
+    });
   });
 }

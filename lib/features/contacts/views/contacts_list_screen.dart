@@ -11,6 +11,7 @@ import 'package:usdc_wallet/features/contacts/providers/contacts_provider.dart';
 import 'package:usdc_wallet/features/contacts/widgets/contact_card.dart';
 import 'package:usdc_wallet/features/contacts/widgets/invite_sheet.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/contacts/contacts_service.dart';
 
 /// Contacts List Screen
 ///
@@ -25,6 +26,9 @@ class ContactsListScreen extends ConsumerStatefulWidget {
 class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   final _searchController = TextEditingController();
   String _searchQuery = '';
+  List<SyncedContact> _lookupResults = [];
+  bool _isLookupLoading = false;
+  Timer? _lookupDebounce;
 
   @override
   void initState() {
@@ -34,12 +38,73 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
 
   @override
   void dispose() {
+    _lookupDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
   Future<void> _loadContacts() async {
     await ref.read(contactsProvider.notifier).syncContacts();
+  }
+
+  void _handleSearchChanged(String value) {
+    _lookupDebounce?.cancel();
+    setState(() => _searchQuery = value);
+
+    final trimmed = value.trim();
+    if (trimmed.length < 3) {
+      setState(() {
+        _lookupResults = [];
+        _isLookupLoading = false;
+      });
+      return;
+    }
+
+    setState(() => _isLookupLoading = true);
+    _lookupDebounce = Timer(
+      const Duration(milliseconds: 280),
+      () => _lookupKoridoUsers(trimmed),
+    );
+  }
+
+  Future<void> _lookupKoridoUsers(String query) async {
+    try {
+      final results = await ref
+          .read(joonaPayContactsServiceProvider)
+          .lookupKoridoUsers(query);
+      if (!mounted || _searchController.text.trim() != query) {
+        return;
+      }
+
+      final state = ref.read(contactsProvider);
+      final localPhones = state.contacts
+          .map((contact) => contact.phone)
+          .toSet();
+      final localUserIds = state.contacts
+          .map((contact) => contact.joonaPayUserId ?? contact.id)
+          .where((id) => id.isNotEmpty)
+          .toSet();
+
+      setState(() {
+        _lookupResults = results.where((result) {
+          final userId = result.joonaPayUserId ?? result.id;
+          final duplicatePhone =
+              result.phone.isNotEmpty && localPhones.contains(result.phone);
+          final duplicateUser =
+              userId.isNotEmpty && localUserIds.contains(userId);
+          return !duplicatePhone && !duplicateUser;
+        }).toList();
+        _isLookupLoading = false;
+      });
+    } on Object {
+      if (!mounted || _searchController.text.trim() != query) {
+        return;
+      }
+      setState(() {
+        _lookupResults = [];
+        _isLookupLoading = false;
+      });
+    }
   }
 
   Future<void> _manualSync() async {
@@ -121,9 +186,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                         controller: _searchController,
                         label: l10n.contacts_search,
                         prefixIcon: Icons.search,
-                        onChanged: (value) {
-                          setState(() => _searchQuery = value);
-                        },
+                        onChanged: _handleSearchChanged,
                       ),
                     ),
 
@@ -169,6 +232,12 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
                       children: [
                         // Korido users section
+                        if (_searchQuery.trim().length >= 3) ...[
+                          _buildLookupSection(_lookupResults),
+                          if (_lookupResults.isNotEmpty)
+                            SizedBox(height: AppSpacing.xl),
+                        ],
+
                         if (joonaPayUsers.isNotEmpty) ...[
                           _buildSectionHeader(
                             l10n.contacts_on_joonapay,
@@ -253,6 +322,59 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
     );
   }
 
+  Widget _buildLookupSection(List<SyncedContact> contacts) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
+
+    if (_isLookupLoading) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: AppSpacing.md),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: colors.gold,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            AppText(
+              _localizedText(
+                en: 'Searching Korido accounts',
+                fr: 'Recherche de comptes Korido',
+              ),
+              variant: AppTextVariant.bodySmall,
+              color: colors.textSecondary,
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (contacts.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(l10n.contacts_on_joonapay, contacts.length),
+        SizedBox(height: AppSpacing.sm),
+        ...contacts.map(
+          (contact) => ContactCard(
+            contact: contact,
+            onTap: () => _handleLookupContactTap(contact),
+            onSend: contact.phone.isNotEmpty
+                ? () => _handleSend(contact)
+                : null,
+          ),
+        ),
+      ],
+    );
+  }
+
   void _handleContactTap(SyncedContact contact) {
     if (contact.isKoridoUser) {
       // Navigate to send screen with pre-filled recipient
@@ -260,6 +382,23 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
     } else {
       _handleInvite(contact);
     }
+  }
+
+  void _handleLookupContactTap(SyncedContact contact) {
+    if (contact.phone.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _localizedText(
+              en: 'This Korido account is discoverable, but cannot be selected until a phone number is available.',
+              fr: 'Ce compte Korido est visible, mais ne peut pas être sélectionné sans numéro disponible.',
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+    _handleSend(contact);
   }
 
   void _handleSend(SyncedContact contact) {
@@ -281,6 +420,11 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
         builder: (context) => InviteSheet(contact: contact),
       ),
     );
+  }
+
+  String _localizedText({required String en, required String fr}) {
+    final locale = Localizations.localeOf(context).languageCode.toLowerCase();
+    return locale == 'fr' ? fr : en;
   }
 
   Future<void> _showContactsSettingsDialog(AppLocalizations l10n) async {
