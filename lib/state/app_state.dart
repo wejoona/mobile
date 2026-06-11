@@ -36,9 +36,16 @@ class WalletState {
 
   bool get isLoading =>
       status == WalletStatus.loading || status == WalletStatus.refreshing;
+  bool get isRefreshing => status == WalletStatus.refreshing;
   bool get hasError => status == WalletStatus.error;
   bool get isLoaded => status == WalletStatus.loaded;
   bool get hasWallet => walletId.isNotEmpty && status == WalletStatus.loaded;
+  bool get hasBalanceData =>
+      walletId.isNotEmpty ||
+      usdBalance != 0 ||
+      usdcBalance != 0 ||
+      pendingBalance != 0 ||
+      lastUpdated != null;
   bool get hasWalletAddress =>
       walletAddress != null && walletAddress!.isNotEmpty;
 
@@ -72,7 +79,7 @@ class WalletState {
       pendingBalance: pendingBalance ?? this.pendingBalance,
       error: error,
       lastUpdated: lastUpdated ?? this.lastUpdated,
-      isCached: isCached ?? false, // Default to false (fresh from server)
+      isCached: isCached ?? this.isCached,
     );
   }
 }

@@ -257,7 +257,7 @@ class _SessionExpiringOverlay extends StatelessWidget {
         : colors.infoBg;
 
     return Material(
-      color: Colors.black54,
+      color: Colors.black.withValues(alpha: colors.isDark ? 0.68 : 0.48),
       child: Center(
         child: Container(
           margin: const EdgeInsets.all(AppSpacing.xxl),
@@ -265,6 +265,16 @@ class _SessionExpiringOverlay extends StatelessWidget {
           decoration: BoxDecoration(
             color: colors.container,
             borderRadius: BorderRadius.circular(AppRadius.xl),
+            border: Border.all(color: colors.border),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(
+                  alpha: colors.isDark ? 0.38 : 0.12,
+                ),
+                blurRadius: 30,
+                offset: const Offset(0, 18),
+              ),
+            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -325,12 +335,14 @@ class _SessionExpiringOverlay extends StatelessWidget {
                     label: l10n.session_stayLoggedIn,
                     onPressed: onExtend,
                     variant: AppButtonVariant.primary,
+                    isFullWidth: true,
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   AppButton(
                     label: l10n.common_logout,
                     onPressed: onLogout,
                     variant: AppButtonVariant.secondary,
+                    isFullWidth: true,
                   ),
                 ],
               ),

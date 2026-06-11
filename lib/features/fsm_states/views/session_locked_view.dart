@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -27,11 +29,12 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
   bool _hasError = false;
   bool _biometricSupported = false;
   bool _biometricEnabled = false;
+  bool _isUnlocking = false;
 
   @override
   void initState() {
     super.initState();
-    _checkBiometric();
+    unawaited(_checkBiometric());
   }
 
   Future<void> _checkBiometric() async {
@@ -50,17 +53,34 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
   }
 
   void _unlock() {
-    ref.read(authProvider.notifier).unlock();
-    ref.read(sessionServiceProvider.notifier).unlockSession();
-    ref
-        .read(appFsmProvider.notifier)
-        .dispatch(const AppSessionEvent(SessionUnlock()));
-    if (mounted) context.go('/home');
+    if (_isUnlocking || !mounted) {
+      return;
+    }
+    setState(() => _isUnlocking = true);
+
+    Future.delayed(const Duration(milliseconds: 360), () {
+      if (!mounted) {
+        return;
+      }
+      final router = GoRouter.of(context);
+      ref.read(authProvider.notifier).unlock();
+      ref.read(sessionServiceProvider.notifier).unlockSession();
+      ref
+          .read(appFsmProvider.notifier)
+          .dispatch(const AppSessionEvent(SessionUnlock()));
+      router.go('/home');
+    });
   }
 
-  void _logout() {
-    ref.read(authProvider.notifier).logout();
-    ref.read(appFsmProvider.notifier).logout();
+  Future<void> _logout() async {
+    try {
+      await ref.read(authProvider.notifier).logout();
+    } on Object {
+      await ref.read(authProvider.notifier).clearLocalSession();
+    }
+    if (mounted) {
+      context.go('/login');
+    }
   }
 
   @override
@@ -68,6 +88,37 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
     final l10n = AppLocalizations.of(context)!;
     final pinState = ref.watch(pinStateProvider);
     final colors = context.colors;
+
+    if (_isUnlocking) {
+      return Scaffold(
+        backgroundColor: colors.canvas,
+        body: Center(
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0, end: 1),
+            duration: const Duration(milliseconds: 280),
+            curve: Curves.easeOutCubic,
+            builder: (context, value, child) => Opacity(
+              opacity: value,
+              child: Transform.scale(
+                scale: 0.9 + (0.1 * value),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.lock_open_rounded, size: 48, color: colors.gold),
+                    const SizedBox(height: AppSpacing.md),
+                    AppText(
+                      l10n.pin_unlocked,
+                      variant: AppTextVariant.titleMedium,
+                      color: colors.textPrimary,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -77,7 +128,7 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
         automaticallyImplyLeading: false,
         actions: [
           TextButton(
-            onPressed: _logout,
+            onPressed: () => unawaited(_logout()),
             child: AppText(
               l10n.common_logout,
               variant: AppTextVariant.bodyMedium,
@@ -195,7 +246,9 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
   }
 
   void _handleDigitPressed(int digit) {
-    if (_pin.length >= 6) return;
+    if (_pin.length >= 6) {
+      return;
+    }
 
     setState(() {
       _pin += digit.toString();
@@ -203,7 +256,7 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
     });
 
     if (_pin.length == 6) {
-      _verifyPin();
+      unawaited(_verifyPin());
     }
   }
 

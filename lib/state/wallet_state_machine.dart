@@ -162,11 +162,15 @@ class WalletStateMachine extends Notifier<WalletState> {
   Future<void> refresh() async {
     if (state.status == WalletStatus.refreshing) return;
 
+    final previousState = state;
     state = state.copyWith(status: WalletStatus.refreshing);
 
     try {
-      final response = await _service.getBalance();
+      final response = await _service.getBalance().timeout(
+        const Duration(seconds: 12),
+      );
 
+      if (!ref.mounted) return;
       _applyBalanceResponse(response);
     } on ApiException catch (e) {
       if (!ref.mounted) return;
@@ -180,16 +184,17 @@ class WalletStateMachine extends Notifier<WalletState> {
       } else {
         // Other errors: keep whatever balance we already had, just clear the
         // refreshing flag. Don't surface an error on a background refresh.
-        state = state.copyWith(status: WalletStatus.loaded, error: null);
+        state = previousState.hasBalanceData
+            ? previousState.copyWith(status: WalletStatus.loaded, error: null)
+            : state.copyWith(status: WalletStatus.error, error: e.message);
       }
     } catch (e) {
       if (!ref.mounted) return;
 
       // On refresh error, keep old data but update status
-      state = state.copyWith(
-        status: WalletStatus.loaded,
-        error: null, // Don't show error on refresh fail
-      );
+      state = previousState.hasBalanceData
+          ? previousState.copyWith(status: WalletStatus.loaded, error: null)
+          : state.copyWith(status: WalletStatus.error, error: e.toString());
     }
   }
 
