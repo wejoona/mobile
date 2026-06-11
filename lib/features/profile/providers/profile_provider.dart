@@ -4,7 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/user.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
-import 'package:usdc_wallet/services/user/user_service.dart' hide userServiceProvider;
+import 'package:usdc_wallet/services/user/user_service.dart'
+    hide userServiceProvider;
 import 'package:usdc_wallet/state/user_state_machine.dart';
 
 /// User profile state.
@@ -73,9 +74,11 @@ class ProfileNotifier extends Notifier<ProfileState> {
     state = state.copyWith(isUploading: true);
     try {
       final service = ref.read(userServiceProvider);
-      await service.uploadAvatar(file.path);
+      final result = await service.uploadAvatar(file.path);
+      _applyAvatarUploadResult(result);
       state = state.copyWith(isUploading: false, error: null);
       await loadProfile();
+      _applyAvatarUploadResult(result);
     } on ApiException catch (e) {
       state = state.copyWith(isUploading: false, error: _friendlyError(e));
     } catch (e) {
@@ -125,6 +128,35 @@ class ProfileNotifier extends Notifier<ProfileState> {
           clearAvatarThumb:
               profile.avatarThumb == null || profile.avatarThumb!.isEmpty,
         );
+  }
+
+  void _applyAvatarUploadResult(AvatarUploadResult result) {
+    final hasAvatarUrl =
+        result.avatarUrl != null && result.avatarUrl!.isNotEmpty;
+    final hasAvatarThumb =
+        result.avatarThumb != null && result.avatarThumb!.isNotEmpty;
+    if (!hasAvatarUrl && !hasAvatarThumb) {
+      return;
+    }
+
+    ref
+        .read(userStateMachineProvider.notifier)
+        .updateProfile(
+          avatarUrl: result.avatarUrl,
+          avatarThumb: result.avatarThumb,
+        );
+
+    final currentUser = state.user;
+    if (currentUser != null) {
+      state = state.copyWith(
+        user: currentUser.copyWith(
+          avatarUrl: hasAvatarUrl ? result.avatarUrl : currentUser.avatarUrl,
+          avatarBase64: hasAvatarThumb
+              ? result.avatarThumb
+              : currentUser.avatarBase64,
+        ),
+      );
+    }
   }
 
   String _friendlyError(ApiException error) {
