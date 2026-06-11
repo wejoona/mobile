@@ -1456,6 +1456,9 @@ void main() {
       final syncContactsBody = RegExp(
         r'Future<void> syncContacts\(\) async \{([\s\S]*?)\n  Future<void> syncIfNeeded',
       ).firstMatch(contactSyncProviderSource)!.group(1)!;
+      final requestPermissionBody = RegExp(
+        r'Future<bool> requestPermission\(\) async \{([\s\S]*?)\n  /// Sync device contacts',
+      ).firstMatch(contactSyncProviderSource)!.group(1)!;
 
       expect(getDeviceContactsBody, contains('Permission.contacts.status'));
       expect(getDeviceContactsBody, isNot(contains('requestPermission')));
@@ -1468,6 +1471,14 @@ void main() {
       expect(syncContactsBody, contains('syncPhoneHashes'));
       expect(syncContactsBody, isNot(contains('await requestPermission')));
       expect(syncContactsBody, isNot(contains('Permission.contacts.request')));
+      expect(
+        requestPermissionBody,
+        contains('contactsService.requestContactsPermission'),
+      );
+      expect(
+        requestPermissionBody,
+        isNot(contains('Permission.contacts.request')),
+      );
     });
 
     test('contact lookup accepts backend nested user envelope', () async {

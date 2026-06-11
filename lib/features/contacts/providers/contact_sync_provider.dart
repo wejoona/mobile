@@ -65,10 +65,14 @@ class ContactSyncNotifier extends Notifier<ContactSyncState> {
       error: null,
     );
     try {
-      final status = await Permission.contacts.request();
-      if (status.isGranted || status.isLimited) {
+      final contactsService = ref.read(contactsServiceProvider);
+      final granted = await contactsService.requestContactsPermission();
+      if (granted) {
         return true;
-      } else if (status.isPermanentlyDenied) {
+      }
+
+      final status = await Permission.contacts.status;
+      if (status.isPermanentlyDenied || status.isRestricted) {
         state = state.copyWith(
           status: ContactSyncStatus.permissionDenied,
           error: 'Permission permanently denied. Please enable in Settings.',
