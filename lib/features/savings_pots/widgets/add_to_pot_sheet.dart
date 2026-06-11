@@ -5,7 +5,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/pin_confirmation_sheet.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
-import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
+import 'package:usdc_wallet/features/savings_pots/providers/pot_actions_provider.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
@@ -211,13 +211,14 @@ class _AddToPotSheetState extends ConsumerState<AddToPotSheet> {
     setState(() => _isLoading = true);
     try {
       await ref
-          .read(savingsPotsActionsProvider)
-          .addToPot(
+          .read(potActionsProvider.notifier)
+          .deposit(
             widget.potId,
             amount,
             pinToken: pinToken!,
             idempotencyKey: idempotencyKey,
           );
+      await ref.read(walletStateMachineProvider.notifier).refresh();
 
       if (mounted) {
         Navigator.pop(context, true);
