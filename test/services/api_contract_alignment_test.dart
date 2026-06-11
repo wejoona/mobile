@@ -1657,5 +1657,34 @@ void main() {
       expect(users.single.phone, isEmpty);
       expect(users.single.isKoridoUser, isTrue);
     });
+
+    test('post-transaction refresh invalidates recipient lists', () {
+      final realtimeSource = File(
+        'lib/services/realtime/realtime_service.dart',
+      ).readAsStringSync();
+      final refreshAfterTransactionBody = RegExp(
+        r'void refreshAfterTransaction\(\) \{([\s\S]*?)\n  // ── WebSocket ──',
+      ).firstMatch(realtimeSource)!.group(1)!;
+      final invalidateRecipientProvidersBody = RegExp(
+        r'void _invalidateRecipientProviders\(\) \{([\s\S]*?)\n  \}',
+      ).firstMatch(realtimeSource)!.group(1)!;
+
+      expect(
+        refreshAfterTransactionBody,
+        contains('_invalidateRecipientProviders'),
+      );
+      expect(
+        invalidateRecipientProvidersBody,
+        contains('wallet_contacts.contactsProvider'),
+      );
+      expect(
+        invalidateRecipientProvidersBody,
+        contains('wallet_contacts.favoritesProvider'),
+      );
+      expect(
+        invalidateRecipientProvidersBody,
+        contains('wallet_contacts.recentsProvider'),
+      );
+    });
   });
 }

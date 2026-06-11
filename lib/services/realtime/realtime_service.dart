@@ -8,6 +8,8 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart';
+import 'package:usdc_wallet/features/wallet/providers/contacts_provider.dart'
+    as wallet_contacts;
 import 'package:usdc_wallet/state/fsm/index.dart';
 import 'package:usdc_wallet/state/transaction_state_machine.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
@@ -71,6 +73,7 @@ class RealtimeService {
       _ref.invalidate(transactionsProvider);
       _ref.invalidate(notificationsProvider);
       _ref.invalidate(unreadNotificationCountProvider);
+      _invalidateRecipientProviders();
       unawaited(_ref.read(walletStateMachineProvider.notifier).refresh());
       unawaited(_ref.read(transactionStateMachineProvider.notifier).refresh());
     } catch (_) {}
@@ -81,6 +84,7 @@ class RealtimeService {
     try {
       _ref.invalidate(walletBalanceProvider);
       _ref.invalidate(transactionsProvider);
+      _invalidateRecipientProviders();
       unawaited(_ref.read(walletStateMachineProvider.notifier).refresh());
       unawaited(_ref.read(transactionStateMachineProvider.notifier).refresh());
     } catch (_) {}
@@ -148,6 +152,7 @@ class RealtimeService {
         case 'transaction_new':
           _ref.invalidate(walletBalanceProvider);
           _ref.invalidate(transactionsProvider);
+          _invalidateRecipientProviders();
           unawaited(_ref.read(walletStateMachineProvider.notifier).refresh());
           unawaited(
             _ref.read(transactionStateMachineProvider.notifier).refresh(),
@@ -192,6 +197,12 @@ class RealtimeService {
   void _stopPolling() {
     _pollTimer?.cancel();
     _pollTimer = null;
+  }
+
+  void _invalidateRecipientProviders() {
+    _ref.invalidate(wallet_contacts.contactsProvider);
+    _ref.invalidate(wallet_contacts.favoritesProvider);
+    _ref.invalidate(wallet_contacts.recentsProvider);
   }
 
   void dispose() {
