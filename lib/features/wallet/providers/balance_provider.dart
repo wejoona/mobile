@@ -21,20 +21,25 @@ class WalletBalance {
 
   factory WalletBalance.fromJson(Map<String, dynamic> json) => WalletBalance(
     available:
-        (json['available'] as num?)?.toDouble() ??
         _amountFromString(json['availableDecimal']) ??
-        (json['balance'] as num?)?.toDouble() ??
+        _amountFromString(json['available_decimal']) ??
         _amountFromString(json['balanceDecimal']) ??
+        _amountFromString(json['balance_decimal']) ??
+        (json['available'] as num?)?.toDouble() ??
+        (json['balance'] as num?)?.toDouble() ??
         0,
     pending:
-        (json['pending'] as num?)?.toDouble() ??
         _amountFromString(json['pendingDecimal']) ??
+        _amountFromString(json['pending_decimal']) ??
+        (json['pending'] as num?)?.toDouble() ??
         0,
     total:
-        (json['total'] as num?)?.toDouble() ??
         _amountFromString(json['totalDecimal']) ??
-        (json['balance'] as num?)?.toDouble() ??
+        _amountFromString(json['total_decimal']) ??
         _amountFromString(json['balanceDecimal']) ??
+        _amountFromString(json['balance_decimal']) ??
+        (json['total'] as num?)?.toDouble() ??
+        (json['balance'] as num?)?.toDouble() ??
         0,
     currency: json['currency'] as String? ?? 'USDC',
     updatedAt:

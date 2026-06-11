@@ -71,9 +71,29 @@ class WalletBalance {
   factory WalletBalance.fromJson(Map<String, dynamic> json) {
     return WalletBalance(
       currency: json['currency'] as String? ?? 'USD',
-      available: _walletAmount(json, const ['available', 'balance']),
-      pending: _walletAmount(json, const ['pending', 'pendingBalance']),
-      total: _walletAmount(json, const ['total', 'balance', 'available']),
+      available: _walletAmount(json, const [
+        'availableDecimal',
+        'available_decimal',
+        'balanceDecimal',
+        'balance_decimal',
+        'available',
+        'balance',
+      ]),
+      pending: _walletAmount(json, const [
+        'pendingDecimal',
+        'pending_decimal',
+        'pending',
+        'pendingBalance',
+      ]),
+      total: _walletAmount(json, const [
+        'totalDecimal',
+        'total_decimal',
+        'balanceDecimal',
+        'balance_decimal',
+        'total',
+        'balance',
+        'available',
+      ]),
     );
   }
 }

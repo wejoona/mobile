@@ -384,14 +384,27 @@ class WalletBalanceResponse {
         payload['total'] != null) {
       // Create synthetic balance from single balance field
       final balance = _readAmount(payload, const [
+        'availableDecimal',
+        'available_decimal',
+        'balanceDecimal',
+        'balance_decimal',
         'available',
         'availableBalance',
         'balanceUsdc',
         'balance',
         'total',
       ]);
-      final pending = _readAmount(payload, const ['pending', 'pendingBalance']);
+      final pending = _readAmount(payload, const [
+        'pendingDecimal',
+        'pending_decimal',
+        'pending',
+        'pendingBalance',
+      ]);
       final total = _readAmount(payload, const [
+        'totalDecimal',
+        'total_decimal',
+        'balanceDecimal',
+        'balance_decimal',
         'total',
         'totalBalance',
         'balanceUsdc',
