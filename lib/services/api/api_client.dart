@@ -269,18 +269,10 @@ class AuthInterceptor extends Interceptor {
           try {
             final storage = _ref.read(secureStorageProvider);
             final newToken = await storage.read(key: StorageKeys.accessToken);
-            final options = err.requestOptions;
-            options.headers['Authorization'] = 'Bearer $newToken';
-
-            final dio = Dio(
-              BaseOptions(
-                baseUrl: ApiConfig.baseUrl,
-                connectTimeout: ApiConfig.connectTimeout,
-                receiveTimeout: ApiConfig.receiveTimeout,
-              ),
+            final response = await _retryWithAccessToken(
+              err.requestOptions,
+              newToken,
             );
-
-            final response = await dio.fetch(options);
             return handler.resolve(response);
           } catch (retryError) {
             // Retry failed, continue with original error
@@ -306,18 +298,10 @@ class AuthInterceptor extends Interceptor {
           final storage = _ref.read(secureStorageProvider);
           final newToken = await storage.read(key: StorageKeys.accessToken);
 
-          final options = err.requestOptions;
-          options.headers['Authorization'] = 'Bearer $newToken';
-
-          final dio = Dio(
-            BaseOptions(
-              baseUrl: ApiConfig.baseUrl,
-              connectTimeout: ApiConfig.connectTimeout,
-              receiveTimeout: ApiConfig.receiveTimeout,
-            ),
+          final response = await _retryWithAccessToken(
+            err.requestOptions,
+            newToken,
           );
-
-          final response = await dio.fetch(options);
           return handler.resolve(response);
         } catch (e) {
           return handler.next(err);
@@ -337,9 +321,13 @@ class AuthInterceptor extends Interceptor {
         // explicit logout clears the session.
         if (currentToken == null || currentToken == originalToken) {
           try {
-            _ref.read(appFsmProvider.notifier).dispatch(
-              const AppSessionEvent(SessionLock(reason: 'Token refresh failed')),
-            );
+            _ref
+                .read(appFsmProvider.notifier)
+                .dispatch(
+                  const AppSessionEvent(
+                    SessionLock(reason: 'Token refresh failed'),
+                  ),
+                );
           } catch (_) {
             // FSM might not be available in all contexts
           }
@@ -347,16 +335,10 @@ class AuthInterceptor extends Interceptor {
         // Otherwise, retry with the new token from the concurrent refresh.
         else {
           try {
-            final options = err.requestOptions;
-            options.headers['Authorization'] = 'Bearer $currentToken';
-            final dio = Dio(
-              BaseOptions(
-                baseUrl: ApiConfig.baseUrl,
-                connectTimeout: ApiConfig.connectTimeout,
-                receiveTimeout: ApiConfig.receiveTimeout,
-              ),
+            final response = await _retryWithAccessToken(
+              err.requestOptions,
+              currentToken,
             );
-            final response = await dio.fetch(options);
             return handler.resolve(response);
           } catch (e) {
             return handler.next(err);
@@ -366,6 +348,34 @@ class AuthInterceptor extends Interceptor {
     }
 
     handler.next(err);
+  }
+
+  Future<Response<dynamic>> _retryWithAccessToken(
+    RequestOptions original,
+    String? accessToken,
+  ) async {
+    if (accessToken == null || accessToken.isEmpty) {
+      throw StateError('Cannot retry request without an access token');
+    }
+
+    // `original` has already passed through request interceptors, so it carries
+    // enriched headers such as X-Device-Id, X-Risk-Score, idempotency keys, and
+    // any encrypted body produced before the 401/connection failure.
+    original.headers['Authorization'] = 'Bearer $accessToken';
+
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: ApiConfig.baseUrl,
+        connectTimeout: ApiConfig.connectTimeout,
+        receiveTimeout: ApiConfig.receiveTimeout,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ),
+    );
+
+    return dio.fetch<dynamic>(original);
   }
 
   Future<void> _invalidateLocalSession() async {
