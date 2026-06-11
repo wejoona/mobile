@@ -245,6 +245,33 @@ void main() {
       expect(notification.transactionId, 'txn_1');
     });
 
+    test('notification list accepts nested paginated envelopes', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'success': true,
+          'data': {
+            'items': [
+              {
+                'id': 'notif_nested',
+                'type': 'security_alert',
+                'title': 'New device',
+                'body': 'A new device signed in.',
+                'createdAt': '2026-06-04T10:00:00.000Z',
+                'readAt': null,
+              },
+            ],
+            'total': 1,
+          },
+        });
+      final service = NotificationsService(dio);
+
+      final notifications = await service.getNotifications();
+
+      expect(dio.requestHistory.single.path, '/notifications');
+      expect(notifications.single.id, 'notif_nested');
+      expect(notifications.single.isRead, isFalse);
+    });
+
     test('notification actions use deployed backend verbs', () async {
       final dio = MockDio()
         ..queueResponse({'success': true})
@@ -273,6 +300,18 @@ void main() {
       final request = dio.requestHistory.single;
       expect(request.path, '/notifications/unread-count');
       expect(count, 4);
+    });
+
+    test('notification unread count accepts alias and string counts', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'data': {'unread_count': '6'},
+        });
+      final service = NotificationsService(dio);
+
+      final count = await service.getUnreadCount();
+
+      expect(count, 6);
     });
 
     test(

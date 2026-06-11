@@ -16,23 +16,7 @@ class NotificationsService {
   Future<List<AppNotification>> getNotifications() async {
     try {
       final response = await _dio.get('/notifications');
-      final responseData = response.data;
-
-      // Handle different response formats
-      List<dynamic> data;
-      if (responseData is List) {
-        data = responseData;
-      } else if (responseData is Map<String, dynamic>) {
-        if (responseData.containsKey('data')) {
-          data = responseData['data'] as List<dynamic>? ?? [];
-        } else if (responseData.containsKey('notifications')) {
-          data = responseData['notifications'] as List<dynamic>? ?? [];
-        } else {
-          data = [];
-        }
-      } else {
-        data = [];
-      }
+      final data = _notificationItems(response.data);
 
       return data
           .map((e) => AppNotification.fromJson(e as Map<String, dynamic>))
@@ -50,12 +34,7 @@ class NotificationsService {
   Future<int> getUnreadCount() async {
     try {
       final response = await _dio.get('/notifications/unread-count');
-      final countData = response.data as Map<String, dynamic>?;
-      final data = countData?['data'];
-      if (data is Map<String, dynamic>) {
-        return data['count'] as int? ?? 0;
-      }
-      return countData?['count'] as int? ?? 0;
+      return _notificationCount(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -147,6 +126,87 @@ class NotificationsService {
 final notificationsServiceProvider = Provider<NotificationsService>((ref) {
   return NotificationsService(ref.watch(dioProvider));
 });
+
+List<dynamic> _notificationItems(Object? raw) {
+  if (raw is List) {
+    return raw;
+  }
+  if (raw is! Map) {
+    return const [];
+  }
+
+  final map = Map<String, dynamic>.from(raw);
+  final data = map['data'];
+  if (data is List) {
+    return data;
+  }
+  if (data is Map) {
+    final dataMap = Map<String, dynamic>.from(data);
+    return _listValue(dataMap, const ['notifications', 'items', 'data']);
+  }
+
+  return _listValue(map, const ['notifications', 'items', 'results']);
+}
+
+List<dynamic> _listValue(Map<String, dynamic> map, List<String> keys) {
+  for (final key in keys) {
+    final value = map[key];
+    if (value is List) {
+      return value;
+    }
+  }
+  return const [];
+}
+
+int _notificationCount(Object? raw) {
+  if (raw is num) {
+    return raw.toInt();
+  }
+  if (raw is String) {
+    return int.tryParse(raw) ?? 0;
+  }
+  if (raw is! Map) {
+    return 0;
+  }
+
+  final map = Map<String, dynamic>.from(raw);
+  final data = map['data'];
+  if (data is Map) {
+    final count = _intValue(Map<String, dynamic>.from(data), const [
+      'count',
+      'unreadCount',
+      'unread_count',
+      'total',
+    ]);
+    if (count != null) {
+      return count;
+    }
+  }
+
+  return _intValue(map, const [
+        'count',
+        'unreadCount',
+        'unread_count',
+        'total',
+      ]) ??
+      0;
+}
+
+int? _intValue(Map<String, dynamic> map, List<String> keys) {
+  for (final key in keys) {
+    final value = map[key];
+    if (value is num) {
+      return value.toInt();
+    }
+    if (value is String) {
+      final parsed = int.tryParse(value);
+      if (parsed != null) {
+        return parsed;
+      }
+    }
+  }
+  return null;
+}
 
 // ============================================
 // NOTIFICATION PREFERENCES
