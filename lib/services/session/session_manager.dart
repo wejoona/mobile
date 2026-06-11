@@ -25,6 +25,8 @@ class SessionManager extends ConsumerStatefulWidget {
 
 class _SessionManagerState extends ConsumerState<SessionManager>
     with WidgetsBindingObserver {
+  bool _isResolvingSessionWarning = false;
+
   @override
   void initState() {
     super.initState();
@@ -78,6 +80,13 @@ class _SessionManagerState extends ConsumerState<SessionManager>
   @override
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionServiceProvider);
+    if (!sessionState.isExpiring && _isResolvingSessionWarning) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !ref.read(sessionServiceProvider).isExpiring) {
+          setState(() => _isResolvingSessionWarning = false);
+        }
+      });
+    }
 
     // Listen for session state changes - delay handling to ensure Navigator is ready
     ref.listen<SessionState>(sessionServiceProvider, (previous, next) {
@@ -111,13 +120,19 @@ class _SessionManagerState extends ConsumerState<SessionManager>
             widget.child,
 
             // Session expiring warning overlay (only on authenticated screens, not PIN/login)
-            if (sessionState.isExpiring && _shouldShowExpiringOverlay(context))
+            if (sessionState.isExpiring &&
+                !_isResolvingSessionWarning &&
+                _shouldShowExpiringOverlay(context))
               _SessionExpiringOverlay(
                 remainingSeconds: sessionState.remainingSeconds ?? 0,
                 onExtend: () {
+                  setState(() => _isResolvingSessionWarning = false);
                   ref.read(sessionServiceProvider.notifier).extendSession();
                 },
-                onLogout: () => unawaited(_logoutFromSessionWarning()),
+                onLogout: () {
+                  setState(() => _isResolvingSessionWarning = true);
+                  unawaited(_logoutFromSessionWarning());
+                },
               ),
           ],
         ),
@@ -163,7 +178,9 @@ class _SessionManagerState extends ConsumerState<SessionManager>
       }
     }
 
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     context.go('/login');
   }
 
