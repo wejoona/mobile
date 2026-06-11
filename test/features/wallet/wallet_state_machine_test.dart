@@ -19,6 +19,12 @@ class _NoopAppFsmNotifier extends AppFsmNotifier {
 
 void main() {
   group('WalletStateMachine', () {
+    test('availableBalance exposes the spendable USDC balance', () {
+      const state = WalletState(usdBalance: 0, usdcBalance: 42.25);
+
+      expect(state.availableBalance, 42.25);
+    });
+
     test(
       'creates a wallet automatically when fresh users have no wallet',
       () async {

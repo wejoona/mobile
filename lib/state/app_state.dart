@@ -32,7 +32,7 @@ class WalletState {
   });
 
   double get totalBalance => usdBalance + usdcBalance;
-  double get availableBalance => usdBalance;
+  double get availableBalance => usdcBalance;
 
   bool get isLoading =>
       status == WalletStatus.loading || status == WalletStatus.refreshing;

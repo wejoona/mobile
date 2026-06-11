@@ -378,6 +378,9 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     final primaryBalance = walletState.usdcBalance;
     final pendingBalance = walletState.pendingBalance;
     final totalBalance = primaryBalance + pendingBalance;
+    final showInitialBalanceLoading =
+        walletState.status == WalletStatus.loading &&
+        !walletState.hasBalanceData;
 
     final currencyState = ref.watch(currencyProvider);
     final currencyService = ref.read(currencyServiceProvider);
@@ -548,7 +551,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                     ],
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  if (walletState.isLoading)
+                  if (showInitialBalanceLoading)
                     const AppSkeleton(width: 210, height: 52)
                   else if (_isBalanceHidden)
                     Align(
@@ -576,7 +579,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                       },
                     ),
                   const SizedBox(height: AppSpacing.xs),
-                  if (!walletState.isLoading &&
+                  if (!showInitialBalanceLoading &&
                       (_isBalanceHidden || referenceAmount != null))
                     AppText(
                       _isBalanceHidden
@@ -586,7 +589,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                  if (!walletState.isLoading && !_isBalanceHidden) ...[
+                  if (!showInitialBalanceLoading && !_isBalanceHidden) ...[
                     const SizedBox(height: AppSpacing.xl),
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -634,7 +637,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                       ),
                     ),
                   ],
-                  if (!walletState.isLoading) ...[
+                  if (!showInitialBalanceLoading) ...[
                     const SizedBox(height: AppSpacing.md),
                     Wrap(
                       spacing: AppSpacing.md,
