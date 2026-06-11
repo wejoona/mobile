@@ -1,16 +1,13 @@
 import 'dart:async';
+import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/transactions/models/filtered_transactions_state.dart';
 import 'package:usdc_wallet/domain/entities/transaction.dart';
 import 'package:usdc_wallet/features/insights/models/top_recipient.dart';
 
-/// TECH DEBT: Stub providers — wire to real implementations as features complete.
+/// Compatibility providers used by older feature views.
 ///
-/// Each provider here is a placeholder. When implementing the real feature:
-/// 1. Create the real provider in the feature's providers/ directory
-/// 2. Update imports in consuming views
-/// 3. Remove the stub from this file
-///
-/// Remaining stubs: 7 (as of 2026-02-20)
+/// New features should live in their own feature folders. While these adapters
+/// remain, they must still call real APIs and avoid fake/demo values in live mode.
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -154,33 +151,195 @@ final exchangeRateProvider = FutureProvider.autoDispose<ExchangeRate>((
   }
 });
 
-/// Spending trend provider (insights)
+/// Spending trend provider (insights) derived from real transaction history.
 final spendingTrendProvider =
     FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
-      return [];
+      final period = ref.watch(selectedPeriodProvider);
+      final items = await _fetchInsightTransactions(ref, period);
+      final start = _periodStart(period);
+      final days = DateTime.now().difference(start).inDays + 1;
+      final buckets = <DateTime, double>{
+        for (var i = 0; i < days; i++)
+          DateTime(start.year, start.month, start.day + i): 0,
+      };
+
+      for (final item in items) {
+        if (!_isSpend(item) || item.createdAt.isBefore(start)) continue;
+        final day = DateTime(
+          item.createdAt.year,
+          item.createdAt.month,
+          item.createdAt.day,
+        );
+        buckets[day] = (buckets[day] ?? 0) + item.amount.abs();
+      }
+
+      return buckets.entries
+          .map(
+            (entry) => {
+              'date': entry.key.toIso8601String(),
+              'amount': entry.value,
+            },
+          )
+          .toList();
     });
 
 /// Selected period for insights
-final selectedPeriodProvider = Provider<String>((ref) => "month");
+final selectedPeriodProvider = StateProvider<String>((ref) => 'month');
 
-/// Spending by category provider
+/// Spending by category provider from transaction types.
 final spendingByCategoryProvider =
     FutureProvider.autoDispose<Map<String, double>>((ref) async {
-      return {};
+      final period = ref.watch(selectedPeriodProvider);
+      final items = await _fetchInsightTransactions(ref, period);
+      final start = _periodStart(period);
+      final categories = <String, double>{};
+
+      for (final item in items) {
+        if (!_isSpend(item) || item.createdAt.isBefore(start)) continue;
+        final category = _categoryForTransaction(item);
+        categories[category] = (categories[category] ?? 0) + item.amount.abs();
+      }
+
+      return categories;
     });
 
-/// Spending summary provider
+/// Spending summary provider backed by GET /wallet/transactions/stats.
 final spendingSummaryProvider =
     FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
-      return {'total': 0.0, 'average': 0.0, 'count': 0};
+      final dio = ref.watch(dioProvider);
+      final response = await dio.get('/wallet/transactions/stats');
+      final stats = _asStringMap(response.data);
+
+      final totalWithdrawn = _amount(stats, 'totalWithdrawn');
+      final totalTransferred = _amount(stats, 'totalTransferred');
+      final totalReceived = _amount(stats, 'totalDeposited');
+      final totalSpent = totalWithdrawn + totalTransferred;
+
+      return {
+        'totalSpent': totalSpent,
+        'totalReceived': totalReceived,
+        'netFlow': totalReceived - totalSpent,
+        'count': _intAmount(stats, 'totalTransactions'),
+        'currency': stats['currency'] as String? ?? 'USDC',
+        'percentageChange': 0.0,
+        'isIncrease': false,
+      };
     });
 
 /// Top recipients provider
 final topRecipientsProvider = FutureProvider.autoDispose<List<TopRecipient>>((
   ref,
 ) async {
-  return [];
+  final period = ref.watch(selectedPeriodProvider);
+  final items = await _fetchInsightTransactions(ref, period);
+  final start = _periodStart(period);
+  final totals =
+      <String, ({String name, String? phone, double total, int count})>{};
+
+  for (final item in items) {
+    if (!_isSpend(item) || item.createdAt.isBefore(start)) continue;
+    final phone = item.recipientPhone;
+    final name = phone?.trim().isNotEmpty == true
+        ? phone!.trim()
+        : item.recipientAddress?.trim().isNotEmpty == true
+        ? item.recipientAddress!.trim()
+        : 'External recipient';
+    final id = name.toLowerCase();
+    final existing = totals[id];
+    totals[id] = (
+      name: existing?.name ?? name,
+      phone: existing?.phone ?? phone,
+      total: (existing?.total ?? 0) + item.amount.abs(),
+      count: (existing?.count ?? 0) + 1,
+    );
+  }
+
+  final grandTotal = totals.values.fold<double>(
+    0,
+    (sum, recipient) => sum + recipient.total,
+  );
+  final entries = totals.entries.toList()
+    ..sort((a, b) => b.value.total.compareTo(a.value.total));
+
+  return entries
+      .map(
+        (entry) => TopRecipient(
+          id: entry.key,
+          name: entry.value.name,
+          phoneNumber: entry.value.phone,
+          totalSent: entry.value.total,
+          percentage: grandTotal == 0
+              ? 0
+              : (entry.value.total / grandTotal) * 100,
+          transactionCount: entry.value.count,
+        ),
+      )
+      .toList();
 });
+
+Future<List<Transaction>> _fetchInsightTransactions(
+  Ref ref,
+  String period,
+) async {
+  final dio = ref.watch(dioProvider);
+  final response = await dio.get(
+    '/wallet/transactions',
+    queryParameters: {
+      'offset': 0,
+      'limit': 100,
+      'startDate': _periodStart(period).toIso8601String(),
+      'sortBy': 'createdAt',
+      'sortOrder': 'DESC',
+    },
+  );
+  return TransactionPage.fromJson(_asStringMap(response.data)).transactions;
+}
+
+DateTime _periodStart(String period) {
+  final now = DateTime.now();
+  final days = switch (period) {
+    'week' => 6,
+    'quarter' => 89,
+    'year' => 364,
+    _ => 29,
+  };
+  final start = now.subtract(Duration(days: days));
+  return DateTime(start.year, start.month, start.day);
+}
+
+bool _isSpend(Transaction item) =>
+    item.isDebit ||
+    item.type == TransactionType.withdrawal ||
+    item.type == TransactionType.transferExternal;
+
+String _categoryForTransaction(Transaction item) {
+  switch (item.type) {
+    case TransactionType.withdrawal:
+      return 'Withdrawals';
+    case TransactionType.transferExternal:
+      return 'External transfers';
+    case TransactionType.transferInternal:
+      return 'Transfers';
+    case TransactionType.deposit:
+      return 'Other spending';
+  }
+}
+
+double _amount(Map<String, dynamic> json, String key) {
+  final decimal = json['${key}Decimal'];
+  if (decimal is String) return double.tryParse(decimal) ?? 0;
+  final value = json[key];
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value) ?? 0;
+  return 0;
+}
+
+int _intAmount(Map<String, dynamic> json, String key) {
+  final value = json[key];
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value) ?? 0;
+  return 0;
+}
 
 /// Notifications notifier provider — wired to GET /notifications.
 final notificationsNotifierProvider = FutureProvider.autoDispose<List<dynamic>>(
