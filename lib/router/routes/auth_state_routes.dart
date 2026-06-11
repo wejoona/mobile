@@ -13,8 +13,8 @@ import 'package:usdc_wallet/features/onboarding/views/profile_complete_view.dart
 import 'package:usdc_wallet/features/onboarding/views/profile_setup_view.dart';
 import 'package:usdc_wallet/features/pin/views/pin_screen.dart';
 import 'package:usdc_wallet/features/splash/views/splash_view.dart';
+import 'package:usdc_wallet/features/wallet/views/create_wallet_view.dart';
 import 'package:usdc_wallet/router/page_transitions.dart';
-import 'package:usdc_wallet/router/widgets/placeholder_pages.dart';
 
 List<RouteBase> authStateRoutes() => [
   // Splash Screen (no transition)
@@ -196,11 +196,7 @@ List<RouteBase> authStateRoutes() => [
     path: '/create-wallet',
     pageBuilder: (context, state) => AppPageTransitions.fade(
       state: state,
-      child: const FsmStatePlaceholder(
-        title: 'Create Wallet',
-        message: 'You need to create a wallet to continue.',
-        actionLabel: 'Create Wallet',
-      ),
+      child: const CreateWalletView(),
     ),
   ),
 ];
