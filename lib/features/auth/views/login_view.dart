@@ -66,7 +66,9 @@ class _LoginViewState extends ConsumerState<LoginView>
     final storage = ref.read(secureStorageProvider);
 
     // Pre-fill remembered phone number
-    final rememberedPhone = await storage.read(key: StorageKeys.rememberedPhone);
+    final rememberedPhone = await storage.read(
+      key: StorageKeys.rememberedPhone,
+    );
     if (rememberedPhone != null && rememberedPhone.isNotEmpty && mounted) {
       _phoneController.text = rememberedPhone;
     }
@@ -392,11 +394,12 @@ class _LoginViewState extends ConsumerState<LoginView>
                     ),
                   ),
 
-                  const SizedBox(height: AppSpacing.xxxl),
-
-                  // Legal
-                  _buildFooter(colors),
-                  const SizedBox(height: AppSpacing.xl),
+                  if (_isRegistering) ...[
+                    const SizedBox(height: AppSpacing.xxxl),
+                    _buildFooter(colors),
+                    const SizedBox(height: AppSpacing.xl),
+                  ] else
+                    const SizedBox(height: AppSpacing.xl),
                 ],
               ),
             ),
@@ -587,17 +590,17 @@ class _LoginViewState extends ConsumerState<LoginView>
 
   Widget _buildFooter(ThemeColors colors) {
     final l10n = AppLocalizations.of(context)!;
+    if (!_isRegistering) return const SizedBox.shrink();
+
     return Column(
       children: [
-        if (_isRegistering) ...[
-          AppText(
-            l10n.auth_termsPrompt,
-            variant: AppTextVariant.bodySmall,
-            color: colors.textTertiary,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 4),
-        ],
+        AppText(
+          l10n.auth_termsPrompt,
+          variant: AppTextVariant.bodySmall,
+          color: colors.textTertiary,
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 4),
         Wrap(
           alignment: WrapAlignment.center,
           children: [
