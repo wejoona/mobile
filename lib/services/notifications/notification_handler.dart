@@ -16,13 +16,11 @@ import 'package:usdc_wallet/router/app_router.dart';
 class NotificationHandler extends ConsumerStatefulWidget {
   final Widget child;
 
-  const NotificationHandler({
-    required this.child,
-    super.key,
-  });
+  const NotificationHandler({required this.child, super.key});
 
   @override
-  ConsumerState<NotificationHandler> createState() => _NotificationHandlerState();
+  ConsumerState<NotificationHandler> createState() =>
+      _NotificationHandlerState();
 }
 
 class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
@@ -76,54 +74,8 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
 
   /// Handle navigation based on notification data
   void _handleNavigation(Map<String, dynamic> data) {
-    final type = data['type'] as String?;
-    final action = data['action'] as String?;
-    final transactionId = data['transactionId'] as String?;
     final router = ref.read(routerProvider);
-
-    switch (type) {
-      case 'transaction':
-        if (transactionId != null) {
-          router.push('/transactions/$transactionId');
-        } else {
-          router.push('/transactions');
-        }
-        break;
-
-      case 'security':
-        switch (action) {
-          case 'new_device_login':
-            router.push('/settings/security/devices');
-            break;
-          case 'large_transaction':
-          case 'address_whitelisted':
-            router.push('/settings/security');
-            break;
-          default:
-            router.push('/settings/security');
-        }
-        break;
-
-      case 'kyc':
-        switch (action) {
-          case 'approved':
-          case 'rejected':
-          case 'pending':
-            router.push('/kyc/status');
-            break;
-          default:
-            router.push('/kyc');
-        }
-        break;
-
-      case 'balance':
-        router.push('/wallet');
-        break;
-
-      default:
-        // Default to notifications list
-        router.push('/notifications');
-    }
+    router.push(routeForNotificationData(data));
   }
 
   @override
@@ -134,3 +86,36 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
 
 /// Provider for notification handler state
 final notificationHandlerInitializedProvider = Provider<bool>((ref) => false);
+
+String routeForNotificationData(Map<String, dynamic> data) {
+  final type = data['type'] as String?;
+  final action = data['action'] as String?;
+  final transactionId = data['transactionId'] as String?;
+
+  switch (type) {
+    case 'transaction':
+      if (transactionId != null && transactionId.isNotEmpty) {
+        return '/transactions/$transactionId';
+      }
+      return '/transactions';
+
+    case 'security':
+      switch (action) {
+        case 'new_device_login':
+          return '/settings/devices';
+        case 'large_transaction':
+        case 'address_whitelisted':
+        default:
+          return '/settings/security';
+      }
+
+    case 'kyc':
+      return '/settings/kyc';
+
+    case 'balance':
+      return '/home';
+
+    default:
+      return '/notifications';
+  }
+}

@@ -175,7 +175,7 @@ class RichNotificationHelper {
         actions.add(
           RichNotificationAction(
             label: 'View Addresses',
-            route: '/settings/security/addresses',
+            route: '/settings/security',
           ),
         );
         break;

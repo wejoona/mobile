@@ -5,7 +5,9 @@ import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart';
 import 'package:usdc_wallet/features/notifications/repositories/notifications_repository.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/notifications/notification_handler.dart';
 import 'package:usdc_wallet/services/notifications/notifications_service.dart';
+import 'package:usdc_wallet/services/notifications/rich_notification_helper.dart';
 
 import '../../helpers/test_utils.dart';
 
@@ -92,6 +94,42 @@ void main() {
     expect(securityNotification.navigationRoute, '/settings/security');
     expect(safeDeepLink.navigationRoute, '/transactions/txn_safe');
     expect(externalLink.navigationRoute, isNull);
+  });
+
+  test('push notification tap routes point to live app screens', () {
+    expect(
+      routeForNotificationData({
+        'type': 'transaction',
+        'transactionId': 'txn_123',
+      }),
+      '/transactions/txn_123',
+    );
+    expect(
+      routeForNotificationData({
+        'type': 'security',
+        'action': 'new_device_login',
+      }),
+      '/settings/devices',
+    );
+    expect(
+      routeForNotificationData({'type': 'kyc', 'action': 'approved'}),
+      '/settings/kyc',
+    );
+    expect(routeForNotificationData({'type': 'balance'}), '/home');
+  });
+
+  test('rich notification quick actions avoid unwired routes', () {
+    final rich = RichNotificationHelper.format(
+      AppNotification(
+        id: 'notif-address',
+        title: 'Address approved',
+        body: 'Your address was added.',
+        type: NotificationType.addressWhitelisted,
+        createdAt: DateTime.utc(2026, 6, 11),
+      ),
+    );
+
+    expect(rich.actions.single.route, '/settings/security');
   });
 
   test('notification actions use live PUT routes', () async {
