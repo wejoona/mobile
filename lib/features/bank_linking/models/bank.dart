@@ -56,10 +56,11 @@ class Bank {
     return Bank(
       code: json['code'] as String,
       name: json['name'] as String,
-      logoUrl: json['logo_url'] as String,
+      logoUrl: json['logo_url'] as String? ?? json['logoUrl'] as String? ?? '',
       country: json['country'] as String,
       isSupported: json['is_supported'] as bool? ?? true,
-      verificationMethods: (json['verification_methods'] as List?)
+      verificationMethods:
+          (json['verification_methods'] as List?)
               ?.map((m) => BankVerificationMethod.fromString(m as String))
               .toList() ??
           [BankVerificationMethod.otp],
@@ -69,14 +70,13 @@ class Bank {
   }
 
   Map<String, dynamic> toJson() => {
-        'code': code,
-        'name': name,
-        'logo_url': logoUrl,
-        'country': country,
-        'is_supported': isSupported,
-        'verification_methods':
-            verificationMethods.map((m) => m.value).toList(),
-        'supports_balance_check': supportsBalanceCheck,
-        'supports_direct_debit': supportsDirectDebit,
-      };
+    'code': code,
+    'name': name,
+    'logo_url': logoUrl,
+    'country': country,
+    'is_supported': isSupported,
+    'verification_methods': verificationMethods.map((m) => m.value).toList(),
+    'supports_balance_check': supportsBalanceCheck,
+    'supports_direct_debit': supportsDirectDebit,
+  };
 }

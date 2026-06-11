@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/services/service_providers.dart';
 import 'package:usdc_wallet/config/west_african_banks.dart';
+import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/features/bank_linking/providers/bank_accounts_provider.dart';
+import 'package:usdc_wallet/services/service_providers.dart';
+
 typedef WestAfricanBank = BankInfo;
 
 /// Link bank account flow state.
@@ -13,9 +15,23 @@ class LinkBankState {
   final String? accountName;
   final bool isComplete;
 
-  const LinkBankState({this.isLoading = false, this.error, this.selectedBank, this.accountNumber, this.accountName, this.isComplete = false});
+  const LinkBankState({
+    this.isLoading = false,
+    this.error,
+    this.selectedBank,
+    this.accountNumber,
+    this.accountName,
+    this.isComplete = false,
+  });
 
-  LinkBankState copyWith({bool? isLoading, String? error, WestAfricanBank? selectedBank, String? accountNumber, String? accountName, bool? isComplete}) => LinkBankState(
+  LinkBankState copyWith({
+    bool? isLoading,
+    String? error,
+    WestAfricanBank? selectedBank,
+    String? accountNumber,
+    String? accountName,
+    bool? isComplete,
+  }) => LinkBankState(
     isLoading: isLoading ?? this.isLoading,
     error: error,
     selectedBank: selectedBank ?? this.selectedBank,
@@ -30,8 +46,10 @@ class LinkBankNotifier extends Notifier<LinkBankState> {
   @override
   LinkBankState build() => const LinkBankState();
 
-  void selectBank(WestAfricanBank bank) => state = state.copyWith(selectedBank: bank);
-  void setAccountNumber(String number) => state = state.copyWith(accountNumber: number);
+  void selectBank(WestAfricanBank bank) =>
+      state = state.copyWith(selectedBank: bank);
+  void setAccountNumber(String number) =>
+      state = state.copyWith(accountNumber: number);
   void setAccountName(String name) => state = state.copyWith(accountName: name);
 
   Future<void> link() async {
@@ -43,7 +61,7 @@ class LinkBankNotifier extends Notifier<LinkBankState> {
         bankCode: state.selectedBank!.swiftCode ?? state.selectedBank!.code,
         accountNumber: state.accountNumber!,
         accountHolderName: state.accountName ?? '',
-        countryCode: 'CI',
+        countryCode: ref.read(selectedCountryProvider).code,
       );
       state = state.copyWith(isLoading: false, isComplete: true);
       ref.invalidate(bankAccountsProvider);
@@ -55,4 +73,6 @@ class LinkBankNotifier extends Notifier<LinkBankState> {
   void reset() => state = const LinkBankState();
 }
 
-final linkBankProvider = NotifierProvider<LinkBankNotifier, LinkBankState>(LinkBankNotifier.new);
+final linkBankProvider = NotifierProvider<LinkBankNotifier, LinkBankState>(
+  LinkBankNotifier.new,
+);

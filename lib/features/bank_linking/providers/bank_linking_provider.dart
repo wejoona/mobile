@@ -3,9 +3,10 @@ library;
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/features/bank_linking/models/bank.dart';
 import 'package:usdc_wallet/features/bank_linking/models/linked_bank_account.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 // State
 class BankLinkingState {
@@ -56,13 +57,16 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
   Dio get _dio => ref.read(dioProvider);
 
   /// Load available banks
-  /// GET /banks?country=CI
-  Future<void> loadBanks() async {
+  /// GET /banks with the selected country query.
+  Future<void> loadBanks({String? countryCode}) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final response = await _dio.get('/banks', queryParameters: {
-        'country': 'CI',
-      });
+      final country = (countryCode ?? ref.read(selectedCountryProvider).code)
+          .toUpperCase();
+      final response = await _dio.get(
+        '/banks',
+        queryParameters: {'country': country},
+      );
 
       final data = response.data as Map<String, dynamic>;
       final banksJson = data['banks'] as List;
@@ -70,20 +74,14 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
           .map((json) => Bank.fromJson(json as Map<String, dynamic>))
           .toList();
 
-      state = state.copyWith(
-        isLoading: false,
-        availableBanks: banks,
-      );
+      state = state.copyWith(isLoading: false, availableBanks: banks);
     } on DioException catch (e) {
       state = state.copyWith(
         isLoading: false,
         error: ApiException.fromDioError(e).message,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -97,23 +95,19 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
       final data = response.data as Map<String, dynamic>;
       final accountsJson = data['accounts'] as List;
       final accounts = accountsJson
-          .map((json) => LinkedBankAccount.fromJson(json as Map<String, dynamic>))
+          .map(
+            (json) => LinkedBankAccount.fromJson(json as Map<String, dynamic>),
+          )
           .toList();
 
-      state = state.copyWith(
-        isLoading: false,
-        linkedAccounts: accounts,
-      );
+      state = state.copyWith(isLoading: false, linkedAccounts: accounts);
     } on DioException catch (e) {
       state = state.copyWith(
         isLoading: false,
         error: ApiException.fromDioError(e).message,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -132,20 +126,20 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
 
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final response = await _dio.post('/bank-accounts', data: {
-        'bank_code': state.selectedBank!.code,
-        'account_number': accountNumber,
-        'account_holder_name': accountHolderName,
-        'country_code': state.selectedBank!.country,
-      });
+      final response = await _dio.post(
+        '/bank-accounts',
+        data: {
+          'bank_code': state.selectedBank!.code,
+          'account_number': accountNumber,
+          'account_holder_name': accountHolderName,
+          'country_code': state.selectedBank!.country,
+        },
+      );
 
       final linkData = response.data as Map<String, dynamic>;
       final accountId = linkData['id'] as String?;
 
-      state = state.copyWith(
-        isLoading: false,
-        pendingAccountId: accountId,
-      );
+      state = state.copyWith(isLoading: false, pendingAccountId: accountId);
 
       return true;
     } on DioException catch (e) {
@@ -155,10 +149,7 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
       );
       return false;
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
       return false;
     }
   }
@@ -178,10 +169,7 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
       // Reload linked accounts to get updated list
       await loadLinkedAccounts();
 
-      state = state.copyWith(
-        isLoading: false,
-        pendingAccountId: null,
-      );
+      state = state.copyWith(isLoading: false, pendingAccountId: null);
 
       return true;
     } on DioException catch (e) {
@@ -191,10 +179,7 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
       );
       return false;
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
       return false;
     }
   }
@@ -211,10 +196,7 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
           .where((account) => account.id != accountId)
           .toList();
 
-      state = state.copyWith(
-        isLoading: false,
-        linkedAccounts: updated,
-      );
+      state = state.copyWith(isLoading: false, linkedAccounts: updated);
 
       return true;
     } on DioException catch (e) {
@@ -224,10 +206,7 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
       );
       return false;
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
       return false;
     }
   }
@@ -244,10 +223,7 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
         return account.copyWith(isPrimary: account.id == accountId);
       }).toList();
 
-      state = state.copyWith(
-        isLoading: false,
-        linkedAccounts: updated,
-      );
+      state = state.copyWith(isLoading: false, linkedAccounts: updated);
 
       return true;
     } on DioException catch (e) {
@@ -257,10 +233,7 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
       );
       return false;
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
       return false;
     }
   }
@@ -274,5 +247,5 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
 // Provider
 final bankLinkingProvider =
     NotifierProvider<BankLinkingNotifier, BankLinkingState>(
-  BankLinkingNotifier.new,
-);
+      BankLinkingNotifier.new,
+    );
