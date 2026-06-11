@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Merchant Service - handles merchant-related API calls
@@ -21,17 +22,20 @@ class MerchantService {
     String? webhookUrl,
   }) async {
     try {
-      final response = await _dio.post('/merchants/register', data: {
-        'businessName': businessName,
-        if (displayName != null) 'displayName': displayName,
-        'category': category,
-        'country': country,
-        if (businessAddress != null) 'businessAddress': businessAddress,
-        if (businessPhone != null) 'businessPhone': businessPhone,
-        if (businessEmail != null) 'businessEmail': businessEmail,
-        if (taxId != null) 'taxId': taxId,
-        if (webhookUrl != null) 'webhookUrl': webhookUrl,
-      });
+      final response = await _dio.post(
+        '/merchants/register',
+        data: {
+          'businessName': businessName,
+          if (displayName != null) 'displayName': displayName,
+          'category': category,
+          'country': country,
+          if (businessAddress != null) 'businessAddress': businessAddress,
+          if (businessPhone != null) 'businessPhone': businessPhone,
+          if (businessEmail != null) 'businessEmail': businessEmail,
+          if (taxId != null) 'taxId': taxId,
+          if (webhookUrl != null) 'webhookUrl': webhookUrl,
+        },
+      );
       return MerchantResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -71,9 +75,10 @@ class MerchantService {
   /// Decode QR code data
   Future<QrDecodeResponse> decodeQr(String qrData) async {
     try {
-      final response = await _dio.post('/merchants/decode-qr', data: {
-        'qrData': qrData,
-      });
+      final response = await _dio.post(
+        '/merchants/decode-qr',
+        data: {'qrData': qrData},
+      );
       return QrDecodeResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -109,13 +114,21 @@ class MerchantService {
   /// Process payment (pay merchant)
   Future<PaymentResponse> processPayment({
     required String qrData,
+    required String pinToken,
+    String? idempotencyKey,
     double? amount,
   }) async {
     try {
-      final response = await _dio.post('/merchants/pay', data: {
-        'qrData': qrData,
-        if (amount != null) 'amount': amount,
-      });
+      final response = await _dio.post(
+        '/merchants/pay',
+        data: {'qrData': qrData, if (amount != null) 'amount': amount},
+        options: Options(
+          headers: transactionHeaders(
+            pinToken: pinToken,
+            idempotencyKey: idempotencyKey,
+          ),
+        ),
+      );
       return PaymentResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -131,10 +144,7 @@ class MerchantService {
     try {
       final response = await _dio.get(
         '/merchants/$merchantId/transactions',
-        queryParameters: {
-          'limit': limit,
-          'offset': offset,
-        },
+        queryParameters: {'limit': limit, 'offset': offset},
       );
       return MerchantTransactionsResponse.fromJson(response.data);
     } on DioException catch (e) {
@@ -301,7 +311,9 @@ class QrDecodeResponse {
       isVerified: json['isVerified'] as bool,
       logoUrl: json['logoUrl'] as String?,
       qrType: json['qrType'] as String,
-      amount: json['amount'] != null ? (json['amount'] as num).toDouble() : null,
+      amount: json['amount'] != null
+          ? (json['amount'] as num).toDouble()
+          : null,
       requestId: json['requestId'] as String?,
     );
   }
@@ -580,7 +592,8 @@ class MerchantAnalyticsResponse {
       totalTransactions: json['totalTransactions'] as int,
       totalVolume: (json['totalVolume'] as num).toDouble(),
       totalFees: (json['totalFees'] as num).toDouble(),
-      averageTransactionSize: (json['averageTransactionSize'] as num).toDouble(),
+      averageTransactionSize: (json['averageTransactionSize'] as num)
+          .toDouble(),
       uniqueCustomers: json['uniqueCustomers'] as int,
       currency: json['currency'] as String,
       topHours: hoursList

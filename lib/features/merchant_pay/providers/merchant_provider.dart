@@ -10,7 +10,9 @@ final merchantProfileProvider = FutureProvider<MerchantResponse?>((ref) async {
   final link = ref.keepAlive();
 
   // Auto-invalidate after 5 minutes
-  final timer = Timer(const Duration(minutes: 5), () {    link.close();  });
+  final timer = Timer(const Duration(minutes: 5), () {
+    link.close();
+  });
   ref.onDispose(() => timer.cancel());
 
   try {
@@ -26,31 +28,40 @@ final merchantProfileProvider = FutureProvider<MerchantResponse?>((ref) async {
 
 /// Check if user is a merchant
 final isMerchantProvider = Provider<AsyncValue<bool>>((ref) {
-  return ref.watch(merchantProfileProvider).whenData((merchant) => merchant != null);
+  return ref
+      .watch(merchantProfileProvider)
+      .whenData((merchant) => merchant != null);
 });
 
 /// Merchant QR Code Provider
-final merchantQrProvider =
-    FutureProvider.family<MerchantQrResponse, String>((ref, merchantId) async {
+final merchantQrProvider = FutureProvider.family<MerchantQrResponse, String>((
+  ref,
+  merchantId,
+) async {
   final service = ref.watch(merchantServiceProvider);
   return service.getMerchantQr(merchantId);
 });
 
 /// Merchant Analytics Provider
-final merchantAnalyticsProvider = FutureProvider.family<MerchantAnalyticsResponse,
-    MerchantAnalyticsParams>((ref, params) async {
-  final service = ref.watch(merchantServiceProvider);
-  final link = ref.keepAlive();
+final merchantAnalyticsProvider =
+    FutureProvider.family<MerchantAnalyticsResponse, MerchantAnalyticsParams>((
+      ref,
+      params,
+    ) async {
+      final service = ref.watch(merchantServiceProvider);
+      final link = ref.keepAlive();
 
-  // Auto-invalidate after 5 minutes
-  final timer = Timer(const Duration(minutes: 5), () {    link.close();  });
-  ref.onDispose(() => timer.cancel());
+      // Auto-invalidate after 5 minutes
+      final timer = Timer(const Duration(minutes: 5), () {
+        link.close();
+      });
+      ref.onDispose(() => timer.cancel());
 
-  return service.getAnalytics(
-    merchantId: params.merchantId,
-    period: params.period,
-  );
-});
+      return service.getAnalytics(
+        merchantId: params.merchantId,
+        period: params.period,
+      );
+    });
 
 class MerchantAnalyticsParams {
   final String merchantId;
@@ -74,15 +85,18 @@ class MerchantAnalyticsParams {
 }
 
 /// Merchant Transactions Provider
-final merchantTransactionsProvider = FutureProvider.family<
-    MerchantTransactionsResponse, MerchantTransactionsParams>((ref, params) async {
-  final service = ref.watch(merchantServiceProvider);
-  return service.getTransactions(
-    merchantId: params.merchantId,
-    limit: params.limit,
-    offset: params.offset,
-  );
-});
+final merchantTransactionsProvider =
+    FutureProvider.family<
+      MerchantTransactionsResponse,
+      MerchantTransactionsParams
+    >((ref, params) async {
+      final service = ref.watch(merchantServiceProvider);
+      return service.getTransactions(
+        merchantId: params.merchantId,
+        limit: params.limit,
+        offset: params.offset,
+      );
+    });
 
 class MerchantTransactionsParams {
   final String merchantId;
@@ -187,8 +201,8 @@ class MerchantRegistrationNotifier extends Notifier<MerchantRegistrationState> {
 
 final merchantRegistrationProvider =
     NotifierProvider<MerchantRegistrationNotifier, MerchantRegistrationState>(
-  MerchantRegistrationNotifier.new,
-);
+      MerchantRegistrationNotifier.new,
+    );
 
 /// Payment Request State
 class PaymentRequestState {
@@ -259,8 +273,8 @@ class PaymentRequestNotifier extends Notifier<PaymentRequestState> {
 
 final paymentRequestProvider =
     NotifierProvider<PaymentRequestNotifier, PaymentRequestState>(
-  PaymentRequestNotifier.new,
-);
+      PaymentRequestNotifier.new,
+    );
 
 /// Scan to Pay State
 class ScanToPayState {
@@ -312,13 +326,19 @@ class ScanToPayNotifier extends Notifier<ScanToPayState> {
       state = state.copyWith(isLoading: false, scannedMerchant: merchantInfo);
       return true;
     } on ApiException catch (e) {
-      state = state.copyWith(isLoading: false, error: e.message, isScanning: true);
+      state = state.copyWith(
+        isLoading: false,
+        error: e.message,
+        isScanning: true,
+      );
       return false;
     }
   }
 
   Future<bool> processPayment({
     required String qrData,
+    required String pinToken,
+    String? idempotencyKey,
     double? amount,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
@@ -326,6 +346,8 @@ class ScanToPayNotifier extends Notifier<ScanToPayState> {
     try {
       final payment = await _service.processPayment(
         qrData: qrData,
+        pinToken: pinToken,
+        idempotencyKey: idempotencyKey,
         amount: amount,
       );
       state = state.copyWith(isLoading: false, payment: payment);
@@ -349,7 +371,6 @@ class ScanToPayNotifier extends Notifier<ScanToPayState> {
   }
 }
 
-final scanToPayProvider =
-    NotifierProvider<ScanToPayNotifier, ScanToPayState>(
+final scanToPayProvider = NotifierProvider<ScanToPayNotifier, ScanToPayState>(
   ScanToPayNotifier.new,
 );

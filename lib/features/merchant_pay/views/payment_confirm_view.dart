@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/design/index.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/features/merchant_pay/providers/merchant_provider.dart';
 import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/state/wallet_state_machine.dart';
 
 /// Payment Confirm View
 /// Bottom sheet for confirming merchant payment
@@ -60,10 +62,11 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
     return amount != null && amount > 0 && amount <= 10000;
   }
 
-  void _showPinConfirmation() async {
+  Future<void> _showPinConfirmation() async {
     final amount = _amount;
     if (amount == null) return;
 
+    String? pinToken;
     final result = await PinConfirmationSheet.show(
       context: context,
       title: 'Confirm Payment',
@@ -73,16 +76,22 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
       onConfirm: (pin) async {
         final pinService = ref.read(pinServiceProvider);
         final result = await pinService.verifyPinWithBackend(pin);
-        return result.success;
+        if (result.success && result.pinToken != null) {
+          pinToken = result.pinToken;
+          return true;
+        }
+        return false;
       },
     );
 
-    if (result == PinConfirmationResult.success && mounted) {
-      _processPayment();
+    if (result == PinConfirmationResult.success &&
+        pinToken != null &&
+        mounted) {
+      await _processPayment(pinToken!);
     }
   }
 
-  void _processPayment() async {
+  Future<void> _processPayment(String pinToken) async {
     setState(() {
       _isProcessing = true;
       _error = null;
@@ -91,6 +100,8 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
     final notifier = ref.read(scanToPayProvider.notifier);
     final success = await notifier.processPayment(
       qrData: widget.qrData,
+      pinToken: pinToken,
+      idempotencyKey: generateIdempotencyKey(),
       amount: widget.merchant.isStaticQr ? _amount : null,
     );
 
@@ -100,8 +111,9 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
       });
 
       if (success) {
-        // Invalidate wallet balance to refresh
         ref.invalidate(walletBalanceProvider);
+        await ref.read(walletStateMachineProvider.notifier).refresh();
+        if (!mounted) return;
         widget.onSuccess();
       } else {
         final state = ref.read(scanToPayProvider);
@@ -157,11 +169,17 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
                   decoration: BoxDecoration(
                     color: context.colors.errorBg,
                     borderRadius: BorderRadius.circular(AppSpacing.sm),
-                    border: Border.all(color: context.colors.error.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: context.colors.error.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.error_outline, color: context.colors.error, size: 20),
+                      Icon(
+                        Icons.error_outline,
+                        color: context.colors.error,
+                        size: 20,
+                      ),
                       const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: Text(
@@ -192,7 +210,9 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
                     flex: 2,
                     child: AppButton(
                       label: 'Pay Now',
-                      onPressed: _canProceed && !_isProcessing ? _showPinConfirmation : null,
+                      onPressed: _canProceed && !_isProcessing
+                          ? _showPinConfirmation
+                          : null,
                       isLoading: _isProcessing,
                     ),
                   ),
@@ -326,17 +346,17 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Enter Amount',
-          style: AppTypography.titleSmall,
-        ),
+        Text('Enter Amount', style: AppTypography.titleSmall),
         const SizedBox(height: AppSpacing.md),
         Container(
           decoration: BoxDecoration(
             color: context.colors.surface,
             borderRadius: BorderRadius.circular(AppRadius.xl),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.xl),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.xl,
+            vertical: AppSpacing.xl,
+          ),
           child: Row(
             children: [
               Text(
@@ -350,9 +370,13 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
               Expanded(
                 child: TextField(
                   controller: _amountController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'^\d*\.?\d{0,2}'),
+                    ),
                   ],
                   style: const TextStyle(
                     fontSize: 28,
@@ -361,7 +385,9 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
                   decoration: InputDecoration(
                     hintText: '0.00',
                     hintStyle: TextStyle(
-                      color: context.colors.textSecondary.withValues(alpha: 0.5),
+                      color: context.colors.textSecondary.withValues(
+                        alpha: 0.5,
+                      ),
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
