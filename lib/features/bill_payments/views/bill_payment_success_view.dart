@@ -1,19 +1,22 @@
+import 'dart:async';
 import 'dart:convert';
-import 'package:usdc_wallet/services/bill_payments/bill_payments_service.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
+
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/bill_payments/providers/bill_payments_provider.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/bill_payments/bill_payments_service.dart';
 
 /// Bill Payment Success View
 /// Shows payment confirmation with receipt details
 class BillPaymentSuccessView extends ConsumerWidget {
-  const BillPaymentSuccessView({super.key, required this.paymentId});
+  const BillPaymentSuccessView({required this.paymentId, super.key});
 
   final String paymentId;
 
@@ -27,7 +30,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
       backgroundColor: colors.canvas,
       body: SafeArea(
         child: receiptAsync.when(
-          data: (receipt) => _buildSuccessContent(context, ref, l10n, receipt),
+          data: (receipt) => _buildSuccessContent(context, l10n, receipt),
           loading: () =>
               Center(child: CircularProgressIndicator(color: colors.gold)),
           error: (error, _) =>
@@ -39,16 +42,19 @@ class BillPaymentSuccessView extends ConsumerWidget {
 
   Widget _buildSuccessContent(
     BuildContext context,
-    WidgetRef ref,
     AppLocalizations l10n,
     BillPaymentReceipt receipt,
   ) {
     final colors = context.colors;
     return Column(
       children: [
-        // Header
         Padding(
-          padding: const EdgeInsets.all(AppSpacing.screenPadding),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.screenPadding,
+            AppSpacing.sm,
+            AppSpacing.screenPadding,
+            AppSpacing.zero,
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -63,47 +69,24 @@ class BillPaymentSuccessView extends ConsumerWidget {
 
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.screenPadding,
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.screenPadding,
+              AppSpacing.sm,
+              AppSpacing.screenPadding,
+              AppSpacing.xxl,
             ),
             child: Column(
               children: [
-                // Success Animation
-                _buildSuccessIcon(context, receipt.status == 'completed'),
-                const SizedBox(height: AppSpacing.xl),
-
-                // Status Text
-                AppText(
-                  receipt.status == 'completed'
-                      ? l10n.billPayments_paymentSuccessful
-                      : l10n.billPayments_paymentProcessing,
-                  variant: AppTextVariant.headlineMedium,
-                  color: colors.textPrimary,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-
-                AppText(
-                  receipt.status == 'completed'
-                      ? l10n.billPayments_billPaidSuccessfully
-                      : l10n.billPayments_paymentBeingProcessed,
-                  variant: AppTextVariant.bodyMedium,
-                  color: colors.textSecondary,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: AppSpacing.xxxl),
-
-                // Receipt Card
+                _buildStatusCard(context, l10n, receipt),
+                const SizedBox(height: AppSpacing.lg),
                 _buildReceiptCard(context, l10n, receipt),
                 const SizedBox(height: AppSpacing.xl),
 
-                // Token Display (for prepaid utilities)
                 if (receipt.tokenNumber != null) ...[
                   _buildTokenCard(context, receipt.tokenNumber!, receipt.units),
                   const SizedBox(height: AppSpacing.xl),
                 ],
 
-                // QR Code
                 if (receipt.qrCode != null) ...[
                   _buildQRCode(receipt.qrCode!),
                   const SizedBox(height: AppSpacing.xl),
@@ -113,24 +96,29 @@ class BillPaymentSuccessView extends ConsumerWidget {
           ),
         ),
 
-        // Bottom Actions
         Padding(
-          padding: const EdgeInsets.all(AppSpacing.screenPadding),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.screenPadding,
+            AppSpacing.sm,
+            AppSpacing.screenPadding,
+            AppSpacing.screenPadding,
+          ),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // Share Button
               AppButton(
                 label: l10n.action_share,
                 onPressed: () => _shareReceipt(context, receipt),
                 variant: AppButtonVariant.secondary,
+                isFullWidth: true,
                 icon: Icons.share,
               ),
-              const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.sm),
 
-              // Done Button
               AppButton(
                 label: l10n.action_done,
                 onPressed: () => context.go('/home'),
+                isFullWidth: true,
                 icon: Icons.check,
               ),
             ],
@@ -140,19 +128,65 @@ class BillPaymentSuccessView extends ConsumerWidget {
     );
   }
 
+  Widget _buildStatusCard(
+    BuildContext context,
+    AppLocalizations l10n,
+    BillPaymentReceipt receipt,
+  ) {
+    final colors = context.colors;
+    final isCompleted = receipt.status == 'completed';
+
+    return AppCard(
+      variant: AppCardVariant.goldAccent,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      borderRadius: AppRadius.lg,
+      child: Column(
+        children: [
+          _buildSuccessIcon(context, isCompleted),
+          const SizedBox(height: AppSpacing.md),
+          AppText(
+            isCompleted
+                ? l10n.billPayments_paymentSuccessful
+                : l10n.billPayments_paymentProcessing,
+            variant: AppTextVariant.titleLarge,
+            color: colors.textPrimary,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          AppText(
+            '${receipt.totalAmount.toStringAsFixed(0)} ${receipt.currency}',
+            variant: AppTextVariant.headlineMedium,
+            color: colors.textPrimary,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          AppText(
+            isCompleted
+                ? l10n.billPayments_billPaidSuccessfully
+                : l10n.billPayments_paymentBeingProcessed,
+            color: colors.textSecondary,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSuccessIcon(BuildContext context, bool isCompleted) {
     final colors = context.colors;
     return Container(
-      width: 100,
-      height: 100,
+      width: 56,
+      height: 56,
       decoration: BoxDecoration(
-        color: isCompleted ? colors.successBg : colors.warningBg,
+        color: (isCompleted ? colors.success : colors.warning).withValues(
+          alpha: colors.isDark ? 0.16 : 0.1,
+        ),
         shape: BoxShape.circle,
       ),
       child: Icon(
-        isCompleted ? Icons.check_circle : Icons.schedule,
-        size: 60,
-        color: isCompleted ? colors.successText : colors.warningText,
+        isCompleted ? Icons.check_rounded : Icons.schedule_rounded,
+        size: 32,
+        color: isCompleted ? colors.success : colors.warning,
       ),
     );
   }
@@ -163,41 +197,47 @@ class BillPaymentSuccessView extends ConsumerWidget {
     BillPaymentReceipt receipt,
   ) {
     final colors = context.colors;
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: colors.container,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: colors.borderSubtle, width: 1),
+    return AppCard(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
       ),
+      borderRadius: AppRadius.lg,
       child: Column(
         children: [
-          // Receipt Number
           _buildReceiptRow(
             context,
-            'Numéro de reçu',
+            l10n.billPayments_receiptNumber,
             receipt.receiptNumber,
             copyable: true,
           ),
           Divider(color: colors.borderSubtle, height: AppSpacing.xl),
 
-          // Provider
-          _buildReceiptRow(context, 'Provider', receipt.providerName),
+          _buildReceiptRow(
+            context,
+            l10n.billPayments_provider,
+            receipt.providerName,
+          ),
           const SizedBox(height: AppSpacing.md),
 
-          // Account
-          _buildReceiptRow(context, 'Account', receipt.accountNumber),
+          _buildReceiptRow(
+            context,
+            l10n.billPayments_account,
+            receipt.accountNumber,
+          ),
           const SizedBox(height: AppSpacing.md),
 
-          // Customer Name
           if (receipt.customerName != null) ...[
-            _buildReceiptRow(context, 'Customer', receipt.customerName!),
+            _buildReceiptRow(
+              context,
+              l10n.billPayments_customer,
+              receipt.customerName!,
+            ),
             const SizedBox(height: AppSpacing.md),
           ],
 
           Divider(color: colors.borderSubtle, height: AppSpacing.xl),
 
-          // Amount
           _buildReceiptRow(
             context,
             l10n.billPayments_amount,
@@ -205,7 +245,6 @@ class BillPaymentSuccessView extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.md),
 
-          // Fee
           _buildReceiptRow(
             context,
             l10n.billPayments_processingFee,
@@ -213,25 +252,22 @@ class BillPaymentSuccessView extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.md),
 
-          // Total
           _buildReceiptRow(
             context,
-            'Total payé',
+            l10n.billPayments_totalPaid,
             '${receipt.totalAmount.toStringAsFixed(0)} ${receipt.currency}',
             isHighlighted: true,
           ),
 
           Divider(color: colors.borderSubtle, height: AppSpacing.xl),
 
-          // Date
           _buildReceiptRow(context, 'Date', _formatDate(receipt.paidAt)),
 
-          // Provider Reference
           if (receipt.providerReference != null) ...[
             const SizedBox(height: AppSpacing.md),
             _buildReceiptRow(
               context,
-              'Référence',
+              l10n.billPayments_reference,
               receipt.providerReference!,
               copyable: true,
             ),
@@ -285,7 +321,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
                 const SizedBox(width: AppSpacing.xs),
                 GestureDetector(
                   onTap: () {
-                    Clipboard.setData(ClipboardData(text: value));
+                    unawaited(Clipboard.setData(ClipboardData(text: value)));
                   },
                   child: Icon(
                     Icons.copy,
@@ -315,7 +351,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: colors.borderGold, width: 1),
+        border: Border.all(color: colors.borderGold),
       ),
       child: Column(
         children: [
@@ -341,7 +377,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
                 icon: const Icon(Icons.copy),
                 color: colors.gold,
                 onPressed: () {
-                  Clipboard.setData(ClipboardData(text: token));
+                  unawaited(Clipboard.setData(ClipboardData(text: token)));
                 },
               ),
             ],
@@ -378,7 +414,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
         children: [
           Image.memory(imageBytes, width: 150, height: 150),
           const SizedBox(height: AppSpacing.sm),
-          Text(
+          const Text(
             'Scannez pour les détails du reçu',
             style: TextStyle(color: Colors.black54, fontSize: 12),
           ),
@@ -422,7 +458,6 @@ class BillPaymentSuccessView extends ConsumerWidget {
             const SizedBox(height: AppSpacing.sm),
             AppText(
               error,
-              variant: AppTextVariant.bodyMedium,
               color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
@@ -451,10 +486,9 @@ ${receipt.tokenNumber != null ? 'Token: ${receipt.tokenNumber}\n' : ''}Date: ${_
 Powered by Korido
 ''';
 
-    SharePlus.instance.share(ShareParams(text: text));
+    unawaited(SharePlus.instance.share(ShareParams(text: text)));
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-  }
+  String _formatDate(DateTime date) =>
+      '${date.day}/${date.month}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
 }
