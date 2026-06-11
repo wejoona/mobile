@@ -1,10 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/core/utils/amount_conversion.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Wallet Service - mirrors backend WalletController
 class WalletService {
@@ -551,13 +550,12 @@ class TransferResponse {
   });
 
   factory TransferResponse.fromJson(Map<String, dynamic> json) {
-    final rawAmount = (json['amount'] as num?)?.toInt() ?? 0;
     return TransferResponse(
       transactionId:
           json['transactionId'] as String? ?? json['id'] as String? ?? '',
-      amount: json['id'] != null ? fromCents(rawAmount) : rawAmount.toDouble(),
+      amount: _readAmount(json, const ['amountDecimal', 'amount']),
       currency: json['currency'] as String? ?? 'USDC',
-      fee: (json['fee'] as num?)?.toDouble() ?? 0,
+      fee: _readAmount(json, const ['feeDecimal', 'fee']),
       status: json['status'] as String? ?? 'pending',
     );
   }
@@ -582,18 +580,17 @@ class WithdrawResponse {
   });
 
   factory WithdrawResponse.fromJson(Map<String, dynamic> json) {
-    final rawAmount = (json['amount'] as num?)?.toInt() ?? 0;
     return WithdrawResponse(
       transactionId:
           json['transactionId'] as String? ?? json['id'] as String? ?? '',
-      amount: json['id'] != null ? fromCents(rawAmount) : rawAmount.toDouble(),
+      amount: _readAmount(json, const ['amountDecimal', 'amount']),
       destinationAddress:
           json['destinationAddress'] as String? ??
           json['phoneNumber'] as String? ??
           '',
       network:
           json['network'] as String? ?? json['providerCode'] as String? ?? '',
-      fee: (json['fee'] as num?)?.toDouble() ?? 0,
+      fee: _readAmount(json, const ['feeDecimal', 'fee']),
       status: json['status'] as String? ?? 'pending',
     );
   }
