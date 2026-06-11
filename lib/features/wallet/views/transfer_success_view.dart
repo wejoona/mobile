@@ -75,66 +75,65 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
     return Scaffold(
       backgroundColor: context.colors.canvas,
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) => SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.screenPadding),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight:
-                    constraints.maxHeight - (AppSpacing.screenPadding * 2),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.screenPadding,
+                  AppSpacing.lg,
+                  AppSpacing.screenPadding,
+                  AppSpacing.xxl,
+                ),
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Column(
                     children: [
-                      const SizedBox(height: AppSpacing.lg),
-                      AnimatedBuilder(
-                        animation: _controller,
-                        builder: (context, child) => Transform.scale(
-                          scale: _scaleAnimation.value,
-                          child: Container(
-                            width: 84,
-                            height: 84,
-                            decoration: BoxDecoration(
-                              color: context.colors.success.withValues(
-                                alpha: 0.12,
-                              ),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.check_circle_rounded,
-                              size: 52,
-                              color: context.colors.success,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.xl),
-                      FadeTransition(
-                        opacity: _fadeAnimation,
+                      AppCard(
+                        variant: AppCardVariant.goldAccent,
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        borderRadius: AppRadius.lg,
                         child: Column(
                           children: [
+                            AnimatedBuilder(
+                              animation: _controller,
+                              builder: (context, child) => Transform.scale(
+                                scale: _scaleAnimation.value,
+                                child: Container(
+                                  width: 56,
+                                  height: 56,
+                                  decoration: BoxDecoration(
+                                    color: context.colors.success.withValues(
+                                      alpha: colors.isDark ? 0.16 : 0.1,
+                                    ),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.check_rounded,
+                                    size: 32,
+                                    color: context.colors.success,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.md),
                             AppText(
                               l10n.transfer_successTitle,
                               variant: AppTextVariant.titleLarge,
                               color: colors.textPrimary,
                               textAlign: TextAlign.center,
                             ),
-                            const SizedBox(height: AppSpacing.sm),
+                            const SizedBox(height: AppSpacing.xs),
                             AppText(
-                              l10n.transfer_successMessage(
-                                widget.amount.toStringAsFixed(2),
-                              ),
-                              variant: AppTextVariant.bodyMedium,
-                              color: colors.textSecondary,
+                              formatUsdc(widget.amount),
+                              variant: AppTextVariant.headlineMedium,
+                              color: colors.textPrimary,
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: AppSpacing.xs),
                             AppText(
                               widget.recipient,
-                              variant: AppTextVariant.titleMedium,
-                              color: context.colors.gold,
+                              color: colors.textSecondary,
                               textAlign: TextAlign.center,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
@@ -142,81 +141,86 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
                           ],
                         ),
                       ),
-                      const SizedBox(height: AppSpacing.xl),
-                      FadeTransition(
-                        opacity: _fadeAnimation,
-                        child: AppCard(
-                          variant: AppCardVariant.subtle,
-                          padding: const EdgeInsets.all(AppSpacing.lg),
-                          child: Column(
-                            children: [
-                              _DetailRow(
-                                label: l10n.transactions_transactionId,
-                                value: _truncateId(widget.transactionId),
-                                canCopy: true,
-                                fullValue: widget.transactionId,
-                                colors: colors,
-                                l10n: l10n,
-                              ),
+                      const SizedBox(height: AppSpacing.lg),
+                      AppCard(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.lg,
+                          vertical: AppSpacing.md,
+                        ),
+                        borderRadius: AppRadius.lg,
+                        child: Column(
+                          children: [
+                            _DetailRow(
+                              label: l10n.transactions_transactionId,
+                              value: _truncateId(widget.transactionId),
+                              canCopy: true,
+                              fullValue: widget.transactionId,
+                              colors: colors,
+                              l10n: l10n,
+                            ),
+                            Divider(color: context.colors.borderSubtle),
+                            _DetailRow(
+                              label: l10n.common_amount,
+                              value: formatUsdc(widget.amount),
+                              colors: colors,
+                              l10n: l10n,
+                            ),
+                            Divider(color: context.colors.borderSubtle),
+                            _DetailRow(
+                              label: l10n.transactions_status,
+                              value: l10n.transactions_completed,
+                              valueColor: context.colors.success,
+                              colors: colors,
+                              l10n: l10n,
+                            ),
+                            if (widget.note != null &&
+                                widget.note!.trim().isNotEmpty) ...[
                               Divider(color: context.colors.borderSubtle),
                               _DetailRow(
-                                label: l10n.common_amount,
-                                value: formatUsdc(widget.amount),
+                                label: l10n.common_note,
+                                value: widget.note!,
                                 colors: colors,
                                 l10n: l10n,
                               ),
-                              Divider(color: context.colors.borderSubtle),
-                              _DetailRow(
-                                label: l10n.transactions_status,
-                                value: l10n.transactions_completed,
-                                valueColor: context.colors.success,
-                                colors: colors,
-                                l10n: l10n,
-                              ),
-                              if (widget.note != null &&
-                                  widget.note!.trim().isNotEmpty) ...[
-                                Divider(color: context.colors.borderSubtle),
-                                _DetailRow(
-                                  label: l10n.common_note,
-                                  value: widget.note!,
-                                  colors: colors,
-                                  l10n: l10n,
-                                ),
-                              ],
                             ],
-                          ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: AppSpacing.xl),
-                    child: FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: Column(
-                        children: [
-                          AppButton(
-                            label: l10n.action_shareReceipt,
-                            onPressed: () => _shareReceipt(l10n),
-                            variant: AppButtonVariant.secondary,
-                            isFullWidth: true,
-                            icon: Icons.share,
-                          ),
-                          const SizedBox(height: AppSpacing.sm),
-                          AppButton(
-                            label: l10n.common_done,
-                            onPressed: () => context.go('/home'),
-                            variant: AppButtonVariant.primary,
-                            isFullWidth: true,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.screenPadding,
+                AppSpacing.sm,
+                AppSpacing.screenPadding,
+                AppSpacing.screenPadding,
+              ),
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AppButton(
+                      label: l10n.action_shareReceipt,
+                      onPressed: () => _shareReceipt(l10n),
+                      variant: AppButtonVariant.secondary,
+                      isFullWidth: true,
+                      icon: Icons.share,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    AppButton(
+                      label: l10n.common_done,
+                      onPressed: () => context.go('/home'),
+                      isFullWidth: true,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -276,18 +280,11 @@ class _DetailRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
       child: Row(
         children: [
-          Expanded(
-            child: AppText(
-              label,
-              variant: AppTextVariant.bodyMedium,
-              color: colors.textSecondary,
-            ),
-          ),
+          Expanded(child: AppText(label, color: colors.textSecondary)),
           const SizedBox(width: AppSpacing.md),
           Flexible(
             child: AppText(
               value,
-              variant: AppTextVariant.bodyMedium,
               color: valueColor ?? colors.textPrimary,
               textAlign: TextAlign.right,
               maxLines: 2,
