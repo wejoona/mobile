@@ -6,13 +6,13 @@ import 'package:usdc_wallet/features/contacts/views/contacts_permission_screen.d
 import 'package:usdc_wallet/features/insights/views/insights_view.dart';
 import 'package:usdc_wallet/features/payment_links/views/create_link_view.dart';
 import 'package:usdc_wallet/features/recurring_transfers/views/recurring_transfers_list_view.dart';
+import 'package:usdc_wallet/features/savings_pots/views/pots_list_view.dart';
 import 'package:usdc_wallet/features/transactions/views/export_transactions_view.dart';
 import 'package:usdc_wallet/features/wallet/views/analytics_view.dart';
 import 'package:usdc_wallet/features/wallet/views/budget_view.dart';
 import 'package:usdc_wallet/features/wallet/views/buy_airtime_view.dart';
 import 'package:usdc_wallet/features/wallet/views/currency_converter_view.dart';
 import 'package:usdc_wallet/features/wallet/views/saved_recipients_view.dart';
-import 'package:usdc_wallet/features/wallet/views/savings_goals_view.dart';
 import 'package:usdc_wallet/features/wallet/views/split_bill_view.dart';
 import 'package:usdc_wallet/router/page_transitions.dart';
 
@@ -101,7 +101,7 @@ List<RouteBase> featureOverviewRoutes() => [
   GoRoute(
     path: '/savings',
     pageBuilder: (context, state) =>
-        AppPageTransitions.fade(state: state, child: const SavingsGoalsView()),
+        AppPageTransitions.fade(state: state, child: const PotsListView()),
   ),
   GoRoute(
     path: '/card',

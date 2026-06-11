@@ -228,7 +228,9 @@ String? _featureFlagRedirect(String location, Map<String, bool> flags) {
     return '/home';
   }
 
-  if (location == '/savings' && !flags.canSetSavingsGoals) {
+  if (location == '/savings' &&
+      !flags.canSetSavingsGoals &&
+      !flags.canUseSavingsPots) {
     return '/home';
   }
   if (location.startsWith('/savings-pots') && !flags.canUseSavingsPots) {

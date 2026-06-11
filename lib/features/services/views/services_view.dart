@@ -177,7 +177,7 @@ class ServicesView extends ConsumerWidget {
       ));
     }
 
-    if (flags.canSetSavingsGoals) {
+    if (flags.canSetSavingsGoals || flags.canUseSavingsPots) {
       services.add(ServiceItem(
         icon: Icons.savings,
         title: l10n.services_savingsGoals,
