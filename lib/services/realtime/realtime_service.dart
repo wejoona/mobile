@@ -9,6 +9,8 @@ import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart';
 import 'package:usdc_wallet/state/fsm/index.dart';
+import 'package:usdc_wallet/state/transaction_state_machine.dart';
+import 'package:usdc_wallet/state/wallet_state_machine.dart';
 
 /// Real-time sync service — WebSocket primary, polling fallback.
 ///
@@ -68,6 +70,8 @@ class RealtimeService {
       _ref.invalidate(walletBalanceProvider);
       _ref.invalidate(transactionsProvider);
       _ref.invalidate(notificationsProvider);
+      unawaited(_ref.read(walletStateMachineProvider.notifier).refresh());
+      unawaited(_ref.read(transactionStateMachineProvider.notifier).refresh());
     } catch (_) {}
   }
 
@@ -76,6 +80,8 @@ class RealtimeService {
     try {
       _ref.invalidate(walletBalanceProvider);
       _ref.invalidate(transactionsProvider);
+      unawaited(_ref.read(walletStateMachineProvider.notifier).refresh());
+      unawaited(_ref.read(transactionStateMachineProvider.notifier).refresh());
     } catch (_) {}
   }
 
@@ -137,9 +143,14 @@ class RealtimeService {
       switch (type) {
         case 'balance_update':
           _ref.invalidate(walletBalanceProvider);
+          unawaited(_ref.read(walletStateMachineProvider.notifier).refresh());
         case 'transaction_new':
           _ref.invalidate(walletBalanceProvider);
           _ref.invalidate(transactionsProvider);
+          unawaited(_ref.read(walletStateMachineProvider.notifier).refresh());
+          unawaited(
+            _ref.read(transactionStateMachineProvider.notifier).refresh(),
+          );
         case 'notification_new':
           _ref.invalidate(notificationsProvider);
         case 'session_expired':
