@@ -71,14 +71,23 @@ class AuthService {
   }
 
   /// POST /auth/logout - Invalidate session on backend
-  Future<void> logout() async {
+  Future<void> logout({String? accessToken, String? refreshToken}) async {
     try {
-      final refreshToken = await _storage.read(key: StorageKeys.refreshToken);
-      if (refreshToken == null || refreshToken.isEmpty) return;
-      await _dio.post('/auth/logout', data: {'refreshToken': refreshToken});
+      final token =
+          refreshToken ?? await _storage.read(key: StorageKeys.refreshToken);
+      if (token == null || token.isEmpty) {
+        return;
+      }
+      await _dio.post(
+        '/auth/logout',
+        data: {'refreshToken': token},
+        options: accessToken == null || accessToken.isEmpty
+            ? null
+            : Options(headers: {'Authorization': 'Bearer $accessToken'}),
+      );
     } catch (e) {
       // Non-critical — we clear local tokens regardless
-      AppLogger('Auth').error('Backend logout failed', e);
+      const AppLogger('Auth').error('Backend logout failed', e);
     }
   }
 
