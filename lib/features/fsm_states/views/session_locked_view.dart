@@ -27,8 +27,8 @@ class SessionLockedView extends ConsumerStatefulWidget {
 class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
   String _pin = '';
   bool _hasError = false;
-  bool _biometricSupported = false;
   bool _biometricEnabled = false;
+  BiometricType _biometricType = BiometricType.none;
   bool _isUnlocking = false;
 
   @override
@@ -39,13 +39,13 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
 
   Future<void> _checkBiometric() async {
     final biometricService = ref.read(biometricServiceProvider);
-    final canCheck = await biometricService.isAvailable();
     final isEnabled = await biometricService.isBiometricEnabled();
+    final type = await biometricService.getAvailableType();
 
     if (mounted) {
       setState(() {
-        _biometricSupported = canCheck;
         _biometricEnabled = isEnabled;
+        _biometricType = type;
       });
 
       // Biometric is user-initiated only — no auto-fire
@@ -212,10 +212,9 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
                         PinPad(
                           onDigitPressed: (digit) => _handleDigitPressed(digit),
                           onDeletePressed: _handleDeletePressed,
-                          showBiometric:
-                              _biometricSupported && _biometricEnabled,
-                          onBiometricPressed:
-                              (_biometricSupported && _biometricEnabled)
+                          showBiometric: _shouldShowBiometricUnlock,
+                          biometricIcon: _biometricIcon,
+                          onBiometricPressed: _shouldShowBiometricUnlock
                               ? _handleBiometric
                               : null,
                         ),
@@ -271,12 +270,26 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
 
   Future<void> _handleBiometric() async {
     final biometricService = ref.read(biometricServiceProvider);
+    final l10n = AppLocalizations.of(context)!;
     final result = await biometricService.authenticate(
-      localizedReason: 'Déverrouillez Korido',
+      localizedReason: l10n.session_unlockReason,
     );
 
     if (mounted && result.success) {
       _unlock();
+    }
+  }
+
+  bool get _shouldShowBiometricUnlock => _biometricEnabled;
+
+  IconData get _biometricIcon {
+    switch (_biometricType) {
+      case BiometricType.faceId:
+        return Icons.face_rounded;
+      case BiometricType.fingerprint:
+      case BiometricType.iris:
+      case BiometricType.none:
+        return Icons.fingerprint_rounded;
     }
   }
 
