@@ -265,14 +265,23 @@ class ContactsService {
     return status.isGranted;
   }
 
-  /// Normalize phone to E.164 format
-  String normalizePhoneE164(String phone) {
+  /// Normalize phone to E.164 format.
+  ///
+  /// Local phone book entries often omit the country code. Use the active user
+  /// market as the default so US contacts hash as +1... and CI contacts hash as
+  /// +225..., matching the backend phone_hash index.
+  String normalizePhoneE164(
+    String phone, {
+    String defaultCountryPrefix = '225',
+  }) {
     // Remove all non-digit characters
     String cleaned = phone.replaceAll(RegExp(r'\D'), '');
+    final prefix = defaultCountryPrefix.replaceAll(RegExp(r'\D'), '');
 
-    // Add country code if missing (default to Côte d'Ivoire +225)
-    if (!cleaned.startsWith('225') && cleaned.length <= 10) {
-      cleaned = '225$cleaned';
+    if (prefix.isNotEmpty &&
+        !cleaned.startsWith(prefix) &&
+        cleaned.length <= 10) {
+      cleaned = '$prefix$cleaned';
     }
 
     // Ensure it starts with +
@@ -284,8 +293,11 @@ class ContactsService {
   }
 
   /// Hash phone number using SHA-256
-  String hashPhone(String phone) {
-    final normalized = normalizePhoneE164(phone);
+  String hashPhone(String phone, {String defaultCountryPrefix = '225'}) {
+    final normalized = normalizePhoneE164(
+      phone,
+      defaultCountryPrefix: defaultCountryPrefix,
+    );
     final bytes = utf8.encode(normalized);
     final digest = sha256.convert(bytes);
     return digest.toString();
@@ -293,13 +305,17 @@ class ContactsService {
 
   /// Convert device contacts to synced contacts
   List<SyncedContact> deviceContactsToSyncedContacts(
-    List<Contact> deviceContacts,
-  ) {
+    List<Contact> deviceContacts, {
+    String defaultCountryPrefix = '225',
+  }) {
     final List<SyncedContact> synced = [];
 
     for (final contact in deviceContacts) {
       if (contact.phones.isNotEmpty) {
-        final phone = normalizePhoneE164(contact.phones.first.number);
+        final phone = normalizePhoneE164(
+          contact.phones.first.number,
+          defaultCountryPrefix: defaultCountryPrefix,
+        );
         final name = contact.displayName;
 
         synced.add(SyncedContact(id: contact.id, name: name, phone: phone));

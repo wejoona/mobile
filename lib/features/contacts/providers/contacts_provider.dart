@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/config/countries.dart';
 import 'package:usdc_wallet/domain/entities/contact.dart';
+import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
 import 'package:usdc_wallet/mocks/mock_config.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/contacts/contacts_service.dart';
+import 'package:usdc_wallet/state/user_state_machine.dart';
 
 /// App contacts provider — wired to Dio (mock interceptor handles fallback).
 final appContactsProvider = FutureProvider<List<Contact>>((ref) async {
@@ -181,11 +184,21 @@ class ContactsNotifier extends Notifier<ContactsState> {
     ContactsService contactsService,
   ) async {
     final deviceContacts = await contactsService.getDeviceContacts();
+    final defaultPrefix = _defaultCountryPrefix();
     final items = contactsService.deviceContactsToSyncedContacts(
       deviceContacts,
+      defaultCountryPrefix: defaultPrefix,
     );
 
     return contactsService.getKoridoContacts(dio, items);
+  }
+
+  String _defaultCountryPrefix() {
+    final userCountryCode = ref.read(userStateMachineProvider).countryCode;
+    final selectedCountry = ref.read(selectedCountryProvider);
+    final country =
+        SupportedCountries.findByCode(userCountryCode) ?? selectedCountry;
+    return country.prefix;
   }
 
   List<Map<String, dynamic>> _extractContactList(Object? data) {
