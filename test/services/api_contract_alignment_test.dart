@@ -611,6 +611,36 @@ void main() {
       },
     );
 
+    test('transaction page parser accepts nested backend envelopes', () {
+      final page = wallet_tx.TransactionPage.fromJson({
+        'data': {
+          'items': [
+            {
+              'transactionId': 'tx_nested',
+              'wallet_id': 'wallet_1',
+              'kind': 'internal',
+              'status': 'settled',
+              'amount': '42.50',
+              'currency': 'USDC',
+              'direction': 'credit',
+              'created_at': '2026-06-04T12:00:00.000Z',
+            },
+          ],
+          'meta': {'total': '1', 'limit': '20', 'offset': '0'},
+        },
+      });
+
+      expect(page.transactions, hasLength(1));
+      expect(page.total, 1);
+      expect(page.page, 1);
+      expect(page.pageSize, 20);
+      expect(page.hasMore, isFalse);
+      expect(page.transactions.single.id, 'tx_nested');
+      expect(page.transactions.single.walletId, 'wallet_1');
+      expect(page.transactions.single.amount, 42.5);
+      expect(page.transactions.single.isCredit, isTrue);
+    });
+
     test('transaction list item honors backend direction aliases', () {
       final sent = TransactionItem.fromJson({
         'id': 'tx_sent',

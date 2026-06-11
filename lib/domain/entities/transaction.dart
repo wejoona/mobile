@@ -68,10 +68,10 @@ class Transaction {
   factory Transaction.fromJson(Map<String, dynamic> json) {
     return Transaction(
       id: json['id'] as String? ?? json['transactionId'] as String? ?? '',
-      walletId: json['walletId'] as String? ?? '',
-      type: _parseTransactionType(json['type'] as String?),
+      walletId: _stringValue(json, const ['walletId', 'wallet_id']) ?? '',
+      type: _parseTransactionType(_stringValue(json, const ['type', 'kind'])),
       status: _parseTransactionStatus(json['status'] as String?),
-      amount: (json['amount'] as num).toDouble(),
+      amount: _numValue(json, const ['amount', 'amountUsd', 'amount_usd']) ?? 0,
       currency: json['currency'] as String? ?? 'USD',
       fee: (json['fee'] as num?)?.toDouble(),
       description: json['description'] as String? ?? json['note'] as String?,
@@ -89,10 +89,10 @@ class Transaction {
       metadata: json['metadata'] is Map
           ? Map<String, dynamic>.from(json['metadata'] as Map)
           : null,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      completedAt: json['completedAt'] != null
-          ? DateTime.parse(json['completedAt'] as String)
-          : null,
+      createdAt:
+          _dateValue(json, const ['createdAt', 'created_at', 'timestamp']) ??
+          DateTime.now(),
+      completedAt: _dateValue(json, const ['completedAt', 'completed_at']),
     );
   }
 
@@ -184,22 +184,50 @@ class TransactionPage {
   });
 
   factory TransactionPage.fromJson(Map<String, dynamic> json) {
-    final list = (json['transactions'] as List<dynamic>? ?? [])
+    final data = json['data'];
+    final dataMap = data is Map ? Map<String, dynamic>.from(data) : null;
+    final rawList =
+        json['transactions'] ??
+        json['items'] ??
+        dataMap?['transactions'] ??
+        dataMap?['items'] ??
+        (data is List ? data : null);
+    final list = (rawList as List<dynamic>? ?? [])
         .map((e) => Transaction.fromJson(_asStringMap(e)))
         .toList();
 
     // API returns limit/offset, convert to page/pageSize
-    final limit = json['limit'] as int? ?? json['pageSize'] as int? ?? 20;
-    final offset = json['offset'] as int? ?? 0;
-    final total = json['total'] as int? ?? list.length;
-    final page = json['page'] as int? ?? (offset ~/ limit) + 1;
+    final meta = json['meta'] is Map
+        ? Map<String, dynamic>.from(json['meta'] as Map)
+        : dataMap?['meta'] is Map
+        ? Map<String, dynamic>.from(dataMap?['meta'] as Map)
+        : null;
+    final limit =
+        _intValue(json, const ['limit', 'pageSize', 'page_size']) ??
+        _intValue(meta, const ['limit', 'pageSize', 'page_size']) ??
+        20;
+    final offset =
+        _intValue(json, const ['offset']) ??
+        _intValue(meta, const ['offset']) ??
+        0;
+    final total =
+        _intValue(json, const ['total', 'count']) ??
+        _intValue(meta, const ['total', 'count']) ??
+        list.length;
+    final page =
+        _intValue(json, const ['page']) ??
+        _intValue(meta, const ['page']) ??
+        (offset ~/ limit) + 1;
 
     return TransactionPage(
       transactions: list,
       total: total,
       page: page,
       pageSize: limit,
-      hasMore: json['hasMore'] as bool? ?? (offset + list.length < total),
+      hasMore:
+          _boolValue(json, const ['hasMore', 'has_more']) ??
+          _boolValue(meta, const ['hasMore', 'has_more']) ??
+          (offset + list.length < total),
     );
   }
 }
@@ -208,4 +236,55 @@ Map<String, dynamic> _asStringMap(Object? value) {
   if (value is Map<String, dynamic>) return value;
   if (value is Map) return Map<String, dynamic>.from(value);
   throw const FormatException('Expected transaction JSON object');
+}
+
+String? _stringValue(Map<String, dynamic> map, List<String> keys) {
+  for (final key in keys) {
+    final value = map[key];
+    if (value is String && value.isNotEmpty) return value;
+  }
+  return null;
+}
+
+double? _numValue(Map<String, dynamic> map, List<String> keys) {
+  for (final key in keys) {
+    final value = map[key];
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+  }
+  return null;
+}
+
+int? _intValue(Map<String, dynamic>? map, List<String> keys) {
+  if (map == null) return null;
+  for (final key in keys) {
+    final value = map[key];
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value);
+  }
+  return null;
+}
+
+bool? _boolValue(Map<String, dynamic>? map, List<String> keys) {
+  if (map == null) return null;
+  for (final key in keys) {
+    final value = map[key];
+    if (value is bool) return value;
+    if (value is String) {
+      final normalized = value.toLowerCase();
+      if (normalized == 'true') return true;
+      if (normalized == 'false') return false;
+    }
+  }
+  return null;
+}
+
+DateTime? _dateValue(Map<String, dynamic> map, List<String> keys) {
+  for (final key in keys) {
+    final value = map[key];
+    if (value is DateTime) return value;
+    if (value is String && value.isNotEmpty) return DateTime.tryParse(value);
+  }
+  return null;
 }
