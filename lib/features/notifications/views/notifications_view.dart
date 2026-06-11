@@ -150,6 +150,10 @@ class NotificationsView extends ConsumerWidget {
                         ref.invalidate(notificationsProvider);
                         ref.invalidate(unreadNotificationCountProvider);
                       }
+                      final route = notification.navigationRoute;
+                      if (route != null && context.mounted) {
+                        context.push(route);
+                      }
                     },
                   ),
                 );

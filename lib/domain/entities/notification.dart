@@ -6,6 +6,7 @@ class AppNotification {
   final String title;
   final String body;
   final NotificationType type;
+  final String? action;
   final bool isRead;
   final String? actionUrl;
   final String? transactionId;
@@ -17,6 +18,7 @@ class AppNotification {
     required this.title,
     required this.body,
     required this.type,
+    this.action,
     this.isRead = false,
     this.actionUrl,
     this.transactionId,
@@ -37,6 +39,7 @@ class AppNotification {
       title: json['title'] as String? ?? 'Notification',
       body: json['body'] as String? ?? '',
       type: _notificationTypeFromJson(json),
+      action: json['action'] as String?,
       isRead:
           json['isRead'] as bool? ??
           (isUnread != null ? !isUnread : json['readAt'] != null),
@@ -53,6 +56,85 @@ class AppNotification {
       ),
     );
   }
+
+  String? get navigationRoute {
+    final safeActionUrl = _safeInAppPath(actionUrl);
+    if (safeActionUrl != null) {
+      return safeActionUrl;
+    }
+
+    final normalizedAction = action
+        ?.trim()
+        .replaceAll('-', '_')
+        .replaceAll(' ', '_')
+        .toLowerCase();
+    switch (normalizedAction) {
+      case 'open_transaction':
+        final id = transactionId?.trim();
+        return id == null || id.isEmpty ? '/transactions' : '/transactions/$id';
+      case 'open_kyc':
+        return '/kyc';
+      case 'open_security':
+        return '/settings/security';
+      case 'open_wallet':
+        return '/home';
+      case 'none':
+      case null:
+        return _fallbackRouteForType();
+      default:
+        return _fallbackRouteForType();
+    }
+  }
+
+  String? _fallbackRouteForType() {
+    switch (type) {
+      case NotificationType.transfer:
+      case NotificationType.transactionComplete:
+      case NotificationType.transactionFailed:
+      case NotificationType.deposit:
+      case NotificationType.withdrawal:
+      case NotificationType.withdrawalPending:
+      case NotificationType.largeTransaction:
+      case NotificationType.externalWithdrawal:
+        final id = transactionId?.trim();
+        return id == null || id.isEmpty ? '/transactions' : '/transactions/$id';
+      case NotificationType.kyc:
+        return '/kyc';
+      case NotificationType.security:
+      case NotificationType.securityAlert:
+      case NotificationType.newDeviceLogin:
+      case NotificationType.unusualLocation:
+      case NotificationType.suspiciousPattern:
+      case NotificationType.failedAttempts:
+      case NotificationType.accountChange:
+      case NotificationType.rapidTransactions:
+      case NotificationType.velocityLimit:
+      case NotificationType.timeAnomaly:
+        return '/settings/security';
+      case NotificationType.lowBalance:
+      case NotificationType.balanceThreshold:
+      case NotificationType.addressWhitelisted:
+      case NotificationType.priceAlert:
+      case NotificationType.weeklySpendingSummary:
+      case NotificationType.newRecipient:
+      case NotificationType.roundAmount:
+      case NotificationType.cumulativeDaily:
+      case NotificationType.promotion:
+      case NotificationType.general:
+        return null;
+    }
+  }
+}
+
+String? _safeInAppPath(String? raw) {
+  final value = raw?.trim();
+  if (value == null || value.isEmpty || !value.startsWith('/')) {
+    return null;
+  }
+  if (value.startsWith('//') || value.contains('://')) {
+    return null;
+  }
+  return value;
 }
 
 NotificationType _notificationTypeFromJson(Map<String, dynamic> json) {

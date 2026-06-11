@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:usdc_wallet/domain/entities/notification.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart';
 import 'package:usdc_wallet/features/notifications/repositories/notifications_repository.dart';
@@ -41,6 +42,56 @@ void main() {
     expect(notifications.single.type, NotificationType.security);
     expect(notifications.single.isRead, isFalse);
     expect(notifications.single.data?['deviceId'], 'device-1');
+  });
+
+  test('notification action payload resolves mobile navigation targets', () {
+    final transactionNotification = AppNotification.fromJson({
+      'id': 'notif-transaction',
+      'type': 'transfer_received',
+      'action': 'open_transaction',
+      'title': 'Payment received',
+      'body': 'You received 50 USDC.',
+      'data': {'transactionId': 'txn_123'},
+      'referenceType': 'transaction',
+      'referenceId': 'txn_123',
+      'createdAt': DateTime.utc(2026, 6, 4).toIso8601String(),
+      'isUnread': true,
+    });
+    final securityNotification = AppNotification.fromJson({
+      'id': 'notif-security',
+      'type': 'security_alert',
+      'action': 'open_security',
+      'title': 'New device',
+      'body': 'A new device signed in.',
+      'createdAt': DateTime.utc(2026, 6, 4).toIso8601String(),
+      'isUnread': true,
+    });
+    final safeDeepLink = AppNotification.fromJson({
+      'id': 'notif-link',
+      'type': 'system',
+      'action': 'none',
+      'title': 'Review transaction',
+      'body': 'Tap to review.',
+      'actionUrl': '/transactions/txn_safe',
+      'createdAt': DateTime.utc(2026, 6, 4).toIso8601String(),
+      'isUnread': true,
+    });
+    final externalLink = AppNotification.fromJson({
+      'id': 'notif-external',
+      'type': 'system',
+      'action': 'none',
+      'title': 'External',
+      'body': 'Do not open external links from notification payloads.',
+      'actionUrl': 'https://example.com/phishing',
+      'createdAt': DateTime.utc(2026, 6, 4).toIso8601String(),
+      'isUnread': true,
+    });
+
+    expect(transactionNotification.action, 'open_transaction');
+    expect(transactionNotification.navigationRoute, '/transactions/txn_123');
+    expect(securityNotification.navigationRoute, '/settings/security');
+    expect(safeDeepLink.navigationRoute, '/transactions/txn_safe');
+    expect(externalLink.navigationRoute, isNull);
   });
 
   test('notification actions use live PUT routes', () async {
