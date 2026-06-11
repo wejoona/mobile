@@ -44,8 +44,11 @@ void main() {
     dio
       ..queueResponse(null, statusCode: 204)
       ..queueResponse(null, statusCode: 204);
-    final actions =
-        NotificationActions(NotificationsRepository(NotificationsService(dio)));
+    final container = ProviderContainer(
+      overrides: [dioProvider.overrideWithValue(dio)],
+    );
+    addTearDown(container.dispose);
+    final actions = container.read(notificationActionsProvider);
 
     await actions.markAsRead('notif-1');
     await actions.markAllAsRead();
