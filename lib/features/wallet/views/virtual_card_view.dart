@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
+import 'package:usdc_wallet/utils/context_extensions.dart';
 
 class VirtualCardView extends ConsumerWidget {
   const VirtualCardView({super.key});
@@ -26,7 +26,7 @@ class VirtualCardView extends ConsumerWidget {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: Center(
@@ -164,7 +164,7 @@ class VirtualCardView extends ConsumerWidget {
               const SizedBox(height: AppSpacing.xxxl),
               AppButton(
                 label: l10n.cards_notifyMe,
-                onPressed: () => _subscribe(context, ref, l10n, colors),
+                onPressed: () => _subscribe(context, ref, l10n),
                 variant: AppButtonVariant.primary,
               ),
             ],
@@ -178,7 +178,6 @@ class VirtualCardView extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     AppLocalizations l10n,
-    ThemeColors colors,
   ) async {
     final authState = ref.read(authProvider);
     final user = authState.user;
@@ -201,19 +200,12 @@ class VirtualCardView extends ConsumerWidget {
           );
 
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.cards_notifySuccess),
-          backgroundColor: colors.success,
-        ),
-      );
+      context.showSnack(l10n.cards_notifySuccess, tone: AppSnackTone.success);
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.common_errorFormat(e.toString())),
-          backgroundColor: colors.error,
-        ),
+      context.showSnack(
+        l10n.common_errorFormat(e.toString()),
+        tone: AppSnackTone.error,
       );
     }
   }

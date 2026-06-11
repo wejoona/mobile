@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
+import 'package:usdc_wallet/utils/context_extensions.dart';
 
 class BudgetView extends ConsumerStatefulWidget {
   const BudgetView({super.key});
@@ -33,7 +33,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.textPrimary),
-          onPressed: () => context.pop(),
+          onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: SafeArea(
@@ -131,19 +131,12 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
           );
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.cards_notifySuccess),
-          backgroundColor: context.colors.success,
-        ),
-      );
+      context.showSnack(l10n.cards_notifySuccess, tone: AppSnackTone.success);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.common_errorFormat(e.toString())),
-          backgroundColor: context.colors.error,
-        ),
+      context.showSnack(
+        l10n.common_errorFormat(e.toString()),
+        tone: AppSnackTone.error,
       );
     } finally {
       if (mounted) {

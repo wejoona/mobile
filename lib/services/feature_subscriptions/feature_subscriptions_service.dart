@@ -16,7 +16,23 @@ class FeatureSubscriptionsService {
     );
 
     return FeatureSubscriptionResponse.fromJson(
-      Map<String, dynamic>.from(response.data as Map),
+      _readSubscriptionPayload(response.data),
     );
   }
+}
+
+Map<String, dynamic> _readSubscriptionPayload(Object? raw) {
+  if (raw is Map) {
+    final map = Map<String, dynamic>.from(raw);
+    final data = map['data'];
+    if (data is Map) {
+      return Map<String, dynamic>.from(data);
+    }
+    final subscription = map['subscription'];
+    if (subscription is Map) {
+      return Map<String, dynamic>.from(subscription);
+    }
+    return map;
+  }
+  return const {};
 }

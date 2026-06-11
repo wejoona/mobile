@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -7,6 +5,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
+import 'package:usdc_wallet/utils/context_extensions.dart';
 
 /// Cards Screen - Coming Soon
 ///
@@ -332,22 +331,18 @@ class CardsScreen extends ConsumerWidget {
               } catch (e) {
                 if (!context.mounted) return;
                 Navigator.pop(dialogContext);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.common_errorFormat(e.toString())),
-                    backgroundColor: colors.error,
-                  ),
+                context.showSnack(
+                  l10n.common_errorFormat(e.toString()),
+                  tone: AppSnackTone.error,
                 );
                 return;
               }
 
               if (!context.mounted) return;
               Navigator.pop(dialogContext);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.cards_notifySuccess),
-                  backgroundColor: colors.success,
-                ),
+              context.showSnack(
+                l10n.cards_notifySuccess,
+                tone: AppSnackTone.success,
               );
             },
             variant: AppButtonVariant.primary,

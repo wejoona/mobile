@@ -11,6 +11,7 @@ import 'package:usdc_wallet/features/cards/widgets/card_empty_state.dart';
 import 'package:usdc_wallet/features/cards/widgets/card_visual.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
+import 'package:usdc_wallet/utils/context_extensions.dart';
 
 /// Cards list screen with visual card display.
 class CardsListView extends ConsumerWidget {
@@ -128,21 +129,14 @@ class CardsListView extends ConsumerWidget {
           );
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.common_errorFormat(e.toString())),
-          backgroundColor: context.colors.error,
-        ),
+      context.showSnack(
+        l10n.common_errorFormat(e.toString()),
+        tone: AppSnackTone.error,
       );
       return;
     }
 
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l10n.cards_notifySuccess),
-        backgroundColor: context.colors.success,
-      ),
-    );
+    context.showSnack(l10n.cards_notifySuccess, tone: AppSnackTone.success);
   }
 }

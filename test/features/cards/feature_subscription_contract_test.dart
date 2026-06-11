@@ -54,5 +54,35 @@ void main() {
         'metadata': {'surface': 'cards'},
       });
     });
+
+    test('accepts enveloped backend subscription response', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'subscription': {
+            'id': 'sub_1',
+            'featureKey': 'virtual_card',
+            'source': 'cards_screen',
+            'status': 'subscribed',
+            'userId': 'user_1',
+            'metadata': {'surface': 'cards'},
+            'isActive': true,
+            'createdAt': '2026-06-02T00:00:00.000Z',
+            'updatedAt': '2026-06-02T00:00:00.000Z',
+          },
+        }, statusCode: 201);
+      final service = FeatureSubscriptionsService(dio);
+
+      final response = await service.subscribe(
+        FeatureSubscriptionRequest(
+          featureKey: 'virtual_card',
+          source: 'cards_screen',
+          metadata: {'surface': 'cards'},
+        ),
+      );
+
+      expect(response.id, 'sub_1');
+      expect(response.userId, 'user_1');
+      expect(response.metadata?['surface'], 'cards');
+    });
   });
 }

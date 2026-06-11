@@ -10,6 +10,7 @@ import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
+import 'package:usdc_wallet/utils/context_extensions.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Provider Selection Screen
@@ -35,7 +36,7 @@ class ProviderSelectionScreen extends ConsumerWidget {
         title: AppText(l10n.deposit_title, variant: AppTextVariant.titleLarge),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: SafeArea(
@@ -303,7 +304,6 @@ class ProviderSelectionScreen extends ConsumerWidget {
                 context,
                 ref,
                 l10n,
-                colors,
                 availability,
                 selectedCountryCode,
               ),
@@ -328,7 +328,6 @@ class ProviderSelectionScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     AppLocalizations l10n,
-    ThemeColors colors,
     DepositProvidersAvailability availability,
     String selectedCountryCode,
   ) async {
@@ -357,19 +356,12 @@ class ProviderSelectionScreen extends ConsumerWidget {
             ),
           );
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.deposit_notifySuccess),
-          backgroundColor: colors.success,
-        ),
-      );
+      context.showSnack(l10n.deposit_notifySuccess, tone: AppSnackTone.success);
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.common_errorFormat(e.toString())),
-          backgroundColor: colors.error,
-        ),
+      context.showSnack(
+        l10n.common_errorFormat(e.toString()),
+        tone: AppSnackTone.error,
       );
     }
   }

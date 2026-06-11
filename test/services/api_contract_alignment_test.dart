@@ -374,6 +374,40 @@ void main() {
       expect(subscription.isActive, isTrue);
     });
 
+    test(
+      'feature subscription service accepts backend data envelope',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'data': {
+              'id': 'sub_1',
+              'featureKey': 'virtual_card',
+              'source': 'cards_screen',
+              'status': 'subscribed',
+              'phone': '+2250748805663',
+              'metadata': {'surface': 'cards', 'countryCode': 'CI'},
+              'isActive': true,
+              'createdAt': '2026-06-02T00:00:00.000Z',
+              'updatedAt': '2026-06-02T00:00:00.000Z',
+            },
+          });
+        final service = FeatureSubscriptionService(dio);
+
+        final subscription = await service.subscribe(
+          const FeatureSubscriptionRequest(
+            featureKey: 'virtual_card',
+            source: 'cards_screen',
+            platform: 'ios',
+            appVersion: '1.0.0+1',
+          ),
+        );
+
+        expect(subscription.id, 'sub_1');
+        expect(subscription.featureKey, 'virtual_card');
+        expect(subscription.metadata?['countryCode'], 'CI');
+      },
+    );
+
     test('bulk CSV parsing creates the preview draft model', () async {
       final service = BulkPaymentsService(Dio());
 
