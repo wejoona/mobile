@@ -129,6 +129,23 @@ void main() {
       expect(response.balances.single.total, 17.5);
     });
 
+    test('wallet balance parser accepts flat live balance aliases', () {
+      final response = WalletBalanceResponse.fromJson({
+        'walletId': 'wallet_1',
+        'walletAddress': '0xabc',
+        'currency': 'USDC',
+        'balanceUsdc': '21.250000',
+        'availableBalance': '20.000000',
+        'pendingBalance': '1.250000',
+      });
+
+      expect(response.walletId, 'wallet_1');
+      expect(response.balances.single.currency, 'USDC');
+      expect(response.balances.single.available, 20);
+      expect(response.balances.single.pending, 1.25);
+      expect(response.balances.single.total, 21.25);
+    });
+
     test('withdraw result accepts backend envelope and id aliases', () {
       final result = WithdrawResult.fromJson({
         'data': {

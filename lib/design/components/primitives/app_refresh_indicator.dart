@@ -34,10 +34,14 @@ class AppRefreshIndicator extends StatelessWidget {
 
   Future<void> _handleRefresh() async {
     // Provide haptic feedback when refresh starts
-    await hapticService.refresh();
+    try {
+      await hapticService.refresh().timeout(const Duration(milliseconds: 500));
+    } catch (_) {}
     await onRefresh();
     // Provide subtle feedback when refresh completes
-    await hapticService.lightTap();
+    try {
+      await hapticService.lightTap().timeout(const Duration(milliseconds: 500));
+    } catch (_) {}
   }
 
   @override

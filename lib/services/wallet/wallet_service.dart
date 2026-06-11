@@ -380,15 +380,24 @@ class WalletBalanceResponse {
           .toList();
     } else if (payload['balance'] != null ||
         payload['available'] != null ||
+        payload['availableBalance'] != null ||
+        payload['balanceUsdc'] != null ||
         payload['total'] != null) {
       // Create synthetic balance from single balance field
       final balance = _readAmount(payload, const [
         'available',
+        'availableBalance',
+        'balanceUsdc',
         'balance',
         'total',
       ]);
       final pending = _readAmount(payload, const ['pending', 'pendingBalance']);
-      final total = _readAmount(payload, const ['total', 'balance']);
+      final total = _readAmount(payload, const [
+        'total',
+        'totalBalance',
+        'balanceUsdc',
+        'balance',
+      ]);
       final currency = payload['currency'] as String? ?? 'USDC';
       balances = [
         WalletBalance(
