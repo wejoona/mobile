@@ -1096,19 +1096,31 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
 
   Future<void> _refreshHomeData() async {
     try {
-      await Future.wait([
-        ref
-            .read(walletStateMachineProvider.notifier)
-            .refresh()
-            .timeout(const Duration(seconds: 15)),
-        ref
-            .read(transactionStateMachineProvider.notifier)
-            .refresh(refreshWallet: false)
-            .timeout(const Duration(seconds: 12)),
-      ]);
+      await ref
+          .read(walletStateMachineProvider.notifier)
+          .refresh()
+          .timeout(const Duration(seconds: 15));
     } on Object catch (error, stackTrace) {
-      _logger.error('Home refresh did not complete cleanly', error, stackTrace);
+      _logger.error(
+        'Wallet refresh did not complete cleanly',
+        error,
+        stackTrace,
+      );
     }
+
+    unawaited(
+      ref
+          .read(transactionStateMachineProvider.notifier)
+          .refresh(refreshWallet: false)
+          .timeout(const Duration(seconds: 12))
+          .catchError((Object error, StackTrace stackTrace) {
+            _logger.error(
+              'Transaction refresh did not complete cleanly',
+              error,
+              stackTrace,
+            );
+          }),
+    );
 
     final wallet = ref.read(walletStateMachineProvider);
     if (wallet.status == WalletStatus.initial ||
