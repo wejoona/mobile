@@ -38,7 +38,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 /// 2. Call registerWithBackend() after user authentication
 /// 3. Call unregisterFromBackend() on logout
 class PushNotificationService {
-  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   final Dio _dio;
 
   StreamSubscription<RemoteMessage>? _foregroundSubscription;
@@ -57,6 +56,8 @@ class PushNotificationService {
   Function(Map<String, dynamic> data)? onNavigate;
 
   PushNotificationService(this._dio);
+
+  FirebaseMessaging get _messaging => FirebaseMessaging.instance;
 
   /// Initialize push notification service
   /// Call this early in app lifecycle after Firebase.initializeApp()
@@ -157,7 +158,9 @@ class PushNotificationService {
     if (_currentToken == null) return;
 
     try {
-      await _dio.delete('/notifications/device-token/$_currentToken');
+      await _dio.delete(
+        '/notifications/device-token/${Uri.encodeComponent(_currentToken!)}',
+      );
 
       _logger.info('FCM token unregistered from backend');
     } on DioException catch (e) {

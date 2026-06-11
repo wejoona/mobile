@@ -55,4 +55,34 @@ void main() {
     expect(dio.requestHistory[1].method, 'PUT');
     expect(dio.requestHistory[1].path, '/notifications/read-all');
   });
+
+  test('notifications feed surfaces missing backend route', () async {
+    final dio = MockDio()
+      ..queueErrorResponse(statusCode: 404, message: 'Not found');
+    final service = NotificationsService(dio);
+
+    await expectLater(
+      service.getNotifications(),
+      throwsA(
+        isA<ApiException>().having(
+          (error) => error.statusCode,
+          'statusCode',
+          404,
+        ),
+      ),
+    );
+  });
+
+  test('device token removal encodes path segment', () async {
+    final dio = MockDio()..queueResponse(null, statusCode: 204);
+    final service = NotificationsService(dio);
+
+    await service.removeFcmToken('abc/def:ghi');
+
+    expect(dio.requestHistory.single.method, 'DELETE');
+    expect(
+      dio.requestHistory.single.path,
+      '/notifications/device-token/abc%2Fdef%3Aghi',
+    );
+  });
 }

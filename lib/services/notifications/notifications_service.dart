@@ -22,10 +22,6 @@ class NotificationsService {
           .map((e) => AppNotification.fromJson(e as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
-      // Return empty list for 404 (endpoint not yet deployed)
-      if (e.response?.statusCode == 404) {
-        return [];
-      }
       throw ApiException.fromDioError(e);
     }
   }
@@ -101,7 +97,9 @@ class NotificationsService {
   /// DELETE /notifications/device-token/:token - Remove FCM/APNs token
   Future<void> removeFcmToken(String token) async {
     try {
-      await _dio.delete('/notifications/device-token/$token');
+      await _dio.delete(
+        '/notifications/device-token/${Uri.encodeComponent(token)}',
+      );
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -115,7 +113,9 @@ class NotificationsService {
   /// DELETE /notifications/device-token/:token
   Future<void> removeDeviceToken(String token) async {
     try {
-      await _dio.delete('/notifications/device-token/$token');
+      await _dio.delete(
+        '/notifications/device-token/${Uri.encodeComponent(token)}',
+      );
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }

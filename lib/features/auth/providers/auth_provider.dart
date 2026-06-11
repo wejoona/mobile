@@ -524,6 +524,15 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       // Notify backend first while we still have the token, but never let a
       // slow network path keep the user visibly logged in after choosing logout.
+      await ref
+          .read(pushNotificationServiceProvider)
+          .unregisterFromBackend()
+          .timeout(const Duration(seconds: 3));
+    } catch (e) {
+      AppLogger('AuthProvider').warn('Push token unregister did not complete', e);
+    }
+
+    try {
       await _authService.logout().timeout(const Duration(seconds: 4));
     } catch (e) {
       AppLogger('AuthProvider').warn('Backend logout did not complete', e);
