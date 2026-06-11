@@ -259,11 +259,13 @@ class ConfirmScreen extends ConsumerWidget {
                     final securityService = ref.read(
                       riskBasedSecurityServiceProvider,
                     );
+                    final riskRecipientId =
+                        state.recipient?.userId ?? state.recipient?.phoneNumber;
                     final decision = await securityService.evaluateTransaction(
                       type: 'transfer',
                       amount: state.amount!,
                       currency: 'USDC',
-                      recipientId: state.recipient?.phoneNumber,
+                      recipientId: riskRecipientId,
                       recipientType: 'internal',
                     );
 

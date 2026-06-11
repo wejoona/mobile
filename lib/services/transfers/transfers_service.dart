@@ -23,6 +23,7 @@ class TransfersService {
     required String recipientPhone,
     required double amount,
     String? note,
+    String? riskRecipientId,
     required String pinToken,
     required String idempotencyKey,
   }) async {
@@ -33,6 +34,7 @@ class TransfersService {
         type: 'transfer',
         amount: amount,
         currency: 'USDC',
+        recipientId: riskRecipientId ?? recipientPhone,
         recipientType: 'internal',
       );
 
