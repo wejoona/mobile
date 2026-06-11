@@ -19,6 +19,7 @@ import 'package:usdc_wallet/features/settings/repositories/devices_repository.da
 import 'package:usdc_wallet/features/settings/repositories/sessions_repository.dart';
 import 'package:usdc_wallet/features/send/providers/send_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/transaction_stats_provider.dart';
+import 'package:usdc_wallet/features/wallet/providers/withdraw_provider.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/api/providers/wallet_api.dart';
 import 'package:usdc_wallet/services/api/providers/notifications_api.dart';
@@ -122,6 +123,22 @@ void main() {
       expect(response.balances.single.available, 15.5);
       expect(response.balances.single.pending, 2);
       expect(response.balances.single.total, 17.5);
+    });
+
+    test('withdraw result accepts backend envelope and id aliases', () {
+      final result = WithdrawResult.fromJson({
+        'data': {
+          'withdrawalId': 'wdr_123',
+          'status': 'processing',
+          'providerReference': 'yc_ref_123',
+          'message': 'Withdrawal submitted',
+        },
+      });
+
+      expect(result.id, 'wdr_123');
+      expect(result.status, 'processing');
+      expect(result.reference, 'yc_ref_123');
+      expect(result.instructions, 'Withdrawal submitted');
     });
 
     test('refresh response accepts root and envelope token payloads', () {

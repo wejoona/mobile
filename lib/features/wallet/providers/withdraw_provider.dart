@@ -75,14 +75,29 @@ class WithdrawResult {
     this.instructions,
   });
 
-  factory WithdrawResult.fromJson(Map<String, dynamic> json) => WithdrawResult(
-    id: json['id'] as String,
-    status: json['status'] as String,
-    reference:
-        (json['reference'] as String?) ??
-        (json['providerReference'] as String?),
-    instructions: json['instructions'] as String?,
-  );
+  factory WithdrawResult.fromJson(Map<String, dynamic> json) {
+    final raw = _unwrapPayload(json);
+    return WithdrawResult(
+      id:
+          _readString(raw, const [
+            'id',
+            'withdrawalId',
+            'withdrawal_id',
+            'transactionId',
+            'transaction_id',
+          ]) ??
+          '',
+      status:
+          _readString(raw, const ['status', 'state', 'transactionStatus']) ??
+          'pending',
+      reference: _readString(raw, const [
+        'reference',
+        'providerReference',
+        'provider_reference',
+      ]),
+      instructions: _readString(raw, const ['instructions', 'message']),
+    );
+  }
 }
 
 /// Withdraw notifier.
@@ -143,8 +158,11 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
         options: Options(headers: headers),
       );
       final result = WithdrawResult.fromJson(
-        response.data as Map<String, dynamic>,
+        Map<String, dynamic>.from(response.data as Map),
       );
+      if (result.id.isEmpty) {
+        throw StateError('Withdrawal response did not include an id.');
+      }
       state = state.copyWith(isLoading: false, result: result);
       ref.invalidate(walletBalanceProvider);
       ref.invalidate(transactionsProvider);
@@ -159,3 +177,24 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
 final withdrawProvider = NotifierProvider<WithdrawNotifier, WithdrawState>(
   WithdrawNotifier.new,
 );
+
+Map<String, dynamic> _unwrapPayload(Map<String, dynamic> json) {
+  final data = json['data'];
+  if (data is Map<String, dynamic>) {
+    return data;
+  }
+  if (data is Map) {
+    return Map<String, dynamic>.from(data);
+  }
+  return json;
+}
+
+String? _readString(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value == null) continue;
+    final stringValue = value.toString().trim();
+    if (stringValue.isNotEmpty) return stringValue;
+  }
+  return null;
+}
