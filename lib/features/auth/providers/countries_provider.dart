@@ -19,7 +19,9 @@ final countriesProvider = FutureProvider<List<CountryConfig>>((ref) async {
         .map(_countryFromJson)
         .toList();
 
-    if (countries.isNotEmpty) return countries;
+    if (countries.isNotEmpty) {
+      return countries;
+    }
   } catch (_) {
     // Fall back to local config
   }
@@ -44,6 +46,15 @@ CountryConfig _countryFromJson(Map<String, dynamic> json) {
       json['prefix'] as String? ??
       (json['dialCode'] as String?)?.replaceFirst('+', '');
   final currency = json['currency'] as String?;
+  final availability = json['availability'] is Map
+      ? Map<String, dynamic>.from(json['availability'] as Map)
+      : const <String, dynamic>{};
+  final market = json['market'] as String?;
+  final onboardingAvailability = availability['onboarding'] as String?;
+  final isEnabled =
+      onboardingAvailability == 'open' ||
+      (onboardingAvailability == null && market == 'active') ||
+      (onboardingAvailability == null && market == null && local.isEnabled);
 
   return CountryConfig(
     code: code,
@@ -65,6 +76,10 @@ CountryConfig _countryFromJson(Map<String, dynamic> json) {
     depositRails:
         (json['depositRails'] as List?)?.cast<String>() ??
         (json['deposit_rails'] as List?)?.cast<String>() ??
+        (json['paymentRails'] as List?)?.cast<String>() ??
+        (json['payment_rails'] as List?)?.cast<String>() ??
+        (json['depositMethods'] as List?)?.cast<String>() ??
+        (json['deposit_methods'] as List?)?.cast<String>() ??
         local.depositRails,
     depositMinAmount:
         (json['depositMinAmount'] as num?)?.toDouble() ??
@@ -83,7 +98,7 @@ CountryConfig _countryFromJson(Map<String, dynamic> json) {
             .toList() ??
         local.depositQuickAmounts,
     phoneFormat: json['phoneFormat'] as String? ?? local.phoneFormat,
-    isEnabled: true,
+    isEnabled: isEnabled,
   );
 }
 
