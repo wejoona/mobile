@@ -11,6 +11,7 @@ import 'package:usdc_wallet/state/kyc_state_machine.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/services/realtime/realtime_service.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// Auth State
 enum AuthStatus {
@@ -108,7 +109,8 @@ class AuthNotifier extends Notifier<AuthState> {
         return;
       }
 
-      if (startupOnly && (state.phone != null || state.status != AuthStatus.loading)) {
+      if (startupOnly &&
+          (state.phone != null || state.status != AuthStatus.loading)) {
         return;
       }
 
@@ -508,10 +510,15 @@ class AuthNotifier extends Notifier<AuthState> {
 
   /// Logout
   Future<void> logout() async {
-    // Notify backend first (while we still have the token)
-    await _authService.logout();
-
-    await clearLocalSession();
+    try {
+      // Notify backend first while we still have the token, but never let a
+      // slow network path keep the user visibly logged in after choosing logout.
+      await _authService.logout().timeout(const Duration(seconds: 4));
+    } catch (e) {
+      AppLogger('AuthProvider').warn('Backend logout did not complete', e);
+    } finally {
+      await clearLocalSession();
+    }
   }
 
   /// Clear local auth/session state without calling the backend.
