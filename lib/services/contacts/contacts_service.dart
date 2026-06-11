@@ -322,13 +322,31 @@ class ContactsService {
 
     for (final contact in deviceContacts) {
       if (contact.phones.isNotEmpty) {
-        final phone = normalizePhoneE164(
-          contact.phones.first.number,
-          defaultCountryPrefix: defaultCountryPrefix,
-        );
+        final phones = contact.phones
+            .map(
+              (phone) => normalizePhoneE164(
+                phone.number,
+                defaultCountryPrefix: defaultCountryPrefix,
+              ),
+            )
+            .where((phone) => phone.length > 1)
+            .toSet()
+            .toList();
+        if (phones.isEmpty) {
+          continue;
+        }
+
+        final phone = phones.first;
         final name = contact.displayName;
 
-        synced.add(SyncedContact(id: contact.id, name: name, phone: phone));
+        synced.add(
+          SyncedContact(
+            id: contact.id,
+            name: name,
+            phone: phone,
+            lookupPhones: phones,
+          ),
+        );
       }
     }
 
@@ -342,7 +360,19 @@ class ContactsService {
     Dio dio,
     List<SyncedContact> allContacts,
   ) async {
-    final hashes = allContacts.map((c) => hashPhone(c.phone)).toSet().toList();
+    final contactHashes = {
+      for (final contact in allContacts)
+        contact:
+            (contact.lookupPhones.isNotEmpty
+                    ? contact.lookupPhones
+                    : [contact.phone])
+                .map(hashPhone)
+                .toSet(),
+    };
+    final hashes = contactHashes.values
+        .expand((hashes) => hashes)
+        .toSet()
+        .toList();
 
     try {
       final matches = <_ContactSyncMatch>[];
@@ -360,8 +390,13 @@ class ContactsService {
 
       // Mark matching contacts
       return allContacts.map((contact) {
-        final hash = hashPhone(contact.phone);
-        final match = matchMap[hash];
+        _ContactSyncMatch? match;
+        for (final hash in contactHashes[contact] ?? const <String>{}) {
+          match = matchMap[hash];
+          if (match != null) {
+            break;
+          }
+        }
 
         if (match != null) {
           return contact.copyWith(

@@ -3,6 +3,7 @@ class SyncedContact {
   final String id;
   final String name;
   final String phone;
+  final List<String> lookupPhones;
   final bool isKoridoUser;
   final String? joonaPayUserId;
   final String? avatarUrl;
@@ -11,6 +12,7 @@ class SyncedContact {
     required this.id,
     required this.name,
     required this.phone,
+    this.lookupPhones = const [],
     this.isKoridoUser = false,
     this.joonaPayUserId,
     this.avatarUrl,
@@ -21,6 +23,9 @@ class SyncedContact {
       id: json['id'] as String,
       name: json['name'] as String,
       phone: json['phone'] as String,
+      lookupPhones:
+          (json['lookupPhones'] as List?)?.whereType<String>().toList() ??
+          const [],
       isKoridoUser: json['isKoridoUser'] as bool? ?? false,
       joonaPayUserId: json['joonaPayUserId'] as String?,
       avatarUrl: json['avatarUrl'] as String?,
@@ -28,18 +33,20 @@ class SyncedContact {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'phone': phone,
-        'isKoridoUser': isKoridoUser,
-        'joonaPayUserId': joonaPayUserId,
-        'avatarUrl': avatarUrl,
-      };
+    'id': id,
+    'name': name,
+    'phone': phone,
+    'lookupPhones': lookupPhones,
+    'isKoridoUser': isKoridoUser,
+    'joonaPayUserId': joonaPayUserId,
+    'avatarUrl': avatarUrl,
+  };
 
   SyncedContact copyWith({
     String? id,
     String? name,
     String? phone,
+    List<String>? lookupPhones,
     bool? isKoridoUser,
     String? joonaPayUserId,
     String? avatarUrl,
@@ -48,6 +55,7 @@ class SyncedContact {
       id: id ?? this.id,
       name: name ?? this.name,
       phone: phone ?? this.phone,
+      lookupPhones: lookupPhones ?? this.lookupPhones,
       isKoridoUser: isKoridoUser ?? this.isKoridoUser,
       joonaPayUserId: joonaPayUserId ?? this.joonaPayUserId,
       avatarUrl: avatarUrl ?? this.avatarUrl,
