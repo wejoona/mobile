@@ -3,6 +3,7 @@ import 'package:usdc_wallet/providers/missing_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:usdc_wallet/config/countries.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -10,6 +11,7 @@ import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
+import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/utils/context_extensions.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 
@@ -27,7 +29,7 @@ class ProviderSelectionScreen extends ConsumerWidget {
     final colors = context.colors;
     final depositState = ref.watch(depositProvider);
     final availabilityAsync = ref.watch(depositProvidersAvailabilityProvider);
-    final country = ref.watch(selectedCountryProvider);
+    final country = _effectiveCountry(ref);
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -556,4 +558,12 @@ String _formatSourceAmount(DepositState depositState) {
 
 String _humanizeCapabilityReason(String reason) {
   return reason.replaceAll('_', ' ');
+}
+
+CountryConfig _effectiveCountry(WidgetRef ref) {
+  final selectedCountry = ref.watch(selectedCountryProvider);
+  final userCountryCode = ref.watch(
+    userStateMachineProvider.select((state) => state.countryCode),
+  );
+  return SupportedCountries.findByCode(userCountryCode) ?? selectedCountry;
 }
