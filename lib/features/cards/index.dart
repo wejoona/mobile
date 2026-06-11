@@ -9,7 +9,6 @@ export 'package:usdc_wallet/features/cards/views/card_detail_view.dart';
 export 'package:usdc_wallet/features/cards/views/card_settings_view.dart';
 export 'package:usdc_wallet/features/cards/views/card_transactions_view.dart';
 export 'package:usdc_wallet/features/cards/views/cards_list_view.dart';
-export 'package:usdc_wallet/features/cards/views/cards_screen.dart';
 export 'package:usdc_wallet/features/cards/views/request_card_view.dart';
 export 'package:usdc_wallet/features/cards/widgets/card_action_buttons.dart';
 export 'package:usdc_wallet/features/cards/widgets/card_actions_row.dart';
