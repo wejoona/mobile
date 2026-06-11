@@ -67,7 +67,10 @@ class _SessionManagerState extends ConsumerState<SessionManager>
     // Delay provider modification to avoid modifying during build/layout
     Future.microtask(() {
       if (mounted) {
-        ref.read(sessionServiceProvider.notifier).recordActivity();
+        final session = ref.read(sessionServiceProvider);
+        if (!session.isExpiring) {
+          ref.read(sessionServiceProvider.notifier).recordActivity();
+        }
       }
     });
   }
