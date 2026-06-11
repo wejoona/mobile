@@ -328,6 +328,7 @@ class _CreateRecurringTransferViewState
           backgroundColor: context.colors.success,
         ),
       );
+      ref.invalidate(recurringTransfersProvider);
       ref.read(createRecurringTransferProvider.notifier).reset();
       context.pop();
     } catch (_) {
