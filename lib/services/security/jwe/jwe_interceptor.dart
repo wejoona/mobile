@@ -17,6 +17,7 @@ const _sensitivePathPatterns = [
   '/user/pin/', // PIN set, verify, change, reset
   '/wallet/deposit', // Deposit initiation
   '/wallet/transfer/', // Internal + external transfers
+  '/transfers/', // Active transfer controller
   '/wallet/withdraw', // Withdrawals
 ];
 
