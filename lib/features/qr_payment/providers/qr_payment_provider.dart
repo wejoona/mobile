@@ -6,7 +6,6 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
-import 'package:usdc_wallet/core/utils/amount_conversion.dart';
 import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 
 /// QR payment types.
@@ -17,6 +16,7 @@ class QrPaymentState {
   final bool isLoading;
   final String? error;
   final QrPaymentData? scannedData;
+  final String? rawData;
   final bool isProcessing;
   final bool isComplete;
 
@@ -27,6 +27,7 @@ class QrPaymentState {
     this.isLoading = false,
     this.error,
     this.scannedData,
+    this.rawData,
     this.isProcessing = false,
     this.isComplete = false,
     this.pinToken,
@@ -37,6 +38,7 @@ class QrPaymentState {
     bool? isLoading,
     String? error,
     QrPaymentData? scannedData,
+    String? rawData,
     bool? isProcessing,
     bool? isComplete,
     String? pinToken,
@@ -45,6 +47,7 @@ class QrPaymentState {
     isLoading: isLoading ?? this.isLoading,
     error: error,
     scannedData: scannedData ?? this.scannedData,
+    rawData: rawData ?? this.rawData,
     isProcessing: isProcessing ?? this.isProcessing,
     isComplete: isComplete ?? this.isComplete,
     pinToken: pinToken ?? this.pinToken,
@@ -62,12 +65,13 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
     try {
       final json = jsonDecode(rawData) as Map<String, dynamic>;
       final data = QrPaymentData.fromJson(json);
-      state = state.copyWith(scannedData: data);
+      state = state.copyWith(scannedData: data, rawData: rawData);
     } catch (e) {
       // Try as plain phone number
       if (rawData.startsWith('+') || rawData.startsWith('00')) {
         state = state.copyWith(
           scannedData: QrPaymentData(type: "p2p", recipient: rawData),
+          rawData: rawData,
         );
       } else {
         state = state.copyWith(error: 'QR code invalide');
@@ -117,7 +121,6 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
         idempotencyKey: state.idempotencyKey!,
       );
       final options = Options(headers: headers);
-      final amountCents = toCents(amount);
       final transferAmount = amount;
 
       // data.type is a String? — match against string values, not enum
@@ -143,14 +146,17 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
           );
           break;
         case 'merchant':
+          final qrData = state.rawData;
+          if (qrData == null || qrData.isEmpty) {
+            state = state.copyWith(
+              isProcessing: false,
+              error: 'Merchant payment requires QR data',
+            );
+            return;
+          }
           await dio.post(
             '/merchants/pay',
-            data: {
-              'merchantId': data.merchantId,
-              'amount': amountCents,
-              'currency': 'USDC',
-              if (data.reference != null) 'reference': data.reference,
-            },
+            data: {'qrData': qrData, 'amount': transferAmount},
             options: options,
           );
           break;

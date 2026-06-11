@@ -651,6 +651,43 @@ void main() {
       expect(dio.requestHistory.single.data, {'amount': 12.5});
     });
 
+    test(
+      'QR merchant payment sends raw QR data and major-unit amount',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'paymentId': 'pay_1',
+            'amount': 12.5,
+            'status': 'completed',
+          });
+        final container = ProviderContainer(
+          overrides: [dioProvider.overrideWithValue(dio)],
+        );
+        addTearDown(container.dispose);
+
+        const qrData =
+            'joonapay://pay?v=1&t=static&m=merchant_1&ts=1781159000&s=sig';
+        final notifier = container.read(qrPaymentProvider.notifier);
+        notifier.state = const QrPaymentState(
+          scannedData: QrPaymentData(
+            type: 'merchant',
+            merchantId: 'merchant_1',
+          ),
+          rawData: qrData,
+          pinToken: 'pin_token',
+          idempotencyKey: 'merchant-idempotency',
+        );
+        await notifier.pay(12.5);
+
+        expect(dio.requestHistory.single.method, 'POST');
+        expect(dio.requestHistory.single.path, '/merchants/pay');
+        expect(dio.requestHistory.single.data, {
+          'qrData': qrData,
+          'amount': 12.5,
+        });
+      },
+    );
+
     test('PIN client contract stays on user PIN routes', () {
       final walletApiSource = File(
         'lib/services/api/providers/wallet_api.dart',
