@@ -31,6 +31,7 @@ class _ContactPickerBottomSheetState
   bool _isLoading = true;
   bool _isLookupLoading = false;
   bool _permissionRequired = false;
+  bool _requiresSettings = false;
   Timer? _lookupDebounce;
 
   @override
@@ -56,6 +57,7 @@ class _ContactPickerBottomSheetState
           _contacts = contacts;
           _filteredContacts = contacts;
           _permissionRequired = false;
+          _requiresSettings = false;
           _isLoading = false;
         });
       }
@@ -68,10 +70,12 @@ class _ContactPickerBottomSheetState
 
   Future<List<SyncedContact>> _loadDeviceContacts() async {
     final contactsService = ref.read(contactsServiceProvider);
-    if (!await contactsService.hasContactsPermission()) {
+    final status = await Permission.contacts.status;
+    if (!status.isGranted && !status.isLimited) {
       if (mounted) {
         setState(() {
           _permissionRequired = true;
+          _requiresSettings = status.isPermanentlyDenied || status.isRestricted;
           _isLoading = false;
         });
       }
@@ -107,6 +111,19 @@ class _ContactPickerBottomSheetState
 
   Future<void> _requestContactsPermission() async {
     setState(() => _isLoading = true);
+    final currentStatus = await Permission.contacts.status;
+    if (currentStatus.isPermanentlyDenied || currentStatus.isRestricted) {
+      if (mounted) {
+        setState(() {
+          _permissionRequired = true;
+          _requiresSettings = true;
+          _isLoading = false;
+        });
+      }
+      await openAppSettings();
+      return;
+    }
+
     final granted = await ref
         .read(contactsServiceProvider)
         .requestContactsPermission();
@@ -117,8 +134,11 @@ class _ContactPickerBottomSheetState
       await _loadContacts();
       return;
     }
+    final nextStatus = await Permission.contacts.status;
     setState(() {
       _permissionRequired = true;
+      _requiresSettings =
+          nextStatus.isPermanentlyDenied || nextStatus.isRestricted;
       _isLoading = false;
     });
   }
@@ -340,18 +360,14 @@ class _ContactPickerBottomSheetState
               ),
               SizedBox(height: AppSpacing.xl),
               AppButton(
-                label: l10n.contacts_permission_allow,
-                icon: Icons.person_search_rounded,
+                label: _requiresSettings
+                    ? l10n.action_open_settings
+                    : l10n.contacts_permission_allow,
+                icon: _requiresSettings
+                    ? Icons.settings_outlined
+                    : Icons.person_search_rounded,
                 isFullWidth: true,
                 onPressed: () => unawaited(_requestContactsPermission()),
-              ),
-              SizedBox(height: AppSpacing.sm),
-              AppButton(
-                label: l10n.action_open_settings,
-                icon: Icons.settings_outlined,
-                variant: AppButtonVariant.secondary,
-                isFullWidth: true,
-                onPressed: () => unawaited(openAppSettings()),
               ),
             ],
           ),

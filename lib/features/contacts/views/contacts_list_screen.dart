@@ -52,7 +52,13 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
         if (mounted) await _showContactsSettingsDialog(l10n);
         return;
       }
-      await notifier.requestPermission();
+      final granted = await notifier.requestPermission();
+      if (!granted && mounted) {
+        final nextStatus = await Permission.contacts.status;
+        if (nextStatus.isPermanentlyDenied || nextStatus.isRestricted) {
+          await _showContactsSettingsDialog(l10n);
+        }
+      }
       return;
     }
     await notifier.syncContacts();

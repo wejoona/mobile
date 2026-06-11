@@ -7,6 +7,9 @@ void main() {
     final providerSource = File(
       'lib/features/contacts/providers/contacts_provider.dart',
     ).readAsStringSync();
+    final pickerSource = File(
+      'lib/features/send/widgets/contact_picker_bottom_sheet.dart',
+    ).readAsStringSync();
 
     final syncContactsBody = _methodBody(providerSource, 'syncContacts');
     final requestPermissionBody = _methodBody(
@@ -20,13 +23,36 @@ void main() {
 
     expect(requestPermissionBody, contains('requestContactsPermission'));
     expect(requestPermissionBody, contains('await syncContacts()'));
+
+    final pickerPermissionBody = _methodBody(
+      pickerSource,
+      '_requestContactsPermission',
+    );
+    final pickerPermissionCard = _methodBody(
+      pickerSource,
+      '_buildPermissionRequest',
+    );
+
+    expect(pickerPermissionBody, contains('requestContactsPermission'));
+    expect(pickerPermissionBody, contains('openAppSettings'));
+    expect(pickerPermissionCard, contains('_requiresSettings'));
+    expect(
+      pickerPermissionCard,
+      isNot(contains('variant: AppButtonVariant.secondary')),
+    );
   });
 }
 
 String _methodBody(String source, String methodName) {
-  final signatureIndex = source.indexOf('Future<void> $methodName()') >= 0
-      ? source.indexOf('Future<void> $methodName()')
-      : source.indexOf('Future<bool> $methodName()');
+  final signatures = [
+    'Future<void> $methodName()',
+    'Future<bool> $methodName()',
+    'Widget $methodName(',
+  ];
+  final signatureIndex = signatures
+      .map(source.indexOf)
+      .where((index) => index >= 0)
+      .fold<int>(-1, (current, index) => current == -1 ? index : current);
   expect(signatureIndex, isNonNegative, reason: '$methodName should exist');
 
   final bodyStart = source.indexOf('{', signatureIndex);
