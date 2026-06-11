@@ -359,32 +359,43 @@ class WalletBalanceResponse {
   }
 
   factory WalletBalanceResponse.fromJson(Map<String, dynamic> json) {
-    final List<dynamic> balanceList = json['balances'] ?? [];
+    final payload = _walletPayload(json);
+    final List<dynamic> balanceList = payload['balances'] as List? ?? [];
 
     // Handle both GET /wallet and POST /wallet/create response formats
     // GET returns: {walletId, walletAddress, balances: [...]}
     // POST returns: {id, circleWalletAddress, balance: number}
-    final walletId = json['walletId'] as String? ?? json['id'] as String? ?? '';
+    final walletId =
+        payload['walletId'] as String? ?? payload['id'] as String? ?? '';
     final walletAddress =
-        json['walletAddress'] as String? ??
-        json['circleWalletAddress'] as String?;
+        payload['walletAddress'] as String? ??
+        payload['circleWalletAddress'] as String?;
 
     // If balances array is empty but balance field exists, create a synthetic balance
     List<WalletBalance> balances;
     if (balanceList.isNotEmpty) {
       balances = balanceList
-          .map((e) => WalletBalance.fromJson(e as Map<String, dynamic>))
+          .whereType<Map>()
+          .map((e) => WalletBalance.fromJson(Map<String, dynamic>.from(e)))
           .toList();
-    } else if (json['balance'] != null) {
+    } else if (payload['balance'] != null ||
+        payload['available'] != null ||
+        payload['total'] != null) {
       // Create synthetic balance from single balance field
-      final balance = (json['balance'] as num).toDouble();
-      final currency = json['currency'] as String? ?? 'USDC';
+      final balance = _readAmount(payload, const [
+        'available',
+        'balance',
+        'total',
+      ]);
+      final pending = _readAmount(payload, const ['pending', 'pendingBalance']);
+      final total = _readAmount(payload, const ['total', 'balance']);
+      final currency = payload['currency'] as String? ?? 'USDC';
       balances = [
         WalletBalance(
           currency: currency,
           available: balance,
-          pending: 0,
-          total: balance,
+          pending: pending,
+          total: total == 0 ? balance + pending : total,
         ),
       ];
     } else {
@@ -394,11 +405,27 @@ class WalletBalanceResponse {
     return WalletBalanceResponse(
       walletId: walletId,
       walletAddress: walletAddress,
-      blockchain: json['blockchain'] as String? ?? 'polygon',
-      currency: json['currency'] as String? ?? 'USD',
+      blockchain: payload['blockchain'] as String? ?? 'polygon',
+      currency: payload['currency'] as String? ?? 'USD',
       balances: balances,
     );
   }
+}
+
+Map<String, dynamic> _walletPayload(Map<String, dynamic> json) {
+  final data = json['data'];
+  if (data is Map<String, dynamic>) return data;
+  if (data is Map) return Map<String, dynamic>.from(data);
+  return json;
+}
+
+double _readAmount(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0;
+  }
+  return 0;
 }
 
 /// Deposit Response

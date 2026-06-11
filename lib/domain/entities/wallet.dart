@@ -71,11 +71,20 @@ class WalletBalance {
   factory WalletBalance.fromJson(Map<String, dynamic> json) {
     return WalletBalance(
       currency: json['currency'] as String? ?? 'USD',
-      available: (json['available'] as num?)?.toDouble() ?? 0,
-      pending: (json['pending'] as num?)?.toDouble() ?? 0,
-      total: (json['total'] as num?)?.toDouble() ?? 0,
+      available: _walletAmount(json, const ['available', 'balance']),
+      pending: _walletAmount(json, const ['pending', 'pendingBalance']),
+      total: _walletAmount(json, const ['total', 'balance', 'available']),
     );
   }
+}
+
+double _walletAmount(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0;
+  }
+  return 0;
 }
 
 /// Deposit Channel

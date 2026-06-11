@@ -30,6 +30,7 @@ import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_
 import 'package:usdc_wallet/services/auth/auth_service.dart';
 import 'package:usdc_wallet/services/notifications/notifications_service.dart';
 import 'package:usdc_wallet/services/transfers/transfers_service.dart';
+import 'package:usdc_wallet/services/wallet/wallet_service.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 import '../helpers/test_utils.dart';
@@ -95,6 +96,32 @@ void main() {
         'amount': 1000.0,
         'direction': 'buy',
       });
+    });
+
+    test('wallet balance parser accepts backend data envelope', () {
+      final response = WalletBalanceResponse.fromJson({
+        'success': true,
+        'data': {
+          'walletId': 'wallet_1',
+          'walletAddress': '0xabc',
+          'currency': 'USDC',
+          'balances': [
+            {
+              'currency': 'USDC',
+              'available': '15.5',
+              'pending': 2,
+              'total': 17.5,
+            },
+          ],
+        },
+      });
+
+      expect(response.walletId, 'wallet_1');
+      expect(response.walletAddress, '0xabc');
+      expect(response.balances.single.currency, 'USDC');
+      expect(response.balances.single.available, 15.5);
+      expect(response.balances.single.pending, 2);
+      expect(response.balances.single.total, 17.5);
     });
 
     test('refresh response accepts root and envelope token payloads', () {
