@@ -39,16 +39,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   }
 
   Future<void> _loadContacts() async {
-    final notifier = ref.read(contactsProvider.notifier);
-    final status = await Permission.contacts.status;
-    if (!status.isGranted &&
-        !status.isLimited &&
-        !status.isPermanentlyDenied &&
-        !status.isRestricted) {
-      await notifier.requestPermission();
-      return;
-    }
-    await notifier.syncContacts();
+    await ref.read(contactsProvider.notifier).syncContacts();
   }
 
   Future<void> _manualSync() async {
