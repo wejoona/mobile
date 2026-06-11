@@ -168,11 +168,18 @@ class SendFlowHeader extends StatelessWidget {
     return Semantics(
       label: metaLabel == null ? title : '$metaLabel, $title',
       child: Container(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: colors.container,
-          borderRadius: BorderRadius.circular(AppRadius.xl),
-          border: Border.all(color: colors.borderSubtle),
+          color: Color.alphaBlend(
+            colors.gold.withValues(alpha: colors.isDark ? 0.055 : 0.035),
+            colors.elevated,
+          ),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          border: Border.all(
+            color: colors.borderGold.withValues(
+              alpha: colors.isDark ? 0.34 : 0.24,
+            ),
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,13 +191,13 @@ class SendFlowHeader extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: colors.infoBg,
-                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                    color: colors.goldSubtle,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
                     border: Border.all(
-                      color: colors.info.withValues(alpha: 0.18),
+                      color: colors.borderGold.withValues(alpha: 0.7),
                     ),
                   ),
-                  child: Icon(icon, color: colors.infoText, size: 22),
+                  child: Icon(icon, color: colors.gold, size: 22),
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
@@ -204,7 +211,7 @@ class SendFlowHeader extends StatelessWidget {
                             vertical: AppSpacing.xs,
                           ),
                           decoration: BoxDecoration(
-                            color: colors.elevated,
+                            color: colors.container,
                             borderRadius: BorderRadius.circular(AppRadius.full),
                             border: Border.all(color: colors.borderSubtle),
                           ),
@@ -242,14 +249,28 @@ class SendFlowHeader extends StatelessWidget {
                 final isActive = index <= currentStep;
                 final isCurrent = index == currentStep;
                 return Expanded(
-                  child: Container(
-                    height: isCurrent ? 5 : 3,
-                    margin: EdgeInsets.only(
-                      right: index == totalSteps - 1 ? 0 : AppSpacing.xs,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    height: 5,
+                    margin: EdgeInsetsDirectional.only(
+                      end: index == totalSteps - 1 ? 0 : AppSpacing.xs,
                     ),
                     decoration: BoxDecoration(
-                      color: isActive ? colors.gold : colors.borderSubtle,
+                      color: isActive
+                          ? colors.gold
+                          : colors.borderSubtle.withValues(alpha: 0.75),
                       borderRadius: BorderRadius.circular(AppRadius.full),
+                      boxShadow: isCurrent
+                          ? [
+                              BoxShadow(
+                                color: colors.gold.withValues(
+                                  alpha: colors.isDark ? 0.30 : 0.14,
+                                ),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ]
+                          : null,
                     ),
                   ),
                 );

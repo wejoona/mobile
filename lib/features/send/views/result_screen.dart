@@ -15,6 +15,7 @@ import 'package:usdc_wallet/features/send/providers/send_provider.dart';
 import 'package:usdc_wallet/features/send/widgets/send_flow_visuals.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
+import 'package:usdc_wallet/utils/context_extensions.dart';
 import 'package:usdc_wallet/core/utils/formatters.dart';
 
 class ResultScreen extends ConsumerStatefulWidget {
@@ -104,7 +105,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                     children: [
                       _buildResultContent(l10n, state, colors, isSuccess),
                       const Spacer(),
-                      const SizedBox(height: AppSpacing.md),
+                      const SizedBox(height: AppSpacing.sm),
                       _buildActions(l10n, isSuccess),
                     ],
                   ),
@@ -124,11 +125,11 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     bool isSuccess,
   ) => Column(
     children: [
-      const SizedBox(height: AppSpacing.lg),
+      const SizedBox(height: AppSpacing.sm),
       ScaleTransition(
         scale: _scaleAnimation,
         child: Container(
-          padding: const EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
             color: Color.alphaBlend(
               (isSuccess ? colors.success : colors.error).withValues(
@@ -145,15 +146,15 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
           ),
           child: Icon(
             isSuccess ? Icons.check_circle : Icons.error,
-            size: 56,
+            size: 44,
             color: isSuccess ? colors.success : colors.error,
           ),
         ),
       ),
-      const SizedBox(height: AppSpacing.xl),
+      const SizedBox(height: AppSpacing.lg),
       AppText(
         isSuccess ? l10n.send_transferSuccess : l10n.send_transferFailed,
-        variant: AppTextVariant.headlineMedium,
+        variant: AppTextVariant.titleLarge,
         textAlign: TextAlign.center,
       ),
       const SizedBox(height: AppSpacing.sm),
@@ -169,11 +170,11 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
           color: colors.error,
           textAlign: TextAlign.center,
         ),
-      const SizedBox(height: AppSpacing.xl),
+      const SizedBox(height: AppSpacing.lg),
       if (isSuccess && state.result != null) ...[
         AppCard(
           variant: AppCardVariant.elevated,
-          padding: const EdgeInsets.all(AppSpacing.xl),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             children: [
               AppText(
@@ -186,17 +187,11 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                 fit: BoxFit.scaleDown,
                 child: AmountText.fromText(
                   formatUsdc(state.result!.amount),
-                  size: AmountTextSize.large,
+                  size: AmountTextSize.medium,
                   color: colors.gold,
                 ),
               ),
-              const SizedBox(height: AppSpacing.sm),
-              AppText(
-                l10n.send_sentTo,
-                variant: AppTextVariant.bodySmall,
-                color: colors.textSecondary,
-              ),
-              const SizedBox(height: AppSpacing.xs),
+              const SizedBox(height: AppSpacing.md),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -218,52 +213,60 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                 ],
               ),
               if (state.recipient?.name != null) ...[
-                const SizedBox(height: AppSpacing.xs),
+                const SizedBox(height: AppSpacing.xxs),
                 AppText(
                   state.recipient!.phoneNumber,
                   variant: AppTextVariant.bodySmall,
                   color: colors.textSecondary,
                 ),
               ],
-              const SizedBox(height: AppSpacing.md),
-              Divider(color: colors.borderSubtle),
-              const SizedBox(height: AppSpacing.md),
-              SendDetailRow(
-                label: l10n.send_reference,
-                value: state.result!.reference,
-                valueWidget: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                      child: AppText(
-                        state.result!.reference,
-                        textAlign: TextAlign.right,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    IconButton(
-                      tooltip: l10n.common_copy,
-                      icon: Icon(
-                        Icons.copy_rounded,
-                        size: 18,
-                        color: colors.infoText,
-                      ),
-                      onPressed: () =>
-                          _copyToClipboard(state.result!.reference, colors),
-                    ),
-                  ],
-                ),
-              ),
               const SizedBox(height: AppSpacing.sm),
-              SendDetailRow(
-                label: l10n.send_date,
-                value: Formatters.formatDateTime(state.result!.createdAt),
+              Divider(color: colors.borderSubtle),
+              const SizedBox(height: AppSpacing.sm),
+              Row(
+                children: [
+                  Expanded(
+                    child: SendDetailRow(
+                      label: l10n.send_date,
+                      value: Formatters.formatDateTime(state.result!.createdAt),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  IconButton(
+                    tooltip: l10n.common_copy,
+                    icon: Icon(
+                      Icons.copy_rounded,
+                      size: 18,
+                      color: colors.infoText,
+                    ),
+                    onPressed: () => _copyToClipboard(state.result!.reference),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+                decoration: BoxDecoration(
+                  color: colors.container,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  border: Border.all(color: colors.borderSubtle),
+                ),
+                child: AppText(
+                  state.result!.reference,
+                  variant: AppTextVariant.bodySmall,
+                  color: colors.textSecondary,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: AppSpacing.md),
+        const SizedBox(height: AppSpacing.sm),
       ],
       if (!isSuccess) ...[
         const SizedBox(height: AppSpacing.md),
@@ -333,24 +336,20 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     );
   }
 
-  Future<void> _copyToClipboard(String text, ThemeColors colors) async {
+  Future<void> _copyToClipboard(String text) async {
     final l10n = AppLocalizations.of(context)!;
     unawaited(hapticService.lightTap());
     await Clipboard.setData(ClipboardData(text: text));
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.common_copiedToClipboard),
-          backgroundColor: colors.success,
-          duration: const Duration(seconds: 2),
-        ),
+      context.showSnack(
+        l10n.common_copiedToClipboard,
+        tone: AppSnackTone.success,
       );
     }
   }
 
   Future<void> _handleSaveBeneficiary() async {
     final state = ref.read(sendMoneyProvider);
-    final colors = context.colors;
     if (state.recipient == null) {
       return;
     }
@@ -370,20 +369,16 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
 
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.send_beneficiarySaved),
-            backgroundColor: colors.success,
-          ),
+        context.showSnack(
+          l10n.send_beneficiarySaved,
+          tone: AppSnackTone.success,
         );
       }
     } on Object {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.common_genericError),
-            backgroundColor: colors.error,
-          ),
+        context.showSnack(
+          AppLocalizations.of(context)!.common_genericError,
+          tone: AppSnackTone.error,
         );
       }
     }
