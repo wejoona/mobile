@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:usdc_wallet/providers/missing_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -435,7 +437,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
     } else {
       ref.read(depositProvider.notifier).setAmountUSD(amount, rate);
     }
-    context.push('/deposit/provider');
+    unawaited(context.push('/deposit/provider'));
   }
 
   String get _currency => _isXOF ? 'XOF' : 'USD';

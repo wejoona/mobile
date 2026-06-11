@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:usdc_wallet/features/deposit/models/provider_data.dart';
 import 'package:usdc_wallet/providers/missing_providers.dart';
 import 'package:flutter/material.dart';
@@ -382,7 +384,7 @@ class ProviderSelectionScreen extends ConsumerWidget {
     // Navigate to payment instructions if successful, passing response as extra
     final response = ref.read(depositProvider).response;
     if (response != null && context.mounted) {
-      context.push('/deposit/instructions', extra: response);
+      unawaited(context.push('/deposit/instructions', extra: response));
     }
   }
 }
