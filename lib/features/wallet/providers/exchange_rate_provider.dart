@@ -41,15 +41,48 @@ final exchangeRateProvider = FutureProvider<ExchangeRate>((ref) async {
   ref.onDispose(() => timer.cancel());
 
   try {
-    final response = await dio.get('/rates/pair', queryParameters: {
-      'from': 'USDC',
-      'to': 'XOF',
-    });
+    final response = await dio.get(
+      '/wallet/exchange-rate',
+      queryParameters: {
+        'sourceCurrency': 'XOF',
+        'targetCurrency': 'USD',
+        'amount': 10000,
+        'direction': 'buy',
+      },
+    );
     final data = response.data as Map<String, dynamic>;
-    final rate = (data['rate'] as num?)?.toDouble() ?? 600.0;
-    return ExchangeRate(rate: rate, updatedAt: DateTime.now());
+    final rate = data.containsKey('fromCurrency')
+        ? _readDouble(data['rate']) ?? _rateFromAmounts(data) ?? 600.0
+        : _rateFromAmounts(data) ??
+              _readDouble(data['rateDecimal']) ??
+              _readDouble(data['rate']) ??
+              600.0;
+    return ExchangeRate(rate: rate, updatedAt: _updatedAt(data));
   } catch (_) {
     // Fallback to BCEAO peg rate (1 USD ≈ 600 XOF)
     return ExchangeRate(rate: 600.0, updatedAt: DateTime.now());
   }
 });
+
+double? _rateFromAmounts(Map<String, dynamic> data) {
+  final sourceAmount =
+      (data['sourceAmount'] as num?)?.toDouble() ??
+      double.tryParse(data['sourceAmountDecimal']?.toString() ?? '');
+  final targetAmount =
+      (data['targetAmount'] as num?)?.toDouble() ??
+      double.tryParse(data['targetAmountDecimal']?.toString() ?? '');
+  if (sourceAmount == null || targetAmount == null || targetAmount <= 0) {
+    return null;
+  }
+  return sourceAmount / targetAmount;
+}
+
+double? _readDouble(Object? value) {
+  if (value is num) return value.toDouble();
+  return double.tryParse(value?.toString() ?? '');
+}
+
+DateTime _updatedAt(Map<String, dynamic> data) {
+  final raw = data['timestamp'] ?? data['expiresAt'];
+  return DateTime.tryParse(raw?.toString() ?? '') ?? DateTime.now();
+}

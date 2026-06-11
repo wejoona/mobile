@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
+import 'package:usdc_wallet/features/wallet/providers/exchange_rate_provider.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
 import '../../helpers/test_utils.dart';
@@ -98,5 +99,54 @@ void main() {
         expect(balance.currency, 'USDC');
       },
     );
+  });
+
+  group('exchangeRateProvider', () {
+    test('uses the canonical wallet exchange-rate endpoint', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'fromCurrency': 'XOF',
+          'toCurrency': 'USD',
+          'rate': 602.25,
+          'timestamp': '2026-06-11T08:00:00.000Z',
+        });
+
+      final container = ProviderContainer(
+        overrides: [dioProvider.overrideWithValue(dio)],
+      );
+      addTearDown(container.dispose);
+
+      final rate = await container.read(exchangeRateProvider.future);
+
+      expect(rate.rate, 602.25);
+      expect(rate.toXof(2), 1204.5);
+      expect(dio.requestHistory.single.method, 'GET');
+      expect(dio.requestHistory.single.path, '/wallet/exchange-rate');
+      expect(dio.requestHistory.single.queryParameters, {
+        'sourceCurrency': 'XOF',
+        'targetCurrency': 'USD',
+        'amount': 10000,
+        'direction': 'buy',
+      });
+    });
+
+    test('derives XOF per USD from canonical amount fields', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'sourceCurrency': 'XOF',
+          'targetCurrency': 'USD',
+          'sourceAmountDecimal': '10000.000000',
+          'targetAmountDecimal': '16.250000',
+        });
+
+      final container = ProviderContainer(
+        overrides: [dioProvider.overrideWithValue(dio)],
+      );
+      addTearDown(container.dispose);
+
+      final rate = await container.read(exchangeRateProvider.future);
+
+      expect(rate.rate, closeTo(615.3846, 0.0001));
+    });
   });
 }
