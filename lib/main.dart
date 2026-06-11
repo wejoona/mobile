@@ -18,6 +18,7 @@ import 'package:usdc_wallet/services/app_lifecycle/app_lifecycle_observer.dart';
 import 'package:usdc_wallet/services/error_tracking/sentry_service.dart';
 import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
 import 'package:usdc_wallet/services/localization/language_provider.dart';
+import 'package:usdc_wallet/services/security/security_gate.dart';
 import 'package:usdc_wallet/services/session/session_manager.dart';
 import 'package:usdc_wallet/services/storage/local_cache_service.dart';
 import 'package:usdc_wallet/services/storage/sync_service.dart';
@@ -105,7 +106,7 @@ Future<void> main() async {
             sharedPreferencesProvider.overrideWithValue(sharedPreferences),
             localCacheServiceProvider.overrideWithValue(localCache),
           ],
-          child: const KoridoApp(),
+          child: const SecurityGate(child: KoridoApp()),
         ),
       );
     },
