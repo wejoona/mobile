@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/services/wallet/wallet_service.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class CurrencyConverterView extends ConsumerStatefulWidget {
   const CurrencyConverterView({super.key});
@@ -19,7 +18,7 @@ class CurrencyConverterView extends ConsumerStatefulWidget {
 class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
   final _fromController = TextEditingController(text: '100');
   String _fromCurrency = 'USDC';
-  String _toCurrency = 'USD';
+  String _toCurrency = 'XOF';
   // ignore: unused_field
   bool _isLoading = false;
   String? _rateError;
@@ -27,22 +26,11 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
   // Exchange rates fetched from API (rates relative to USD)
   Map<String, double> _exchangeRates = {'USD': 1.0, 'USDC': 1.0};
 
-  // Supported currencies to fetch rates for
+  // Initial markets: US/USDC plus Abidjan/UEMOA rails.
   static const List<String> _supportedCurrencies = [
     'USD',
     'USDC',
     'EUR',
-    'GBP',
-    'NGN',
-    'ZAR',
-    'GHS',
-    'INR',
-    'BRL',
-    'MXN',
-    'CAD',
-    'AUD',
-    'JPY',
-    'CNY',
     'XOF',
   ];
 
@@ -102,35 +90,13 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
     'USD': l10n.currency_usd,
     'USDC': l10n.currency_usdc,
     'EUR': l10n.currency_eur,
-    'GBP': l10n.currency_gbp,
-    'NGN': l10n.currency_ngn,
-    'ZAR': l10n.currency_zar,
-    'GHS': l10n.currency_ghs,
-    'INR': 'Indian Rupee',
-    'BRL': 'Brazilian Real',
-    'MXN': 'Mexican Peso',
-    'CAD': 'Canadian Dollar',
-    'AUD': 'Australian Dollar',
-    'JPY': 'Japanese Yen',
-    'CNY': 'Chinese Yuan',
-    'XOF': 'CFA Franc BCEAO',
+    'XOF': l10n.currency_xof,
   };
 
   final Map<String, String> _currencySymbols = {
     'USD': '\$',
     'USDC': '\$',
     'EUR': '\u20AC',
-    'GBP': '\u00A3',
-    'NGN': '\u20A6',
-    'ZAR': 'R',
-    'GHS': 'GH\u20B5',
-    'INR': '\u20B9',
-    'BRL': 'R\$',
-    'MXN': 'MX\$',
-    'CAD': 'CA\$',
-    'AUD': 'A\$',
-    'JPY': '\u00A5',
-    'CNY': '\u00A5',
     'XOF': 'F CFA',
   };
 
@@ -433,17 +399,6 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
       'USD': Colors.green,
       'USDC': colors.gold,
       'EUR': Colors.blue,
-      'GBP': Colors.purple,
-      'NGN': Colors.green.shade800,
-      'ZAR': Colors.orange,
-      'GHS': Colors.yellow.shade700,
-      'INR': Colors.orange.shade800,
-      'BRL': Colors.green.shade700,
-      'MXN': Colors.green.shade600,
-      'CAD': Colors.red.shade700,
-      'AUD': Colors.blue.shade800,
-      'JPY': Colors.red.shade400,
-      'CNY': Colors.red.shade600,
       'XOF': colors.gold,
     };
 
@@ -539,7 +494,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
           ),
           child: Center(
             child: AppText(
-              '\$$amount',
+              '${_currencySymbols[_fromCurrency] ?? ''}$amount',
               variant: AppTextVariant.labelMedium,
               color: colors.textSecondary,
             ),
@@ -554,7 +509,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
     Map<String, String> currencyNames,
     AppLocalizations l10n,
   ) {
-    final popularCurrencies = ['USD', 'EUR', 'GBP', 'NGN', 'XOF'];
+    final popularCurrencies = ['XOF', 'USD', 'EUR', 'USDC'];
 
     return Column(
       children: popularCurrencies.map((currency) {

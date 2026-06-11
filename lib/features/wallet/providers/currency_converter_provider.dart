@@ -131,5 +131,5 @@ final currencyConverterProvider =
 
 /// Supported currencies for conversion
 final supportedCurrenciesProvider = Provider<List<String>>((ref) {
-  return ['USDC', 'XOF', 'EUR', 'USD', 'NGN', 'GHS'];
+  return ['USDC', 'XOF', 'USD', 'EUR'];
 });
