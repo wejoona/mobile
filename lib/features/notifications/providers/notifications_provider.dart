@@ -33,19 +33,27 @@ final hasUnreadNotificationsProvider = Provider<bool>((ref) {
 
 /// Notification actions.
 class NotificationActions {
-  NotificationActions(this._repository);
+  NotificationActions(this._ref, this._repository);
 
+  final Ref _ref;
   final NotificationsRepository _repository;
 
   Future<void> markAsRead(String id) async {
     await _repository.markAsRead(id);
+    _refreshNotificationState();
   }
 
   Future<void> markAllAsRead() async {
     await _repository.markAllAsRead();
+    _refreshNotificationState();
+  }
+
+  void _refreshNotificationState() {
+    _ref.invalidate(notificationsProvider);
+    _ref.invalidate(unreadNotificationCountProvider);
   }
 }
 
 final notificationActionsProvider = Provider<NotificationActions>((ref) {
-  return NotificationActions(ref.watch(notificationsRepositoryProvider));
+  return NotificationActions(ref, ref.watch(notificationsRepositoryProvider));
 });

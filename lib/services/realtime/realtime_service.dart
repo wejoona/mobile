@@ -70,6 +70,7 @@ class RealtimeService {
       _ref.invalidate(walletBalanceProvider);
       _ref.invalidate(transactionsProvider);
       _ref.invalidate(notificationsProvider);
+      _ref.invalidate(unreadNotificationCountProvider);
       unawaited(_ref.read(walletStateMachineProvider.notifier).refresh());
       unawaited(_ref.read(transactionStateMachineProvider.notifier).refresh());
     } catch (_) {}
@@ -153,6 +154,7 @@ class RealtimeService {
           );
         case 'notification_new':
           _ref.invalidate(notificationsProvider);
+          _ref.invalidate(unreadNotificationCountProvider);
         case 'session_expired':
           try {
             _ref.read(appFsmProvider.notifier).logout();
