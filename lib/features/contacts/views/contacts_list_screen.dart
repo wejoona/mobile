@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
@@ -43,9 +44,15 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   }
 
   Future<void> _manualSync() async {
+    final l10n = AppLocalizations.of(context)!;
     final notifier = ref.read(contactsProvider.notifier);
     final state = ref.read(contactsProvider);
     if (state.permissionRequired) {
+      final status = await Permission.contacts.status;
+      if (status.isPermanentlyDenied || status.isRestricted) {
+        if (mounted) await _showContactsSettingsDialog(l10n);
+        return;
+      }
       await notifier.requestPermission();
       return;
     }
@@ -273,6 +280,29 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
         builder: (context) => InviteSheet(contact: contact),
       ),
     );
+  }
+
+  Future<void> _showContactsSettingsDialog(AppLocalizations l10n) async {
+    final shouldOpen = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.send_contactsPermissionSettingsTitle),
+        content: Text(l10n.send_contactsPermissionSettingsMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.action_cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.action_open_settings),
+          ),
+        ],
+      ),
+    );
+    if (shouldOpen == true) {
+      await openAppSettings();
+    }
   }
 
   String _formatSyncTime(BuildContext context, DateTime time) {
