@@ -12,10 +12,7 @@ import 'package:usdc_wallet/features/cards/widgets/virtual_card_widget.dart';
 ///
 /// Shows full card details with copy to clipboard and CVV reveal
 class CardDetailView extends ConsumerStatefulWidget {
-  const CardDetailView({
-    super.key,
-    required this.cardId,
-  });
+  const CardDetailView({super.key, required this.cardId});
 
   final String cardId;
 
@@ -38,9 +35,7 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
     if (card == null) {
       return Scaffold(
         backgroundColor: colors.canvas,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-        ),
+        appBar: AppBar(backgroundColor: Colors.transparent),
         body: Center(
           child: AppText(
             l10n.cards_cardNotFound,
@@ -73,10 +68,7 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Virtual card display
-            VirtualCardWidget(
-              card: card,
-              showDetails: _showFullNumber,
-            ),
+            VirtualCardWidget(card: card, showDetails: _showFullNumber),
 
             const SizedBox(height: AppSpacing.xxl),
 
@@ -95,12 +87,18 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
               l10n,
               colors,
               label: l10n.cards_cardNumber,
-              value: _showFullNumber ? (card.cardNumber ?? card.maskedNumber) : card.maskedNumber,
+              value: _showFullNumber
+                  ? (card.cardNumber ?? card.maskedNumber)
+                  : card.maskedNumber,
               icon: _showFullNumber ? Icons.visibility_off : Icons.visibility,
               onIconPressed: () {
                 setState(() => _showFullNumber = !_showFullNumber);
               },
-              onCopy: () => _copyToClipboard(context, l10n, card.cardNumber ?? card.maskedNumber),
+              onCopy: () => _copyToClipboard(
+                context,
+                l10n,
+                card.cardNumber ?? card.maskedNumber,
+              ),
             ),
 
             const SizedBox(height: AppSpacing.md),
@@ -147,9 +145,7 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
               decoration: BoxDecoration(
                 color: colors.elevated,
                 borderRadius: BorderRadius.circular(AppRadius.md),
-                border: Border.all(
-                  color: colors.borderSubtle,
-                ),
+                border: Border.all(color: colors.borderSubtle),
               ),
               child: Column(
                 children: [
@@ -178,13 +174,19 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
                       height: 8,
                       child: LinearProgressIndicator(
                         value: (card.spendingLimit ?? 0) > 0
-                            ? ((card.currentSpend ?? 0) / card.spendingLimit!).clamp(0.0, 1.0)
+                            ? ((card.currentSpend ?? 0) / card.spendingLimit!)
+                                  .clamp(0.0, 1.0)
                             : 0,
                         backgroundColor: colors.isDark
                             ? colors.borderSubtle
                             : AppColorsLight.elevated,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          _getProgressColor(colors, (card.spendingLimit ?? 0) > 0 ? (card.currentSpend ?? 0) / card.spendingLimit! : 0),
+                          _getProgressColor(
+                            colors,
+                            (card.spendingLimit ?? 0) > 0
+                                ? (card.currentSpend ?? 0) / card.spendingLimit!
+                                : 0,
+                          ),
                         ),
                       ),
                     ),
@@ -240,7 +242,8 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
                     colors,
                     icon: Icons.account_balance_wallet_outlined,
                     label: l10n.cards_availableLimit,
-                    value: '${card.currency} ${card.availableLimit.toStringAsFixed(0)}',
+                    value:
+                        '${card.currency} ${card.availableLimit.toStringAsFixed(0)}',
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -375,9 +378,7 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
       decoration: BoxDecoration(
         color: colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(
-          color: colors.borderSubtle,
-        ),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -456,14 +457,14 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
     } else {
       await ref.read(cardActionsProvider).freezeCard(cardId);
     }
+    ref.invalidate(cardsEnvelopeProvider);
+    ref.invalidate(cardsProvider);
 
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            card.isFrozen
-                ? l10n.cards_cardUnfrozen
-                : l10n.cards_cardFrozen,
+            card.isFrozen ? l10n.cards_cardUnfrozen : l10n.cards_cardFrozen,
           ),
           backgroundColor: context.colors.success,
         ),

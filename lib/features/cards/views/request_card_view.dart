@@ -305,8 +305,9 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
         'cardholderName': name,
         'spendingLimit': limit,
       });
+      ref.invalidate(cardsEnvelopeProvider);
       ref.invalidate(cardsProvider);
-      await ref.read(cardsProvider.future);
+      await ref.read(cardsEnvelopeProvider.future);
 
       if (!mounted) {
         return;

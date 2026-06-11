@@ -5,16 +5,14 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/domain/entities/card.dart';
 import 'package:usdc_wallet/features/cards/providers/cards_provider.dart';
 
 /// Card Settings View
 ///
 /// Manage card limits, freeze/unfreeze
 class CardSettingsView extends ConsumerStatefulWidget {
-  const CardSettingsView({
-    super.key,
-    required this.cardId,
-  });
+  const CardSettingsView({super.key, required this.cardId});
 
   final String cardId;
 
@@ -42,9 +40,7 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
     if (card == null) {
       return Scaffold(
         backgroundColor: colors.canvas,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-        ),
+        appBar: AppBar(backgroundColor: Colors.transparent),
         body: Center(
           child: AppText(
             l10n.cards_cardNotFound,
@@ -192,7 +188,8 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
 
             AppButton(
               label: l10n.cards_updateLimit,
-              onPressed: () => _showUpdateLimitDialog(context, l10n, colors, card),
+              onPressed: () =>
+                  _showUpdateLimitDialog(context, l10n, colors, card),
               variant: AppButtonVariant.secondary,
               isFullWidth: true,
               icon: Icons.edit,
@@ -233,7 +230,8 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
                   const SizedBox(height: AppSpacing.md),
                   AppButton(
                     label: l10n.cards_blockCardButton,
-                    onPressed: () => _showBlockDialog(context, l10n, colors, card.id),
+                    onPressed: () =>
+                        _showBlockDialog(context, l10n, colors, card.id),
                     variant: AppButtonVariant.danger,
                     isFullWidth: true,
                   ),
@@ -259,6 +257,8 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
     } else {
       await ref.read(cardActionsProvider).freezeCard(cardId);
     }
+    ref.invalidate(cardsEnvelopeProvider);
+    ref.invalidate(cardsProvider);
 
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -276,9 +276,8 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
     BuildContext context,
     AppLocalizations l10n,
     ThemeColors colors,
-    dynamic card,
+    KoridoCard card,
   ) async {
-    // ignore: avoid_dynamic_calls
     _limitController.text = (card.spendingLimit ?? 0).toStringAsFixed(0);
 
     final result = await showDialog<double>(
@@ -338,8 +337,13 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
     if (result != null && context.mounted) {
       await ref
           .read(cardActionsProvider)
-          // ignore: avoid_dynamic_calls
-          .updateSpendingLimit(card.id, dailyLimit: result, transactionLimit: result);
+          .updateSpendingLimit(
+            card.id,
+            dailyLimit: result,
+            transactionLimit: result,
+          );
+      ref.invalidate(cardsEnvelopeProvider);
+      ref.invalidate(cardsProvider);
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -407,6 +411,7 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
             ),
           );
           // Refresh cards list
+          ref.invalidate(cardsEnvelopeProvider);
           ref.invalidate(cardsProvider);
           context.pop();
           context.pop();
