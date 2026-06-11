@@ -10,6 +10,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
 import 'package:usdc_wallet/services/app_review/app_review_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
+import 'package:usdc_wallet/utils/context_extensions.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Widget that manages session lifecycle and shows timeout warnings
@@ -195,15 +196,9 @@ class _SessionManagerState extends ConsumerState<SessionManager>
 
     if (!mounted) return;
 
-    final colors = context.colors;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Session expired. Please log in again.',
-          style: TextStyle(color: colors.onDark),
-        ),
-        backgroundColor: colors.error,
-      ),
+    context.showSnack(
+      'Session expired. Please log in again.',
+      tone: AppSnackTone.error,
     );
     context.go('/login');
   }

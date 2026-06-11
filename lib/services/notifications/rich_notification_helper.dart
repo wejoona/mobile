@@ -134,7 +134,9 @@ class RichNotificationHelper {
       case NotificationType.weeklySpendingSummary:
         final totalSpent = data['totalSpent'] as num?;
         final comparison = data['comparison'] as String?;
-        subtitle = totalSpent != null ? 'Total spent: $totalSpent $currency' : null;
+        subtitle = totalSpent != null
+            ? 'Total spent: $totalSpent $currency'
+            : null;
         if (comparison != null) {
           subtitle = subtitle != null ? '$subtitle ($comparison)' : comparison;
         }
@@ -150,30 +152,32 @@ class RichNotificationHelper {
       case NotificationType.transactionFailed:
         final transactionId = data['transactionId'] as String?;
         if (transactionId != null) {
-          actions.add(RichNotificationAction(
-            label: 'View Details',
-            route: '/transactions/$transactionId',
-          ));
+          actions.add(
+            RichNotificationAction(
+              label: 'View Details',
+              route: '/transactions/$transactionId',
+            ),
+          );
         }
         break;
       case NotificationType.securityAlert:
       case NotificationType.newDeviceLogin:
-        actions.add(RichNotificationAction(
-          label: 'Review',
-          route: '/settings/security',
-        ));
+        actions.add(
+          RichNotificationAction(label: 'Review', route: '/settings/security'),
+        );
         break;
       case NotificationType.lowBalance:
-        actions.add(RichNotificationAction(
-          label: 'Deposit',
-          route: '/deposit',
-        ));
+        actions.add(
+          RichNotificationAction(label: 'Deposit', route: '/deposit'),
+        );
         break;
       case NotificationType.addressWhitelisted:
-        actions.add(RichNotificationAction(
-          label: 'View Addresses',
-          route: '/settings/security/addresses',
-        ));
+        actions.add(
+          RichNotificationAction(
+            label: 'View Addresses',
+            route: '/settings/security/addresses',
+          ),
+        );
         break;
       default:
         break;
@@ -293,7 +297,8 @@ class _InAppNotificationBanner extends StatefulWidget {
   });
 
   @override
-  State<_InAppNotificationBanner> createState() => _InAppNotificationBannerState();
+  State<_InAppNotificationBanner> createState() =>
+      _InAppNotificationBannerState();
 }
 
 class _InAppNotificationBannerState extends State<_InAppNotificationBanner>
@@ -313,18 +318,12 @@ class _InAppNotificationBannerState extends State<_InAppNotificationBanner>
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, -1),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
 
     _controller.forward();
 
@@ -355,9 +354,9 @@ class _InAppNotificationBannerState extends State<_InAppNotificationBanner>
     final topPadding = mediaQuery.padding.top;
 
     return Positioned(
-      top: topPadding + 8,
-      left: 16,
-      right: 16,
+      top: topPadding + AppSpacing.sm,
+      left: AppSpacing.md,
+      right: AppSpacing.md,
       child: SlideTransition(
         position: _slideAnimation,
         child: FadeTransition(
@@ -371,17 +370,27 @@ class _InAppNotificationBannerState extends State<_InAppNotificationBanner>
               }
             },
             child: Material(
-              elevation: 8,
-              borderRadius: BorderRadius.circular(12),
-              shadowColor: Colors.black26,
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
               child: Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: colors.surface,
-                  borderRadius: BorderRadius.circular(12),
+                  color: colors.elevated,
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
                   border: Border.all(
-                    color: colors.border.withValues(alpha: 0.1),
+                    color: colors.borderGold.withValues(
+                      alpha: colors.isDark ? 0.35 : 0.24,
+                    ),
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(
+                        alpha: colors.isDark ? 0.32 : 0.10,
+                      ),
+                      blurRadius: 24,
+                      offset: const Offset(0, 12),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
@@ -389,8 +398,9 @@ class _InAppNotificationBannerState extends State<_InAppNotificationBanner>
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: colors.gold.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
+                        color: colors.goldSubtle,
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                        border: Border.all(color: colors.borderGold),
                       ),
                       child: Icon(
                         Icons.notifications_rounded,
@@ -398,7 +408,7 @@ class _InAppNotificationBannerState extends State<_InAppNotificationBanner>
                         size: 20,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -428,7 +438,11 @@ class _InAppNotificationBannerState extends State<_InAppNotificationBanner>
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.close, size: 18, color: colors.textSecondary),
+                      icon: Icon(
+                        Icons.close_rounded,
+                        size: 18,
+                        color: colors.textSecondary,
+                      ),
                       onPressed: _dismiss,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(

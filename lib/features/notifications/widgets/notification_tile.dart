@@ -100,7 +100,7 @@ class NotificationTile extends StatelessWidget {
         return _NotificationTone(
           accent: colors.gold,
           background: colors.goldSubtle,
-          foreground: colors.onGold,
+          foreground: colors.gold,
         );
       case NotificationType.promotion:
       case NotificationType.weeklySpendingSummary:
