@@ -137,6 +137,7 @@ class ContactsService {
   final FlutterSecureStorage _storage;
   static const String _contactsKey = 'app_contacts';
   static const String _recentKey = 'recent_contacts';
+  static const int _maxContactSyncBatchSize = 500;
 
   ContactsService(this._storage);
 
@@ -335,46 +336,15 @@ class ContactsService {
     final hashes = allContacts.map((c) => hashPhone(c.phone)).toSet().toList();
 
     try {
-      final response = await dio.post(
-        '/contacts/sync',
-        data: {'phoneHashes': hashes},
-      );
+      final matches = <_ContactSyncMatch>[];
+      for (final batch in _hashBatches(hashes)) {
+        final response = await dio.post(
+          '/contacts/sync',
+          data: {'phoneHashes': batch},
+        );
 
-      final matches =
-          _extractMapList(response.data, ['matches', 'users', 'contacts'])
-              .map((match) {
-                final displayName = _stringField(match, [
-                  'displayName',
-                  'name',
-                  'username',
-                ]);
-                final avatarUrl = _stringField(match, [
-                  'avatarUrl',
-                  'photoUrl',
-                  'profilePhotoUrl',
-                ]);
-
-                return _ContactSyncMatch(
-                  phoneHash: _stringField(match, [
-                    'phoneHash',
-                    'hash',
-                    'phoneNumberHash',
-                  ]),
-                  userId: _stringField(match, [
-                    'userId',
-                    'koridoUserId',
-                    'joonaPayUserId',
-                    'id',
-                  ]),
-                  displayName: displayName.isEmpty ? null : displayName,
-                  avatarUrl: avatarUrl.isEmpty ? null : avatarUrl,
-                );
-              })
-              .where(
-                (match) =>
-                    match.phoneHash.isNotEmpty && match.userId.isNotEmpty,
-              )
-              .toList();
+        matches.addAll(_parseContactSyncMatches(response.data));
+      }
 
       // Create a map of hash -> user info
       final matchMap = {for (final match in matches) match.phoneHash: match};
@@ -405,23 +375,25 @@ class ContactsService {
     Dio dio,
     List<SyncedContact> contacts,
   ) async {
-    final hashes = contacts.map((c) => hashPhone(c.phone)).toList();
+    final hashes = contacts.map((c) => hashPhone(c.phone)).toSet().toList();
 
     try {
-      final response = await dio.post(
-        '/contacts/sync',
-        data: {'phoneHashes': hashes},
-      );
-
-      final matches = _extractMapList(response.data, [
-        'matches',
-        'users',
-        'contacts',
-      ]);
+      var matchCount = 0;
+      for (final batch in _hashBatches(hashes)) {
+        final response = await dio.post(
+          '/contacts/sync',
+          data: {'phoneHashes': batch},
+        );
+        matchCount += _extractMapList(response.data, [
+          'matches',
+          'users',
+          'contacts',
+        ]).length;
+      }
 
       return ContactSyncResult(
         totalContacts: contacts.length,
-        joonaPayUsersFound: matches.length,
+        joonaPayUsersFound: matchCount,
         syncedAt: DateTime.now(),
       );
     } catch (e) {
@@ -433,6 +405,51 @@ class ContactsService {
         error: e.toString(),
       );
     }
+  }
+
+  Iterable<List<String>> _hashBatches(List<String> hashes) sync* {
+    for (
+      var start = 0;
+      start < hashes.length;
+      start += _maxContactSyncBatchSize
+    ) {
+      final end = (start + _maxContactSyncBatchSize).clamp(0, hashes.length);
+      yield hashes.sublist(start, end);
+    }
+  }
+
+  List<_ContactSyncMatch> _parseContactSyncMatches(Object? data) {
+    return _extractMapList(data, ['matches', 'users', 'contacts'])
+        .map((match) {
+          final displayName = _stringField(match, [
+            'displayName',
+            'name',
+            'username',
+          ]);
+          final avatarUrl = _stringField(match, [
+            'avatarUrl',
+            'photoUrl',
+            'profilePhotoUrl',
+          ]);
+
+          return _ContactSyncMatch(
+            phoneHash: _stringField(match, [
+              'phoneHash',
+              'hash',
+              'phoneNumberHash',
+            ]),
+            userId: _stringField(match, [
+              'userId',
+              'koridoUserId',
+              'joonaPayUserId',
+              'id',
+            ]),
+            displayName: displayName.isEmpty ? null : displayName,
+            avatarUrl: avatarUrl.isEmpty ? null : avatarUrl,
+          );
+        })
+        .where((match) => match.phoneHash.isNotEmpty && match.userId.isNotEmpty)
+        .toList();
   }
 }
 
