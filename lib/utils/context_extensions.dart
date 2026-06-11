@@ -50,7 +50,7 @@ extension ContextExtensions on BuildContext {
         SnackBar(
           content: Row(
             children: [
-              Icon(style.icon, color: style.foreground, size: 20),
+              Icon(style.icon, color: style.iconColor, size: 20),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
@@ -67,12 +67,12 @@ extension ContextExtensions on BuildContext {
           duration: duration,
           behavior: SnackBarBehavior.floating,
           backgroundColor: style.background,
-          elevation: 0,
+          elevation: isDark ? 0 : 8,
           margin: EdgeInsets.fromLTRB(
             AppSpacing.md,
             AppSpacing.md,
             AppSpacing.md,
-            bottomPadding + AppSpacing.md,
+            bottomPadding + 88,
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.md),
@@ -99,30 +99,34 @@ _SnackStyle _snackStyle(ThemeColors colors, AppSnackTone tone) {
   switch (tone) {
     case AppSnackTone.success:
       return _SnackStyle(
-        background: colors.success,
-        foreground: colors.onDark,
-        border: colors.success.withValues(alpha: 0.35),
+        background: colors.successBg,
+        foreground: colors.successText,
+        border: colors.success.withValues(alpha: 0.28),
+        iconColor: colors.success,
         icon: Icons.check_circle_outline_rounded,
       );
     case AppSnackTone.error:
       return _SnackStyle(
-        background: colors.error,
-        foreground: colors.onDark,
-        border: colors.error.withValues(alpha: 0.35),
+        background: colors.errorBg,
+        foreground: colors.errorText,
+        border: colors.error.withValues(alpha: 0.28),
+        iconColor: colors.error,
         icon: Icons.error_outline_rounded,
       );
     case AppSnackTone.warning:
       return _SnackStyle(
-        background: colors.warning,
-        foreground: colors.onDark,
-        border: colors.warning.withValues(alpha: 0.35),
+        background: colors.warningBg,
+        foreground: colors.warningText,
+        border: colors.warning.withValues(alpha: 0.30),
+        iconColor: colors.warning,
         icon: Icons.warning_amber_rounded,
       );
     case AppSnackTone.info:
       return _SnackStyle(
-        background: colors.info,
-        foreground: colors.onDark,
-        border: colors.info.withValues(alpha: 0.35),
+        background: colors.infoBg,
+        foreground: colors.infoText,
+        border: colors.info.withValues(alpha: 0.28),
+        iconColor: colors.info,
         icon: Icons.info_outline_rounded,
       );
     case AppSnackTone.neutral:
@@ -130,6 +134,7 @@ _SnackStyle _snackStyle(ThemeColors colors, AppSnackTone tone) {
         background: colors.elevated,
         foreground: colors.textPrimary,
         border: colors.border,
+        iconColor: colors.gold,
         icon: Icons.notifications_none_rounded,
       );
   }
@@ -140,11 +145,13 @@ class _SnackStyle {
     required this.background,
     required this.foreground,
     required this.border,
+    required this.iconColor,
     required this.icon,
   });
 
   final Color background;
   final Color foreground;
   final Color border;
+  final Color iconColor;
   final IconData icon;
 }
