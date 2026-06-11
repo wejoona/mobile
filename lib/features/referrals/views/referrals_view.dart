@@ -6,9 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/referrals/providers/referrals_provider.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 
 class ReferralsView extends ConsumerWidget {
@@ -18,14 +16,18 @@ class ReferralsView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
-    final authState = ref.watch(authProvider);
     final referralAsync = ref.watch(referralProvider);
-    final phone = authState.user?.phone ?? '';
-    // Use referral code from API if available, else generate locally
-    final referralCode = referralAsync.whenOrNull(data: (info) => info.referralCode) ?? _generateReferralCode(phone);
-    final totalReferrals = referralAsync.whenOrNull(data: (info) => info.totalReferrals) ?? 0;
-    final totalEarned = referralAsync.whenOrNull(data: (info) => info.totalEarned) ?? 0.0;
-    final referralHistory = referralAsync.whenOrNull(data: (info) => info.referrals) ?? [];
+    final referralInfo = referralAsync.whenOrNull(data: (info) => info);
+    final referralCode = referralInfo?.referralCode ?? '';
+    final isReferralReady = referralCode.isNotEmpty;
+    final referralCodeDisplay = isReferralReady
+        ? referralCode
+        : referralAsync.isLoading
+        ? l10n.common_loading
+        : '-';
+    final totalReferrals = referralInfo?.totalReferrals ?? 0;
+    final totalEarned = referralInfo?.totalEarned ?? 0.0;
+    final referralHistory = referralInfo?.referrals ?? [];
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -129,7 +131,7 @@ class ReferralsView extends ConsumerWidget {
                             ),
                             child: Center(
                               child: AppText(
-                                referralCode,
+                                referralCodeDisplay,
                                 variant: AppTextVariant.titleLarge,
                                 color: colors.gold,
                               ),
@@ -138,17 +140,16 @@ class ReferralsView extends ConsumerWidget {
                         ),
                         const SizedBox(width: AppSpacing.md),
                         IconButton(
-                          onPressed: () => _copyCode(context, referralCode),
+                          onPressed: isReferralReady
+                              ? () => _copyCode(context, referralCode)
+                              : null,
                           icon: Container(
                             padding: const EdgeInsets.all(AppSpacing.md),
                             decoration: BoxDecoration(
                               color: colors.gold.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(AppRadius.md),
                             ),
-                            child: Icon(
-                              Icons.copy,
-                              color: colors.gold,
-                            ),
+                            child: Icon(Icons.copy, color: colors.gold),
                           ),
                         ),
                       ],
@@ -165,7 +166,9 @@ class ReferralsView extends ConsumerWidget {
                   Expanded(
                     child: AppButton(
                       label: l10n.referrals_shareLink,
-                      onPressed: () => _shareLink(context, referralCode, l10n),
+                      onPressed: isReferralReady
+                          ? () => _shareLink(context, referralCode, l10n)
+                          : null,
                       variant: AppButtonVariant.primary,
                       icon: Icons.share,
                     ),
@@ -174,7 +177,9 @@ class ReferralsView extends ConsumerWidget {
                   Expanded(
                     child: AppButton(
                       label: l10n.referrals_invite,
-                      onPressed: () => _inviteContacts(context, l10n),
+                      onPressed: isReferralReady
+                          ? () => _inviteContacts(context, l10n, referralCode)
+                          : null,
                       variant: AppButtonVariant.secondary,
                       icon: Icons.people,
                     ),
@@ -289,45 +294,49 @@ class ReferralsView extends ConsumerWidget {
                   ),
                 )
               else
-                ...referralHistory.map((entry) => Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: AppCard(
-                    variant: AppCardVariant.subtle,
-                    child: Row(
-                      children: [
-                        UserAvatar(
-                          firstName: entry.referredName.split(' ').first,
-                          lastName: entry.referredName.split(' ').length > 1 ? entry.referredName.split(' ').last : null,
-                          size: 40,
-                        ),
-                        const SizedBox(width: AppSpacing.md),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              AppText(
-                                entry.referredName,
-                                variant: AppTextVariant.bodyMedium,
-                                color: colors.textPrimary,
-                              ),
-                              AppText(
-                                entry.status,
-                                variant: AppTextVariant.bodySmall,
-                                color: colors.textSecondary,
-                              ),
-                            ],
+                ...referralHistory.map(
+                  (entry) => Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                    child: AppCard(
+                      variant: AppCardVariant.subtle,
+                      child: Row(
+                        children: [
+                          UserAvatar(
+                            firstName: entry.referredName.split(' ').first,
+                            lastName: entry.referredName.split(' ').length > 1
+                                ? entry.referredName.split(' ').last
+                                : null,
+                            size: 40,
                           ),
-                        ),
-                        if (entry.reward != null)
-                          AppText(
-                            '+${formatXof(entry.reward!)}',
-                            variant: AppTextVariant.bodyMedium,
-                            color: colors.success,
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                AppText(
+                                  entry.referredName,
+                                  variant: AppTextVariant.bodyMedium,
+                                  color: colors.textPrimary,
+                                ),
+                                AppText(
+                                  entry.status,
+                                  variant: AppTextVariant.bodySmall,
+                                  color: colors.textSecondary,
+                                ),
+                              ],
+                            ),
                           ),
-                      ],
+                          if (entry.reward != null)
+                            AppText(
+                              '+${formatXof(entry.reward!)}',
+                              variant: AppTextVariant.bodyMedium,
+                              color: colors.success,
+                            ),
+                        ],
+                      ),
                     ),
                   ),
-                )),
+                ),
 
               const SizedBox(height: AppSpacing.xxl),
             ],
@@ -335,14 +344,6 @@ class ReferralsView extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  String _generateReferralCode(String phone) {
-    // Generate a simple referral code from phone
-    if (phone.isEmpty) return 'JOONA000';
-    final cleaned = phone.replaceAll(RegExp(r'[^0-9]'), '');
-    if (cleaned.length < 4) return 'JOONA000';
-    return 'JOONA${cleaned.substring(cleaned.length - 4)}';
   }
 
   void _copyCode(BuildContext context, String code) {
@@ -358,12 +359,19 @@ class ReferralsView extends ConsumerWidget {
   }
 
   void _shareLink(BuildContext context, String code, AppLocalizations l10n) {
-    SharePlus.instance.share(ShareParams(text: 
-      l10n.referrals_shareMessage(code), title: l10n.referrals_shareSubject,
-    ));
+    SharePlus.instance.share(
+      ShareParams(
+        text: l10n.referrals_shareMessage(code),
+        title: l10n.referrals_shareSubject,
+      ),
+    );
   }
 
-  void _inviteContacts(BuildContext context, AppLocalizations l10n) {
+  void _inviteContacts(
+    BuildContext context,
+    AppLocalizations l10n,
+    String referralCode,
+  ) {
     final colors = context.colors;
     showModalBottomSheet(
       context: context,
@@ -377,7 +385,8 @@ class ReferralsView extends ConsumerWidget {
           children: [
             const SizedBox(height: AppSpacing.md),
             Container(
-              width: 40, height: 4,
+              width: 40,
+              height: 4,
               decoration: BoxDecoration(
                 color: colors.borderSubtle,
                 borderRadius: BorderRadius.circular(2),
@@ -395,8 +404,13 @@ class ReferralsView extends ConsumerWidget {
               title: const AppText('WhatsApp'),
               onTap: () {
                 Navigator.pop(ctx);
-                final msg = Uri.encodeComponent(l10n.referrals_shareMessage('KORIDO'));
-                launchUrl(Uri.parse('https://wa.me/?text=$msg'), mode: LaunchMode.externalApplication);
+                final msg = Uri.encodeComponent(
+                  l10n.referrals_shareMessage(referralCode),
+                );
+                launchUrl(
+                  Uri.parse('https://wa.me/?text=$msg'),
+                  mode: LaunchMode.externalApplication,
+                );
               },
             ),
             ListTile(
@@ -404,8 +418,13 @@ class ReferralsView extends ConsumerWidget {
               title: const AppText('SMS'),
               onTap: () {
                 Navigator.pop(ctx);
-                final msg = Uri.encodeComponent(l10n.referrals_shareMessage('KORIDO'));
-                launchUrl(Uri.parse('sms:?body=$msg'), mode: LaunchMode.externalApplication);
+                final msg = Uri.encodeComponent(
+                  l10n.referrals_shareMessage(referralCode),
+                );
+                launchUrl(
+                  Uri.parse('sms:?body=$msg'),
+                  mode: LaunchMode.externalApplication,
+                );
               },
             ),
             ListTile(
@@ -413,9 +432,12 @@ class ReferralsView extends ConsumerWidget {
               title: AppText(l10n.referrals_shareLink),
               onTap: () {
                 Navigator.pop(ctx);
-                SharePlus.instance.share(ShareParams(text: 
-                  l10n.referrals_shareMessage('KORIDO'), title: l10n.referrals_shareSubject,
-                ));
+                SharePlus.instance.share(
+                  ShareParams(
+                    text: l10n.referrals_shareMessage(referralCode),
+                    title: l10n.referrals_shareSubject,
+                  ),
+                );
               },
             ),
             const SizedBox(height: AppSpacing.lg),
