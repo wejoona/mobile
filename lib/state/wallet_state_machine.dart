@@ -31,6 +31,11 @@ class WalletStateMachine extends Notifier<WalletState> {
         pendingBalance: cached.pendingBalance,
         lastUpdated: cached.cachedAt,
         isCached: true,
+        isDegraded: false,
+        isStale: false,
+        balanceWarning: null,
+        balanceSourceOfTruth: null,
+        balanceReadStatus: null,
         error: null,
       );
       debugPrint('[WalletState] Keeping cached balance (${cached.cachedAt})');
@@ -41,6 +46,11 @@ class WalletStateMachine extends Notifier<WalletState> {
       state = state.copyWith(
         status: WalletStatus.loaded,
         isCached: true,
+        isDegraded: false,
+        isStale: false,
+        balanceWarning: null,
+        balanceSourceOfTruth: null,
+        balanceReadStatus: null,
         error: null,
       );
       debugPrint('[WalletState] Keeping previous balance after refresh error');
@@ -89,6 +99,11 @@ class WalletStateMachine extends Notifier<WalletState> {
       pendingBalance: pending,
       lastUpdated: DateTime.now(),
       isCached: false,
+      isDegraded: response.degraded,
+      isStale: response.isStale,
+      balanceWarning: response.warning,
+      balanceSourceOfTruth: response.sourceOfTruth,
+      balanceReadStatus: response.readStatus,
       error: null,
     );
 
@@ -123,6 +138,11 @@ class WalletStateMachine extends Notifier<WalletState> {
           blockchain: cached.blockchain,
           lastUpdated: cached.cachedAt,
           isCached: true,
+          isDegraded: false,
+          isStale: false,
+          balanceWarning: null,
+          balanceSourceOfTruth: null,
+          balanceReadStatus: null,
         );
       }
     }
@@ -192,6 +212,11 @@ class WalletStateMachine extends Notifier<WalletState> {
           pendingBalance: cached.pendingBalance,
           lastUpdated: cached.cachedAt,
           isCached: true,
+          isDegraded: false,
+          isStale: false,
+          balanceWarning: null,
+          balanceSourceOfTruth: null,
+          balanceReadStatus: null,
           error: null,
         );
         debugPrint('[WalletState] Loaded from cache (${cached.cachedAt})');

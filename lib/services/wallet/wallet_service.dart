@@ -338,6 +338,11 @@ class WalletBalanceResponse {
   final String blockchain;
   final String currency;
   final List<WalletBalance> balances;
+  final bool degraded;
+  final bool isStale;
+  final String? warning;
+  final String? sourceOfTruth;
+  final String? readStatus;
 
   const WalletBalanceResponse({
     required this.walletId,
@@ -345,6 +350,11 @@ class WalletBalanceResponse {
     required this.blockchain,
     required this.currency,
     required this.balances,
+    this.degraded = false,
+    this.isStale = false,
+    this.warning,
+    this.sourceOfTruth,
+    this.readStatus,
   });
 
   double get totalBalance {
@@ -429,6 +439,11 @@ class WalletBalanceResponse {
       blockchain: payload['blockchain'] as String? ?? 'polygon',
       currency: payload['currency'] as String? ?? 'USD',
       balances: balances,
+      degraded: payload['degraded'] == true,
+      isStale: payload['isStale'] == true,
+      warning: payload['warning'] as String?,
+      sourceOfTruth: payload['sourceOfTruth'] as String?,
+      readStatus: payload['readStatus'] as String?,
     );
   }
 }

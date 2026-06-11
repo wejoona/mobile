@@ -650,8 +650,15 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                         ),
                         _buildBalanceStatusItem(
                           colors: colors,
-                          icon: Icons.sync_rounded,
-                          label: l10n.converter_updatedJustNow,
+                          icon: walletState.isDegraded || walletState.isStale
+                              ? Icons.cloud_off_rounded
+                              : Icons.sync_rounded,
+                          label: walletState.isDegraded || walletState.isStale
+                              ? _balanceSyncLabel(walletState)
+                              : l10n.converter_updatedJustNow,
+                          color: walletState.isDegraded || walletState.isStale
+                              ? colors.warningText
+                              : null,
                         ),
                       ],
                     ),
@@ -704,18 +711,31 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     required ThemeColors colors,
     required IconData icon,
     required String label,
+    Color? color,
   }) => Row(
     mainAxisSize: MainAxisSize.min,
     children: [
-      Icon(icon, size: 14, color: colors.gold.withValues(alpha: 0.82)),
+      Icon(icon, size: 14, color: color ?? colors.gold.withValues(alpha: 0.82)),
       const SizedBox(width: AppSpacing.xs),
       AppText(
         label,
         variant: AppTextVariant.labelSmall,
-        color: colors.textSecondary,
+        color: color ?? colors.textSecondary,
       ),
     ],
   );
+
+  String _balanceSyncLabel(WalletState walletState) {
+    final status = walletState.balanceReadStatus;
+    if (status == 'degraded') return 'Sync delayed';
+
+    final warning = walletState.balanceWarning;
+    if (warning != null && warning.trim().isNotEmpty) {
+      return 'Sync delayed';
+    }
+
+    return 'Local balance';
+  }
 
   Widget _buildMobileLayout(
     BuildContext context,

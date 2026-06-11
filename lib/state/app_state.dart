@@ -14,6 +14,11 @@ class WalletState {
   final double pendingBalance;
   final String? error;
   final DateTime? lastUpdated;
+  final bool isDegraded;
+  final bool isStale;
+  final String? balanceWarning;
+  final String? balanceSourceOfTruth;
+  final String? balanceReadStatus;
 
   /// Whether this state was loaded from local cache (not fresh from server)
   final bool isCached;
@@ -28,6 +33,11 @@ class WalletState {
     this.pendingBalance = 0,
     this.error,
     this.lastUpdated,
+    this.isDegraded = false,
+    this.isStale = false,
+    this.balanceWarning,
+    this.balanceSourceOfTruth,
+    this.balanceReadStatus,
     this.isCached = false,
   });
 
@@ -67,6 +77,11 @@ class WalletState {
     double? pendingBalance,
     String? error,
     DateTime? lastUpdated,
+    bool? isDegraded,
+    bool? isStale,
+    String? balanceWarning,
+    String? balanceSourceOfTruth,
+    String? balanceReadStatus,
     bool? isCached,
   }) {
     return WalletState(
@@ -79,6 +94,11 @@ class WalletState {
       pendingBalance: pendingBalance ?? this.pendingBalance,
       error: error,
       lastUpdated: lastUpdated ?? this.lastUpdated,
+      isDegraded: isDegraded ?? this.isDegraded,
+      isStale: isStale ?? this.isStale,
+      balanceWarning: balanceWarning,
+      balanceSourceOfTruth: balanceSourceOfTruth ?? this.balanceSourceOfTruth,
+      balanceReadStatus: balanceReadStatus ?? this.balanceReadStatus,
       isCached: isCached ?? this.isCached,
     );
   }
