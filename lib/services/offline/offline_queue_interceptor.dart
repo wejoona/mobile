@@ -20,8 +20,8 @@ class OfflineQueueInterceptor extends Interceptor {
 
   /// Endpoints éligibles à la file d'attente hors ligne
   static const _queueableEndpoints = [
-    '/transfers/internal',
-    '/transfers/external',
+    '/wallet/transfer/internal',
+    '/wallet/transfer/external',
   ];
 
   OfflineQueueInterceptor(this._ref);

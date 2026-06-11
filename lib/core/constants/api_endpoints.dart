@@ -22,9 +22,9 @@ abstract final class ApiEndpoints {
   static const walletTransactions = '/wallet/transactions';
 
   // Transfers
-  static const transfersSend = '/transfers/internal';
+  static const transfersSend = '/wallet/transfer/internal';
   static const transfersEstimateFee = '/wallet/transfer/external/estimate-fee';
-  static const transfersExternal = '/transfers/external';
+  static const transfersExternal = '/wallet/transfer/external';
 
   // Deposit
   static const depositInitiate = '/wallet/deposit';

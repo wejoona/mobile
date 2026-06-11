@@ -96,9 +96,9 @@ void main() {
     expect(depositProviders, isNotEmpty);
 
     final transferResponse = await dio.post(
-      '/transfers/internal',
+      '/wallet/transfer/internal',
       data: {
-        'recipientPhone': '+2250700000000',
+        'toPhone': '+2250700000000',
         'amount': 10,
         'currency': 'USDC',
       },
@@ -324,9 +324,9 @@ void main() {
       (method: 'GET', path: '/wallet/transactions', data: null),
       (
         method: 'POST',
-        path: '/transfers/internal',
+        path: '/wallet/transfer/internal',
         data: {
-          'recipientPhone': '+2250708091011',
+          'toPhone': '+2250708091011',
           'amount': 5,
           'currency': 'USDC',
         },
@@ -407,7 +407,7 @@ Future<Response<dynamic>> _requestRoute(
 }) {
   final options = Options(
     method: method,
-    headers: method == 'POST' && path == '/transfers/internal'
+    headers: method == 'POST' && path == '/wallet/transfer/internal'
         ? {'X-Pin-Token': 'mock_pin_token_test'}
         : null,
   );
@@ -427,7 +427,7 @@ void _expectParseableRoute(String path, Object? data) {
         isNotEmpty,
       );
       return;
-    case '/transfers/internal':
+    case '/wallet/transfer/internal':
       final transfer = _expectMap(path, data);
       expect(transfer['id'], isA<String>());
       expect(transfer['status'], isA<String>());

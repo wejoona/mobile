@@ -39,28 +39,28 @@ class WalletApi {
 
   // ── Transfer ──
 
-  /// POST /transfers/internal
+  /// POST /wallet/transfer/internal
   Future<Response> transferInternal(
     Map<String, dynamic> data, {
     String? pinToken,
     String? idempotencyKey,
   }) => _dio.post(
-    '/transfers/internal',
-    data: data,
+    '/wallet/transfer/internal',
+    data: _internalTransferPayload(data),
     options: _moneyMovementOptions(
       pinToken: pinToken,
       idempotencyKey: idempotencyKey,
     ),
   );
 
-  /// POST /transfers/external
+  /// POST /wallet/transfer/external
   Future<Response> transferExternal(
     Map<String, dynamic> data, {
     String? pinToken,
     String? idempotencyKey,
   }) => _dio.post(
-    '/transfers/external',
-    data: data,
+    '/wallet/transfer/external',
+    data: _externalTransferPayload(data),
     options: _moneyMovementOptions(
       pinToken: pinToken,
       idempotencyKey: idempotencyKey,
@@ -168,6 +168,20 @@ Map<String, dynamic> _depositPayload(Map<String, dynamic> data) {
     'sourceCurrency',
     () => payload.remove('currency') ?? 'XOF',
   );
+  return payload;
+}
+
+Map<String, dynamic> _internalTransferPayload(Map<String, dynamic> data) {
+  final payload = Map<String, dynamic>.from(data);
+  final recipientPhone = payload.remove('recipientPhone');
+  payload['toPhone'] = payload['toPhone'] ?? recipientPhone;
+  return payload;
+}
+
+Map<String, dynamic> _externalTransferPayload(Map<String, dynamic> data) {
+  final payload = Map<String, dynamic>.from(data);
+  final recipientAddress = payload.remove('recipientAddress');
+  payload['toAddress'] = payload['toAddress'] ?? recipientAddress;
   return payload;
 }
 

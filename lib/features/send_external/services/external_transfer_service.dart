@@ -67,10 +67,12 @@ class ExternalTransferService {
   }) async {
     try {
       final data = request.toJson();
+      final recipientAddress = data.remove('recipientAddress');
+      data['toAddress'] = data['toAddress'] ?? recipientAddress;
       data['amount'] = request.amount;
 
       final response = await _dio.post(
-        '/transfers/external',
+        '/wallet/transfer/external',
         data: data,
         options: Options(
           headers: transactionHeaders(

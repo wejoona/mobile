@@ -115,7 +115,7 @@ class WalletService {
     }
   }
 
-  /// POST /transfers/internal
+  /// POST /wallet/transfer/internal
   Future<TransferResponse> internalTransfer({
     required String toPhone,
     required double amount,
@@ -126,9 +126,9 @@ class WalletService {
   }) async {
     try {
       final response = await _dio.post(
-        '/transfers/internal',
+        '/wallet/transfer/internal',
         data: {
-          'recipientPhone': toPhone,
+          'toPhone': toPhone,
           'amount': amount,
           'currency': currency,
           if (note != null) 'note': note,
@@ -158,9 +158,9 @@ class WalletService {
   }) async {
     try {
       final response = await _dio.post(
-        '/transfers/external',
+        '/wallet/transfer/external',
         data: {
-          'recipientAddress': toAddress,
+          'toAddress': toAddress,
           'amount': amount,
           'currency': currency,
           if (network != null) 'network': network,

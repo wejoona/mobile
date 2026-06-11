@@ -33,9 +33,9 @@ void main() {
 
     await expectLater(
       dio.post(
-        '/transfers/internal',
+        '/wallet/transfer/internal',
         data: {
-          'recipientPhone': '+2250708091011',
+          'toPhone': '+2250708091011',
           'amount': 5,
           'currency': 'USDC',
         },
@@ -65,9 +65,9 @@ void main() {
       final openingBalance = _balanceUsdc(walletBefore.data);
 
       final transferResponse = await dio.post(
-        '/transfers/internal',
+        '/wallet/transfer/internal',
         data: {
-          'recipientPhone': '+2250708091011',
+          'toPhone': '+2250708091011',
           'amount': 12.25,
           'currency': 'USDC',
           'note': 'Mock invariant check',

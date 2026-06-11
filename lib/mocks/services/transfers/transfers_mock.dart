@@ -59,14 +59,28 @@ class TransfersMockState {
 
 class TransfersMock {
   static void register(MockInterceptor interceptor) {
-    // POST /transfers/internal - Internal transfer
+    // POST /wallet/transfer/internal - Internal transfer through the secured wallet route
+    interceptor.register(
+      method: 'POST',
+      path: '/wallet/transfer/internal',
+      handler: _handleInternalTransfer,
+    );
+
+    // POST /transfers/internal - Legacy internal transfer compatibility
     interceptor.register(
       method: 'POST',
       path: '/transfers/internal',
       handler: _handleInternalTransfer,
     );
 
-    // POST /transfers/external - External transfer
+    // POST /wallet/transfer/external - External transfer through the secured wallet route
+    interceptor.register(
+      method: 'POST',
+      path: '/wallet/transfer/external',
+      handler: _handleExternalTransfer,
+    );
+
+    // POST /transfers/external - Legacy external transfer compatibility
     interceptor.register(
       method: 'POST',
       path: '/transfers/external',
@@ -145,7 +159,8 @@ class TransfersMock {
 
     final data = options.data as Map<String, dynamic>;
     final userId = AuthMockState.currentUserId!;
-    final recipientPhone = data['recipientPhone'] as String;
+    final recipientPhone =
+        (data['toPhone'] ?? data['recipientPhone']) as String? ?? '';
     final amount = (data['amount'] as num).toDouble();
     final note = data['note'] as String?;
 
@@ -190,7 +205,8 @@ class TransfersMock {
 
     final data = options.data as Map<String, dynamic>;
     final userId = AuthMockState.currentUserId!;
-    final recipientAddress = data['recipientAddress'] as String;
+    final recipientAddress =
+        (data['toAddress'] ?? data['recipientAddress']) as String? ?? '';
     final amount = (data['amount'] as num).toDouble();
     final network =
         (data['network'] as String?) ?? (data['blockchain'] as String?);

@@ -14,7 +14,7 @@ class TransfersService {
 
   TransfersService(this._dio, [this._riskSecurity]);
 
-  /// POST /transfers/internal
+  /// POST /wallet/transfer/internal
   /// Internal transfers between Korido users - typically low risk
   /// [pinToken] — required by backend PinVerificationGuard (X-Pin-Token header)
   /// [idempotencyKey] — required by backend IdempotencyGuard (X-Idempotency-Key header)
@@ -63,9 +63,9 @@ class TransfersService {
 
     try {
       final response = await _dio.post(
-        '/transfers/internal',
+        '/wallet/transfer/internal',
         data: {
-          'recipientPhone': recipientPhone,
+          'toPhone': recipientPhone,
           'amount': amount,
           if (note != null) 'note': note,
         },
@@ -82,7 +82,7 @@ class TransfersService {
     }
   }
 
-  /// POST /transfers/external
+  /// POST /wallet/transfer/external
   /// External transfers to blockchain addresses - risk-based verification
   ///
   /// Flow:
@@ -153,9 +153,9 @@ class TransfersService {
 
     try {
       final response = await _dio.post(
-        '/transfers/external',
+        '/wallet/transfer/external',
         data: {
-          'recipientAddress': recipientAddress,
+          'toAddress': recipientAddress,
           'amount': amount,
           if (blockchain != null) 'network': blockchain,
           if (note != null) 'note': note,

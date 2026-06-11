@@ -135,9 +135,9 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
             return;
           }
           await dio.post(
-            '/transfers/internal',
+            '/wallet/transfer/internal',
             data: {
-              'recipientPhone': recipientPhone,
+              'toPhone': recipientPhone,
               'amount': transferAmount,
               'currency': 'USDC',
               if (data.note != null) 'note': data.note,
@@ -181,9 +181,9 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
           final recipientPhone = _recipientPhone(data);
           if (recipientPhone != null) {
             await dio.post(
-              '/transfers/internal',
+              '/wallet/transfer/internal',
               data: {
-                'recipientPhone': recipientPhone,
+                'toPhone': recipientPhone,
                 'amount': transferAmount,
                 'currency': 'USDC',
                 if (data.note != null) 'note': data.note,

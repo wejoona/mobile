@@ -9,28 +9,28 @@ class TransfersApi {
   TransfersApi(this._dio);
   final Dio _dio;
 
-  /// POST /transfers/internal
+  /// POST /wallet/transfer/internal
   Future<Response> sendInternal(
     Map<String, dynamic> data, {
     String? pinToken,
     String? idempotencyKey,
   }) => _dio.post(
-    '/transfers/internal',
-    data: data,
+    '/wallet/transfer/internal',
+    data: _internalTransferPayload(data),
     options: _transferOptions(
       pinToken: pinToken,
       idempotencyKey: idempotencyKey,
     ),
   );
 
-  /// POST /transfers/external
+  /// POST /wallet/transfer/external
   Future<Response> sendExternal(
     Map<String, dynamic> data, {
     String? pinToken,
     String? idempotencyKey,
   }) => _dio.post(
-    '/transfers/external',
-    data: data,
+    '/wallet/transfer/external',
+    data: _externalTransferPayload(data),
     options: _transferOptions(
       pinToken: pinToken,
       idempotencyKey: idempotencyKey,
@@ -66,4 +66,18 @@ class TransfersApi {
       ),
     );
   }
+}
+
+Map<String, dynamic> _internalTransferPayload(Map<String, dynamic> data) {
+  final payload = Map<String, dynamic>.from(data);
+  final recipientPhone = payload.remove('recipientPhone');
+  payload['toPhone'] = payload['toPhone'] ?? recipientPhone;
+  return payload;
+}
+
+Map<String, dynamic> _externalTransferPayload(Map<String, dynamic> data) {
+  final payload = Map<String, dynamic>.from(data);
+  final recipientAddress = payload.remove('recipientAddress');
+  payload['toAddress'] = payload['toAddress'] ?? recipientAddress;
+  return payload;
 }
