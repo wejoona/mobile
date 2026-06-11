@@ -56,7 +56,11 @@ class PaymentLink {
       status: PaymentLinkStatusExtension.fromJson(
         json['status'] as String? ?? 'pending',
       ),
-      url: json['url'] as String? ?? 'https://app.korido.co/pay/$shortCode',
+      url:
+          json['url'] as String? ??
+          json['shareUrl'] as String? ??
+          json['paymentUrl'] as String? ??
+          'https://app.korido.co/pay/$shortCode',
       createdAt:
           DateTime.tryParse(json['createdAt'] as String? ?? '') ??
           DateTime.now(),

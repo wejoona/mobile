@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,7 +11,8 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/index.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/features/payment_links/models/index.dart';
+import 'package:usdc_wallet/services/service_providers.dart';
 
 class RequestMoneyView extends ConsumerStatefulWidget {
   const RequestMoneyView({super.key});
@@ -23,6 +26,8 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
   final _noteController = TextEditingController();
   String? _amountError;
   bool _showQr = false;
+  bool _isGenerating = false;
+  String? _requestLink;
 
   @override
   void dispose() {
@@ -86,8 +91,11 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
               // Generate Request Button
               AppButton(
                 label: AppStrings.generateRequest,
-                onPressed: _canGenerate() ? _generateRequest : null,
+                onPressed: _canGenerate() && !_isGenerating
+                    ? _generateRequest
+                    : null,
                 variant: AppButtonVariant.primary,
+                isLoading: _isGenerating,
                 isFullWidth: true,
               ),
             ] else ...[
@@ -102,7 +110,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
                         borderRadius: BorderRadius.circular(AppRadius.xl),
                       ),
                       child: QrImageView(
-                        data: _generatePaymentLink(),
+                        data: _paymentLink,
                         version: QrVersions.auto,
                         size: 200,
                         backgroundColor: Colors.white,
@@ -154,7 +162,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
                     child: _ShareButton(
                       icon: Icons.copy,
                       label: AppStrings.copyLink,
-                      onTap: _copyLink,
+                      onTap: () => unawaited(_copyLink()),
                     ),
                   ),
                   const SizedBox(width: AppSpacing.md),
@@ -162,7 +170,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
                     child: _ShareButton(
                       icon: Icons.share,
                       label: AppStrings.share,
-                      onTap: _shareRequest,
+                      onTap: () => unawaited(_shareRequest()),
                     ),
                   ),
                   const SizedBox(width: AppSpacing.md),
@@ -186,6 +194,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
                     _showQr = false;
                     _amountController.clear();
                     _noteController.clear();
+                    _requestLink = null;
                   });
                 },
                 variant: AppButtonVariant.secondary,
@@ -334,32 +343,48 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
     return amount > 0 && amount <= 10000 && _amountError == null;
   }
 
-  void _generateRequest() {
-    setState(() => _showQr = true);
+  Future<void> _generateRequest() async {
+    final amount = double.tryParse(_amountController.text);
+    if (amount == null || amount <= 0) return;
+
+    setState(() => _isGenerating = true);
+    try {
+      final service = ref.read(paymentLinksServiceProvider);
+      final link = await service.createLink(
+        CreateLinkRequest(
+          amount: amount,
+          currency: 'USDC',
+          description: _noteController.text.trim().isEmpty
+              ? null
+              : _noteController.text.trim(),
+          expiryHours: 24 * 30,
+        ),
+      );
+      if (!mounted) return;
+      setState(() {
+        _requestLink = link.url;
+        _showQr = true;
+      });
+    } on Exception {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Could not create the payment request.'),
+          backgroundColor: context.colors.error,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isGenerating = false);
+      }
+    }
   }
 
-  String _generatePaymentLink() {
-    final userState = ref.read(userStateMachineProvider);
-    final amount = _amountController.text;
-    final note = _noteController.text;
-    final phone = userState.phone ?? '';
+  String get _paymentLink => _requestLink ?? '';
 
-    // Generate a payment request deep link; legacy joonapay:// links are still accepted by the parser.
-    return Uri(
-      scheme: 'korido',
-      host: 'pay',
-      queryParameters: {
-        'phone': phone,
-        'amount': amount,
-        if (note.isNotEmpty) 'note': note,
-      },
-    ).toString();
-  }
-
-  void _copyLink() {
-    // ignore: unused_local_variable
-    final __colors = context.colors;
-    Clipboard.setData(ClipboardData(text: _generatePaymentLink()));
+  Future<void> _copyLink() async {
+    await Clipboard.setData(ClipboardData(text: _paymentLink));
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(AppLocalizations.of(context)!.paymentLinks_copied),
@@ -368,16 +393,15 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
     );
   }
 
-  void _shareRequest() {
+  Future<void> _shareRequest() async {
     final amount = _amountController.text;
     final note = _noteController.text.isNotEmpty
         ? ' for "${_noteController.text}"'
         : '';
 
-    SharePlus.instance.share(
+    await SharePlus.instance.share(
       ShareParams(
-        text:
-            'Hey! Please send me \$$amount$note on Korido.\n\n${_generatePaymentLink()}',
+        text: 'Hey! Please send me \$$amount$note on Korido.\n\n$_paymentLink',
         title: 'Payment Request - \$$amount',
       ),
     );
@@ -385,7 +409,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
 
   void _sendSms() {
     // This would open SMS app with pre-filled message
-    _shareRequest();
+    unawaited(_shareRequest());
   }
 }
 

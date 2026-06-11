@@ -31,6 +31,7 @@ import 'package:usdc_wallet/services/deposit/deposit_service.dart';
 import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
 import 'package:usdc_wallet/services/auth/auth_service.dart';
 import 'package:usdc_wallet/services/notifications/notifications_service.dart';
+import 'package:usdc_wallet/services/payment_links/payment_links_service.dart';
 import 'package:usdc_wallet/services/transfers/transfers_service.dart';
 import 'package:usdc_wallet/services/wallet/wallet_service.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
@@ -546,6 +547,36 @@ void main() {
       expect(links, hasLength(1));
       expect(links.single.id, 'link_1');
       expect(links.single.shortCode, 'ABC123');
+    });
+
+    test('request money creates shareable backend payment links', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'id': 'link_1',
+          'shortCode': 'ABC123',
+          'amount': 12.5,
+          'currency': 'USDC',
+          'status': 'pending',
+          'shareUrl': 'https://pay.joonapay.com/p/ABC123',
+          'createdAt': '2026-05-31T00:00:00.000Z',
+          'expiresAt': '2026-06-30T00:00:00.000Z',
+        });
+      final service = PaymentLinksService(dio);
+
+      final link = await service.createPaymentLink(
+        amount: 12.5,
+        currency: 'USDC',
+        description: 'Lunch',
+      );
+
+      expect(dio.requestHistory.single.method, 'POST');
+      expect(dio.requestHistory.single.path, '/payment-links');
+      expect(dio.requestHistory.single.data, {
+        'amount': 12.5,
+        'currency': 'USDC',
+        'description': 'Lunch',
+      });
+      expect(link.url, 'https://pay.joonapay.com/p/ABC123');
     });
 
     test(
