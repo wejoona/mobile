@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
@@ -26,6 +27,7 @@ class _ContactPickerBottomSheetState
   List<SyncedContact> _lookupResults = [];
   bool _isLoading = true;
   bool _isLookupLoading = false;
+  bool _permissionRequired = false;
   Timer? _lookupDebounce;
 
   @override
@@ -50,6 +52,7 @@ class _ContactPickerBottomSheetState
         setState(() {
           _contacts = contacts;
           _filteredContacts = contacts;
+          _permissionRequired = false;
           _isLoading = false;
         });
       }
@@ -62,6 +65,16 @@ class _ContactPickerBottomSheetState
 
   Future<List<SyncedContact>> _loadDeviceContacts() async {
     final contactsService = ref.read(contactsServiceProvider);
+    if (!await contactsService.hasContactsPermission()) {
+      if (mounted) {
+        setState(() {
+          _permissionRequired = true;
+          _isLoading = false;
+        });
+      }
+      return const [];
+    }
+
     final deviceContacts = await contactsService.getDeviceContacts();
     var contacts = contactsService.deviceContactsToSyncedContacts(
       deviceContacts,
@@ -78,6 +91,24 @@ class _ContactPickerBottomSheetState
 
     _sortContacts(contacts);
     return contacts;
+  }
+
+  Future<void> _requestContactsPermission() async {
+    setState(() => _isLoading = true);
+    final granted = await ref
+        .read(contactsServiceProvider)
+        .requestContactsPermission();
+    if (!mounted) {
+      return;
+    }
+    if (granted) {
+      await _loadContacts();
+      return;
+    }
+    setState(() {
+      _permissionRequired = true;
+      _isLoading = false;
+    });
   }
 
   void _sortContacts(List<SyncedContact> contacts) {
@@ -204,16 +235,18 @@ class _ContactPickerBottomSheetState
           SizedBox(height: AppSpacing.md),
 
           // Search bar
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: AppInput(
-              controller: _searchController,
-              hint: l10n.send_searchContacts,
-              prefixIcon: Icons.search,
-              onChanged: _filterContacts,
+          if (!_permissionRequired) ...[
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+              child: AppInput(
+                controller: _searchController,
+                hint: l10n.send_searchContacts,
+                prefixIcon: Icons.search,
+                onChanged: _filterContacts,
+              ),
             ),
-          ),
-          SizedBox(height: AppSpacing.md),
+            SizedBox(height: AppSpacing.md),
+          ],
 
           // Contacts list
           Expanded(
@@ -223,6 +256,8 @@ class _ContactPickerBottomSheetState
                       valueColor: AlwaysStoppedAnimation<Color>(colors.gold),
                     ),
                   )
+                : _permissionRequired
+                ? _buildPermissionRequest(colors)
                 : _filteredContacts.isEmpty && _lookupResults.isEmpty
                 ? Center(
                     child: AppText(
@@ -248,6 +283,68 @@ class _ContactPickerBottomSheetState
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPermissionRequest(ThemeColors colors) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return ListView(
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      children: [
+        AppCard(
+          variant: AppCardVariant.goldAccent,
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: colors.goldSubtle,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: colors.borderGold),
+                ),
+                child: Icon(
+                  Icons.contacts_outlined,
+                  color: colors.gold,
+                  size: 30,
+                ),
+              ),
+              SizedBox(height: AppSpacing.lg),
+              AppText(
+                l10n.contacts_permission_title,
+                variant: AppTextVariant.titleMedium,
+                color: colors.textPrimary,
+                textAlign: TextAlign.center,
+                fontWeight: FontWeight.w700,
+              ),
+              SizedBox(height: AppSpacing.sm),
+              AppText(
+                l10n.contacts_permission_benefit2_desc,
+                variant: AppTextVariant.bodyMedium,
+                color: colors.textSecondary,
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: AppSpacing.xl),
+              AppButton(
+                label: l10n.contacts_permission_allow,
+                icon: Icons.person_search_rounded,
+                isFullWidth: true,
+                onPressed: () => unawaited(_requestContactsPermission()),
+              ),
+              SizedBox(height: AppSpacing.sm),
+              AppButton(
+                label: l10n.action_open_settings,
+                icon: Icons.settings_outlined,
+                variant: AppButtonVariant.secondary,
+                isFullWidth: true,
+                onPressed: () => unawaited(openAppSettings()),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
