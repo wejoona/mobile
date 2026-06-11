@@ -40,7 +40,7 @@ class DevicesRepository {
         if (deviceMetadata.isNotEmpty) 'metadata': deviceMetadata,
       },
     );
-    return Device.fromJson(response.data as Map<String, dynamic>);
+    return Device.fromJson(_deviceMapFromPayload(response.data));
   }
 
   /// Get all active devices for the current user
@@ -56,9 +56,7 @@ class DevicesRepository {
     } else {
       devicesJson = [];
     }
-    return devicesJson
-        .map((json) => Device.fromJson(json as Map<String, dynamic>))
-        .toList();
+    return devicesJson.map(_deviceMapFromPayload).map(Device.fromJson).toList();
   }
 
   /// Trust a device
@@ -107,4 +105,15 @@ Object? _unwrapDevicePayload(Object? raw) {
     }
   }
   return raw;
+}
+
+Map<String, dynamic> _deviceMapFromPayload(Object? raw) {
+  final unwrapped = _unwrapDevicePayload(raw);
+  if (unwrapped is Map<String, dynamic>) {
+    return unwrapped;
+  }
+  if (unwrapped is Map) {
+    return Map<String, dynamic>.from(unwrapped);
+  }
+  return const {};
 }
