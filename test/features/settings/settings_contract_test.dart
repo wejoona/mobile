@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/settings/repositories/devices_repository.dart';
 import 'package:usdc_wallet/features/settings/repositories/sessions_repository.dart';
@@ -27,6 +29,20 @@ void main() {
     expect(sessions.single.deviceDescription, 'iPhone');
   });
 
+  test('active sessions 401 does not clear the local app session', () {
+    final source = File(
+      'lib/features/settings/providers/sessions_provider.dart',
+    ).readAsStringSync();
+
+    final loadSessions = _methodBody(source, 'loadSessions');
+    final revokeSession = _methodBody(source, 'revokeSession');
+    final logoutAllDevices = _methodBody(source, 'logoutAllDevices');
+
+    expect(loadSessions, isNot(contains('clearLocalSession')));
+    expect(revokeSession, isNot(contains('clearLocalSession')));
+    expect(logoutAllDevices, contains('clearLocalSession'));
+  });
+
   test('DevicesRepository parses bare backend array', () async {
     final dio = MockDio();
     dio.queueResponse([
@@ -53,4 +69,24 @@ void main() {
     expect(devices, hasLength(1));
     expect(devices.single.displayLabel, 'Apple iPhone 15 Pro');
   });
+}
+
+String _methodBody(String source, String methodName) {
+  final signatureIndex = source.indexOf('Future<void> $methodName()') >= 0
+      ? source.indexOf('Future<void> $methodName()')
+      : source.indexOf('Future<bool> $methodName');
+  expect(signatureIndex, isNonNegative, reason: '$methodName should exist');
+
+  final bodyStart = source.indexOf('{', signatureIndex);
+  expect(bodyStart, isNonNegative, reason: '$methodName should have a body');
+
+  var depth = 0;
+  for (var i = bodyStart; i < source.length; i++) {
+    final char = source[i];
+    if (char == '{') depth++;
+    if (char == '}') depth--;
+    if (depth == 0) return source.substring(bodyStart, i + 1);
+  }
+
+  fail('Could not parse $methodName body');
 }
