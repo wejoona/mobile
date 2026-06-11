@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/state/app_state.dart';
@@ -136,6 +138,21 @@ void main() {
       expect(cleared.avatarUrl, isNull);
       expect(cleared.avatarThumb, isNull);
       expect(cleared.effectiveAvatarUrl, isNull);
+    });
+
+    test('profile edit screen rebuilds after hydrating existing avatar', () {
+      final source = File(
+        'lib/features/settings/views/profile_edit_screen.dart',
+      ).readAsStringSync();
+      final initStateBody = RegExp(
+        r'void initState\(\) \{([\s\S]*?)\n  @override\n  void dispose',
+      ).firstMatch(source)!.group(1)!;
+
+      expect(initStateBody, contains('addPostFrameCallback'));
+      expect(initStateBody, contains('if (!mounted) return'));
+      expect(initStateBody, contains('setState'));
+      expect(initStateBody, contains('_avatarUrl = userState.avatarUrl'));
+      expect(initStateBody, contains('_avatarThumb = userState.avatarThumb'));
     });
   });
 }

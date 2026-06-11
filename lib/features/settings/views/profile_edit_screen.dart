@@ -41,12 +41,15 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     super.initState();
     // Pre-fill with current user data
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       final userState = ref.read(userStateMachineProvider);
-      _firstNameController.text = userState.firstName ?? '';
-      _lastNameController.text = userState.lastName ?? '';
-      _emailController.text = userState.email ?? '';
-      _avatarUrl = userState.avatarUrl;
-      _avatarThumb = userState.avatarThumb;
+      setState(() {
+        _firstNameController.text = userState.firstName ?? '';
+        _lastNameController.text = userState.lastName ?? '';
+        _emailController.text = userState.email ?? '';
+        _avatarUrl = userState.avatarUrl;
+        _avatarThumb = userState.avatarThumb;
+      });
     });
   }
 
