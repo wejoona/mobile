@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdc_wallet/config/environment_config.dart';
@@ -10,7 +11,8 @@ import 'package:usdc_wallet/utils/logger.dart';
 class BiometricReenrollmentDetector {
   static const _tag = 'BiometricReenroll';
   static const _prefKey = 'biometric_enrollment_hash';
-  final AppLogger _log = AppLogger(_tag);
+  static const _channel = MethodChannel('com.joonapay.usdc_wallet/biometrics');
+  final AppLogger _log = const AppLogger(_tag);
 
   /// Check if biometric enrollment has changed.
   Future<bool> hasEnrollmentChanged() async {
@@ -19,12 +21,15 @@ class BiometricReenrollmentDetector {
       final storedHash = prefs.getString(_prefKey);
       final currentHash = await _getCurrentEnrollmentHash();
 
-      if (EnvironmentConfig.isProduction &&
-          currentHash == 'biometric_state_placeholder') {
+      if (EnvironmentConfig.isProduction && currentHash == null) {
         _log.error(
           'Native biometric enrollment state is not configured for production',
         );
         return true;
+      }
+
+      if (currentHash == null) {
+        return false;
       }
 
       if (storedHash == null) {
@@ -39,7 +44,7 @@ class BiometricReenrollmentDetector {
       }
 
       return false;
-    } catch (e) {
+    } on Object catch (e) {
       _log.error('Biometric enrollment check failed', e);
       return false;
     }
@@ -49,6 +54,10 @@ class BiometricReenrollmentDetector {
   Future<void> acknowledgeChange() async {
     final prefs = await SharedPreferences.getInstance();
     final currentHash = await _getCurrentEnrollmentHash();
+    if (currentHash == null) {
+      await prefs.remove(_prefKey);
+      return;
+    }
     await prefs.setString(_prefKey, currentHash);
     _log.debug('Biometric enrollment hash updated');
   }
@@ -59,15 +68,29 @@ class BiometricReenrollmentDetector {
     await prefs.remove(_prefKey);
   }
 
-  Future<String> _getCurrentEnrollmentHash() async {
-    // Platform channel needed for actual implementation:
-    // Android: BiometricManager.BIOMETRIC_STRONG
-    // iOS: LAContext evaluatedPolicyDomainState
-    return 'biometric_state_placeholder';
+  Future<String?> _getCurrentEnrollmentHash() async {
+    try {
+      final value = await _channel.invokeMethod<String>(
+        'getEnrollmentStateHash',
+      );
+      if (value == null || value.trim().isEmpty || value == 'unavailable') {
+        return null;
+      }
+      return value;
+    } on MissingPluginException catch (e) {
+      _log.error('Biometric enrollment native channel missing', e);
+      return null;
+    } on PlatformException catch (e) {
+      if (e.code == 'BIOMETRIC_UNAVAILABLE') {
+        return null;
+      }
+      _log.error('Biometric enrollment native check failed', e);
+      return null;
+    }
   }
 }
 
 final biometricReenrollmentDetectorProvider =
-    Provider<BiometricReenrollmentDetector>((ref) {
-      return BiometricReenrollmentDetector();
-    });
+    Provider<BiometricReenrollmentDetector>(
+      (ref) => BiometricReenrollmentDetector(),
+    );

@@ -125,6 +125,9 @@ dependencies {
     // SECURITY: Play Integrity API for device attestation
     implementation("com.google.android.play:integrity:1.4.0")
 
+    // SECURITY: Strong biometric availability checks for enrollment state guard
+    implementation("androidx.biometric:biometric:1.1.0")
+
     // Coroutines for async Play Integrity calls
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")

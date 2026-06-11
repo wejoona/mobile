@@ -2,12 +2,14 @@ import Flutter
 import UIKit
 import DeviceCheck
 import CryptoKit
+import LocalAuthentication
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
     var attestationKeyId: String?
     var securityChannel: FlutterMethodChannel?
     var attestationChannel: FlutterMethodChannel?
+    var biometricsChannel: FlutterMethodChannel?
     var appIsDarkMode: Bool? = nil
 
     override func application(
@@ -80,8 +82,47 @@ import CryptoKit
             }
         }
 
+        // SECURITY: Biometric enrollment state channel
+        biometricsChannel = FlutterMethodChannel(
+            name: "com.joonapay.usdc_wallet/biometrics",
+            binaryMessenger: messenger
+        )
+
+        biometricsChannel?.setMethodCallHandler { [weak self] (call, result) in
+            switch call.method {
+            case "getEnrollmentStateHash":
+                self?.getBiometricEnrollmentStateHash(result: result)
+            default:
+                result(FlutterMethodNotImplemented)
+            }
+        }
+
         // SECURITY: Detect screenshots and screen recording
         setupScreenCaptureDetection()
+    }
+
+    // MARK: - Biometric Enrollment State
+
+    private func getBiometricEnrollmentStateHash(result: FlutterResult) {
+        let context = LAContext()
+        var error: NSError?
+
+        guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
+            result(FlutterError(code: "BIOMETRIC_UNAVAILABLE",
+                                message: error?.localizedDescription ?? "Biometrics are not available",
+                                details: nil))
+            return
+        }
+
+        guard let state = context.evaluatedPolicyDomainState else {
+            result(FlutterError(code: "BIOMETRIC_STATE_UNAVAILABLE",
+                                message: "Unable to read biometric enrollment state",
+                                details: nil))
+            return
+        }
+
+        let digest = SHA256.hash(data: state)
+        result("ios:" + Data(digest).base64EncodedString())
     }
 
     // MARK: - App Lifecycle (UI-related — will move to SceneDelegate)
