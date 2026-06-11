@@ -285,7 +285,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
 
     if (!MockConfig.useMocks) {
       var status = await Permission.contacts.status;
-      if (!status.isGranted) {
+      if (!status.isGranted && !status.isLimited) {
         // Permission.request() only surfaces the OS dialog the first time.
         // Once the user has permanently denied it, request() returns
         // immediately without prompting — so send them to app settings

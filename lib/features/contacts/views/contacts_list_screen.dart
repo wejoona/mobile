@@ -47,7 +47,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
     final l10n = AppLocalizations.of(context)!;
     final notifier = ref.read(contactsProvider.notifier);
     final status = await Permission.contacts.status;
-    if (!status.isGranted) {
+    if (!status.isGranted && !status.isLimited) {
       if (status.isPermanentlyDenied || status.isRestricted) {
         if (mounted) await _showContactsSettingsDialog(l10n);
         return;

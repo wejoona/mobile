@@ -63,7 +63,7 @@ class ContactSyncNotifier extends Notifier<ContactSyncState> {
     );
     try {
       final status = await Permission.contacts.request();
-      if (status.isGranted) {
+      if (status.isGranted || status.isLimited) {
         return true;
       } else if (status.isPermanentlyDenied) {
         state = state.copyWith(
@@ -95,7 +95,7 @@ class ContactSyncNotifier extends Notifier<ContactSyncState> {
     // Passive sync must not trigger the iOS Contacts prompt. Permission should
     // only be requested from an explicit user action.
     final permissionStatus = await Permission.contacts.status;
-    if (!permissionStatus.isGranted) {
+    if (!permissionStatus.isGranted && !permissionStatus.isLimited) {
       state = state.copyWith(status: ContactSyncStatus.permissionDenied);
       return;
     }

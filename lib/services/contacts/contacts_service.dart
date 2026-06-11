@@ -148,7 +148,7 @@ class ContactsService {
   /// iOS Contacts system prompt.
   Future<List<Contact>> getDeviceContacts() async {
     final status = await Permission.contacts.status;
-    if (!status.isGranted) {
+    if (!_canReadContacts(status)) {
       return [];
     }
     return FlutterContacts.getContacts(withProperties: true, withPhoto: false);
@@ -244,7 +244,7 @@ class ContactsService {
   /// Request contacts permission
   Future<bool> requestContactsPermission() async {
     final current = await Permission.contacts.status;
-    if (current.isGranted) {
+    if (_canReadContacts(current)) {
       return true;
     }
     if (current.isPermanentlyDenied) {
@@ -257,14 +257,17 @@ class ContactsService {
     }
 
     final status = await Permission.contacts.status;
-    return status.isGranted;
+    return _canReadContacts(status);
   }
 
   /// Check if contacts permission is granted
   Future<bool> hasContactsPermission() async {
     final status = await Permission.contacts.status;
-    return status.isGranted;
+    return _canReadContacts(status);
   }
+
+  bool _canReadContacts(PermissionStatus status) =>
+      status.isGranted || status.isLimited;
 
   /// Normalize phone to E.164 format.
   ///
