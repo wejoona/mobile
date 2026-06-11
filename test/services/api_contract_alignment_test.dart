@@ -931,22 +931,23 @@ void main() {
     });
 
     test(
-      'session repository sends revoke reasons and parses active sessions',
+      'session repository uses device routes and parses active devices',
       () async {
         final dio = MockDio()
           ..queueResponse({
             'data': {
-              'sessions': [
+              'devices': [
                 {
-                  'id': 'session_1',
+                  'id': 'device_1',
                   'userId': 'user_1',
-                  'deviceId': 'device_1',
-                  'ipAddress': '::ffff:10.42.0.248',
-                  'userAgent': 'Korido/1.0.0 (iOS; iPhone17,2; 26.2)',
-                  'location': null,
+                  'deviceIdentifier': 'vendor_1',
+                  'model': 'iPhone17,2',
+                  'os': 'iOS',
+                  'osVersion': '26.2',
+                  'platform': 'ios',
+                  'lastIpAddress': '::ffff:10.42.0.248',
                   'isActive': true,
-                  'lastActivityAt': '2026-06-04T10:00:00.000Z',
-                  'expiresAt': '2026-06-11T10:00:00.000Z',
+                  'lastLoginAt': '2026-06-04T10:00:00.000Z',
                   'createdAt': '2026-06-04T09:00:00.000Z',
                 },
               ],
@@ -958,34 +959,33 @@ void main() {
         final repository = SessionsRepository(dio);
 
         final sessions = await repository.getSessions();
-        await repository.revokeSession('session_1');
+        await repository.revokeSession('device_1');
 
-        expect(dio.requestHistory[0].path, '/sessions');
-        expect(sessions.single.id, 'session_1');
+        expect(dio.requestHistory[0].path, '/devices');
+        expect(sessions.single.id, 'device_1');
         expect(sessions.single.deviceId, 'device_1');
         expect(sessions.single.userAgent, contains('iPhone17,2'));
         expect(sessions.single.deviceDescription, 'iPhone');
         expect(sessions.single.displayIpAddress, '10.42.0.248');
         expect(dio.requestHistory[1].method, 'DELETE');
-        expect(dio.requestHistory[1].path, '/sessions/session_1');
-        expect(dio.requestHistory[1].data, {'reason': 'user_revoke_device'});
+        expect(dio.requestHistory[1].path, '/devices/device_1');
       },
     );
 
     test(
-      'session repository accepts mobile-safe item aliases without failing screen',
+      'session repository accepts mobile-safe device aliases without failing screen',
       () async {
         final dio = MockDio()
           ..queueResponse({
             'items': [
               {
-                'sessionId': 'session_alias_1',
-                'device_id': 'device_alias_1',
-                'ip_address': '192.168.1.24',
-                'user_agent': 'Korido/1.0.0 (Android; Pixel 9)',
+                'id': 'device_alias_1',
+                'deviceIdentifier': 'android_id_1',
+                'model': 'Pixel 9',
+                'platform': 'android',
+                'lastIpAddress': '192.168.1.24',
                 'is_active': 'true',
-                'lastSeenAt': '2026-06-04T11:30:00.000Z',
-                'revoked_reason': null,
+                'lastLoginAt': '2026-06-04T11:30:00.000Z',
               },
             ],
             'total': 1,
@@ -994,8 +994,8 @@ void main() {
 
         final sessions = await repository.getSessions();
 
-        expect(dio.requestHistory.single.path, '/sessions');
-        expect(sessions.single.id, 'session_alias_1');
+        expect(dio.requestHistory.single.path, '/devices');
+        expect(sessions.single.id, 'device_alias_1');
         expect(sessions.single.deviceId, 'device_alias_1');
         expect(sessions.single.displayIpAddress, '192.168.1.24');
         expect(sessions.single.deviceDescription, 'Android Device');
@@ -1006,7 +1006,7 @@ void main() {
         );
         expect(
           sessions.single.expiresAt,
-          sessions.single.lastActivityAt.add(const Duration(days: 7)),
+          sessions.single.lastActivityAt.add(const Duration(days: 30)),
         );
       },
     );

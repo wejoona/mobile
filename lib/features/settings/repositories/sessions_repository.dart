@@ -1,7 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/domain/entities/device.dart';
 import 'package:usdc_wallet/features/settings/models/session.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Sessions Repository
 class SessionsRepository {
@@ -12,18 +13,22 @@ class SessionsRepository {
   /// Get all active sessions
   Future<List<Session>> getSessions() async {
     try {
-      final response = await _dio.get('/sessions');
+      final response = await _dio.get('/devices');
       final raw = _unwrapSessionPayload(response.data);
       final List items;
       if (raw is Map) {
-        items = (raw['sessions'] ?? raw['items'] ?? raw['data'] ?? []) as List;
+        items = (raw['devices'] ?? raw['items'] ?? raw['data'] ?? []) as List;
       } else if (raw is List) {
         items = raw;
       } else {
         items = [];
       }
       return items
-          .map((json) => Session.fromJson(Map<String, dynamic>.from(json)))
+          .map(
+            (json) => _sessionFromDevice(
+              Device.fromJson(Map<String, dynamic>.from(json)),
+            ),
+          )
           .toList();
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -33,10 +38,7 @@ class SessionsRepository {
   /// Revoke a specific session
   Future<void> revokeSession(String sessionId) async {
     try {
-      await _dio.delete(
-        '/sessions/$sessionId',
-        data: const {'reason': 'user_revoke_device'},
-      );
+      await _dio.delete('/devices/$sessionId');
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -45,10 +47,7 @@ class SessionsRepository {
   /// Logout from all devices (revoke all sessions)
   Future<void> logoutAllDevices() async {
     try {
-      await _dio.delete(
-        '/sessions',
-        data: const {'reason': 'user_logout_all_devices'},
-      );
+      await _dio.delete('/devices');
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -71,4 +70,23 @@ Object? _unwrapSessionPayload(Object? raw) {
     if (data is Map) return Map<String, dynamic>.from(data);
   }
   return raw;
+}
+
+Session _sessionFromDevice(Device device) {
+  final lastSeen = device.lastActiveAt;
+  final userAgent = [
+    device.deviceModel,
+    device.osDisplay == 'Unknown OS' ? null : device.osDisplay,
+    device.platform,
+  ].whereType<String>().where((value) => value.trim().isNotEmpty).join(' ');
+
+  return Session(
+    id: device.id,
+    deviceId: device.id,
+    ipAddress: device.lastIpAddress,
+    userAgent: userAgent.isEmpty ? device.displayLabel : userAgent,
+    isActive: device.isActive,
+    lastActivityAt: lastSeen,
+    expiresAt: lastSeen.add(const Duration(days: 30)),
+  );
 }
