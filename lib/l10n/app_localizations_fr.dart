@@ -668,7 +668,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settings_securitySettings => 'Paramètres de sécurité';
 
   @override
-  String get settings_securityDescription => 'PIN, 2FA, biométrie';
+  String get settings_securityDescription => 'PIN, biométrie, appareils';
 
   @override
   String get settings_language => 'Langue';
@@ -6717,11 +6717,11 @@ class AppLocalizationsFr extends AppLocalizations {
       'Déverrouillez votre session pour continuer';
 
   @override
-  String get session_expiring => 'Session expirante';
+  String get session_expiring => 'Verrouillage de la session';
 
   @override
   String session_expiringMessage(int seconds) {
-    return 'Votre session expirera dans $seconds secondes en raison d\'inactivité.';
+    return 'Votre session sera verrouillée dans $seconds secondes en raison de l\'inactivité.';
   }
 
   @override

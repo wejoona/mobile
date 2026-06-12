@@ -134,10 +134,13 @@ class _SendTonePalette {
         );
       case SendCalloutTone.info:
         return _SendTonePalette(
-          background: colors.infoBg,
-          foreground: colors.infoText,
+          background: Color.alphaBlend(
+            colors.gold.withValues(alpha: colors.isDark ? 0.075 : 0.04),
+            colors.container,
+          ),
+          foreground: colors.gold,
           title: colors.textPrimary,
-          border: colors.info.withValues(alpha: 0.22),
+          border: colors.borderGold.withValues(alpha: 0.30),
         );
     }
   }
@@ -312,10 +315,13 @@ class SendActionTile extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: colors.infoBg,
+              color: colors.goldSubtle,
               borderRadius: BorderRadius.circular(AppRadius.md),
+              border: Border.all(
+                color: colors.borderGold.withValues(alpha: 0.38),
+              ),
             ),
-            child: Icon(icon, color: colors.infoText, size: 18),
+            child: Icon(icon, color: colors.gold, size: 18),
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(

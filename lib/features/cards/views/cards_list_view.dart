@@ -40,6 +40,20 @@ class CardsListView extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_rounded,
+            color: context.colors.textPrimary,
+          ),
+          onPressed: () {
+            final router = GoRouter.of(context);
+            if (router.canPop()) {
+              router.pop();
+            } else {
+              context.go('/home');
+            }
+          },
+        ),
         title: AppText(
           l10n.cards_myCards,
           variant: AppTextVariant.titleLarge,

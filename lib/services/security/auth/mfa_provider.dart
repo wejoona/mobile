@@ -42,25 +42,22 @@ class MfaProvider extends StateNotifier<MfaState> {
 
   /// Enroll a new MFA method.
   Future<bool> enroll(MfaMethod method) async {
-    if (state.enrolledMethods.contains(method)) return true;
     _log.debug('Enrolling MFA method: $method');
-    // Would call backend to initiate enrollment
-    state = state.copyWith(
-      enrolledMethods: [...state.enrolledMethods, method],
-      preferredMethod: state.preferredMethod ?? method,
+    _log.security(
+      'MFA enrollment rejected because backend-backed MFA is not enabled',
+      level: 'WARN',
     );
-    return true;
+    return false;
   }
 
   /// Verify MFA challenge.
   Future<bool> verify(MfaMethod method, String code) async {
     _log.debug('Verifying MFA: $method');
-    // Would call backend to verify
-    state = state.copyWith(
-      isVerified: true,
-      lastVerifiedAt: DateTime.now(),
+    _log.security(
+      'MFA verification rejected because backend-backed MFA is not enabled',
+      level: 'WARN',
     );
-    return true;
+    return false;
   }
 
   /// Check if MFA verification is still valid within [duration].
@@ -72,8 +69,7 @@ class MfaProvider extends StateNotifier<MfaState> {
   /// Unenroll a method.
   void unenroll(MfaMethod method) {
     state = state.copyWith(
-      enrolledMethods:
-          state.enrolledMethods.where((m) => m != method).toList(),
+      enrolledMethods: state.enrolledMethods.where((m) => m != method).toList(),
     );
   }
 

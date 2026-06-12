@@ -2,11 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/payment_links/providers/payment_links_provider.dart';
 import 'package:usdc_wallet/features/payment_links/widgets/share_link_sheet.dart';
+import 'package:usdc_wallet/features/qr_payment/widgets/branded_qr_image.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 class LinkCreatedView extends ConsumerWidget {
@@ -118,11 +118,7 @@ class LinkCreatedView extends ConsumerWidget {
                   backgroundColor: Colors.white,
                   borderColor: context.colors.borderSubtle,
                   padding: const EdgeInsets.all(AppSpacing.md),
-                  child: QrImageView(
-                    data: link.url,
-                    size: 200,
-                    backgroundColor: Colors.white,
-                  ),
+                  child: BrandedQrImage(data: link.url, size: 200),
                 ),
               ),
               const SizedBox(height: AppSpacing.xl),

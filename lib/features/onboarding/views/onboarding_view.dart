@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -43,6 +44,9 @@ class _OnboardingViewState extends ConsumerState<OnboardingView>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_redirectIfAlreadyCompleted());
+    });
     _illustrationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -68,6 +72,14 @@ class _OnboardingViewState extends ConsumerState<OnboardingView>
     _contentController.reset();
     _illustrationController.forward();
     _contentController.forward();
+  }
+
+  Future<void> _redirectIfAlreadyCompleted() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    if (prefs.getBool('onboarding_completed') ?? false) {
+      context.go('/login');
+    }
   }
 
   @override

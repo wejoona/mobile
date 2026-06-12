@@ -852,7 +852,7 @@
   "@settings_securitySettings": {
     "description": "Security settings label"
   },
-  "settings_securityDescription": "PIN, 2FA, biometria",
+  "settings_securityDescription": "PIN, biometria, dispositivos",
   "@settings_securityDescription": {
     "description": "Security settings description"
   },

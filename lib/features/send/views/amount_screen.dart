@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
 import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
 import 'package:usdc_wallet/features/limits/widgets/limit_warning_banner.dart';
 import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart';
@@ -206,6 +207,24 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                         padding: const EdgeInsets.only(bottom: AppSpacing.md),
                         child: LimitWarningBanner(limits: limitsState.limits!),
                       ),
+                    if (_shouldShowVerificationLimitCallout(
+                      limitsState.limits,
+                    )) ...[
+                      SendCallout(
+                        icon: Icons.verified_user_outlined,
+                        title: localizedSendCopy(
+                          context,
+                          en: '${limitsState.limits!.tierName} limits active',
+                          fr: 'Limites ${limitsState.limits!.tierName} actives',
+                        ),
+                        body: _verificationLimitMessage(
+                          context,
+                          limitsState.limits!,
+                        ),
+                        tone: SendCalloutTone.info,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                    ],
 
                     AppCard(
                       variant: AppCardVariant.elevated,
@@ -328,6 +347,39 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
     setState(() => _draftAmount = parsed);
   }
 
+  bool _shouldShowVerificationLimitCallout(TransactionLimits? limits) {
+    if (limits == null) return false;
+    final status = limits.kycStatus?.toLowerCase();
+    return limits.kycTier <= 1 ||
+        status == 'pending' ||
+        status == 'manual_review' ||
+        status == 'submitted';
+  }
+
+  String _verificationLimitMessage(
+    BuildContext context,
+    TransactionLimits limits,
+  ) {
+    final message = limits.upgradeMessage;
+    final language = Localizations.localeOf(context).languageCode;
+    if (language != 'fr' && message != null && message.trim().isNotEmpty) {
+      return message.trim();
+    }
+    final status = limits.kycStatus?.toLowerCase();
+    if (status == 'manual_review' || status == 'submitted') {
+      return localizedSendCopy(
+        context,
+        en: 'Your verification is under review. You can keep using Korido within the limits shown here.',
+        fr: 'Votre vérification est en cours de revue. Vous pouvez continuer à utiliser Korido dans les limites affichées ici.',
+      );
+    }
+    return localizedSendCopy(
+      context,
+      en: 'These limits come from your current verification level and update automatically after approval.',
+      fr: 'Ces limites dépendent de votre niveau de vérification actuel et seront mises à jour après approbation.',
+    );
+  }
+
   String? _validateAmount(String? value) {
     final l10n = AppLocalizations.of(context)!;
     if (value == null || value.isEmpty) {
@@ -351,6 +403,10 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
       if (limits.isDailyAtLimit) {
         return '${l10n.limits_dailyLimitReached} ${formatUsdc(limits.dailyLimit)}';
       }
+      if (limits.singleTransactionLimit > 0 &&
+          amount > limits.singleTransactionLimit) {
+        return '${localizedSendCopy(context, en: 'Maximum per transfer', fr: 'Maximum par transfert')}: ${formatUsdc(limits.singleTransactionLimit)}';
+      }
       if (amount > limits.dailyRemaining) {
         return '${l10n.limits_remaining}: ${formatUsdc(limits.dailyRemaining)}';
       }
@@ -367,7 +423,17 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
 
   void _setMaxAmount() {
     final state = ref.read(sendMoneyProvider);
-    _amountController.text = state.availableBalance.toStringAsFixed(2);
+    final limits = ref.read(limitsProvider).limits;
+    final maxAmount = limits == null
+        ? state.availableBalance
+        : [
+            state.availableBalance,
+            if (limits.singleTransactionLimit > 0)
+              limits.singleTransactionLimit,
+            if (limits.dailyRemaining > 0) limits.dailyRemaining,
+            if (limits.monthlyRemaining > 0) limits.monthlyRemaining,
+          ].reduce((a, b) => a < b ? a : b);
+    _amountController.text = maxAmount.toStringAsFixed(2);
     _updateDraftAmount(_amountController.text);
   }
 

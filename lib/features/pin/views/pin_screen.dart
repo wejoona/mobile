@@ -8,6 +8,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
@@ -109,9 +110,14 @@ class _PinScreenState extends ConsumerState<PinScreen>
       case PinContext.login:
         // Show brief transition, then unlock + navigate to home together.
         if (mounted) {
-          _transitionThen(() {
+          _transitionThen(() async {
             final router = GoRouter.of(context);
-            _applyUnlock();
+            final unlocked = await _applyUnlock();
+            if (!mounted) return;
+            if (!unlocked) {
+              _showUnlockFailure();
+              return;
+            }
             router.go(widget.successRoute ?? '/home');
           });
         }
@@ -119,9 +125,13 @@ class _PinScreenState extends ConsumerState<PinScreen>
       case PinContext.sessionLock:
         // Show brief transition, then unlock + navigate together.
         if (mounted) {
-          _transitionThen(() {
+          _transitionThen(() async {
             final router = GoRouter.of(context);
-            _applyUnlock();
+            final unlocked = _applySessionUnlock();
+            if (!unlocked) {
+              _showUnlockFailure();
+              return;
+            }
             // Refresh wallet and transactions in the background after unlock.
             Future.microtask(() {
               try {
@@ -141,7 +151,29 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
   /// Unlock auth + session state. Kept separate so callers can run it in the
   /// same frame as navigation (see [_onSuccess]).
-  void _applyUnlock() {
+  Future<bool> _applyUnlock() async {
+    if (widget.pinContext == PinContext.login) {
+      final loginState = ref.read(loginProvider);
+      final accessToken = loginState.sessionToken;
+      if (accessToken == null || accessToken.isEmpty) {
+        return false;
+      }
+      return ref
+          .read(authProvider.notifier)
+          .completePinLogin(
+            accessToken: accessToken,
+            refreshToken: loginState.refreshToken,
+            user: loginState.user,
+            phone: loginState.phoneNumber,
+            kycStatus: loginState.kycStatus,
+            expiresIn: loginState.sessionExpiresIn,
+          );
+    }
+
+    return _applySessionUnlock();
+  }
+
+  bool _applySessionUnlock() {
     try {
       ref.read(authProvider.notifier).unlock();
     } catch (_) {}
@@ -151,23 +183,33 @@ class _PinScreenState extends ConsumerState<PinScreen>
     try {
       ref.read(appFsmProvider.notifier).unlockSession();
     } catch (_) {}
+    return true;
   }
 
   /// Brief unlock animation before navigating away
-  void _transitionThen(VoidCallback navigate) {
+  void _transitionThen(FutureOr<void> Function() navigate) {
+    var didRun = false;
+    Future<void> runOnce() async {
+      if (didRun || !mounted) return;
+      didRun = true;
+      await navigate();
+    }
+
     setState(() => _showUnlockTransition = true);
     unawaited(
       Future.delayed(const Duration(milliseconds: 600), () {
-        if (mounted) navigate();
+        unawaited(runOnce());
       }),
     );
     unawaited(
       Future.delayed(const Duration(milliseconds: 1200), () {
-        if (mounted && _showUnlockTransition) navigate();
+        if (mounted && _showUnlockTransition) {
+          unawaited(runOnce());
+        }
       }),
     );
     unawaited(
-      Future.delayed(const Duration(seconds: 2), () {
+      Future.delayed(const Duration(seconds: 5), () {
         if (!mounted || !_showUnlockTransition) return;
         setState(() {
           _showUnlockTransition = false;
@@ -176,6 +218,16 @@ class _PinScreenState extends ConsumerState<PinScreen>
         unawaited(_checkBiometric());
       }),
     );
+  }
+
+  void _showUnlockFailure() {
+    setState(() {
+      _showUnlockTransition = false;
+      _isVerifying = false;
+      _pin = '';
+      _hasError = true;
+      _errorMessage = 'Unable to unlock this session. Please sign in again.';
+    });
   }
 
   Future<void> _verifyPin() async {

@@ -11,6 +11,8 @@ class TransactionLimits {
   final String currency;
   final int kycTier;
   final String tierName;
+  final String? kycStatus;
+  final String? upgradeMessage;
   final String? nextTierName;
   final double? nextTierDailyLimit;
   final double? nextTierMonthlyLimit;
@@ -31,6 +33,8 @@ class TransactionLimits {
     this.currency = 'USDC',
     required this.kycTier,
     required this.tierName,
+    this.kycStatus,
+    this.upgradeMessage,
     this.nextTierName,
     this.nextTierDailyLimit,
     this.nextTierMonthlyLimit,
@@ -44,8 +48,12 @@ class TransactionLimits {
       dailyLimit: (json['dailyLimit'] as num?)?.toDouble() ?? 0.0,
       weeklyLimit: (json['weeklyLimit'] as num?)?.toDouble() ?? 0.0,
       monthlyLimit: (json['monthlyLimit'] as num?)?.toDouble() ?? 0.0,
-      singleTransactionLimit: (json['singleTransactionLimit'] as num?)?.toDouble() ?? 0.0,
-      singleTransactionMax: (json['singleTransactionMax'] as num?)?.toDouble() ?? (json['singleTransactionLimit'] as num?)?.toDouble() ?? 0.0,
+      singleTransactionLimit:
+          (json['singleTransactionLimit'] as num?)?.toDouble() ?? 0.0,
+      singleTransactionMax:
+          (json['singleTransactionMax'] as num?)?.toDouble() ??
+          (json['singleTransactionLimit'] as num?)?.toDouble() ??
+          0.0,
       withdrawalLimit: (json['withdrawalLimit'] as num?)?.toDouble() ?? 0.0,
       dailyUsed: (json['dailyUsed'] as num?)?.toDouble() ?? 0.0,
       weeklyUsed: (json['weeklyUsed'] as num?)?.toDouble() ?? 0.0,
@@ -53,6 +61,8 @@ class TransactionLimits {
       currency: json['currency'] as String? ?? 'USDC',
       kycTier: (json['kycTier'] as num?)?.toInt() ?? 0,
       tierName: json['tierName'] as String? ?? 'Basic',
+      kycStatus: json['kycStatus'] as String?,
+      upgradeMessage: json['upgradeMessage'] as String?,
       nextTierName: json['nextTierName'] as String?,
       nextTierDailyLimit: json['nextTierDailyLimit'] != null
           ? (json['nextTierDailyLimit'] as num).toDouble()
@@ -77,6 +87,8 @@ class TransactionLimits {
     'monthlyUsed': monthlyUsed,
     'kycTier': kycTier,
     'tierName': tierName,
+    'kycStatus': kycStatus,
+    'upgradeMessage': upgradeMessage,
     'nextTierName': nextTierName,
     'nextTierDailyLimit': nextTierDailyLimit,
     'nextTierMonthlyLimit': nextTierMonthlyLimit,
@@ -94,6 +106,8 @@ class TransactionLimits {
     double? monthlyUsed,
     int? kycTier,
     String? tierName,
+    String? kycStatus,
+    String? upgradeMessage,
     String? nextTierName,
     double? nextTierDailyLimit,
     double? nextTierMonthlyLimit,
@@ -104,12 +118,15 @@ class TransactionLimits {
     return TransactionLimits(
       dailyLimit: dailyLimit ?? this.dailyLimit,
       monthlyLimit: monthlyLimit ?? this.monthlyLimit,
-      singleTransactionLimit: singleTransactionLimit ?? this.singleTransactionLimit,
+      singleTransactionLimit:
+          singleTransactionLimit ?? this.singleTransactionLimit,
       withdrawalLimit: withdrawalLimit ?? this.withdrawalLimit,
       dailyUsed: dailyUsed ?? this.dailyUsed,
       monthlyUsed: monthlyUsed ?? this.monthlyUsed,
       kycTier: kycTier ?? this.kycTier,
       tierName: tierName ?? this.tierName,
+      kycStatus: kycStatus ?? this.kycStatus,
+      upgradeMessage: upgradeMessage ?? this.upgradeMessage,
       nextTierName: nextTierName ?? this.nextTierName,
       nextTierDailyLimit: nextTierDailyLimit ?? this.nextTierDailyLimit,
       nextTierMonthlyLimit: nextTierMonthlyLimit ?? this.nextTierMonthlyLimit,
@@ -121,19 +138,39 @@ class TransactionLimits {
 
   // Helper getters
   double get dailyRemaining => (dailyLimit - dailyUsed).clamp(0.0, dailyLimit);
-  double get monthlyRemaining => (monthlyLimit - monthlyUsed).clamp(0.0, monthlyLimit);
-  double get dailyPercentage => dailyLimit > 0 ? (dailyUsed / dailyLimit).clamp(0.0, 1.0) : 0.0;
-  double get monthlyPercentage => monthlyLimit > 0 ? (monthlyUsed / monthlyLimit).clamp(0.0, 1.0) : 0.0;
+  double get monthlyRemaining =>
+      (monthlyLimit - monthlyUsed).clamp(0.0, monthlyLimit);
+  double get dailyPercentage =>
+      dailyLimit > 0 ? (dailyUsed / dailyLimit).clamp(0.0, 1.0) : 0.0;
+  double get monthlyPercentage =>
+      monthlyLimit > 0 ? (monthlyUsed / monthlyLimit).clamp(0.0, 1.0) : 0.0;
   bool get isDailyNearLimit => dailyPercentage >= 0.8;
   bool get isDailyAtLimit => dailyPercentage >= 1.0;
   bool get isMonthlyNearLimit => monthlyPercentage >= 0.8;
   bool get isMonthlyAtLimit => monthlyPercentage >= 1.0;
   bool get hasNextTier => nextTierName != null;
-  double get effectiveMax => [dailyRemaining, monthlyRemaining, singleTransactionLimit].where((v) => v > 0).reduce((a, b) => a < b ? a : b);
+  double get effectiveMax {
+    final candidates = [
+      dailyRemaining,
+      monthlyRemaining,
+      singleTransactionLimit,
+    ].where((value) => value > 0).toList();
+    if (candidates.isEmpty) {
+      return 0;
+    }
+    return candidates.reduce((a, b) => a < b ? a : b);
+  }
+
   String? limitHitBy(double amount) {
-    if (amount > singleTransactionLimit && singleTransactionLimit > 0) return 'single_transaction';
-    if (amount > dailyRemaining) return 'daily';
-    if (amount > monthlyRemaining) return 'monthly';
+    if (amount > singleTransactionLimit && singleTransactionLimit > 0) {
+      return 'single_transaction';
+    }
+    if (dailyLimit > 0 && amount > dailyRemaining) {
+      return 'daily';
+    }
+    if (monthlyLimit > 0 && amount > monthlyRemaining) {
+      return 'monthly';
+    }
     return null;
   }
 }

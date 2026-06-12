@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
+import 'package:usdc_wallet/features/qr_payment/widgets/branded_qr_image.dart';
 import 'package:usdc_wallet/features/receipts/models/receipt_data.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
@@ -229,9 +229,8 @@ class ReceiptWidget extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppRadius.xl),
               border: Border.all(color: AppColorsLight.borderSubtle),
             ),
-            child: QrImageView(
+            child: BrandedQrImage(
               data: receiptData.referenceNumber,
-              version: QrVersions.auto,
               size: 112,
               backgroundColor: Colors.white,
             ),

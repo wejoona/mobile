@@ -12,6 +12,7 @@ import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/features/payment_links/models/index.dart';
+import 'package:usdc_wallet/features/qr_payment/widgets/branded_qr_image.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
 
 class RequestMoneyView extends ConsumerStatefulWidget {
@@ -109,11 +110,9 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(AppRadius.xl),
                       ),
-                      child: QrImageView(
+                      child: BrandedQrImage(
                         data: _paymentLink,
-                        version: QrVersions.auto,
                         size: 200,
-                        backgroundColor: Colors.white,
                         eyeStyle: const QrEyeStyle(
                           eyeShape: QrEyeShape.square,
                           color: Color(

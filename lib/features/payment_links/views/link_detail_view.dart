@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/payment_links/models/index.dart';
 import 'package:usdc_wallet/features/payment_links/providers/payment_links_provider.dart';
 import 'package:usdc_wallet/features/payment_links/widgets/share_link_sheet.dart';
+import 'package:usdc_wallet/features/qr_payment/widgets/branded_qr_image.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
@@ -110,12 +110,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
-                  child: QrImageView(
-                    data: resolvedLink.url,
-                    version: QrVersions.auto,
-                    size: 200.0,
-                    backgroundColor: Colors.white,
-                  ),
+                  child: BrandedQrImage(data: resolvedLink.url, size: 200.0),
                 ),
               ),
               SizedBox(height: AppSpacing.xl),

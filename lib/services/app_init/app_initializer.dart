@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/features/settings/providers/devices_provider.dart';
 import 'package:usdc_wallet/services/device/device_registration_service.dart';
 import 'package:usdc_wallet/services/time/server_time_service.dart';
 import 'package:usdc_wallet/services/security/device_integrity_service.dart';
@@ -101,6 +102,9 @@ class AppInitializer {
     try {
       final deviceService = _ref.read(deviceRegistrationServiceProvider);
       await deviceService.registerCurrentDevice();
+      _ref
+        ..invalidate(devicesProvider)
+        ..invalidate(localDeviceIdProvider);
     } catch (e) {
       if (kDebugMode) debugPrint('[AppInitializer] Device registration failed: $e');
     }

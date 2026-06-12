@@ -154,10 +154,24 @@ class UserState {
   String get displayName =>
       firstName != null ? '$firstName ${lastName ?? ''}' : phone ?? 'User';
 
-  /// Best available avatar: local file/server URL first, then base64 thumb.
+  /// Best available avatar for in-app rendering.
+  ///
+  /// `/user/avatar/:id` is protected by the API, while ordinary image widgets
+  /// cannot attach the app bearer token. Prefer the embedded thumbnail for that
+  /// route so profile photos render reliably after upload and session restore.
   String? get effectiveAvatarUrl {
-    if (avatarUrl != null && avatarUrl!.isNotEmpty) return avatarUrl;
-    if (avatarThumb != null && avatarThumb!.isNotEmpty) return avatarThumb;
+    final url = avatarUrl?.trim();
+    final thumb = avatarThumb?.trim();
+
+    if (_isNonEmpty(thumb) && _isProtectedRelativeAvatarUrl(url)) {
+      return thumb;
+    }
+    if (_isNonEmpty(url)) {
+      return url;
+    }
+    if (_isNonEmpty(thumb)) {
+      return thumb;
+    }
     return null;
   }
 
@@ -198,6 +212,15 @@ class UserState {
       error: error,
     );
   }
+}
+
+bool _isNonEmpty(String? value) => value != null && value.isNotEmpty;
+
+bool _isProtectedRelativeAvatarUrl(String? value) {
+  if (value == null || value.isEmpty) {
+    return false;
+  }
+  return value.startsWith('/user/avatar/');
 }
 
 /// Transaction State Machine

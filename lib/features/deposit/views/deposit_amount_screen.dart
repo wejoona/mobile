@@ -12,6 +12,8 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
 import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
+import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
+import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 
@@ -31,6 +33,12 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
   String? _amountError;
 
   @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => ref.read(limitsProvider.notifier).fetchLimits());
+  }
+
+  @override
   void dispose() {
     _amountController.dispose();
     super.dispose();
@@ -42,6 +50,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
     final colors = context.colors;
     final country = _effectiveCountry(ref);
     final exchangeRateAsync = ref.watch(exchangeRateProvider);
+    final transactionLimits = ref.watch(limitsProvider).limits;
 
     if (!_currencyInitialized) {
       _isXOF = country.primaryCurrency == 'XOF';
@@ -80,8 +89,13 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
 
                       // Amount Input Card
                       exchangeRateAsync.when(
-                        data: (rate) =>
-                            _buildAmountCard(rate, colors, l10n, country),
+                        data: (rate) => _buildAmountCard(
+                          rate,
+                          colors,
+                          l10n,
+                          country,
+                          transactionLimits,
+                        ),
                         loading: () => _buildLoadingCard(colors, l10n),
                         error: (err, _) => _buildErrorCard(colors, l10n),
                       ),
@@ -110,6 +124,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
                         l10n,
                         country,
                         exchangeRateAsync.value,
+                        transactionLimits,
                       ),
                     ],
                   ),
@@ -122,7 +137,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
               exchangeRateAsync.when(
                 data: (rate) => AppButton(
                   label: l10n.action_continue,
-                  onPressed: _canContinue(rate, country)
+                  onPressed: _canContinue(rate, country, transactionLimits)
                       ? () => _handleContinue(rate)
                       : null,
                   isFullWidth: true,
@@ -209,6 +224,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
     ThemeColors colors,
     AppLocalizations l10n,
     CountryConfig country,
+    TransactionLimits? transactionLimits,
   ) {
     final amount = double.tryParse(_amountController.text) ?? 0;
     final convertedAmount = _isXOF ? rate.convert(amount) : amount;
@@ -262,7 +278,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
                     ),
                   ],
                   error: _amountError,
-                  onChanged: (_) => _validateAmount(rate),
+                  onChanged: (_) => _validateAmount(rate, transactionLimits),
                 ),
               ),
             ],
@@ -333,8 +349,9 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
     AppLocalizations l10n,
     CountryConfig country,
     ExchangeRate? rate,
+    TransactionLimits? transactionLimits,
   ) {
-    final limits = _limits(country, rate);
+    final limits = _limits(country, rate, transactionLimits);
     return AppCard(
       variant: AppCardVariant.flat,
       child: Row(
@@ -393,14 +410,17 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
 
     setState(() {
       _isXOF = isXof;
-      _amountError = _validationErrorFor(rate);
+      _amountError = _validationErrorFor(rate, ref.read(limitsProvider).limits);
     });
   }
 
-  String? _validationErrorFor(ExchangeRate rate) {
+  String? _validationErrorFor(
+    ExchangeRate rate,
+    TransactionLimits? transactionLimits,
+  ) {
     final amount = double.tryParse(_amountController.text) ?? 0;
     final country = _effectiveCountry(ref);
-    final limits = _limits(country, rate);
+    final limits = _limits(country, rate, transactionLimits);
 
     if (_amountController.text.isEmpty) {
       return null;
@@ -413,21 +433,28 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
     return null;
   }
 
-  void _validateAmount(ExchangeRate rate) {
+  void _validateAmount(
+    ExchangeRate rate,
+    TransactionLimits? transactionLimits,
+  ) {
     setState(() {
-      _amountError = _validationErrorFor(rate);
+      _amountError = _validationErrorFor(rate, transactionLimits);
     });
   }
 
   void _setAmount(double amount, ExchangeRate rate) {
     _amountController.text = amount.toStringAsFixed(_isXOF ? 0 : 2);
-    _validateAmount(rate);
+    _validateAmount(rate, ref.read(limitsProvider).limits);
   }
 
-  bool _canContinue(ExchangeRate rate, CountryConfig country) {
+  bool _canContinue(
+    ExchangeRate rate,
+    CountryConfig country,
+    TransactionLimits? transactionLimits,
+  ) {
     final amount = double.tryParse(_amountController.text) ?? 0;
     if (!country.supportedDepositCurrencies.contains(_currency)) return false;
-    return amount > 0 && _validationErrorFor(rate) == null;
+    return amount > 0 && _validationErrorFor(rate, transactionLimits) == null;
   }
 
   void _handleContinue(ExchangeRate rate) {
@@ -442,17 +469,39 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
 
   String get _currency => _isXOF ? 'XOF' : 'USD';
 
-  (double, double) _limits(CountryConfig country, ExchangeRate? rate) {
+  (double, double) _limits(
+    CountryConfig country,
+    ExchangeRate? rate,
+    TransactionLimits? transactionLimits,
+  ) {
+    final policyMaxUsdc = transactionLimits?.singleTransactionLimit;
+    final apiMax = policyMaxUsdc != null && policyMaxUsdc > 0
+        ? _isXOF
+              ? rate?.convertBack(policyMaxUsdc)
+              : policyMaxUsdc
+        : null;
+
     if (_isXOF) {
-      return (country.minDepositAmount, country.maxDepositAmount);
+      return (
+        country.minDepositAmount,
+        _minPositive(country.maxDepositAmount, apiMax),
+      );
     }
     if (country.primaryCurrency == 'XOF' && rate != null) {
       return (
         rate.convert(country.minDepositAmount),
-        rate.convert(country.maxDepositAmount),
+        _minPositive(rate.convert(country.maxDepositAmount), apiMax),
       );
     }
-    return (country.minDepositAmount, country.maxDepositAmount);
+    return (
+      country.minDepositAmount,
+      _minPositive(country.maxDepositAmount, apiMax),
+    );
+  }
+
+  double _minPositive(double fallback, double? cap) {
+    if (cap == null || cap <= 0) return fallback;
+    return cap < fallback ? cap : fallback;
   }
 
   List<double> _quickAmounts(CountryConfig country) {

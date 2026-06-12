@@ -52,6 +52,7 @@ class SessionsNotifier extends Notifier<SessionsState> {
         currentSessionId: currentSession?.id,
       );
     } on ApiException catch (e) {
+      await _handleExpiredSession(e);
       state = state.copyWith(isLoading: false, error: _friendlyError(e));
     } on Object {
       state = state.copyWith(
@@ -71,6 +72,7 @@ class SessionsNotifier extends Notifier<SessionsState> {
       await loadSessions();
       return true;
     } on ApiException catch (e) {
+      await _handleExpiredSession(e);
       state = state.copyWith(error: _friendlyError(e));
       return false;
     } on Object {
@@ -91,6 +93,7 @@ class SessionsNotifier extends Notifier<SessionsState> {
       state = state.copyWith(sessions: []);
       return true;
     } on ApiException catch (e) {
+      await _handleExpiredSession(e);
       state = state.copyWith(error: _friendlyError(e));
       return false;
     } on Object {
@@ -103,12 +106,19 @@ class SessionsNotifier extends Notifier<SessionsState> {
 
   String _friendlyError(ApiException error) {
     if (error.statusCode == 401) {
-      return 'Your session has expired. Please sign in again.';
+      return 'Please unlock Korido again to continue.';
     }
     if (error.statusCode == 403) {
       return 'You do not have permission to manage sessions right now.';
     }
     return error.message;
+  }
+
+  Future<void> _handleExpiredSession(ApiException error) async {
+    if (error.statusCode != 401) {
+      return;
+    }
+    ref.read(authProvider.notifier).setLocked();
   }
 
   Session? _resolveCurrentSession(List<Session> sessions) {

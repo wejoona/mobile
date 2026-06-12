@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:safe_device/safe_device.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/services/security/device_security.dart';
@@ -42,22 +43,33 @@ class _SecurityGateState extends State<SecurityGate> {
 
     // Also check via safe_device for a second opinion
     bool jailbreakDetected = false;
+    bool isRealDevice = true;
     try {
       jailbreakDetected = await SafeDevice.isJailBroken;
+      isRealDevice = await SafeDevice.isRealDevice;
     } catch (e) {
       AppLogger('Debug').debug('safe_device jailbreak check failed: $e');
     }
 
-    final combinedSecure = result.isSecure && !jailbreakDetected;
+    final safeDeviceJailbreakDetected =
+        jailbreakDetected && !(kDebugMode && !isRealDevice);
+    if (jailbreakDetected && kDebugMode && !isRealDevice) {
+      AppLogger('Debug').debug(
+        'safe_device reported jailbreak on simulator; allowed in debug only',
+      );
+    }
+
+    final combinedSecure = result.isSecure && !safeDeviceJailbreakDetected;
     final combinedResult = DeviceSecurityResult(
       isSecure: combinedSecure,
       threats: [
         ...result.threats,
-        if (jailbreakDetected) 'Root/jailbreak detected (safe_device)',
+        if (safeDeviceJailbreakDetected)
+          'Root/jailbreak detected (safe_device)',
       ],
       message: combinedSecure
           ? result.message
-          : 'Device compromised: ${result.threats.join(', ')}${jailbreakDetected ? ', jailbreak detected' : ''}',
+          : 'Device compromised: ${result.threats.join(', ')}${safeDeviceJailbreakDetected ? ', jailbreak detected' : ''}',
     );
 
     if (mounted) {
@@ -68,7 +80,9 @@ class _SecurityGateState extends State<SecurityGate> {
       });
 
       if (!combinedSecure) {
-        AppLogger('Debug').debug('SECURITY ALERT: Device compromised - ${combinedResult.threats}');
+        AppLogger('Debug').debug(
+          'SECURITY ALERT: Device compromised - ${combinedResult.threats}',
+        );
       }
     }
   }
@@ -85,9 +99,7 @@ class _SecurityGateState extends State<SecurityGate> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const CircularProgressIndicator(
-                      color: Color(0xFF00D4AA),
-                    ),
+                    const CircularProgressIndicator(color: Color(0xFF00D4AA)),
                     const SizedBox(height: AppSpacing.lg),
                     Text(
                       'Verifying device security...',
@@ -175,27 +187,31 @@ class _SecurityGateState extends State<SecurityGate> {
                         ),
                       ),
                       const SizedBox(height: AppSpacing.sm),
-                      ...(_result?.threats ?? []).map((threat) => Padding(
-                            padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.warning_amber_rounded,
-                                  color: AppColors.errorBase,
-                                  size: 16,
-                                ),
-                                const SizedBox(width: AppSpacing.sm),
-                                Expanded(
-                                  child: Text(
-                                    threat,
-                                    style: AppTypography.bodyMedium.copyWith(
-                                      color: AppColors.textPrimary.withValues(alpha: 0.7),
+                      ...(_result?.threats ?? []).map(
+                        (threat) => Padding(
+                          padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.warning_amber_rounded,
+                                color: AppColors.errorBase,
+                                size: 16,
+                              ),
+                              const SizedBox(width: AppSpacing.sm),
+                              Expanded(
+                                child: Text(
+                                  threat,
+                                  style: AppTypography.bodyMedium.copyWith(
+                                    color: AppColors.textPrimary.withValues(
+                                      alpha: 0.7,
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
-                          )),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),

@@ -28,6 +28,8 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
   String _otp = '';
   bool _hasError = false;
   bool _isListeningForSms = false;
+  bool _isSubmittingOtp = false;
+  DateTime? _otpSubmittedAt;
 
   // Resend timer
   static const int _resendCooldown = 30; // seconds
@@ -37,7 +39,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
   @override
   void initState() {
     super.initState();
-    _startListeningForSms();
+    unawaited(_startListeningForSms());
     _startResendTimer();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -48,7 +50,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
 
   @override
   void dispose() {
-    cancel();
+    unawaited(cancel());
     _resendTimer?.cancel();
     _keyboardFocusNode.dispose();
     super.dispose();
@@ -72,7 +74,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
 
   bool get _canResend => _resendTimerSeconds == 0;
 
-  void _startListeningForSms() async {
+  Future<void> _startListeningForSms() async {
     try {
       await SmsAutoFill().listenForCode();
       setState(() => _isListeningForSms = true);
@@ -89,7 +91,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
       setState(() {
         _otp = code!;
       });
-      _verifyOtp();
+      unawaited(_verifyOtp());
     }
   }
 
@@ -98,6 +100,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authProvider);
+    final isBusy = authState.isLoading || _isSubmittingOtp;
     // Biometric quick-login: show fingerprint button if both available and enabled
     final biometricAvailable =
         ref.watch(biometricAvailableProvider).value ?? false;
@@ -109,19 +112,12 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
         'Debug',
       ).debug('OTP AuthState changed: ${prev?.status} -> ${next.status}');
       if (next.status == AuthStatus.authenticated) {
-        AppLogger('Debug').debug('Authentication successful! Checking PIN...');
-        // Check if user has PIN set — if not, go to PIN setup
-        final user = next.user;
-        final hasPin = user?.hasPin ?? false;
-        if (!hasPin) {
-          context.go('/pin/setup');
-        } else {
-          context.go('/home');
-        }
+        unawaited(_finishAuthenticatedOtp(next));
       } else if (next.error != null) {
         AppLogger('Debug').debug('OTP verification error: ${next.error}');
         setState(() {
           _hasError = true;
+          _isSubmittingOtp = false;
           _otp = '';
         });
         Future.delayed(const Duration(milliseconds: 500), () {
@@ -192,6 +188,37 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
                           error: _hasError,
                         ),
 
+                        if (isBusy) ...[
+                          const SizedBox(height: AppSpacing.lg),
+                          AnimatedOpacity(
+                            duration: const Duration(milliseconds: 160),
+                            opacity: 1,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: colors.gold,
+                                  ),
+                                ),
+                                const SizedBox(width: AppSpacing.sm),
+                                AppText(
+                                  _localizedOtpCopy(
+                                    context,
+                                    en: 'Code received. Signing you in...',
+                                    fr: 'Code reçu. Connexion en cours...',
+                                  ),
+                                  variant: AppTextVariant.bodySmall,
+                                  color: colors.textSecondary,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+
                         const Spacer(flex: 1),
 
                         // PIN Pad — no biometric on OTP screen
@@ -215,7 +242,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
                           const SizedBox(height: AppSpacing.sm),
                           AppButton(
                             label: 'Use dev OTP',
-                            onPressed: authState.isLoading
+                            onPressed: isBusy
                                 ? null
                                 : () {
                                     setState(() => _otp = '123456');
@@ -229,7 +256,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
                         if (showBiometricOption) ...[
                           const SizedBox(height: AppSpacing.lg),
                           TextButton.icon(
-                            onPressed: authState.isLoading
+                            onPressed: isBusy
                                 ? null
                                 : _authenticateWithBiometric,
                             icon: Icon(Icons.fingerprint, color: colors.gold),
@@ -268,7 +295,9 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
             ? null
             : () {
                 if (authState.phone != null) {
-                  ref.read(authProvider.notifier).login(authState.phone!);
+                  unawaited(
+                    ref.read(authProvider.notifier).login(authState.phone!),
+                  );
                   _startResendTimer();
                 }
               },
@@ -302,6 +331,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
   }
 
   void _onDigitPressed(int digit) {
+    if (ref.read(authProvider).isLoading || _isSubmittingOtp) return;
     if (_otp.length >= 6) return;
 
     setState(() {
@@ -309,7 +339,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
     });
 
     if (_otp.length == 6) {
-      _verifyOtp();
+      unawaited(_verifyOtp());
     }
   }
 
@@ -347,7 +377,51 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
   }
 
   Future<void> _verifyOtp() async {
+    if (_isSubmittingOtp || ref.read(authProvider).isLoading) return;
+    setState(() {
+      _isSubmittingOtp = true;
+      _hasError = false;
+      _otpSubmittedAt = DateTime.now();
+    });
     await ref.read(authProvider.notifier).verifyOtp(_otp);
+    if (mounted && ref.read(authProvider).status != AuthStatus.authenticated) {
+      setState(() => _isSubmittingOtp = false);
+    }
+  }
+
+  Future<void> _finishAuthenticatedOtp(AuthState authState) async {
+    await _holdOtpCue(_otpSubmittedAt);
+    if (!mounted || ref.read(authProvider).status != AuthStatus.authenticated) {
+      return;
+    }
+
+    AppLogger('Debug').debug('Authentication successful! Checking PIN...');
+    final user = authState.user;
+    final hasPin = user?.hasPin ?? false;
+    if (!hasPin) {
+      context.go('/pin/setup');
+    } else {
+      context.go('/home');
+    }
+  }
+
+  Future<void> _holdOtpCue(DateTime? submittedAt) async {
+    if (submittedAt == null) {
+      return;
+    }
+    const minimumCueDuration = Duration(milliseconds: 520);
+    final elapsed = DateTime.now().difference(submittedAt);
+    if (elapsed < minimumCueDuration) {
+      await Future<void>.delayed(minimumCueDuration - elapsed);
+    }
+  }
+
+  String _localizedOtpCopy(
+    BuildContext context, {
+    required String en,
+    required String fr,
+  }) {
+    return Localizations.localeOf(context).languageCode == 'fr' ? fr : en;
   }
 
   Future<void> _authenticateWithBiometric() async {

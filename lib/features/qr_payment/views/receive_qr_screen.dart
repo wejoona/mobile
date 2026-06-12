@@ -12,6 +12,7 @@ import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/qr_payment/widgets/branded_qr_image.dart';
 import 'package:usdc_wallet/features/qr_payment/services/qr_code_service.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart' as user_state;
@@ -174,15 +175,13 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(AppRadius.xl),
                       ),
-                      child: QrImageView(
+                      child: BrandedQrImage(
                         data: _generateQrData(
                           phone: phone,
                           name: name,
                           userId: userId,
                         ),
-                        version: QrVersions.auto,
                         size: 220,
-                        backgroundColor: Colors.white,
                         eyeStyle: const QrEyeStyle(
                           eyeShape: QrEyeShape.square,
                           color: Color(0xFF1A1A2E),

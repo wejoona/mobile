@@ -45,7 +45,7 @@ final transactionsProvider = FutureProvider<TransactionPage>((ref) async {
 
   final response = await dio.get(
     '/wallet/transactions',
-    queryParameters: filter.toQueryParams(),
+    queryParameters: {...filter.toQueryParams(), 'limit': 20, 'offset': 0},
   );
   return TransactionPage.fromJson(_asStringMap(response.data));
 });
@@ -66,23 +66,51 @@ class TransactionPage {
     this.hasMore = false,
   });
 
-  factory TransactionPage.fromJson(
-    Map<String, dynamic> json,
-  ) => TransactionPage(
-    // Backend returns { transactions: [...] } — also check 'data' and 'items' for compat
-    items:
-        ((json['transactions'] ?? json['data'] ?? json['items']) as List?)
-            ?.map((e) => TransactionItem.fromJson(_asStringMap(e)))
-            .toList() ??
-        [],
-    // ignore: avoid_dynamic_calls
-    total: json['total'] as int? ?? json['meta']?['total'] as int? ?? 0,
-    // ignore: avoid_dynamic_calls
-    page: json['page'] as int? ?? json['meta']?['page'] as int? ?? 1,
-    // ignore: avoid_dynamic_calls
-    limit: json['limit'] as int? ?? json['meta']?['limit'] as int? ?? 20,
-    hasMore: json['hasMore'] as bool? ?? false,
-  );
+  factory TransactionPage.fromJson(Map<String, dynamic> json) {
+    final data = json['data'];
+    final dataMap = data is Map ? Map<String, dynamic>.from(data) : null;
+    final meta = json['meta'] is Map
+        ? Map<String, dynamic>.from(json['meta'] as Map)
+        : dataMap?['meta'] is Map
+        ? Map<String, dynamic>.from(dataMap?['meta'] as Map)
+        : null;
+    final rawItems =
+        json['transactions'] ??
+        json['items'] ??
+        dataMap?['transactions'] ??
+        dataMap?['items'] ??
+        (data is List ? data : null);
+    final items = (rawItems as List<dynamic>? ?? [])
+        .map((e) => TransactionItem.fromJson(_asStringMap(e)))
+        .toList();
+    final limit =
+        _intValue(json, const ['limit', 'pageSize', 'page_size']) ??
+        _intValue(meta, const ['limit', 'pageSize', 'page_size']) ??
+        20;
+    final offset =
+        _intValue(json, const ['offset']) ??
+        _intValue(meta, const ['offset']) ??
+        0;
+    final total =
+        _intValue(json, const ['total', 'count']) ??
+        _intValue(meta, const ['total', 'count']) ??
+        items.length;
+    final page =
+        _intValue(json, const ['page']) ??
+        _intValue(meta, const ['page']) ??
+        (offset ~/ limit) + 1;
+
+    return TransactionPage(
+      items: items,
+      total: total,
+      page: page,
+      limit: limit,
+      hasMore:
+          _boolValue(json, const ['hasMore', 'has_more']) ??
+          _boolValue(meta, const ['hasMore', 'has_more']) ??
+          (offset + items.length < total),
+    );
+  }
 }
 
 /// Transaction item model.
@@ -200,6 +228,27 @@ double? _numValue(Map<String, dynamic> map, List<String> keys) {
     final value = map[key];
     if (value is num) return value.toDouble();
     if (value is String) return double.tryParse(value);
+  }
+  return null;
+}
+
+int? _intValue(Map<String, dynamic>? map, List<String> keys) {
+  if (map == null) return null;
+  for (final key in keys) {
+    final value = map[key];
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value);
+  }
+  return null;
+}
+
+bool? _boolValue(Map<String, dynamic>? map, List<String> keys) {
+  if (map == null) return null;
+  for (final key in keys) {
+    final value = map[key];
+    if (value is bool) return value;
+    if (value is String) return bool.tryParse(value);
   }
   return null;
 }

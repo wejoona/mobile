@@ -139,7 +139,7 @@ class UserAvatar extends StatelessWidget {
         child: imageUrl != null && imageUrl!.isNotEmpty
             ? (_isLocalFilePath(imageUrl!)
                   ? _buildLocalImage()
-                  : imageUrl!.startsWith('data:')
+                  : _isBase64Image(imageUrl!)
                   ? _buildBase64Image(context)
                   : _buildNetworkImage())
             : _buildInitialsFallback(context),
@@ -176,12 +176,32 @@ class UserAvatar extends StatelessWidget {
     return '${ApiConfig.baseUrl}$url';
   }
 
+  bool _isBase64Image(String value) {
+    if (value.startsWith('data:image/')) return true;
+    if (value.startsWith('http://') ||
+        value.startsWith('https://') ||
+        value.startsWith('/')) {
+      return false;
+    }
+    if (value.length < 80) return false;
+
+    final compact = value.replaceAll(RegExp(r'\s'), '');
+    final hasImagePrefix =
+        compact.startsWith('/9j/') ||
+        compact.startsWith('iVBOR') ||
+        compact.startsWith('R0lGOD') ||
+        compact.startsWith('UklGR');
+    if (!hasImagePrefix) return false;
+
+    return RegExp(r'^[A-Za-z0-9+/]+={0,2}$').hasMatch(compact);
+  }
+
   Widget _buildBase64Image(BuildContext context) {
     try {
-      // Parse data:image/jpeg;base64,XXXX
-      final parts = imageUrl!.split(',');
-      if (parts.length != 2) return _buildInitialsFallback(context);
-      final bytes = base64Decode(parts[1]);
+      final raw = imageUrl!.startsWith('data:')
+          ? imageUrl!.split(',').last
+          : imageUrl!;
+      final bytes = base64Decode(raw.replaceAll(RegExp(r'\s'), ''));
       return Image.memory(
         bytes,
         fit: BoxFit.cover,

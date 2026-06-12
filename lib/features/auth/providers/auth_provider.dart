@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/config/environment_config.dart';
+import 'package:usdc_wallet/features/settings/providers/devices_provider.dart';
 import 'package:usdc_wallet/services/index.dart';
 import 'package:usdc_wallet/services/device/device_registration_service.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
@@ -208,19 +209,59 @@ class AuthNotifier extends Notifier<AuthState> {
 
   /// Unlock the session after PIN/biometric verification
   void unlock() {
-    if (state.status == AuthStatus.locked) {
-      state = state.copyWith(status: AuthStatus.authenticated);
-      // Proactively refresh token after unlock — session may have expired while locked
-      _refreshTokenOnUnlock();
-      ref.read(appFsmProvider.notifier).hydrateAuthenticatedSession();
-      unawaited(
-        ref
-            .read(userStateMachineProvider.notifier)
-            .hydrateAuthenticatedSession(fetchRelated: false),
-      );
-      // Start real-time sync (WebSocket + polling fallback)
-      ref.read(realtimeServiceProvider).start();
+    if (state.status != AuthStatus.locked &&
+        state.status != AuthStatus.authenticated) {
+      return;
     }
+
+    state = state.copyWith(status: AuthStatus.authenticated, error: null);
+
+    try {
+      ref.read(sessionServiceProvider.notifier).unlockSession();
+    } catch (_) {}
+    try {
+      ref.read(appFsmProvider.notifier).unlockSession();
+    } catch (_) {}
+
+    // Proactively refresh token after unlock — session may have expired while locked.
+    unawaited(_refreshTokenOnUnlock());
+    ref.read(appFsmProvider.notifier).hydrateAuthenticatedSession();
+    unawaited(
+      ref
+          .read(userStateMachineProvider.notifier)
+          .hydrateAuthenticatedSession(fetchRelated: false),
+    );
+    // Start real-time sync (WebSocket + polling fallback)
+    ref.read(realtimeServiceProvider).start();
+  }
+
+  /// Force the local auth/session state back to active after a trusted account
+  /// recovery flow such as a server-approved PIN reset.
+  Future<bool> unlockAfterAccountRecovery() async {
+    final token = await _storage.read(key: StorageKeys.accessToken);
+    if (token == null || token.isEmpty) {
+      return false;
+    }
+
+    state = state.copyWith(status: AuthStatus.authenticated, error: null);
+
+    try {
+      ref.read(sessionServiceProvider.notifier).unlockSession();
+    } catch (_) {}
+    try {
+      ref.read(appFsmProvider.notifier).unlockSession();
+    } catch (_) {}
+
+    unawaited(_refreshTokenOnUnlock());
+    ref.read(appFsmProvider.notifier).hydrateAuthenticatedSession();
+    unawaited(
+      ref
+          .read(userStateMachineProvider.notifier)
+          .hydrateAuthenticatedSession(fetchRelated: false),
+    );
+    ref.read(realtimeServiceProvider).start();
+
+    return true;
   }
 
   Future<void> _refreshTokenOnUnlock() async {
@@ -364,6 +405,9 @@ class AuthNotifier extends Notifier<AuthState> {
         await ref
             .read(deviceRegistrationServiceProvider)
             .registerCurrentDevice();
+        ref
+          ..invalidate(devicesProvider)
+          ..invalidate(localDeviceIdProvider);
       } on ApiException catch (e) {
         if (e.isDeviceBlacklisted) {
           await clearLocalSession();
@@ -432,6 +476,114 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(status: AuthStatus.error, error: e.toString());
 
       // Sync with FSM: notify auth failed
+      ref.read(appFsmProvider.notifier).onAuthFailed(e.toString());
+      return false;
+    }
+  }
+
+  /// Complete the existing-user login flow after OTP has been verified and
+  /// the local PIN has been accepted. This keeps OTP alone from unlocking the
+  /// app, while making the router's auth source of truth authenticated.
+  Future<bool> completePinLogin({
+    required String accessToken,
+    String? refreshToken,
+    User? user,
+    String? phone,
+    String? kycStatus,
+    int? expiresIn,
+  }) async {
+    try {
+      await _storage.write(key: StorageKeys.accessToken, value: accessToken);
+      if (refreshToken != null && refreshToken.isNotEmpty) {
+        await _storage.write(
+          key: StorageKeys.refreshToken,
+          value: refreshToken,
+        );
+      }
+      if (phone != null && phone.isNotEmpty) {
+        await _storage.write(key: 'user_phone', value: phone);
+      }
+      if (user?.id != null) {
+        await _storage.write(key: 'user_id', value: user!.id);
+      }
+
+      await ref
+          .read(sessionServiceProvider.notifier)
+          .startSession(
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+            tokenValidity: Duration(seconds: expiresIn ?? 900),
+          );
+
+      try {
+        await ref
+            .read(deviceRegistrationServiceProvider)
+            .registerCurrentDevice();
+        ref
+          ..invalidate(devicesProvider)
+          ..invalidate(localDeviceIdProvider);
+      } on ApiException catch (e) {
+        if (e.isDeviceBlacklisted) {
+          await clearLocalSession();
+          state = state.copyWith(status: AuthStatus.error, error: e.message);
+          ref.read(appFsmProvider.notifier).onAuthFailed(e.message);
+          return false;
+        }
+        rethrow;
+      }
+
+      ref
+          .read(appFsmProvider.notifier)
+          .onAuthVerified(
+            userId: user?.id ?? '',
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+          );
+
+      if (kycStatus != null) {
+        ref
+            .read(kycStateMachineProvider.notifier)
+            .updateFromAuthResponse(kycStatus);
+      }
+
+      state = state.copyWith(
+        status: AuthStatus.authenticated,
+        user: user,
+        phone: phone,
+        error: null,
+      );
+
+      if (user != null) {
+        ref
+            .read(userStateMachineProvider.notifier)
+            .updateProfile(
+              firstName: user.firstName,
+              lastName: user.lastName,
+              email: user.email,
+              avatarUrl: user.avatarUrl,
+              avatarThumb: user.avatarBase64,
+            );
+      }
+
+      unawaited(
+        ref
+            .read(userStateMachineProvider.notifier)
+            .hydrateAuthenticatedSession(fetchRelated: false),
+      );
+      ref.read(realtimeServiceProvider).start();
+
+      _analytics.trackLogin(method: 'otp_pin');
+      if (user != null) {
+        _analytics.setUserProperties(userId: user.id);
+      }
+
+      return true;
+    } on ApiException catch (e) {
+      state = state.copyWith(status: AuthStatus.error, error: e.message);
+      ref.read(appFsmProvider.notifier).onAuthFailed(e.message);
+      return false;
+    } catch (e) {
+      state = state.copyWith(status: AuthStatus.error, error: e.toString());
       ref.read(appFsmProvider.notifier).onAuthFailed(e.toString());
       return false;
     }
@@ -520,9 +672,15 @@ class AuthNotifier extends Notifier<AuthState> {
       e.statusCode == 400 || e.statusCode == 401 || e.statusCode == 403;
 
   /// Logout
-  Future<void> logout() async {
+  Future<void> logout({bool localFirst = false}) async {
     final accessToken = await _storage.read(key: StorageKeys.accessToken);
     final refreshToken = await _storage.read(key: StorageKeys.refreshToken);
+
+    if (localFirst) {
+      await clearLocalSession();
+      unawaited(_cleanupServerSession(accessToken, refreshToken));
+      return;
+    }
 
     await _cleanupServerSession(accessToken, refreshToken);
     await clearLocalSession();

@@ -1,3 +1,5 @@
+import 'package:usdc_wallet/domain/entities/index.dart';
+
 /// Login state model
 class LoginState {
   final LoginStep currentStep;
@@ -9,6 +11,9 @@ class LoginState {
   final int otpResendCountdown;
   final String? sessionToken;
   final String? refreshToken;
+  final int? sessionExpiresIn;
+  final User? user;
+  final String? kycStatus;
   final bool rememberDevice;
   final int pinAttempts;
   final bool isLocked;
@@ -21,7 +26,11 @@ class LoginState {
     this.isLoading = false,
     this.error,
     this.otpResendCountdown = 0,
-    this.sessionToken, this.refreshToken,
+    this.sessionToken,
+    this.refreshToken,
+    this.sessionExpiresIn,
+    this.user,
+    this.kycStatus,
     this.rememberDevice = true,
     this.pinAttempts = 0,
     this.isLocked = false,
@@ -35,7 +44,11 @@ class LoginState {
     bool? isLoading,
     String? error,
     int? otpResendCountdown,
-    String? sessionToken, String? refreshToken,
+    String? sessionToken,
+    String? refreshToken,
+    int? sessionExpiresIn,
+    User? user,
+    String? kycStatus,
     bool? rememberDevice,
     int? pinAttempts,
     bool? isLocked,
@@ -48,7 +61,11 @@ class LoginState {
       isLoading: isLoading ?? this.isLoading,
       error: error,
       otpResendCountdown: otpResendCountdown ?? this.otpResendCountdown,
-      sessionToken: sessionToken ?? this.sessionToken, refreshToken: refreshToken ?? this.refreshToken,
+      sessionToken: sessionToken ?? this.sessionToken,
+      refreshToken: refreshToken ?? this.refreshToken,
+      sessionExpiresIn: sessionExpiresIn ?? this.sessionExpiresIn,
+      user: user ?? this.user,
+      kycStatus: kycStatus ?? this.kycStatus,
       rememberDevice: rememberDevice ?? this.rememberDevice,
       pinAttempts: pinAttempts ?? this.pinAttempts,
       isLocked: isLocked ?? this.isLocked,
@@ -59,26 +76,17 @@ class LoginState {
 }
 
 /// Login flow steps
-enum LoginStep {
-  phone,
-  otp,
-  pin,
-  biometric,
-  success,
-}
+enum LoginStep { phone, otp, pin, biometric, success }
 
 /// Login request model
 class LoginRequest {
   final String phoneNumber;
   final String countryCode;
 
-  const LoginRequest({
-    required this.phoneNumber,
-    this.countryCode = '+225',
-  });
+  const LoginRequest({required this.phoneNumber, this.countryCode = '+225'});
 
   Map<String, dynamic> toJson() => {
-        'phoneNumber': phoneNumber,
-        'countryCode': countryCode,
-      };
+    'phoneNumber': phoneNumber,
+    'countryCode': countryCode,
+  };
 }

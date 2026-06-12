@@ -117,6 +117,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
         sessionId: 'mock-session-${DateTime.now().millisecondsSinceEpoch}',
         isLive: true,
         confidence: 0.99,
+        faceMatchScore: 1.0,
         completedAt: DateTime.now(),
       ),
     );
@@ -197,6 +198,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
               sessionId: result.sessionToken,
               isLive: true,
               confidence: result.result!.confidence / 100.0,
+              faceMatchScore: result.result!.faceMatchScore / 100.0,
               completedAt: DateTime.now(),
             ),
           );

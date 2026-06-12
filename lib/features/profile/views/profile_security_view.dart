@@ -10,6 +10,8 @@ import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
 import 'package:usdc_wallet/features/settings/providers/security_settings_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/state/user_state_machine.dart'
+    show userStateMachineProvider;
 
 /// Run 341: Profile security overview - shows security status and actions
 class ProfileSecurityView extends ConsumerWidget {
@@ -48,8 +50,7 @@ class ProfileSecurityView extends ConsumerWidget {
             title: l10n.security_biometricLogin,
             subtitle: l10n.security_biometricSubtitle,
             status: _SecurityStatus.active,
-            onTap: () =>
-                Navigator.of(context).pushNamed('/settings/biometric'),
+            onTap: () => Navigator.of(context).pushNamed('/settings/biometric'),
           ),
           const SizedBox(height: AppSpacing.xxl),
           SectionHeader(title: l10n.security_devices),
@@ -85,6 +86,7 @@ class _SecurityScoreCard extends ConsumerWidget {
     final profileState = ref.watch(profileProvider);
     final securitySettings = ref.watch(securitySettingsProvider);
     final kycStatus = ref.watch(kycStatusProvider);
+    final userState = ref.watch(userStateMachineProvider);
 
     // Calculate score
     int score = 0;
@@ -97,13 +99,17 @@ class _SecurityScoreCard extends ConsumerWidget {
     if (securitySettings.biometricEnabled) score += 25;
 
     // KYC verified (+25)
-    final kycVerified = kycStatus.whenOrNull(
-      data: (status) => status.kycStatus == 'approved' || status.kycStatus == 'auto_approved',
-    ) ?? false;
+    final kycVerified =
+        kycStatus.whenOrNull(
+          data: (status) =>
+              status.kycStatus == 'approved' ||
+              status.kycStatus == 'auto_approved',
+        ) ??
+        false;
     if (kycVerified) score += 25;
 
     // Email verified (+25)
-    if (user?.email != null && user!.email!.isNotEmpty) score += 25;
+    if (userState.emailVerified) score += 25;
 
     // Determine level
     final String levelText;

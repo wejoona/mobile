@@ -17,7 +17,6 @@ class SecurityView extends ConsumerStatefulWidget {
 }
 
 class _SecurityViewState extends ConsumerState<SecurityView> {
-  bool _twoFactorEnabled = false;
   bool _transactionPinRequired = true;
   bool _loginNotifications = true;
   bool _newDeviceAlerts = true;
@@ -69,16 +68,12 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             const SizedBox(height: AppSpacing.sm),
             _buildBiometricOption(l10n, colors),
             const SizedBox(height: AppSpacing.sm),
-            _buildToggleOption(
-              l10n: l10n,
+            _buildUnavailableOption(
               colors: colors,
               icon: Icons.security,
               title: l10n.security_twoFactorAuth,
-              subtitle: _twoFactorEnabled
-                  ? l10n.security_twoFactorEnabledSubtitle
-                  : l10n.security_twoFactorDisabledSubtitle,
-              value: _twoFactorEnabled,
-              onChanged: (value) => _handleTwoFactorToggle(value),
+              subtitle:
+                  'Coming soon. Biometric login and transaction PIN protect this device today.',
             ),
 
             const SizedBox(height: AppSpacing.xxl),
@@ -370,6 +365,72 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
     );
   }
 
+  Widget _buildUnavailableOption({
+    required ThemeColors colors,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: AppCard(
+        variant: AppCardVariant.flat,
+        borderRadius: AppRadius.lg,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: colors.gold.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                border: Border.all(color: colors.border),
+              ),
+              child: Icon(icon, color: colors.gold, size: 22),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(
+                    title,
+                    variant: AppTextVariant.labelMedium,
+                    color: colors.textPrimary,
+                  ),
+                  AppText(
+                    subtitle,
+                    variant: AppTextVariant.bodySmall,
+                    color: colors.textSecondary,
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xxs,
+              ),
+              decoration: BoxDecoration(
+                color: colors.gold.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(AppRadius.full),
+              ),
+              child: AppText(
+                'Soon',
+                variant: AppTextVariant.labelSmall,
+                color: colors.gold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildBiometricOption(AppLocalizations l10n, ThemeColors colors) {
     final biometricEnabled = ref.watch(biometricEnabledProvider);
 
@@ -412,7 +473,6 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
 
     int score = 40; // Base score for having account
     if (biometricsOn) score += 20;
-    if (_twoFactorEnabled) score += 25;
     if (_transactionPinRequired) score += 10;
     if (_loginNotifications) score += 5;
     return score.clamp(0, 100);
@@ -432,131 +492,9 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
       orElse: () => false,
     );
 
-    if (!_twoFactorEnabled) return l10n.security_tipEnable2FA;
     if (!biometricsOn) return l10n.security_tipEnableBiometrics;
     if (!_transactionPinRequired) return l10n.security_tipRequirePin;
     return l10n.security_tipEnableNotifications;
-  }
-
-  void _handleTwoFactorToggle(bool value) {
-    if (value) {
-      _showTwoFactorSetup();
-    } else {
-      _confirmDisableTwoFactor();
-    }
-  }
-
-  void _showTwoFactorSetup() {
-    final l10n = AppLocalizations.of(context)!;
-    final colors = context.colors;
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: colors.container,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
-      ),
-      builder: (context) {
-        final sheetColors = context.colors;
-        return Padding(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: sheetColors.gold.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.security, color: sheetColors.gold, size: 40),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              AppText(
-                l10n.security_setup2FATitle,
-                variant: AppTextVariant.titleMedium,
-                color: sheetColors.textPrimary,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              AppText(
-                l10n.security_setup2FAMessage,
-                variant: AppTextVariant.bodyMedium,
-                color: sheetColors.textSecondary,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              AppButton(
-                label: l10n.security_continueSetup,
-                onPressed: () {
-                  Navigator.pop(context);
-                  setState(() => _twoFactorEnabled = true);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(l10n.security_2FAEnabledSuccess),
-                      backgroundColor: context.colors.success,
-                    ),
-                  );
-                },
-                variant: AppButtonVariant.primary,
-                isFullWidth: true,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              AppButton(
-                label: l10n.action_cancel,
-                onPressed: () => Navigator.pop(context),
-                variant: AppButtonVariant.secondary,
-                isFullWidth: true,
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _confirmDisableTwoFactor() {
-    final l10n = AppLocalizations.of(context)!;
-    // ignore: unused_local_variable
-    final __colors = context.colors;
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        final dialogColors = dialogContext.colors;
-        return AlertDialog(
-          backgroundColor: dialogColors.container,
-          title: AppText(
-            l10n.security_disable2FATitle,
-            variant: AppTextVariant.titleMedium,
-            color: dialogColors.textPrimary,
-          ),
-          content: AppText(
-            l10n.security_disable2FAMessage,
-            variant: AppTextVariant.bodyMedium,
-            color: dialogColors.textSecondary,
-          ),
-          actions: [
-            AppButton(
-              label: l10n.action_cancel,
-              onPressed: () => Navigator.pop(dialogContext),
-              variant: AppButtonVariant.ghost,
-              size: AppButtonSize.small,
-            ),
-            AppButton(
-              label: l10n.security_disable,
-              onPressed: () {
-                Navigator.pop(dialogContext);
-                setState(() => _twoFactorEnabled = false);
-              },
-              variant: AppButtonVariant.danger,
-              size: AppButtonSize.small,
-            ),
-          ],
-        );
-      },
-    );
   }
 
   void _confirmLogoutAll() {

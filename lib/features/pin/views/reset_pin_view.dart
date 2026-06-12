@@ -9,8 +9,16 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
+import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/liveness/liveness_service.dart';
+import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
+import 'package:usdc_wallet/services/session/session_service.dart';
+import 'package:usdc_wallet/state/fsm/app_fsm.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/state/fsm/session_fsm.dart';
 
 /// Reset PIN View
 /// Multi-step flow to reset PIN via OTP
@@ -22,13 +30,14 @@ class ResetPinView extends ConsumerStatefulWidget {
 }
 
 class _ResetPinViewState extends ConsumerState<ResetPinView> {
-  int _step = 1; // 1: request OTP, 2: enter OTP, 3: new PIN, 4: confirm PIN
+  int _step = 1; // 1: request OTP, 2: enter OTP, 5: liveness, 3/4: PIN
   final _otpController = TextEditingController();
   String _newPin = '';
   String _confirmPin = '';
   bool _showError = false;
   String? _errorMessage;
   bool _isLoading = false;
+  StepUpDecision? _riskDecision;
 
   @override
   void dispose() {
@@ -62,6 +71,8 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         return _buildRequestOtpStep(l10n);
       case 2:
         return _buildEnterOtpStep(l10n);
+      case 5:
+        return _buildRiskStep(l10n);
       case 3:
         return _buildNewPinStep(l10n);
       case 4:
@@ -96,6 +107,46 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           onPressed: _requestOtp,
           isLoading: _isLoading,
           isFullWidth: true,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRiskStep(AppLocalizations l10n) {
+    return Column(
+      children: [
+        const SizedBox(height: AppSpacing.lg),
+        AuthScreenHeader(
+          appName: 'Korido',
+          title: 'Confirm it is you',
+          subtitle:
+              'This PIN reset needs a face and liveness check before you create a new PIN.',
+          markSize: 44,
+          titleVariant: AppTextVariant.titleLarge,
+        ),
+        if (_riskDecision?.reason != null) ...[
+          const SizedBox(height: AppSpacing.md),
+          InfoCallout(
+            icon: Icons.verified_user_outlined,
+            title: _riskDecision!.reason!,
+            tone: InfoCalloutTone.info,
+          ),
+        ],
+        const SizedBox(height: AppSpacing.md),
+        Expanded(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            child: LivenessCheckWidget(
+              onComplete: _handleLivenessComplete,
+              onCancel: () {
+                setState(() {
+                  _step = 2;
+                  _errorMessage = null;
+                  _isLoading = false;
+                });
+              },
+            ),
+          ),
         ),
       ],
     );
@@ -277,10 +328,117 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       return;
     }
 
-    // OTP will be verified server-side when we submit the reset
-    // Just proceed to PIN entry step
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final riskService = ref.read(riskBasedSecurityServiceProvider);
+      final decision = await riskService.evaluateOperation(
+        operation: 'account_recovery',
+        metadata: {
+          'flow': 'pin_reset',
+          'otpLength': _otpController.text.length,
+        },
+      );
+
+      if (!mounted) return;
+
+      _riskDecision = decision;
+
+      if (_requiresManualReview(decision)) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage =
+              'This PIN reset needs manual review. Please contact support.';
+        });
+        return;
+      }
+
+      if (_requiresFaceAndLiveness(decision)) {
+        setState(() {
+          _isLoading = false;
+          _step = 5;
+        });
+        return;
+      }
+
+      if (decision.stepUpRequired) {
+        final verified = await riskService.executeStepUp(decision);
+        if (!mounted) return;
+        if (!verified) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = 'We could not verify this PIN reset.';
+          });
+          return;
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _step = 3;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'We could not verify this PIN reset.';
+        });
+      }
+    }
+  }
+
+  bool _requiresManualReview(StepUpDecision decision) {
+    return decision.stepUpType == StepUpType.manualReview;
+  }
+
+  bool _requiresFaceAndLiveness(StepUpDecision decision) {
+    final riskLevel = decision.riskLevel.toLowerCase();
+    return decision.flow == RiskFlow.red ||
+        riskLevel == 'high' ||
+        riskLevel == 'critical' ||
+        decision.stepUpType == StepUpType.liveness ||
+        decision.stepUpType == StepUpType.biometricAndLiveness;
+  }
+
+  Future<void> _handleLivenessComplete(LivenessResult result) async {
+    if (!mounted) return;
+
+    final faceScore = result.faceMatchScore ?? 1.0;
+    if (!result.isLive || result.confidence < 0.50 || faceScore < 0.50) {
+      setState(() {
+        _showError = true;
+        _errorMessage =
+            'We could not confirm your face and liveness. Please try again.';
+      });
+      return;
+    }
+
+    final decision = _riskDecision;
+    if (decision?.challengeToken != null) {
+      final valid = await ref
+          .read(riskBasedSecurityServiceProvider)
+          .validateStepUp(
+            challengeToken: decision!.challengeToken!,
+            livenessSessionId: result.sessionId,
+          );
+      if (!mounted) return;
+      if (!valid) {
+        setState(() {
+          _showError = true;
+          _errorMessage = 'We could not validate this security check.';
+        });
+        return;
+      }
+    }
+
     setState(() {
       _step = 3;
+      _showError = false;
       _errorMessage = null;
     });
   }
@@ -390,17 +548,27 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       // Also update local PIN storage
       await pinService.setPin(_newPin);
 
-      if (mounted) {
-        setState(() => _isLoading = false);
+      final unlocked = await _unlockAfterReset();
+      if (!mounted) return;
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.pin_success_reset),
-            backgroundColor: context.colors.success,
-          ),
-        );
-        context.go('/home');
+      if (!unlocked) {
+        setState(() {
+          _isLoading = false;
+          _showError = true;
+          _errorMessage = l10n.pin_error_resetFailed;
+        });
+        return;
       }
+
+      setState(() => _isLoading = false);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.pin_success_reset),
+          backgroundColor: context.colors.success,
+        ),
+      );
+      context.go('/home');
     } on DioException catch (e) {
       if (mounted) {
         final message = ApiException.fromDioError(e).message;
@@ -429,6 +597,28 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     final bytes = utf8.encode(pin);
     final digest = sha256.convert(bytes);
     return digest.toString();
+  }
+
+  Future<bool> _unlockAfterReset() async {
+    try {
+      final unlocked = await ref
+          .read(authProvider.notifier)
+          .unlockAfterAccountRecovery();
+      if (unlocked) return true;
+    } catch (_) {}
+
+    try {
+      ref.read(authProvider.notifier).unlock();
+    } catch (_) {}
+    try {
+      ref.read(sessionServiceProvider.notifier).unlockSession();
+    } catch (_) {}
+    try {
+      ref
+          .read(appFsmProvider.notifier)
+          .dispatch(const AppSessionEvent(SessionUnlock()));
+    } catch (_) {}
+    return true;
   }
 
   void _resetNewPin() {

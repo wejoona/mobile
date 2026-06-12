@@ -2,10 +2,11 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/features/auth/models/login_state.dart';
-import 'package:usdc_wallet/services/index.dart';
-import 'package:usdc_wallet/services/device/device_registration_service.dart';
 import 'package:usdc_wallet/features/auth/providers/session_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/settings/providers/devices_provider.dart';
+import 'package:usdc_wallet/services/device/device_registration_service.dart';
+import 'package:usdc_wallet/services/index.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
 
 /// Login state provider
@@ -37,7 +38,9 @@ class LoginNotifier extends Notifier<LoginState> {
   /// Load remembered phone number
   Future<void> _loadRememberedPhone() async {
     try {
-      final rememberedPhone = await _storage.read(key: StorageKeys.rememberedPhone);
+      final rememberedPhone = await _storage.read(
+        key: StorageKeys.rememberedPhone,
+      );
       if (rememberedPhone != null) {
         final parts = rememberedPhone.split('|');
         if (parts.length == 2) {
@@ -90,10 +93,7 @@ class LoginNotifier extends Notifier<LoginState> {
         await _storage.delete(key: StorageKeys.rememberedPhone);
       }
 
-      state = state.copyWith(
-        isLoading: false,
-        currentStep: LoginStep.otp,
-      );
+      state = state.copyWith(isLoading: false, currentStep: LoginStep.otp);
 
       _startResendCountdown();
     } catch (e) {
@@ -107,10 +107,7 @@ class LoginNotifier extends Notifier<LoginState> {
 
   /// Update OTP
   void updateOtp(String otp) {
-    state = state.copyWith(
-      otp: otp,
-      error: null,
-    );
+    state = state.copyWith(otp: otp, error: null);
   }
 
   /// Verify OTP
@@ -133,6 +130,9 @@ class LoginNotifier extends Notifier<LoginState> {
         currentStep: LoginStep.pin,
         sessionToken: response.accessToken,
         refreshToken: response.refreshToken,
+        sessionExpiresIn: response.expiresIn,
+        user: response.user,
+        kycStatus: response.kycStatus,
       );
 
       _resendTimer?.cancel();
@@ -172,7 +172,9 @@ class LoginNotifier extends Notifier<LoginState> {
     _resendTimer?.cancel();
     _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (state.otpResendCountdown > 0) {
-        state = state.copyWith(otpResendCountdown: state.otpResendCountdown - 1);
+        state = state.copyWith(
+          otpResendCountdown: state.otpResendCountdown - 1,
+        );
       } else {
         timer.cancel();
       }
@@ -194,16 +196,21 @@ class LoginNotifier extends Notifier<LoginState> {
 
       // Store auth token and complete login via session provider (single source of truth)
       if (state.sessionToken != null) {
-        await ref.read(sessionProvider.notifier).setTokens(
-          accessToken: state.sessionToken!,
-          refreshToken: state.refreshToken ?? state.sessionToken!,
-        );
+        await ref
+            .read(sessionProvider.notifier)
+            .setTokens(
+              accessToken: state.sessionToken!,
+              refreshToken: state.refreshToken ?? state.sessionToken!,
+            );
       }
 
       // Register device + FCM token with backend
       try {
         final deviceService = ref.read(deviceRegistrationServiceProvider);
         await deviceService.registerCurrentDevice();
+        ref
+          ..invalidate(devicesProvider)
+          ..invalidate(localDeviceIdProvider);
       } catch (_) {
         // Non-blocking — don't fail login if device registration fails
       }
@@ -237,7 +244,8 @@ class LoginNotifier extends Notifier<LoginState> {
           isLoading: false,
           isLocked: true,
           pinAttempts: newAttempts,
-          error: lockCheck.message ?? 'Too many failed attempts. Account locked.',
+          error:
+              lockCheck.message ?? 'Too many failed attempts. Account locked.',
         );
         _startLockoutTimer(lockCheck.lockRemainingSeconds ?? 900);
       } else if (newAttempts >= 3) {
@@ -265,11 +273,7 @@ class LoginNotifier extends Notifier<LoginState> {
   void _startLockoutTimer(int seconds) {
     _lockoutTimer?.cancel();
     _lockoutTimer = Timer(Duration(seconds: seconds), () {
-      state = state.copyWith(
-        isLocked: false,
-        pinAttempts: 0,
-        error: null,
-      );
+      state = state.copyWith(isLocked: false, pinAttempts: 0, error: null);
     });
   }
 
@@ -286,13 +290,16 @@ class LoginNotifier extends Notifier<LoginState> {
       if (result.success) {
         // SECURITY: Biometric passed locally — verify server-side via token refresh
         // Local biometric alone is insufficient; validate session with backend
-        final storedRefreshToken = state.refreshToken ??
+        final storedRefreshToken =
+            state.refreshToken ??
             await _storage.read(key: StorageKeys.refreshToken);
 
         if (storedRefreshToken != null) {
           try {
             final authNotifier = ref.read(authProvider.notifier);
-            final refreshSuccess = await authNotifier.loginWithBiometric(storedRefreshToken);
+            final refreshSuccess = await authNotifier.loginWithBiometric(
+              storedRefreshToken,
+            );
             if (!refreshSuccess) {
               state = state.copyWith(
                 isLoading: false,
@@ -309,14 +316,17 @@ class LoginNotifier extends Notifier<LoginState> {
           }
         }
 
-        final storedToken = state.sessionToken ??
+        final storedToken =
+            state.sessionToken ??
             await _storage.read(key: StorageKeys.accessToken);
 
         if (storedToken != null) {
-          await ref.read(sessionProvider.notifier).setTokens(
-            accessToken: storedToken,
-            refreshToken: storedRefreshToken ?? storedToken,
-          );
+          await ref
+              .read(sessionProvider.notifier)
+              .setTokens(
+                accessToken: storedToken,
+                refreshToken: storedRefreshToken ?? storedToken,
+              );
         }
 
         // Unlock session so router doesn't redirect back to lock screen
@@ -342,20 +352,14 @@ class LoginNotifier extends Notifier<LoginState> {
         return false;
       }
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
       return false;
     }
   }
 
   /// Navigate to specific step
   void goToStep(LoginStep step) {
-    state = state.copyWith(
-      currentStep: step,
-      error: null,
-    );
+    state = state.copyWith(currentStep: step, error: null);
   }
 
   /// Reset login state

@@ -20,12 +20,14 @@ class LoginOtpView extends ConsumerStatefulWidget {
 class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
   Key _codeInputKey = UniqueKey();
   bool _hasError = false;
+  bool _isSubmittingOtp = false;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(loginProvider);
     final colors = context.colors;
+    final isBusy = state.isLoading || _isSubmittingOtp;
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -56,13 +58,19 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
                       key: _codeInputKey,
                       obscureText: false,
                       hasError: _hasError,
-                      enabled: !state.isLoading,
+                      enabled: !isBusy,
                       onChanged: (_) {
                         if (_hasError) {
                           setState(() => _hasError = false);
                         }
                       },
                       onCompleted: _submitOtp,
+                    ),
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 180),
+                      child: isBusy
+                          ? _buildOtpAcceptedStatus(context, colors)
+                          : const SizedBox.shrink(),
                     ),
                     if (state.error != null) ...[
                       const SizedBox(height: AppSpacing.lg),
@@ -98,7 +106,7 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
                             )
                           : AppButton(
                               label: l10n.login_resendCode,
-                              onPressed: state.isLoading ? null : _handleResend,
+                              onPressed: isBusy ? null : _handleResend,
                               variant: AppButtonVariant.ghost,
                             ),
                     ),
@@ -107,28 +115,8 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
                       Center(
                         child: AppButton(
                           label: 'Use dev OTP',
-                          onPressed: state.isLoading
-                              ? null
-                              : () => _submitOtp('123456'),
+                          onPressed: isBusy ? null : () => _submitOtp('123456'),
                           variant: AppButtonVariant.ghost,
-                        ),
-                      ),
-                    ],
-                    if (state.isLoading) ...[
-                      const SizedBox(height: AppSpacing.xxxl),
-                      Center(
-                        child: Column(
-                          children: [
-                            CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation(colors.gold),
-                            ),
-                            const SizedBox(height: AppSpacing.md),
-                            AppText(
-                              l10n.login_verifying,
-                              variant: AppTextVariant.bodyMedium,
-                              color: colors.textSecondary,
-                            ),
-                          ],
                         ),
                       ),
                     ],
@@ -145,20 +133,89 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
 
   Future<void> _submitOtp(String otp) async {
     if (otp.length == 6) {
+      final submittedAt = DateTime.now();
+      setState(() {
+        _isSubmittingOtp = true;
+        _hasError = false;
+      });
       ref.read(loginProvider.notifier).updateOtp(otp);
       await ref.read(loginProvider.notifier).verifyOtp();
+      await _holdOtpCue(submittedAt);
 
       if (mounted) {
         final state = ref.read(loginProvider);
         if (state.currentStep == LoginStep.pin) {
           context.go('/login/pin');
         } else if (state.error != null) {
-          setState(() => _hasError = true);
+          setState(() {
+            _hasError = true;
+            _isSubmittingOtp = false;
+          });
           // Clear inputs
           _clearOtp();
+        } else {
+          setState(() => _isSubmittingOtp = false);
         }
       }
     }
+  }
+
+  Future<void> _holdOtpCue(DateTime submittedAt) async {
+    const minimumCueDuration = Duration(milliseconds: 520);
+    final elapsed = DateTime.now().difference(submittedAt);
+    if (elapsed < minimumCueDuration) {
+      await Future<void>.delayed(minimumCueDuration - elapsed);
+    }
+  }
+
+  Widget _buildOtpAcceptedStatus(BuildContext context, ThemeColors colors) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.lg),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: colors.gold.withValues(alpha: colors.isDark ? 0.16 : 0.12),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          border: Border.all(
+            color: colors.gold.withValues(alpha: colors.isDark ? 0.34 : 0.24),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: colors.gold,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Flexible(
+                child: AppText(
+                  _isSubmittingOtp
+                      ? _localizedOtpCopy(
+                          context,
+                          en: 'Code received. Signing you in...',
+                          fr: 'Code reçu. Connexion en cours...',
+                        )
+                      : AppLocalizations.of(context)!.login_verifying,
+                  variant: AppTextVariant.bodySmall,
+                  color: colors.textPrimary,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _clearOtp() {
@@ -172,5 +229,13 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
   String _formatPhoneForDisplay(String phone) {
     if (phone.length < 4) return phone;
     return '${phone.substring(0, 2)} XX XX XX XX';
+  }
+
+  String _localizedOtpCopy(
+    BuildContext context, {
+    required String en,
+    required String fr,
+  }) {
+    return Localizations.localeOf(context).languageCode == 'fr' ? fr : en;
   }
 }

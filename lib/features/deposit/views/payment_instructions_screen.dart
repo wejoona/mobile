@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:usdc_wallet/core/utils/formatters.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -13,6 +12,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/deposit/models/mobile_money_provider.dart';
 import 'package:usdc_wallet/features/deposit/models/deposit_response.dart';
 import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
+import 'package:usdc_wallet/features/qr_payment/widgets/branded_qr_image.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Payment Instructions Screen
@@ -371,11 +371,9 @@ class _PaymentInstructionsScreenState
                     color: colors.canvas,
                     borderRadius: BorderRadius.circular(AppRadius.lg),
                   ),
-                  child: QrImageView(
+                  child: BrandedQrImage(
                     data: response.qrCodeData!,
-                    version: QrVersions.auto,
                     size: 200.0,
-                    foregroundColor: colors.textPrimary,
                   ),
                 ),
               ],

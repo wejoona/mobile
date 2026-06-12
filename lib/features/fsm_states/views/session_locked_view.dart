@@ -11,8 +11,6 @@ import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
-import 'package:usdc_wallet/state/fsm/session_fsm.dart';
-import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Lock screen — same design as OTP/login screens.
@@ -28,6 +26,7 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
   String _pin = '';
   bool _hasError = false;
   bool _biometricEnabled = false;
+  bool _biometricAvailable = false;
   BiometricType _biometricType = BiometricType.none;
   bool _isUnlocking = false;
 
@@ -40,11 +39,13 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
   Future<void> _checkBiometric() async {
     final biometricService = ref.read(biometricServiceProvider);
     final isEnabled = await biometricService.isBiometricEnabled();
+    final isAvailable = await biometricService.isAvailable();
     final type = await biometricService.getAvailableType();
 
     if (mounted) {
       setState(() {
         _biometricEnabled = isEnabled;
+        _biometricAvailable = isAvailable;
         _biometricType = type;
       });
 
@@ -52,24 +53,29 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
     }
   }
 
-  void _unlock() {
+  Future<void> _unlock() async {
     if (_isUnlocking || !mounted) {
       return;
     }
     setState(() => _isUnlocking = true);
 
-    final router = GoRouter.of(context);
     ref.read(authProvider.notifier).unlock();
     ref.read(sessionServiceProvider.notifier).unlockSession();
-    ref
-        .read(appFsmProvider.notifier)
-        .dispatch(const AppSessionEvent(SessionUnlock()));
+    ref.read(appFsmProvider.notifier).unlockSession();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        router.go('/home');
-      }
-    });
+    await Future<void>.delayed(const Duration(milliseconds: 180));
+    if (!mounted) {
+      return;
+    }
+
+    final authState = ref.read(authProvider);
+    final sessionState = ref.read(sessionServiceProvider);
+    if (authState.isLocked || sessionState.isLocked) {
+      setState(() => _isUnlocking = false);
+      return;
+    }
+
+    context.go('/home');
   }
 
   Future<void> _logout() async {
@@ -208,6 +214,17 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
 
                         const Spacer(flex: 1),
 
+                        if (_shouldShowBiometricUnlock) ...[
+                          AppButton(
+                            label: _biometricButtonLabel(l10n),
+                            icon: _biometricIcon,
+                            onPressed: _handleBiometric,
+                            variant: AppButtonVariant.secondary,
+                            isFullWidth: true,
+                          ),
+                          const SizedBox(height: AppSpacing.lg),
+                        ],
+
                         // PIN Pad — design system version with biometric
                         PinPad(
                           onDigitPressed: (digit) => _handleDigitPressed(digit),
@@ -276,11 +293,25 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
     );
 
     if (mounted && result.success) {
-      _unlock();
+      unawaited(_unlock());
     }
   }
 
-  bool get _shouldShowBiometricUnlock => _biometricEnabled;
+  bool get _shouldShowBiometricUnlock =>
+      _biometricEnabled && _biometricAvailable;
+
+  String _biometricButtonLabel(AppLocalizations l10n) {
+    switch (_biometricType) {
+      case BiometricType.faceId:
+        return l10n.biometric_type_face_id;
+      case BiometricType.fingerprint:
+        return l10n.biometric_type_fingerprint;
+      case BiometricType.iris:
+        return l10n.biometric_type_iris;
+      case BiometricType.none:
+        return l10n.security_biometricLogin;
+    }
+  }
 
   IconData get _biometricIcon {
     switch (_biometricType) {
@@ -298,7 +329,7 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
 
     if (mounted) {
       if (success) {
-        _unlock();
+        await _unlock();
       } else {
         setState(() {
           _hasError = true;

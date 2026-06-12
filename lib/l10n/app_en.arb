@@ -852,7 +852,7 @@
   "@settings_securitySettings": {
     "description": "Security settings label"
   },
-  "settings_securityDescription": "PIN, 2FA, biometrics",
+  "settings_securityDescription": "PIN, biometrics, devices",
   "@settings_securityDescription": {
     "description": "Security settings description"
   },
@@ -8228,11 +8228,11 @@
   "@session_unlockReason": {
     "description": "Reason for biometric unlock request"
   },
-  "session_expiring": "Session Expiring",
+  "session_expiring": "Session Locking",
   "@session_expiring": {
     "description": "Session expiring warning title"
   },
-  "session_expiringMessage": "Your session will expire in {seconds} seconds due to inactivity.",
+  "session_expiringMessage": "Your session will lock in {seconds} seconds due to inactivity.",
   "@session_expiringMessage": {
     "description": "Session expiring warning message with countdown",
     "placeholders": {

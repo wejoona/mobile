@@ -1329,7 +1329,7 @@ abstract class AppLocalizations {
   /// Security settings description
   ///
   /// In en, this message translates to:
-  /// **'PIN, 2FA, biometrics'**
+  /// **'PIN, biometrics, devices'**
   String get settings_securityDescription;
 
   /// Language settings label
@@ -12201,13 +12201,13 @@ abstract class AppLocalizations {
   /// Session expiring warning title
   ///
   /// In en, this message translates to:
-  /// **'Session Expiring'**
+  /// **'Session Locking'**
   String get session_expiring;
 
   /// Session expiring warning message with countdown
   ///
   /// In en, this message translates to:
-  /// **'Your session will expire in {seconds} seconds due to inactivity.'**
+  /// **'Your session will lock in {seconds} seconds due to inactivity.'**
   String session_expiringMessage(int seconds);
 
   /// Button to extend session

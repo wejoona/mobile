@@ -3,6 +3,7 @@ import UIKit
 import DeviceCheck
 import CryptoKit
 import LocalAuthentication
+import Vision
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
@@ -10,6 +11,7 @@ import LocalAuthentication
     var securityChannel: FlutterMethodChannel?
     var attestationChannel: FlutterMethodChannel?
     var biometricsChannel: FlutterMethodChannel?
+    var imageAnalysisChannel: FlutterMethodChannel?
     var appIsDarkMode: Bool? = nil
 
     override func application(
@@ -97,8 +99,73 @@ import LocalAuthentication
             }
         }
 
+        imageAnalysisChannel = FlutterMethodChannel(
+            name: "com.joonapay.usdc_wallet/image_analysis",
+            binaryMessenger: messenger
+        )
+
+        imageAnalysisChannel?.setMethodCallHandler { [weak self] (call, result) in
+            switch call.method {
+            case "detectFaces":
+                guard let args = call.arguments as? [String: Any],
+                      let path = args["path"] as? String else {
+                    result(FlutterError(code: "INVALID_ARGUMENT",
+                                        message: "Image path is required",
+                                        details: nil))
+                    return
+                }
+                self?.detectFaces(path: path, result: result)
+            default:
+                result(FlutterMethodNotImplemented)
+            }
+        }
+
         // SECURITY: Detect screenshots and screen recording
         setupScreenCaptureDetection()
+    }
+
+    // MARK: - Image Analysis
+
+    private func detectFaces(path: String, result: @escaping FlutterResult) {
+        guard FileManager.default.fileExists(atPath: path) else {
+            result(FlutterError(code: "FILE_NOT_FOUND",
+                                message: "Image file was not found",
+                                details: nil))
+            return
+        }
+
+        let url = URL(fileURLWithPath: path)
+        let request = VNDetectFaceRectanglesRequest { request, error in
+            if let error = error {
+                DispatchQueue.main.async {
+                    result(FlutterError(code: "FACE_DETECTION_FAILED",
+                                        message: error.localizedDescription,
+                                        details: nil))
+                }
+                return
+            }
+
+            let observations = (request.results as? [VNFaceObservation]) ?? []
+            DispatchQueue.main.async {
+                result([
+                    "available": true,
+                    "faceCount": observations.count,
+                ])
+            }
+        }
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                let handler = VNImageRequestHandler(url: url, options: [:])
+                try handler.perform([request])
+            } catch {
+                DispatchQueue.main.async {
+                    result(FlutterError(code: "FACE_DETECTION_FAILED",
+                                        message: error.localizedDescription,
+                                        details: nil))
+                }
+            }
+        }
     }
 
     // MARK: - Biometric Enrollment State

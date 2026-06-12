@@ -35,7 +35,19 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
     if (card == null) {
       return Scaffold(
         backgroundColor: colors.canvas,
-        appBar: AppBar(backgroundColor: Colors.transparent),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_rounded, color: colors.textPrimary),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/cards');
+              }
+            },
+          ),
+        ),
         body: Center(
           child: AppText(
             l10n.cards_cardNotFound,
@@ -50,6 +62,16 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
       backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_rounded, color: colors.textPrimary),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/cards');
+            }
+          },
+        ),
         title: AppText(
           l10n.cards_cardDetails,
           variant: AppTextVariant.titleLarge,

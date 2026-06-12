@@ -164,17 +164,25 @@ class UserStateMachine extends Notifier<UserState> {
       // Cache user profile locally
       ref.read(localSyncServiceProvider).cacheUserFromState(state);
 
-      // Cache avatar locally for offline display
-      if (hasServerAvatar) {
+      final serverAvatarUrl = profile.avatarUrl;
+      final isProtectedServerAvatar = _isProtectedRelativeAvatarUrl(
+        serverAvatarUrl,
+      );
+
+      // Cache only public avatar URLs. The API's /user/avatar/:id route is
+      // bearer-protected, so UI should render avatarThumb instead.
+      if (hasServerAvatar && !isProtectedServerAvatar) {
         final cached = await ref
             .read(avatarCacheServiceProvider)
-            .cacheAvatar(profile.avatarUrl!);
+            .cacheAvatar(serverAvatarUrl!);
         if (cached != null) {
           await _storage.write(key: 'local_avatar_path', value: cached);
           state = state.copyWith(avatarUrl: cached);
         }
-      } else {
+      } else if (!hasServerAvatar && !hasAvatarThumb) {
         await clearAvatar();
+      } else if (isProtectedServerAvatar) {
+        await _storage.delete(key: 'local_avatar_path');
       }
     } on ApiException catch (e) {
       debugPrint(
@@ -241,6 +249,13 @@ class UserStateMachine extends Notifier<UserState> {
         debugPrint('[KYC] Unknown KYC status: $status, defaulting to none');
         return KycStatus.none;
     }
+  }
+
+  bool _isProtectedRelativeAvatarUrl(String? value) {
+    if (value == null || value.isEmpty) {
+      return false;
+    }
+    return value.startsWith('/user/avatar/');
   }
 
   /// Request OTP for phone login

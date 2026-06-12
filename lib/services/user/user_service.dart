@@ -90,10 +90,13 @@ class UserService {
     }
   }
 
-  /// Resend email verification code (re-PUT the same email triggers new code)
-  Future<void> resendEmailVerification(String email) async {
+  /// POST /user/resend-email-verification — generate and send a fresh code.
+  Future<EmailVerificationResendResult> resendEmailVerification() async {
     try {
-      await _dio.put('/user/profile', data: {'email': email});
+      final response = await _dio.post('/user/resend-email-verification');
+      return EmailVerificationResendResult.fromJson(
+        _readPayload(response.data),
+      );
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -253,6 +256,35 @@ class AvatarUploadResult {
           (json['avatarThumb'] ?? json['avatar_thumb'] ?? json['avatarBase64'])
               as String?,
       message: json['message'] as String?,
+    );
+  }
+}
+
+class EmailVerificationResendResult {
+  final bool sent;
+  final String? email;
+  final bool pendingVerification;
+  final int expiresIn;
+  final String? message;
+  final String? debugCode;
+
+  const EmailVerificationResendResult({
+    required this.sent,
+    required this.pendingVerification,
+    required this.expiresIn,
+    this.email,
+    this.message,
+    this.debugCode,
+  });
+
+  factory EmailVerificationResendResult.fromJson(Map<String, dynamic> json) {
+    return EmailVerificationResendResult(
+      sent: json['sent'] as bool? ?? true,
+      email: json['email'] as String?,
+      pendingVerification: json['pendingVerification'] as bool? ?? true,
+      expiresIn: json['expiresIn'] as int? ?? 1800,
+      message: json['message'] as String?,
+      debugCode: json['debugCode'] as String?,
     );
   }
 }

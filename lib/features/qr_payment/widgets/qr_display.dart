@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:usdc_wallet/features/qr_payment/widgets/branded_qr_image.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Widget to display user's QR code for receiving payments.
@@ -30,7 +31,12 @@ class QrCodeDisplay extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (displayName != null) ...[
-          Text(displayName!, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+          Text(
+            displayName!,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           const SizedBox(height: 16),
         ],
         Container(
@@ -38,18 +44,34 @@ class QrCodeDisplay extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 20, offset: const Offset(0, 4))],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          child: QrImageView(
+          child: BrandedQrImage(
             data: data,
-            version: QrVersions.auto,
             size: size,
-            eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.circle, color: Color(0xFF1A1A2E)),
-            dataModuleStyle: const QrDataModuleStyle(dataModuleShape: QrDataModuleShape.circle, color: Color(0xFF1A1A2E)),
+            eyeStyle: const QrEyeStyle(
+              eyeShape: QrEyeShape.circle,
+              color: Color(0xFF1A1A2E),
+            ),
+            dataModuleStyle: const QrDataModuleStyle(
+              dataModuleShape: QrDataModuleShape.circle,
+              color: Color(0xFF1A1A2E),
+            ),
           ),
         ),
         const SizedBox(height: 16),
-        Text(AppLocalizations.of(context)!.qr_scanToPay, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+        Text(
+          AppLocalizations.of(context)!.qr_scanToPay,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
         if (onShare != null) ...[
           const SizedBox(height: 12),
           TextButton.icon(

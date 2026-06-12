@@ -50,6 +50,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
 
   bool _isBalanceHidden = false;
   bool _isCreatingWallet = false;
+  bool _walletFetchScheduled = false;
   late AnimationController _balanceAnimationController;
   late Animation<double> _balanceAnimation;
   double _displayedBalance = 0;
@@ -129,6 +130,8 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
     final isLandscape = OrientationHelper.isLandscape(context);
+
+    _ensureWalletLoadScheduled(walletState);
 
     // Trigger transaction fetch once wallet is loaded
     if (walletState.status == WalletStatus.loaded &&
@@ -377,8 +380,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     final pendingBalance = walletState.pendingBalance;
     final totalBalance = primaryBalance + pendingBalance;
     final showInitialBalanceLoading =
-        walletState.status == WalletStatus.loading &&
-        !walletState.hasBalanceData;
+        walletState.isLoading && !walletState.hasBalanceData;
 
     final currencyState = ref.watch(currencyProvider);
     final currencyService = ref.read(currencyServiceProvider);
@@ -557,25 +559,35 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                       child: WalletHiddenBalance(colors: colors),
                     )
                   else
-                    AnimatedBuilder(
-                      animation: _balanceAnimation,
-                      builder: (context, child) {
-                        final animatedValue =
-                            primaryBalance * _balanceAnimation.value;
-                        return FadeTransition(
-                          opacity: _balanceAnimation,
-                          child: FittedBox(
+                    primaryBalance == 0
+                        ? FittedBox(
                             fit: BoxFit.scaleDown,
                             alignment: AlignmentDirectional.centerStart,
                             child: AmountText(
-                              amount: animatedValue,
+                              amount: primaryBalance,
                               size: AmountTextSize.display,
                               color: colors.textPrimary,
                             ),
+                          )
+                        : AnimatedBuilder(
+                            animation: _balanceAnimation,
+                            builder: (context, child) {
+                              final animatedValue =
+                                  primaryBalance * _balanceAnimation.value;
+                              return FadeTransition(
+                                opacity: _balanceAnimation,
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: AlignmentDirectional.centerStart,
+                                  child: AmountText(
+                                    amount: animatedValue,
+                                    size: AmountTextSize.display,
+                                    color: colors.textPrimary,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
                   const SizedBox(height: AppSpacing.xs),
                   if (!showInitialBalanceLoading &&
                       (_isBalanceHidden || referenceAmount != null))
@@ -1004,6 +1016,11 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         colors: colors,
         error: txState.error ?? l10n.error_failedToLoadTransactions,
         retryLabel: l10n.action_retry,
+        onRetry: () => unawaited(
+          ref
+              .read(transactionStateMachineProvider.notifier)
+              .refresh(refreshWallet: false),
+        ),
       );
     }
 
@@ -1095,11 +1112,16 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
   }
 
   Future<void> _refreshHomeData() async {
+    await _refreshWalletForHome();
+    unawaited(_refreshTransactionsForHome());
+  }
+
+  Future<void> _refreshWalletForHome() async {
     try {
       await ref
           .read(walletStateMachineProvider.notifier)
           .refresh()
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 13));
     } on Object catch (error, stackTrace) {
       _logger.error(
         'Wallet refresh did not complete cleanly',
@@ -1108,22 +1130,9 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
       );
     }
 
-    unawaited(
-      ref
-          .read(transactionStateMachineProvider.notifier)
-          .refresh(refreshWallet: false)
-          .timeout(const Duration(seconds: 12))
-          .catchError((Object error, StackTrace stackTrace) {
-            _logger.error(
-              'Transaction refresh did not complete cleanly',
-              error,
-              stackTrace,
-            );
-          }),
-    );
-
     final wallet = ref.read(walletStateMachineProvider);
     if (wallet.status == WalletStatus.initial ||
+        (wallet.status == WalletStatus.refreshing && !wallet.hasBalanceData) ||
         (wallet.status == WalletStatus.error && !wallet.hasBalanceData)) {
       try {
         await ref
@@ -1138,6 +1147,54 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         );
       }
     }
+  }
+
+  Future<void> _refreshTransactionsForHome() async {
+    try {
+      await ref
+          .read(transactionStateMachineProvider.notifier)
+          .refresh(refreshWallet: false)
+          .timeout(const Duration(seconds: 11));
+    } on Object catch (error, stackTrace) {
+      _logger.error(
+        'Home transaction refresh did not complete cleanly',
+        error,
+        stackTrace,
+      );
+    }
+  }
+
+  void _ensureWalletLoadScheduled(WalletState walletState) {
+    if (_walletFetchScheduled ||
+        walletState.status == WalletStatus.loading ||
+        walletState.status == WalletStatus.refreshing ||
+        (walletState.status == WalletStatus.loaded && walletState.hasWallet)) {
+      return;
+    }
+
+    if (walletState.status != WalletStatus.initial &&
+        !(walletState.status == WalletStatus.error &&
+            !walletState.hasBalanceData)) {
+      return;
+    }
+
+    _walletFetchScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _walletFetchScheduled = false;
+      if (!mounted) {
+        return;
+      }
+
+      final current = ref.read(walletStateMachineProvider);
+      if (current.status == WalletStatus.initial ||
+          (current.status == WalletStatus.error && !current.hasBalanceData)) {
+        unawaited(
+          ref
+              .read(walletStateMachineProvider.notifier)
+              .fetch(force: current.status == WalletStatus.error),
+        );
+      }
+    });
   }
 
   String _getTransactionTitle(AppLocalizations l10n, Transaction transaction) {

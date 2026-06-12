@@ -36,13 +36,13 @@ class StepUpAuthService {
   static const _tag = 'StepUpAuth';
   final AppLogger _log = AppLogger(_tag);
 
-  final MfaProvider _mfaProvider;
+  final List<MfaMethod> _enrolledMethods;
 
   /// Cached step-up authorizations with expiry.
   final Map<StepUpAction, DateTime> _authorizations = {};
 
-  StepUpAuthService({required MfaProvider mfaProvider})
-      : _mfaProvider = mfaProvider;
+  StepUpAuthService({required List<MfaMethod> enrolledMethods})
+    : _enrolledMethods = enrolledMethods;
 
   /// Check if a step-up auth is needed for the given action.
   bool requiresStepUp(StepUpAction action) {
@@ -55,9 +55,9 @@ class StepUpAuthService {
 
   /// Determine which MFA method to use for the action.
   MfaMethod recommendedMethod(StepUpAction action) {
-    final enrolled = _mfaProvider.state.enrolledMethods; // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-    if (enrolled.contains(MfaMethod.biometric)) return MfaMethod.biometric;
-    if (enrolled.contains(MfaMethod.totp)) return MfaMethod.totp;
+    if (_enrolledMethods.contains(MfaMethod.biometric))
+      return MfaMethod.biometric;
+    if (_enrolledMethods.contains(MfaMethod.totp)) return MfaMethod.totp;
     return MfaMethod.sms;
   }
 
@@ -71,8 +71,11 @@ class StepUpAuthService {
   /// Request step-up auth by method name. Returns true if authorized.
   Future<bool> requestStepUp(String methodName) async {
     _log.debug('Requesting step-up auth via $methodName');
-    // In production, trigger actual MFA flow
-    return true;
+    _log.security(
+      'Step-up auth rejected because backend-backed MFA is not enabled',
+      level: 'WARN',
+    );
+    return false;
   }
 
   /// Clear all step-up authorizations (e.g. on logout).
@@ -97,7 +100,6 @@ class StepUpAuthService {
 }
 
 final stepUpAuthServiceProvider = Provider<StepUpAuthService>((ref) {
-  return StepUpAuthService(
-    mfaProvider: ref.watch(mfaProvider.notifier),
-  );
+  final mfaState = ref.watch(mfaProvider);
+  return StepUpAuthService(enrolledMethods: mfaState.enrolledMethods);
 });

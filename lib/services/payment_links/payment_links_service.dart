@@ -10,7 +10,7 @@ class PaymentLinksService {
   /// Create a new payment link
   Future<PaymentLink> createLink(CreateLinkRequest request) async {
     final response = await _dio.post('/payment-links', data: request.toJson());
-    return PaymentLink.fromJson(response.data);
+    return PaymentLink.fromJson(_extractPaymentLink(response.data));
   }
 
   /// Get all payment links for the current user
@@ -28,10 +28,11 @@ class PaymentLinksService {
       },
     );
     final data = response.data;
-    // Backend returns { links: [...], total: ... }; handle both wrapped and direct list
     final List items;
-    if (data is Map && data.containsKey('links')) {
-      items = data['links'] as List? ?? [];
+    if (data is Map) {
+      items =
+          _firstList(data, const ['links', 'data', 'items', 'results']) ??
+          const [];
     } else if (data is List) {
       items = data;
     } else {
@@ -43,7 +44,7 @@ class PaymentLinksService {
   /// Get a specific payment link by ID
   Future<PaymentLink> getLink(String id) async {
     final response = await _dio.get('/payment-links/$id');
-    return PaymentLink.fromJson(response.data);
+    return PaymentLink.fromJson(_extractPaymentLink(response.data));
   }
 
   /// Cancel a payment link
@@ -54,13 +55,13 @@ class PaymentLinksService {
   /// Refresh link status (check for updates)
   Future<PaymentLink> refreshLink(String id) async {
     final response = await _dio.get('/payment-links/$id/refresh');
-    return PaymentLink.fromJson(response.data);
+    return PaymentLink.fromJson(_extractPaymentLink(response.data));
   }
 
   /// Get a payment link by short code (for paying)
   Future<PaymentLink> getLinkByCode(String shortCode) async {
     final response = await _dio.get('/payment-links/code/$shortCode');
-    return PaymentLink.fromJson(response.data);
+    return PaymentLink.fromJson(_extractPaymentLink(response.data));
   }
 
   /// Pay a payment link
@@ -99,7 +100,7 @@ class PaymentLinksService {
           'description': description,
         };
     final response = await _dio.post('/payment-links', data: payload);
-    return PaymentLink.fromJson(response.data);
+    return PaymentLink.fromJson(_extractPaymentLink(response.data));
   }
 
   Future<PaymentLink> loadLink(String linkId) => getLink(linkId);
@@ -136,4 +137,25 @@ double _readAmount(Map<String, dynamic> json, List<String> keys) {
     }
   }
   return 0;
+}
+
+Map<String, dynamic> _extractPaymentLink(Object? data) {
+  final value = data is Map
+      ? (data['link'] ?? data['paymentLink'] ?? data['data'] ?? data)
+      : data;
+  return _asStringMap(value);
+}
+
+List<dynamic>? _firstList(Map<dynamic, dynamic> data, List<String> keys) {
+  for (final key in keys) {
+    final value = data[key];
+    if (value is List<dynamic>) return value;
+  }
+  return null;
+}
+
+Map<String, dynamic> _asStringMap(Object? value) {
+  if (value is Map<String, dynamic>) return value;
+  if (value is Map) return Map<String, dynamic>.from(value);
+  throw const FormatException('Expected payment link JSON object');
 }

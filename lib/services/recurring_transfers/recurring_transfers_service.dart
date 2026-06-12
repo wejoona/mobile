@@ -15,10 +15,11 @@ class RecurringTransfersService {
   Future<List<RecurringTransfer>> getRecurringTransfers() async {
     final response = await _dio.get('/recurring-transfers');
     final data = response.data;
-    // Backend returns { transfers: [...] }; handle both wrapped and direct list
     final List items;
-    if (data is Map && data.containsKey('transfers')) {
-      items = data['transfers'] as List? ?? [];
+    if (data is Map) {
+      items =
+          _firstList(data, const ['transfers', 'data', 'items', 'results']) ??
+          const [];
     } else if (data is List) {
       items = data;
     } else {
@@ -30,7 +31,7 @@ class RecurringTransfersService {
   /// Get a single recurring transfer by ID
   Future<RecurringTransfer> getRecurringTransfer(String id) async {
     final response = await _dio.get('/recurring-transfers/$id');
-    return RecurringTransfer.fromJson(response.data);
+    return RecurringTransfer.fromJson(_extractRecurringTransfer(response.data));
   }
 
   /// Create a new recurring transfer
@@ -49,7 +50,7 @@ class RecurringTransfersService {
         ),
       ),
     );
-    return RecurringTransfer.fromJson(response.data);
+    return RecurringTransfer.fromJson(_extractRecurringTransfer(response.data));
   }
 
   /// Update an existing recurring transfer
@@ -61,7 +62,7 @@ class RecurringTransfersService {
       '/recurring-transfers/$id',
       data: request.toJson(),
     );
-    return RecurringTransfer.fromJson(response.data);
+    return RecurringTransfer.fromJson(_extractRecurringTransfer(response.data));
   }
 
   /// Pause a recurring transfer
@@ -87,7 +88,10 @@ class RecurringTransfersService {
   Future<List<ExecutionHistory>> getExecutionHistory(String id) async {
     final response = await _dio.get('/recurring-transfers/$id/history');
     final data = response.data;
-    final List items = (data is Map ? data['history'] : data) as List? ?? [];
+    final List items = data is Map
+        ? _firstList(data, const ['history', 'data', 'items', 'results']) ??
+              const []
+        : data as List? ?? const [];
     return items.map((json) => ExecutionHistory.fromJson(json)).toList();
   }
 
@@ -95,7 +99,10 @@ class RecurringTransfersService {
   Future<List<UpcomingExecution>> getUpcomingExecutions() async {
     final response = await _dio.get('/recurring-transfers/upcoming');
     final data = response.data;
-    final List items = (data is Map ? data['upcoming'] : data) as List? ?? [];
+    final List items = data is Map
+        ? _firstList(data, const ['upcoming', 'data', 'items', 'results']) ??
+              const []
+        : data as List? ?? const [];
     return items.map((json) => UpcomingExecution.fromJson(json)).toList();
   }
 
@@ -109,7 +116,31 @@ class RecurringTransfersService {
       queryParameters: {'count': count},
     );
     final data = response.data;
-    final List items = (data is Map ? data['dates'] : data) as List? ?? [];
+    final List items = data is Map
+        ? _firstList(data, const ['dates', 'data', 'items', 'results']) ??
+              const []
+        : data as List? ?? const [];
     return items.map((date) => DateTime.parse(date as String)).toList();
   }
+}
+
+Map<String, dynamic> _extractRecurringTransfer(Object? data) {
+  final value = data is Map
+      ? (data['transfer'] ?? data['recurringTransfer'] ?? data['data'] ?? data)
+      : data;
+  return _asStringMap(value);
+}
+
+List<dynamic>? _firstList(Map<dynamic, dynamic> data, List<String> keys) {
+  for (final key in keys) {
+    final value = data[key];
+    if (value is List<dynamic>) return value;
+  }
+  return null;
+}
+
+Map<String, dynamic> _asStringMap(Object? value) {
+  if (value is Map<String, dynamic>) return value;
+  if (value is Map) return Map<String, dynamic>.from(value);
+  throw const FormatException('Expected recurring transfer JSON object');
 }

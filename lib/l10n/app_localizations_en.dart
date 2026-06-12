@@ -652,7 +652,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings_securitySettings => 'Security Settings';
 
   @override
-  String get settings_securityDescription => 'PIN, 2FA, biometrics';
+  String get settings_securityDescription => 'PIN, biometrics, devices';
 
   @override
   String get settings_language => 'Language';
@@ -6587,11 +6587,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get session_unlockReason => 'Unlock your session to continue';
 
   @override
-  String get session_expiring => 'Session Expiring';
+  String get session_expiring => 'Session Locking';
 
   @override
   String session_expiringMessage(int seconds) {
-    return 'Your session will expire in $seconds seconds due to inactivity.';
+    return 'Your session will lock in $seconds seconds due to inactivity.';
   }
 
   @override

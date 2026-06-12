@@ -3,14 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Liveness challenge types
-enum LivenessChallengeType {
-  blink,
-  smile,
-  turnLeft,
-  turnRight,
-  lookUp,
-  nod,
-}
+enum LivenessChallengeType { blink, smile, turnLeft, turnRight, lookUp, nod }
 
 extension LivenessChallengeTypeExt on LivenessChallengeType {
   String get value {
@@ -76,10 +69,7 @@ class LivenessSession {
   final String sessionToken;
   final List<LivenessChallenge> challenges;
 
-  const LivenessSession({
-    required this.sessionToken,
-    required this.challenges,
-  });
+  const LivenessSession({required this.sessionToken, required this.challenges});
 
   factory LivenessSession.fromJson(Map<String, dynamic> json) {
     final challengesData = json['challenges'] as List<dynamic>? ?? [];
@@ -123,7 +113,9 @@ class ChallengeSubmitResult {
       isAlive: json['isAlive'] as bool?,
       confidence: json['confidence'] as int?,
       result: json['result'] != null
-          ? ChallengeVerificationResult.fromJson(json['result'] as Map<String, dynamic>)
+          ? ChallengeVerificationResult.fromJson(
+              json['result'] as Map<String, dynamic>,
+            )
           : null,
     );
   }
@@ -160,8 +152,10 @@ class ChallengeVerificationResult {
 enum LivenessDecision {
   /// High confidence (≥85%) — auto-approve
   autoApprove,
+
   /// Medium confidence (50-84%) — manual review required
   manualReview,
+
   /// Low confidence (<50%) — decline
   decline,
 }
@@ -178,6 +172,7 @@ class LivenessResult {
   final String sessionId;
   final bool isLive;
   final double confidence;
+  final double? faceMatchScore;
   final DateTime completedAt;
   final String? failureReason;
 
@@ -185,6 +180,7 @@ class LivenessResult {
     required this.sessionId,
     required this.isLive,
     required this.confidence,
+    this.faceMatchScore,
     required this.completedAt,
     this.failureReason,
   });
@@ -226,11 +222,19 @@ class LivenessService {
       final formData = FormData.fromMap({
         'sessionToken': sessionToken,
         'challengeId': challengeId,
-        'photo': await MultipartFile.fromFile(photoPath, filename: 'challenge.jpg'),
+        'photo': await MultipartFile.fromFile(
+          photoPath,
+          filename: 'challenge.jpg',
+        ),
       });
 
-      final response = await _dio.post('/kyc/liveness/challenge', data: formData);
-      return ChallengeSubmitResult.fromJson(response.data as Map<String, dynamic>);
+      final response = await _dio.post(
+        '/kyc/liveness/challenge',
+        data: formData,
+      );
+      return ChallengeSubmitResult.fromJson(
+        response.data as Map<String, dynamic>,
+      );
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -249,7 +253,9 @@ class LivenessService {
         isLive: data['isAlive'] as bool? ?? false,
         confidence: (data['confidence'] as num?)?.toDouble() ?? 0.0,
         completedAt: DateTime.now(),
-        failureReason: data['status'] == 'FAILED' ? 'Liveness check failed' : null,
+        failureReason: data['status'] == 'FAILED'
+            ? 'Liveness check failed'
+            : null,
       );
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);

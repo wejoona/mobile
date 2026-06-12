@@ -7,6 +7,7 @@ import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
 import 'package:usdc_wallet/features/profile/services/profile_picture_service.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
+import 'package:usdc_wallet/services/image_analysis/image_analysis_service.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/state/index.dart';
 
@@ -35,6 +36,27 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       _selectedImage != null ||
       (_avatarUrl != null && _avatarUrl!.isNotEmpty) ||
       (_avatarThumb != null && _avatarThumb!.isNotEmpty);
+
+  String? get _effectiveAvatarImage {
+    if (_selectedImage != null) {
+      return _selectedImage!.path;
+    }
+
+    final avatarUrl = _avatarUrl?.trim();
+    final avatarThumb = _avatarThumb?.trim();
+    if (avatarThumb != null &&
+        avatarThumb.isNotEmpty &&
+        _isProtectedRelativeAvatarUrl(avatarUrl)) {
+      return avatarThumb;
+    }
+    if (avatarUrl != null && avatarUrl.isNotEmpty) {
+      return avatarUrl;
+    }
+    if (avatarThumb != null && avatarThumb.isNotEmpty) {
+      return avatarThumb;
+    }
+    return null;
+  }
 
   @override
   void initState() {
@@ -214,11 +236,32 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         child: Stack(
           children: [
             UserAvatar(
-              imageUrl: _selectedImage?.path ?? _avatarUrl ?? _avatarThumb,
+              imageUrl: _effectiveAvatarImage,
               firstName: userState.firstName,
               lastName: userState.lastName,
               size: UserAvatar.sizeXLarge,
             ),
+            if (_isLoading)
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.34),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: SizedBox(
+                      width: 28,
+                      height: 28,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.4,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          context.colors.goldLight,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             // Edit button
             Positioned(
               bottom: 0,
@@ -331,17 +374,52 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       return;
     }
 
-    final pictureService = ref.read(profilePictureServiceProvider);
-    final picked = action == _AvatarAction.camera
-        ? await pictureService.pickFromCamera()
-        : await pictureService.pickFromGallery();
+    setState(() => _isLoading = true);
+    try {
+      final pictureService = ref.read(profilePictureServiceProvider);
+      final picked = action == _AvatarAction.camera
+          ? await pictureService.pickFromCamera()
+          : await pictureService.pickFromGallery();
 
-    if (picked != null) {
+      if (picked == null) {
+        return;
+      }
+
       final compressed = await pictureService.compressImage(picked);
+      final faceCheck = await ref
+          .read(imageAnalysisServiceProvider)
+          .detectFaces(compressed);
+      if (!mounted) return;
+
+      if (!faceCheck.isAvailable || !faceCheck.hasExactlyOneFace) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_profilePhotoFaceMessage(faceCheck)),
+            backgroundColor: context.colors.error,
+          ),
+        );
+        return;
+      }
+
       setState(() {
         _selectedImage = compressed;
       });
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
+  }
+
+  String _profilePhotoFaceMessage(FaceDetectionResult result) {
+    if (!result.isAvailable) {
+      return result.message ??
+          'Unable to check the face on this device. Please try again or use a clearer selfie.';
+    }
+    if (result.faceCount == 0) {
+      return 'No face detected. Please choose a clear photo of your face.';
+    }
+    return 'Please use a photo with only your face visible.';
   }
 
   Future<void> _removeProfileImage() async {
@@ -399,6 +477,13 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       return '$countryCode $formatted'.trim();
     }
     return phone;
+  }
+
+  bool _isProtectedRelativeAvatarUrl(String? value) {
+    if (value == null || value.isEmpty) {
+      return false;
+    }
+    return value.startsWith('/user/avatar/');
   }
 
   Future<void> _handleSave() async {

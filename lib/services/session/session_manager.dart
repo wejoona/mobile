@@ -97,8 +97,9 @@ class _SessionManagerState extends ConsumerState<SessionManager>
           previous.status != SessionStatus.expired) {
         _handleSessionExpired();
       } else if (next.status == SessionStatus.locked &&
-          previous.status == SessionStatus.active) {
-        // Only show lock screen if transitioning FROM active (not on initial restore)
+          previous.status != SessionStatus.locked) {
+        // Route to lock screen for every fresh lock transition, including
+        // active -> locked and expiring -> locked after the warning countdown.
         _handleSessionLocked();
       }
     });
@@ -161,7 +162,7 @@ class _SessionManagerState extends ConsumerState<SessionManager>
   Future<void> _logoutFromSessionWarning() async {
     var didClearSession = false;
     try {
-      await ref.read(authProvider.notifier).logout();
+      await ref.read(authProvider.notifier).logout(localFirst: true);
       didClearSession = true;
     } catch (e) {
       AppLogger('SessionManager').warn('Could not log out from warning', e);
@@ -197,7 +198,7 @@ class _SessionManagerState extends ConsumerState<SessionManager>
   Future<void> _expireSession() async {
     var didClearSession = false;
     try {
-      await ref.read(authProvider.notifier).logout();
+      await ref.read(authProvider.notifier).logout(localFirst: true);
       didClearSession = true;
     } catch (e) {
       AppLogger('SessionManager').warn('Could not handle session expiry', e);

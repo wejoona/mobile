@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
 
@@ -20,21 +19,58 @@ class EmailVerificationScreen extends ConsumerStatefulWidget {
 
 class _EmailVerificationScreenState
     extends ConsumerState<EmailVerificationScreen> {
-  final List<TextEditingController> _controllers =
-      List.generate(6, (_) => TextEditingController());
+  final List<TextEditingController> _controllers = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
 
   bool _isLoading = false;
   bool _isSuccess = false;
   bool _hasError = false;
+  bool _isCheckingStatus = true;
+  bool _hasPendingCode = false;
+  bool _isResending = false;
   String? _errorMessage;
+  String? _resendMessage;
   int _resendCountdown = 0;
   Timer? _resendTimer;
 
   @override
   void initState() {
     super.initState();
-    _startResendCountdown();
+    unawaited(_loadEmailStatus());
+  }
+
+  Future<void> _loadEmailStatus() async {
+    try {
+      final status = await ref.read(userServiceProvider).getEmailStatus();
+      final verified = status['verified'] == true;
+      final pendingVerification = status['pendingVerification'] == true;
+
+      if (!mounted) return;
+      if (verified) {
+        ref
+            .read(userStateMachineProvider.notifier)
+            .updateProfile(emailVerified: true);
+      }
+      setState(() {
+        _isCheckingStatus = false;
+        _isSuccess = verified;
+        _hasPendingCode = pendingVerification;
+        _resendCountdown = pendingVerification ? 60 : 0;
+      });
+      if (pendingVerification) {
+        _startResendCountdown();
+      }
+    } on Object catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isCheckingStatus = false;
+        _resendCountdown = 0;
+        _resendMessage = 'Impossible de vérifier le statut email. Réessayez.';
+      });
+    }
   }
 
   @override
@@ -74,6 +110,7 @@ class _EmailVerificationScreenState
       _isLoading = true;
       _hasError = false;
       _errorMessage = null;
+      _resendMessage = null;
     });
 
     try {
@@ -87,9 +124,9 @@ class _EmailVerificationScreenState
       });
 
       // Update user state
-      ref.read(userStateMachineProvider.notifier).updateProfile(
-        emailVerified: true,
-      );
+      ref
+          .read(userStateMachineProvider.notifier)
+          .updateProfile(emailVerified: true);
 
       // Pop back after a short delay
       await Future.delayed(const Duration(seconds: 2));
@@ -113,15 +150,41 @@ class _EmailVerificationScreenState
   }
 
   Future<void> _resend() async {
-    final email = ref.read(userStateMachineProvider).email;
-    if (email == null) return;
+    if (_isResending) return;
 
+    setState(() {
+      _isResending = true;
+      _resendMessage = null;
+    });
     try {
       final userService = ref.read(userServiceProvider);
-      await userService.resendEmailVerification(email);
+      final result = await userService.resendEmailVerification();
+      if (!mounted) return;
+      if (!result.pendingVerification && !result.sent) {
+        setState(() {
+          _isResending = false;
+          _isSuccess = true;
+          _hasPendingCode = false;
+          _resendMessage = result.message ?? 'Email déjà vérifié.';
+        });
+        ref
+            .read(userStateMachineProvider.notifier)
+            .updateProfile(emailVerified: true);
+        return;
+      }
+
+      setState(() {
+        _isResending = false;
+        _hasPendingCode = true;
+        _resendMessage = 'Code envoyé. Vérifiez votre boîte mail.';
+      });
       _startResendCountdown();
-    } catch (_) {
-      // Silently fail
+    } on Object catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isResending = false;
+        _resendMessage = 'Impossible de renvoyer le code. Réessayez.';
+      });
     }
   }
 
@@ -135,7 +198,7 @@ class _EmailVerificationScreenState
       if (index < 5) {
         _focusNodes[index + 1].requestFocus();
       } else {
-        _submit();
+        unawaited(_submit());
       }
     } else if (index > 0) {
       _focusNodes[index - 1].requestFocus();
@@ -174,7 +237,9 @@ class _EmailVerificationScreenState
             children: [
               const SizedBox(height: AppSpacing.lg),
               AppText(
-                'Un code a été envoyé à',
+                _hasPendingCode
+                    ? 'Saisissez le code envoyé à'
+                    : 'Aucun code actif pour',
                 variant: AppTextVariant.bodyLarge,
                 color: colors.textSecondary,
               ),
@@ -186,11 +251,33 @@ class _EmailVerificationScreenState
               ),
               const SizedBox(height: AppSpacing.xxxl),
 
-              // OTP boxes
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: List.generate(6, (i) => _buildOtpBox(i, colors)),
-              ),
+              if (_isCheckingStatus)
+                Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation(colors.gold),
+                  ),
+                )
+              else if (_hasPendingCode)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: List.generate(6, (i) => _buildOtpBox(i, colors)),
+                )
+              else
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  decoration: BoxDecoration(
+                    color: colors.elevated,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                    border: Border.all(color: colors.border),
+                  ),
+                  child: AppText(
+                    'Envoyez un code de vérification pour confirmer cette adresse email.',
+                    variant: AppTextVariant.bodyMedium,
+                    color: colors.textSecondary,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
 
               if (_errorMessage != null) ...[
                 const SizedBox(height: AppSpacing.lg),
@@ -203,7 +290,11 @@ class _EmailVerificationScreenState
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.error_outline, color: colors.errorText, size: 18),
+                      Icon(
+                        Icons.error_outline,
+                        color: colors.errorText,
+                        size: 18,
+                      ),
                       const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: AppText(
@@ -221,18 +312,39 @@ class _EmailVerificationScreenState
 
               // Resend
               Center(
-                child: _resendCountdown > 0
+                child: _resendCountdown > 0 && _hasPendingCode
                     ? AppText(
                         'Renvoyer le code dans ${_resendCountdown}s',
                         variant: AppTextVariant.bodyMedium,
                         color: colors.textSecondary,
                       )
                     : AppButton(
-                        label: 'Renvoyer le code',
-                        onPressed: _resend,
-                        variant: AppButtonVariant.ghost,
+                        label: _hasPendingCode
+                            ? 'Renvoyer le code'
+                            : 'Envoyer le code',
+                        onPressed: _isCheckingStatus || _isResending
+                            ? null
+                            : _resend,
+                        variant: _hasPendingCode
+                            ? AppButtonVariant.ghost
+                            : AppButtonVariant.primary,
+                        isLoading: _isResending,
                       ),
               ),
+
+              if (_resendMessage != null) ...[
+                const SizedBox(height: AppSpacing.md),
+                Center(
+                  child: AppText(
+                    _resendMessage!,
+                    variant: AppTextVariant.bodySmall,
+                    color: _resendMessage!.startsWith('Impossible')
+                        ? colors.errorText
+                        : colors.textSecondary,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
 
               const Spacer(),
 
@@ -261,8 +373,8 @@ class _EmailVerificationScreenState
             color: _hasError
                 ? colors.error
                 : _controllers[index].text.isNotEmpty
-                    ? colors.gold
-                    : colors.border,
+                ? colors.gold
+                : colors.border,
             width: _controllers[index].text.isNotEmpty ? 2 : 1,
           ),
         ),
@@ -308,7 +420,7 @@ class _EmailVerificationScreenState
             ),
             const SizedBox(height: AppSpacing.xl),
             AppText(
-              'Email vérifié ✅',
+              'Email vérifié',
               variant: AppTextVariant.headlineMedium,
               color: colors.textPrimary,
             ),
