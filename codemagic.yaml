@@ -71,9 +71,15 @@ workflows:
           BUILD_NUMBER=$(($(google-play get-latest-build-number \
             --package-name "com.joonapay.usdc_wallet" \
             --tracks="internal" 2>/dev/null || echo 0) + 1))
+          # The Flutter gradle plugin runs a native-lib strip pass that fails on
+          # the Codemagic runner ("failed to strip debug symbols ..."), even with
+          # AGP keepDebugSymbols + ndk.debugSymbolLevel=NONE. Passing
+          # --split-debug-info routes symbol extraction through a separate path
+          # and avoids the failing strip step.
           flutter build appbundle --release \
             --dart-define-from-file="$CM_BUILD_DIR/env.prod.json" \
-            --build-number=$BUILD_NUMBER
+            --build-number=$BUILD_NUMBER \
+            --split-debug-info=build/symbols
 
     artifacts:
       - build/app/outputs/bundle/release/app-release.aab

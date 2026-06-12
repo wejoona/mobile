@@ -99,6 +99,13 @@ android {
 
     // SIZE OPTIMIZATION: Package options
     packaging {
+        // CI FIX: Skip stripping native libraries. The strip step fails on the
+        // Codemagic runner ("failed to strip debug symbols from native libraries")
+        // even with ndk.debugSymbolLevel = NONE. Keeping the symbols bypasses the
+        // failing strip invocation; symbols are still excluded from the bundle.
+        jniLibs {
+            keepDebugSymbols += listOf("**/*.so")
+        }
         resources {
             excludes += listOf(
                 "META-INF/*.kotlin_module",
