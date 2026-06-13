@@ -85,6 +85,28 @@ void main() {
     );
   });
 
+  test('reset PIN unlock does not depend on stale locked route', () {
+    final source = File(
+      'lib/features/pin/views/reset_pin_view.dart',
+    ).readAsStringSync();
+
+    final unlockBody = _methodBody(source, '_unlockAfterReset');
+
+    expect(unlockBody, contains('unlockAfterAccountRecovery()'));
+    expect(
+      unlockBody,
+      contains('authState.isAuthenticated && !sessionState.isLocked'),
+      reason:
+          'trusted PIN reset should transition home once auth and session are active',
+    );
+    expect(
+      unlockBody,
+      isNot(contains('currentRoute')),
+      reason:
+          'the reset screen is still on a locked route until the caller navigates',
+    );
+  });
+
   test('session lock screen restores PIN and biometric if unlock stalls', () {
     final source = File(
       'lib/features/fsm_states/views/session_locked_view.dart',
