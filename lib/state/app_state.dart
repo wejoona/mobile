@@ -82,6 +82,8 @@ class WalletState {
     String? balanceWarning,
     String? balanceSourceOfTruth,
     String? balanceReadStatus,
+    bool clearBalanceSourceOfTruth = false,
+    bool clearBalanceReadStatus = false,
     bool? isCached,
   }) {
     return WalletState(
@@ -97,8 +99,12 @@ class WalletState {
       isDegraded: isDegraded ?? this.isDegraded,
       isStale: isStale ?? this.isStale,
       balanceWarning: balanceWarning,
-      balanceSourceOfTruth: balanceSourceOfTruth ?? this.balanceSourceOfTruth,
-      balanceReadStatus: balanceReadStatus ?? this.balanceReadStatus,
+      balanceSourceOfTruth: clearBalanceSourceOfTruth
+          ? null
+          : balanceSourceOfTruth ?? this.balanceSourceOfTruth,
+      balanceReadStatus: clearBalanceReadStatus
+          ? null
+          : balanceReadStatus ?? this.balanceReadStatus,
       isCached: isCached ?? this.isCached,
     );
   }

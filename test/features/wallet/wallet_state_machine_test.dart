@@ -277,6 +277,46 @@ void main() {
     );
 
     test(
+      'wallet creation clears stale balance metadata when response has none',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'id': 'wallet-created-without-source',
+            'currency': 'USDC',
+            'balance': 0,
+            'balanceDecimal': '0.000000',
+            'status': 'active',
+          });
+
+        final container = ProviderContainer(
+          overrides: [
+            dioProvider.overrideWithValue(dio),
+            appFsmProvider.overrideWith(_NoopAppFsmNotifier.new),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        container
+            .read(walletStateMachineProvider.notifier)
+            .state = const WalletState(
+          status: WalletStatus.loaded,
+          walletId: 'old-wallet',
+          balanceSourceOfTruth: 'blnk',
+          balanceReadStatus: 'fresh',
+        );
+
+        await container
+            .read(walletStateMachineProvider.notifier)
+            .createWallet();
+
+        final state = container.read(walletStateMachineProvider);
+        expect(state.walletId, 'wallet-created-without-source');
+        expect(state.balanceSourceOfTruth, isNull);
+        expect(state.balanceReadStatus, isNull);
+      },
+    );
+
+    test(
       'concurrent manual refreshes share the in-flight wallet request',
       () async {
         final dio = MockDio()

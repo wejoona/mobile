@@ -37,6 +37,8 @@ class WalletStateMachine extends Notifier<WalletState> {
         balanceWarning: null,
         balanceSourceOfTruth: null,
         balanceReadStatus: null,
+        clearBalanceSourceOfTruth: true,
+        clearBalanceReadStatus: true,
         error: null,
       );
       debugPrint('[WalletState] Keeping cached balance (${cached.cachedAt})');
@@ -52,6 +54,8 @@ class WalletStateMachine extends Notifier<WalletState> {
         balanceWarning: null,
         balanceSourceOfTruth: null,
         balanceReadStatus: null,
+        clearBalanceSourceOfTruth: true,
+        clearBalanceReadStatus: true,
         error: null,
       );
       debugPrint('[WalletState] Keeping previous balance after refresh error');
@@ -105,6 +109,8 @@ class WalletStateMachine extends Notifier<WalletState> {
       balanceWarning: response.warning,
       balanceSourceOfTruth: response.sourceOfTruth,
       balanceReadStatus: response.readStatus,
+      clearBalanceSourceOfTruth: response.sourceOfTruth == null,
+      clearBalanceReadStatus: response.readStatus == null,
       error: null,
     );
 
@@ -166,6 +172,8 @@ class WalletStateMachine extends Notifier<WalletState> {
           balanceWarning: null,
           balanceSourceOfTruth: null,
           balanceReadStatus: null,
+          clearBalanceSourceOfTruth: true,
+          clearBalanceReadStatus: true,
         );
       }
     }
@@ -242,6 +250,8 @@ class WalletStateMachine extends Notifier<WalletState> {
           balanceWarning: null,
           balanceSourceOfTruth: null,
           balanceReadStatus: null,
+          clearBalanceSourceOfTruth: true,
+          clearBalanceReadStatus: true,
           error: null,
         );
         debugPrint('[WalletState] Loaded from cache (${cached.cachedAt})');
