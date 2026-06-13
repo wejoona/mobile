@@ -277,103 +277,118 @@ class _SessionExpiringOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
-    final timerColor = remainingSeconds <= 10 ? colors.error : colors.info;
-    final timerBackground = remainingSeconds <= 10
-        ? colors.errorBg
-        : colors.infoBg;
+    final isUrgent = remainingSeconds <= 10;
+    final timerColor = isUrgent ? colors.error : colors.gold;
+    final timerBackground = isUrgent ? colors.errorBg : colors.goldSubtle;
+    final borderColor = isUrgent
+        ? colors.error.withValues(alpha: colors.isDark ? 0.42 : 0.28)
+        : colors.borderGold;
 
     return Material(
-      color: Colors.black.withValues(alpha: colors.isDark ? 0.68 : 0.48),
+      color: Colors.black.withValues(alpha: colors.isDark ? 0.70 : 0.52),
       child: Center(
-        child: Container(
-          margin: const EdgeInsets.all(AppSpacing.xxl),
-          padding: const EdgeInsets.all(AppSpacing.xxl),
-          decoration: BoxDecoration(
-            color: colors.container,
-            borderRadius: BorderRadius.circular(AppRadius.xl),
-            border: Border.all(color: colors.border),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(
-                  alpha: colors.isDark ? 0.38 : 0.12,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 360),
+          child: Container(
+            margin: const EdgeInsets.all(AppSpacing.lg),
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            decoration: BoxDecoration(
+              color: colors.container,
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+              border: Border.all(color: borderColor),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(
+                    alpha: colors.isDark ? 0.42 : 0.16,
+                  ),
+                  blurRadius: 34,
+                  offset: const Offset(0, 18),
                 ),
-                blurRadius: 30,
-                offset: const Offset(0, 18),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: timerBackground,
-                  shape: BoxShape.circle,
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: timerBackground,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: borderColor),
+                  ),
+                  child: Icon(
+                    isUrgent ? Icons.lock_clock_rounded : Icons.shield_rounded,
+                    color: timerColor,
+                    size: 34,
+                  ),
                 ),
-                child: Icon(Icons.timer, color: timerColor, size: 40),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              AppText(
-                l10n.session_expiring,
-                variant: AppTextVariant.titleMedium,
-                color: colors.textPrimary,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              AppText(
-                l10n.session_expiringMessage(remainingSeconds),
-                variant: AppTextVariant.bodyMedium,
-                color: colors.textSecondary,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.xxl),
-              // Countdown circle
-              SizedBox(
-                width: 80,
-                height: 80,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    SizedBox(
-                      width: 80,
-                      height: 80,
-                      child: CircularProgressIndicator(
-                        value: (remainingSeconds / 60).clamp(0.0, 1.0),
-                        strokeWidth: 6,
-                        backgroundColor: colors.borderSubtle,
-                        valueColor: AlwaysStoppedAnimation<Color>(timerColor),
+                const SizedBox(height: AppSpacing.lg),
+                AppText(
+                  l10n.session_expiring,
+                  variant: AppTextVariant.titleMedium,
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.w700,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                AppText(
+                  l10n.session_expiringMessage(remainingSeconds),
+                  variant: AppTextVariant.bodyMedium,
+                  color: colors.textSecondary,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                SizedBox(
+                  width: 72,
+                  height: 72,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        width: 72,
+                        height: 72,
+                        child: CircularProgressIndicator(
+                          value: (remainingSeconds / 60).clamp(0.0, 1.0),
+                          strokeWidth: 5,
+                          strokeCap: StrokeCap.round,
+                          backgroundColor: colors.borderSubtle,
+                          valueColor: AlwaysStoppedAnimation<Color>(timerColor),
+                        ),
                       ),
+                      AppText(
+                        '$remainingSeconds',
+                        variant: AppTextVariant.titleLarge,
+                        color: timerColor,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    AppButton(
+                      label: l10n.session_stayLoggedIn,
+                      icon: Icons.verified_user_rounded,
+                      onPressed: isResolving ? null : onExtend,
+                      variant: AppButtonVariant.primary,
+                      isFullWidth: true,
                     ),
-                    AppText(
-                      '$remainingSeconds',
-                      variant: AppTextVariant.headlineSmall,
-                      color: timerColor,
+                    const SizedBox(height: AppSpacing.sm),
+                    AppButton(
+                      label: l10n.common_logout,
+                      icon: Icons.logout_rounded,
+                      onPressed: isResolving ? null : onLogout,
+                      variant: AppButtonVariant.secondary,
+                      isLoading: isResolving,
+                      isFullWidth: true,
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: AppSpacing.xxl),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  AppButton(
-                    label: l10n.session_stayLoggedIn,
-                    onPressed: isResolving ? null : onExtend,
-                    variant: AppButtonVariant.primary,
-                    isFullWidth: true,
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  AppButton(
-                    label: l10n.common_logout,
-                    onPressed: isResolving ? null : onLogout,
-                    variant: AppButtonVariant.secondary,
-                    isLoading: isResolving,
-                    isFullWidth: true,
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
