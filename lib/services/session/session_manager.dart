@@ -164,7 +164,7 @@ class _SessionManagerState extends ConsumerState<SessionManager>
   Future<void> _logoutFromSessionWarning() async {
     var didClearSession = false;
     try {
-      await ref.read(authProvider.notifier).logout(localFirst: true);
+      await ref.read(authProvider.notifier).logout(localFirst: false);
       didClearSession = true;
     } catch (e) {
       AppLogger('SessionManager').warn('Could not log out from warning', e);
@@ -200,7 +200,7 @@ class _SessionManagerState extends ConsumerState<SessionManager>
   Future<void> _expireSession() async {
     var didClearSession = false;
     try {
-      await ref.read(authProvider.notifier).logout(localFirst: true);
+      await ref.read(authProvider.notifier).logout(localFirst: false);
       didClearSession = true;
     } catch (e) {
       AppLogger('SessionManager').warn('Could not handle session expiry', e);

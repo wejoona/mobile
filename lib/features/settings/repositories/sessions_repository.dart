@@ -13,18 +13,8 @@ class SessionsRepository {
   Future<List<Session>> getSessions() async {
     try {
       final response = await _dio.get('/sessions');
-      final raw = _unwrapSessionPayload(response.data);
-      final List items;
-      if (raw is Map) {
-        items = (raw['sessions'] ?? raw['items'] ?? raw['data'] ?? []) as List;
-      } else if (raw is List) {
-        items = raw;
-      } else {
-        items = [];
-      }
-      return items.map((json) {
-        return Session.fromJson(Map<String, dynamic>.from(json as Map));
-      }).toList();
+      final items = _extractSessionItems(response.data);
+      return items.map(Session.fromJson).toList();
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -71,4 +61,17 @@ Object? _unwrapSessionPayload(Object? raw) {
     if (data is Map) return Map<String, dynamic>.from(data);
   }
   return raw;
+}
+
+List<Map<String, dynamic>> _extractSessionItems(Object? raw) {
+  final payload = _unwrapSessionPayload(raw);
+  final List<Object?> items = switch (payload) {
+    {'sessions': final List sessions} => sessions,
+    {'items': final List items} => items,
+    {'data': final List data} => data,
+    final List list => list,
+    _ => const <Object?>[],
+  };
+
+  return items.whereType<Map>().map(Map<String, dynamic>.from).toList();
 }

@@ -29,6 +29,33 @@ void main() {
     expect(sessions.single.deviceDescription, 'iPhone');
   });
 
+  test('SessionsRepository parses wrapped backend session payloads', () async {
+    final dio = MockDio();
+    dio.queueResponse({
+      'data': {
+        'sessions': [
+          {
+            'id': 'session-2',
+            'deviceId': 'device-2',
+            'ipAddress': '102.176.45.123',
+            'userAgent': 'Korido/1.0 (Android; Pixel)',
+            'isActive': true,
+            'lastActivityAt': DateTime.utc(2026, 6, 3).toIso8601String(),
+            'expiresAt': DateTime.utc(2026, 7, 3).toIso8601String(),
+          },
+        ],
+        'total': 1,
+      },
+    });
+    final repository = SessionsRepository(dio);
+
+    final sessions = await repository.getSessions();
+
+    expect(sessions, hasLength(1));
+    expect(sessions.single.id, 'session-2');
+    expect(sessions.single.deviceDescription, 'Android Device');
+  });
+
   test('active sessions 401 does not clear the local app session', () {
     final source = File(
       'lib/features/settings/providers/sessions_provider.dart',
@@ -39,6 +66,8 @@ void main() {
     final logoutAllDevices = _methodBody(source, 'logoutAllDevices');
 
     expect(loadSessions, isNot(contains('clearLocalSession')));
+    expect(loadSessions, contains('error: _friendlyError(e)'));
+    expect(loadSessions, contains('error: _friendlyError(retryError)'));
     expect(revokeSession, isNot(contains('clearLocalSession')));
     expect(logoutAllDevices, contains('clearLocalSession'));
   });

@@ -68,7 +68,7 @@ class SessionsNotifier extends Notifier<SessionsState> {
             state = state.copyWith(
               isLoading: false,
               sessions: const [],
-              error: null,
+              error: _friendlyError(retryError),
             );
             return;
           }
@@ -83,7 +83,7 @@ class SessionsNotifier extends Notifier<SessionsState> {
         state = state.copyWith(
           isLoading: false,
           sessions: const [],
-          error: null,
+          error: _friendlyError(e),
         );
         return;
       }

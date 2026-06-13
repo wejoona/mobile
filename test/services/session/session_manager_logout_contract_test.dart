@@ -31,8 +31,8 @@ void main() {
 }
 
 void _expectBackendRevokeBeforeLocalCleanup(String body) {
-  expect(body, contains('.logout()'));
-  final logoutIndex = body.indexOf('.logout()');
+  expect(body, contains('.logout(localFirst: false)'));
+  final logoutIndex = body.indexOf('.logout(localFirst: false)');
   final clearIndex = body.indexOf('.clearLocalSession()');
   if (clearIndex >= 0) {
     expect(
