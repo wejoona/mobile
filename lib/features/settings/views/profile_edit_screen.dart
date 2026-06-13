@@ -470,16 +470,21 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       final profileState = ref.read(profileProvider);
       if (!mounted) return;
 
-      if (profileState.error != null) {
-        _showProfilePhotoSnack(profileState.error!, isError: true);
+      if (uploadResult == null || profileState.error != null) {
+        setState(() => _selectedImage = null);
+        _showProfilePhotoSnack(
+          profileState.error ??
+              'Unable to upload your photo. Please try another image.',
+          isError: true,
+        );
         return;
       }
 
       final userState = ref.read(userStateMachineProvider);
       setState(() {
         _selectedImage = null;
-        _avatarUrl = uploadResult?.avatarUrl ?? userState.avatarUrl;
-        _avatarThumb = uploadResult?.avatarThumb ?? userState.avatarThumb;
+        _avatarUrl = uploadResult.avatarUrl ?? userState.avatarUrl;
+        _avatarThumb = uploadResult.avatarThumb ?? userState.avatarThumb;
       });
 
       _showProfilePhotoSnack(
@@ -488,12 +493,14 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       );
     } on PlatformException catch (error) {
       if (!mounted) return;
+      setState(() => _selectedImage = null);
       _showProfilePhotoSnack(
         _profilePhotoPickErrorMessage(error),
         isError: true,
       );
     } on Exception catch (error) {
       if (!mounted) return;
+      setState(() => _selectedImage = null);
       _showProfilePhotoSnack(
         _profilePhotoPickErrorMessage(error),
         isError: true,
