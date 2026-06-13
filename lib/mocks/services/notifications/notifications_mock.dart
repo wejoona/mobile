@@ -96,6 +96,24 @@ class NotificationsMock {
       path: '/notifications/device-token/:token',
       handler: _handleRemoveToken,
     );
+
+    interceptor.register(
+      method: 'POST',
+      path: '/notifications/push/token',
+      handler: _handleRegisterToken,
+    );
+
+    interceptor.register(
+      method: 'DELETE',
+      path: '/notifications/push/token',
+      handler: _handleRemoveToken,
+    );
+
+    interceptor.register(
+      method: 'DELETE',
+      path: '/notifications/push/tokens',
+      handler: _handleRemoveAllTokens,
+    );
   }
 
   static Future<MockResponse> _handleGetAll(RequestOptions options) async {
@@ -284,6 +302,15 @@ class NotificationsMock {
     return MockResponse.success({
       'success': true,
       'message': 'Token removed successfully',
+    });
+  }
+
+  static Future<MockResponse> _handleRemoveAllTokens(
+    RequestOptions options,
+  ) async {
+    return MockResponse.success({
+      'success': true,
+      'message': 'All tokens removed successfully',
     });
   }
 }

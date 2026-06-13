@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/domain/entities/notification.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart';
-import 'package:usdc_wallet/features/notifications/repositories/notifications_repository.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/notifications/notification_handler.dart';
 import 'package:usdc_wallet/services/notifications/notifications_service.dart';
@@ -180,5 +179,15 @@ void main() {
       dio.requestHistory.single.path,
       '/notifications/device-token/abc%2Fdef%3Aghi',
     );
+  });
+
+  test('bulk push token cleanup uses live backend route', () async {
+    final dio = MockDio()..queueResponse(null, statusCode: 204);
+    final service = NotificationsService(dio);
+
+    await service.removeAllFcmTokens();
+
+    expect(dio.requestHistory.single.method, 'DELETE');
+    expect(dio.requestHistory.single.path, '/notifications/push/tokens');
   });
 }

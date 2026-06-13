@@ -108,9 +108,13 @@ class NotificationsService {
     }
   }
 
-  /// Backend does not expose bulk token removal. Token-specific removal is used.
+  /// DELETE /notifications/push/tokens - Remove all FCM/APNs tokens for user
   Future<void> removeAllFcmTokens() async {
-    return;
+    try {
+      await _dio.delete('/notifications/push/tokens');
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
   }
 
   /// DELETE /notifications/device-token/:token

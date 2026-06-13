@@ -33,4 +33,16 @@ class NotificationsApi {
   /// DELETE /notifications/device-token/:token
   Future<Response> unregisterDeviceToken(String token) =>
       _dio.delete('/notifications/device-token/$token');
+
+  /// POST /notifications/push/token
+  Future<Response> registerPushToken(Map<String, dynamic> data) =>
+      _dio.post('/notifications/push/token', data: data);
+
+  /// DELETE /notifications/push/token
+  Future<Response> removePushToken(Map<String, dynamic> data) =>
+      _dio.delete('/notifications/push/token', data: data);
+
+  /// DELETE /notifications/push/tokens
+  Future<Response> removeAllPushTokens() =>
+      _dio.delete('/notifications/push/tokens');
 }
