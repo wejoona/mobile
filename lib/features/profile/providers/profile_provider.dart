@@ -70,22 +70,26 @@ class ProfileNotifier extends Notifier<ProfileState> {
     }
   }
 
-  Future<void> uploadAvatar(File file) async {
+  Future<AvatarUploadResult?> uploadAvatar(File file) async {
     state = state.copyWith(isUploading: true);
     try {
       final service = ref.read(userServiceProvider);
       final result = await service.uploadAvatar(file.path);
       await _applyAvatarUploadResult(result);
-      state = state.copyWith(isUploading: false, error: null);
+      state = state.copyWith(isUploading: false);
       await loadProfile();
       await _applyAvatarUploadResult(result, clearLocalCache: false);
+      state = state.copyWith(isUploading: false);
+      return result;
     } on ApiException catch (e) {
       state = state.copyWith(isUploading: false, error: _friendlyError(e));
+      return null;
     } catch (e) {
       state = state.copyWith(
         isUploading: false,
         error: 'Unable to upload your photo. Please try another image.',
       );
+      return null;
     }
   }
 

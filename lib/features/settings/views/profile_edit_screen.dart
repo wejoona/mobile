@@ -405,7 +405,9 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         _selectedImage = compressed;
       });
 
-      await ref.read(profileProvider.notifier).uploadAvatar(compressed);
+      final uploadResult = await ref
+          .read(profileProvider.notifier)
+          .uploadAvatar(compressed);
       final profileState = ref.read(profileProvider);
       if (!mounted) return;
 
@@ -422,8 +424,8 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       final userState = ref.read(userStateMachineProvider);
       setState(() {
         _selectedImage = null;
-        _avatarUrl = userState.avatarUrl;
-        _avatarThumb = userState.avatarThumb;
+        _avatarUrl = uploadResult?.avatarUrl ?? userState.avatarUrl;
+        _avatarThumb = uploadResult?.avatarThumb ?? userState.avatarThumb;
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
