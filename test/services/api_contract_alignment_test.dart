@@ -9,6 +9,7 @@ import 'package:usdc_wallet/domain/entities/notification_preferences.dart';
 import 'package:usdc_wallet/domain/entities/transaction.dart' as wallet_tx;
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
 import 'package:usdc_wallet/features/notifications/providers/notification_count_provider.dart'
     as notification_count;
 import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart'
@@ -51,6 +52,27 @@ class _CountryUserStateMachine extends UserStateMachine {
 
   @override
   UserState build() => UserState(countryCode: countryCode);
+}
+
+class _IdentityUserStateMachine extends UserStateMachine {
+  _IdentityUserStateMachine({required this.userId, required this.phone});
+
+  final String userId;
+  final String phone;
+
+  @override
+  UserState build() => UserState(
+    status: AuthStatus.authenticated,
+    userId: userId,
+    phone: phone,
+    countryCode: 'CI',
+  );
+}
+
+class _QuietAuthNotifier extends auth.AuthNotifier {
+  @override
+  auth.AuthState build() =>
+      const auth.AuthState(status: auth.AuthStatus.authenticated);
 }
 
 void main() {
@@ -1643,6 +1665,65 @@ void main() {
         expect(container.read(sendMoneyProvider).recipient?.userId, 'user_us');
       },
     );
+
+    test(
+      'send recipient validation rejects current user before lookup',
+      () async {
+        final contactsService = ContactsService(MockSecureStorage());
+        final dio = MockDio();
+        final container = ProviderContainer(
+          overrides: [
+            dioProvider.overrideWithValue(dio),
+            contactsServiceProvider.overrideWithValue(contactsService),
+            userStateMachineProvider.overrideWith(
+              () => _IdentityUserStateMachine(
+                userId: 'user_self',
+                phone: '+2250748805663',
+              ),
+            ),
+            auth.authProvider.overrideWith(_QuietAuthNotifier.new),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await container
+            .read(sendMoneyProvider.notifier)
+            .setRecipient('+2250748805663');
+
+        final state = container.read(sendMoneyProvider);
+        expect(dio.requestHistory, isEmpty);
+        expect(state.recipient, isNull);
+        expect(state.error, 'recipient_is_current_user');
+      },
+    );
+
+    test('known Korido recipient rejects current user identity', () async {
+      final container = ProviderContainer(
+        overrides: [
+          userStateMachineProvider.overrideWith(
+            () => _IdentityUserStateMachine(
+              userId: 'user_self',
+              phone: '+2250748805663',
+            ),
+          ),
+          auth.authProvider.overrideWith(_QuietAuthNotifier.new),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container
+          .read(sendMoneyProvider.notifier)
+          .setKnownKoridoRecipient(
+            phoneNumber: '+2250700000000',
+            userId: 'user_self',
+            username: 'self',
+            name: 'My account',
+          );
+
+      final state = container.read(sendMoneyProvider);
+      expect(state.recipient, isNull);
+      expect(state.error, 'recipient_is_current_user');
+    });
 
     test(
       'send recipient validation fails closed when contact sync is unavailable',
