@@ -207,6 +207,22 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                         padding: const EdgeInsets.only(bottom: AppSpacing.md),
                         child: LimitWarningBanner(limits: limitsState.limits!),
                       ),
+                    if (limitsState.limits?.hasActiveOverride == true) ...[
+                      SendCallout(
+                        icon: Icons.verified_user_outlined,
+                        title: localizedSendCopy(
+                          context,
+                          en: 'Special limits active',
+                          fr: 'Limites speciales actives',
+                        ),
+                        body: _specialLimitMessage(
+                          context,
+                          limitsState.limits!,
+                        ),
+                        tone: SendCalloutTone.success,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                    ],
                     if (_shouldShowVerificationLimitCallout(
                       limitsState.limits,
                     )) ...[
@@ -377,6 +393,29 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
       context,
       en: 'These limits come from your current verification level and update automatically after approval.',
       fr: 'Ces limites dépendent de votre niveau de vérification actuel et seront mises à jour après approbation.',
+    );
+  }
+
+  String _specialLimitMessage(BuildContext context, TransactionLimits limits) {
+    final reason = limits.overrideReason?.trim();
+    final expiresAt = limits.overrideExpiresAt;
+    if (reason != null && reason.isNotEmpty) {
+      return reason;
+    }
+    if (expiresAt != null) {
+      final formatted = MaterialLocalizations.of(
+        context,
+      ).formatShortDate(expiresAt);
+      return localizedSendCopy(
+        context,
+        en: 'A support-approved limit is active until $formatted.',
+        fr: 'Une limite approuvee par le support est active jusqu au $formatted.',
+      );
+    }
+    return localizedSendCopy(
+      context,
+      en: 'A support-approved limit is active for this account.',
+      fr: 'Une limite approuvee par le support est active pour ce compte.',
     );
   }
 

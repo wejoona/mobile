@@ -19,6 +19,9 @@ class TransactionLimits {
   final DateTime? resetTime;
   final int? hoursUntilReset;
   final int? minutesUntilReset;
+  final bool overrideActive;
+  final String? overrideReason;
+  final DateTime? overrideExpiresAt;
 
   const TransactionLimits({
     required this.dailyLimit,
@@ -41,6 +44,9 @@ class TransactionLimits {
     this.resetTime,
     this.hoursUntilReset,
     this.minutesUntilReset,
+    this.overrideActive = false,
+    this.overrideReason,
+    this.overrideExpiresAt,
   });
 
   factory TransactionLimits.fromJson(Map<String, dynamic> json) {
@@ -75,6 +81,11 @@ class TransactionLimits {
           : null,
       hoursUntilReset: json['hoursUntilReset'] as int?,
       minutesUntilReset: json['minutesUntilReset'] as int?,
+      overrideActive: json['overrideActive'] as bool? ?? false,
+      overrideReason: json['overrideReason'] as String?,
+      overrideExpiresAt: json['overrideExpiresAt'] != null
+          ? DateTime.parse(json['overrideExpiresAt'] as String)
+          : null,
     );
   }
 
@@ -95,6 +106,9 @@ class TransactionLimits {
     'resetTime': resetTime?.toIso8601String(),
     'hoursUntilReset': hoursUntilReset,
     'minutesUntilReset': minutesUntilReset,
+    'overrideActive': overrideActive,
+    'overrideReason': overrideReason,
+    'overrideExpiresAt': overrideExpiresAt?.toIso8601String(),
   };
 
   TransactionLimits copyWith({
@@ -114,6 +128,9 @@ class TransactionLimits {
     DateTime? resetTime,
     int? hoursUntilReset,
     int? minutesUntilReset,
+    bool? overrideActive,
+    String? overrideReason,
+    DateTime? overrideExpiresAt,
   }) {
     return TransactionLimits(
       dailyLimit: dailyLimit ?? this.dailyLimit,
@@ -133,6 +150,9 @@ class TransactionLimits {
       resetTime: resetTime ?? this.resetTime,
       hoursUntilReset: hoursUntilReset ?? this.hoursUntilReset,
       minutesUntilReset: minutesUntilReset ?? this.minutesUntilReset,
+      overrideActive: overrideActive ?? this.overrideActive,
+      overrideReason: overrideReason ?? this.overrideReason,
+      overrideExpiresAt: overrideExpiresAt ?? this.overrideExpiresAt,
     );
   }
 
@@ -149,6 +169,7 @@ class TransactionLimits {
   bool get isMonthlyNearLimit => monthlyPercentage >= 0.8;
   bool get isMonthlyAtLimit => monthlyPercentage >= 1.0;
   bool get hasNextTier => nextTierName != null;
+  bool get hasActiveOverride => overrideActive;
   double get effectiveMax {
     final candidates = [
       dailyRemaining,

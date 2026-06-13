@@ -28,6 +28,10 @@ class LimitUsageCard extends StatelessWidget {
             variant: AppTextVariant.titleSmall,
             color: colors.textPrimary,
           ),
+          if (limits.hasActiveOverride) ...[
+            const SizedBox(height: AppSpacing.md),
+            _LimitOverrideBanner(limits: limits),
+          ],
           const SizedBox(height: AppSpacing.lg),
           _LimitRow(
             label: l10n.limits_dailyLimits,
@@ -63,6 +67,69 @@ class LimitUsageCard extends StatelessWidget {
                 color: colors.textPrimary,
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LimitOverrideBanner extends StatelessWidget {
+  const _LimitOverrideBanner({required this.limits});
+
+  final TransactionLimits limits;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final language = Localizations.localeOf(context).languageCode;
+    final reason = limits.overrideReason?.trim();
+    final expiresAt = limits.overrideExpiresAt;
+
+    final title = language == 'fr'
+        ? 'Limites speciales actives'
+        : 'Special limits active';
+    final body = [
+      if (reason != null && reason.isNotEmpty) reason,
+      if (expiresAt != null)
+        language == 'fr'
+            ? 'Expire le ${MaterialLocalizations.of(context).formatShortDate(expiresAt)}'
+            : 'Expires ${MaterialLocalizations.of(context).formatShortDate(expiresAt)}',
+      if ((reason == null || reason.isEmpty) && expiresAt == null)
+        language == 'fr'
+            ? 'Une limite approuvee par le support est appliquee a ce compte.'
+            : 'A support-approved limit is applied to this account.',
+    ].join(' - ');
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: colors.gold.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: colors.gold.withValues(alpha: 0.24)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.verified_user_outlined, color: colors.gold, size: 20),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  title,
+                  variant: AppTextVariant.labelMedium,
+                  color: colors.textPrimary,
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                AppText(
+                  body,
+                  variant: AppTextVariant.bodySmall,
+                  color: colors.textSecondary,
+                ),
+              ],
+            ),
           ),
         ],
       ),

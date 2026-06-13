@@ -19,14 +19,27 @@ class TransactionLimits {
     this.crossBorderDailyMax = 2000000,
   });
 
-  factory TransactionLimits.fromJson(Map<String, dynamic> json) => TransactionLimits(
-    singleTransactionMax: (json['singleTransactionMax'] as num?)?.toDouble() ?? 5000000,
-    dailyMax: (json['dailyMax'] as num?)?.toDouble() ?? 10000000,
-    weeklyMax: (json['weeklyMax'] as num?)?.toDouble() ?? 25000000,
-    monthlyMax: (json['monthlyMax'] as num?)?.toDouble() ?? 50000000,
-    dailyCountMax: json['dailyCountMax'] as int? ?? 50,
-    crossBorderDailyMax: (json['crossBorderDailyMax'] as num?)?.toDouble() ?? 2000000,
-  );
+  factory TransactionLimits.fromJson(Map<String, dynamic> json) =>
+      TransactionLimits(
+        singleTransactionMax:
+            ((json['singleTransactionMax'] ?? json['singleTransactionLimit'])
+                    as num?)
+                ?.toDouble() ??
+            5000000,
+        dailyMax:
+            ((json['dailyMax'] ?? json['dailyLimit']) as num?)?.toDouble() ??
+            10000000,
+        weeklyMax:
+            ((json['weeklyMax'] ?? json['weeklyLimit']) as num?)?.toDouble() ??
+            25000000,
+        monthlyMax:
+            ((json['monthlyMax'] ?? json['monthlyLimit']) as num?)
+                ?.toDouble() ??
+            50000000,
+        dailyCountMax: json['dailyCountMax'] as int? ?? 50,
+        crossBorderDailyMax:
+            (json['crossBorderDailyMax'] as num?)?.toDouble() ?? 2000000,
+      );
 }
 
 class LimitCheckResult {
@@ -56,8 +69,15 @@ class TransactionLimitManager {
   Future<TransactionLimits> getLimits() async {
     if (_limits != null) return _limits!;
     try {
-      final response = await _dio.get('/compliance/limits');
-      _limits = TransactionLimits.fromJson(response.data as Map<String, dynamic>);
+      final response = await _dio.get('/user/limits');
+      final raw = response.data;
+      final data =
+          raw is Map<String, dynamic> && raw['data'] is Map<String, dynamic>
+          ? raw['data'] as Map<String, dynamic>
+          : raw is Map<String, dynamic>
+          ? raw
+          : const <String, dynamic>{};
+      _limits = TransactionLimits.fromJson(data);
       return _limits!;
     } catch (e) {
       _log.error('Failed to fetch limits', e);
@@ -90,6 +110,8 @@ class TransactionLimitManager {
   void invalidateCache() => _limits = null;
 }
 
-final transactionLimitManagerProvider = Provider<TransactionLimitManager>((ref) {
+final transactionLimitManagerProvider = Provider<TransactionLimitManager>((
+  ref,
+) {
   throw UnimplementedError('Override in ProviderScope');
 });

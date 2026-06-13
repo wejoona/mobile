@@ -113,7 +113,8 @@ abstract final class ApiEndpoints {
   static const notificationPreferences = '/notifications/preferences';
 
   // Limits
-  static const limits = '/limits';
+  static const limits = '/user/limits';
+  static const limitsUsage = '/user/limits/usage';
 
   // Insights
   static const insights = '/insights';
