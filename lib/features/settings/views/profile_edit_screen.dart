@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -31,6 +32,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   File? _selectedImage;
   String? _avatarUrl;
   String? _avatarThumb;
+  String? _profilePhotoStatus;
 
   bool get _hasAvatar =>
       _selectedImage != null ||
@@ -231,60 +233,113 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
   Widget _buildAvatarSection(UserState userState) {
     return Center(
-      child: GestureDetector(
-        onTap: _pickProfileImage,
-        child: Stack(
-          children: [
-            UserAvatar(
-              imageUrl: _effectiveAvatarImage,
-              firstName: userState.firstName,
-              lastName: userState.lastName,
-              size: UserAvatar.sizeXLarge,
-            ),
-            if (_isLoading)
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.34),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: SizedBox(
-                      width: 28,
-                      height: 28,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.4,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          context.colors.goldLight,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GestureDetector(
+            onTap: _isLoading ? null : _pickProfileImage,
+            child: Stack(
+              children: [
+                UserAvatar(
+                  imageUrl: _effectiveAvatarImage,
+                  firstName: userState.firstName,
+                  lastName: userState.lastName,
+                  size: UserAvatar.sizeXLarge,
+                ),
+                if (_isLoading)
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.34),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: SizedBox(
+                          width: 28,
+                          height: 28,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.4,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              context.colors.goldLight,
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: context.colors.gold,
+                      borderRadius: BorderRadius.circular(AppRadius.full),
+                      border: Border.all(
+                        color: context.colors.canvas,
+                        width: 2,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.camera_alt,
+                      size: 16,
+                      color: context.colors.textInverse,
+                    ),
+                  ),
                 ),
-              ),
-            // Edit button
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: context.colors.gold,
-                  borderRadius: BorderRadius.circular(AppRadius.full),
-                  border: Border.all(color: context.colors.canvas, width: 2),
-                ),
-                child: Icon(
-                  Icons.camera_alt,
-                  size: 16,
-                  color: context.colors.textInverse,
-                ),
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 180),
+            child: _profilePhotoStatus == null
+                ? const SizedBox(height: AppSpacing.md)
+                : Padding(
+                    key: ValueKey(_profilePhotoStatus),
+                    padding: const EdgeInsets.only(top: AppSpacing.sm),
+                    child: AppText(
+                      _profilePhotoStatus!,
+                      variant: AppTextVariant.bodySmall,
+                      color: context.colors.textSecondary,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+          ),
+        ],
       ),
     );
+  }
+
+  void _setProfilePhotoBusy(String? message) {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = message != null;
+      _profilePhotoStatus = message;
+    });
+  }
+
+  void _showProfilePhotoSnack(String message, {required bool isError}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError
+            ? context.colors.error
+            : context.colors.success,
+      ),
+    );
+  }
+
+  String _profilePhotoPickErrorMessage(Object error) {
+    if (error is PlatformException) {
+      final code = error.code.toLowerCase();
+      if (code.contains('denied') || code.contains('restricted')) {
+        return 'Camera or photo permission is needed to update your profile photo.';
+      }
+      return error.message ??
+          'Unable to use this photo. Please choose another clear selfie.';
+    }
+    return 'Unable to use this photo. Please choose another clear selfie.';
   }
 
   Future<void> _pickProfileImage() async {
@@ -367,14 +422,17 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         ),
       ),
     );
+    await _handleAvatarAction(action);
+  }
 
+  Future<void> _handleAvatarAction(_AvatarAction? action) async {
     if (action == null) return;
     if (action == _AvatarAction.remove) {
       await _removeProfileImage();
       return;
     }
 
-    setState(() => _isLoading = true);
+    _setProfilePhotoBusy('Opening photo picker...');
     try {
       final pictureService = ref.read(profilePictureServiceProvider);
       final picked = action == _AvatarAction.camera
@@ -385,22 +443,23 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         return;
       }
 
+      _setProfilePhotoBusy('Preparing photo...');
       final compressed = await pictureService.compressImage(picked);
+      _setProfilePhotoBusy('Checking face on this device...');
       final faceCheck = await ref
           .read(imageAnalysisServiceProvider)
           .detectFaces(compressed);
       if (!mounted) return;
 
       if (!faceCheck.isAvailable || !faceCheck.hasExactlyOneFace) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_profilePhotoFaceMessage(faceCheck)),
-            backgroundColor: context.colors.error,
-          ),
+        _showProfilePhotoSnack(
+          _profilePhotoFaceMessage(faceCheck),
+          isError: true,
         );
         return;
       }
 
+      _setProfilePhotoBusy('Uploading photo...');
       setState(() {
         _selectedImage = compressed;
       });
@@ -412,12 +471,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       if (!mounted) return;
 
       if (profileState.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(profileState.error!),
-            backgroundColor: context.colors.error,
-          ),
-        );
+        _showProfilePhotoSnack(profileState.error!, isError: true);
         return;
       }
 
@@ -428,16 +482,24 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         _avatarThumb = uploadResult?.avatarThumb ?? userState.avatarThumb;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context)!.settings_profileUpdated),
-          backgroundColor: context.colors.success,
-        ),
+      _showProfilePhotoSnack(
+        AppLocalizations.of(context)!.settings_profileUpdated,
+        isError: false,
+      );
+    } on PlatformException catch (error) {
+      if (!mounted) return;
+      _showProfilePhotoSnack(
+        _profilePhotoPickErrorMessage(error),
+        isError: true,
+      );
+    } on Exception catch (error) {
+      if (!mounted) return;
+      _showProfilePhotoSnack(
+        _profilePhotoPickErrorMessage(error),
+        isError: true,
       );
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      _setProfilePhotoBusy(null);
     }
   }
 

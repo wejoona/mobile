@@ -196,6 +196,9 @@ void main() {
       expect(profileProviderSource, contains('await _applyAvatarUploadResult'));
       expect(profileProviderSource, contains('applyServerAvatar('));
       expect(profileEditSource, contains('detectFaces(compressed)'));
+      expect(profileEditSource, contains('Checking face on this device'));
+      expect(profileEditSource, contains('_profilePhotoPickErrorMessage'));
+      expect(profileEditSource, contains('PlatformException'));
       expect(profileEditSource, contains('uploadAvatar(compressed)'));
       expect(profileEditSource, contains('_selectedImage = null'));
     });
