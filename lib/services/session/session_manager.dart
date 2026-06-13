@@ -164,7 +164,7 @@ class _SessionManagerState extends ConsumerState<SessionManager>
   Future<void> _logoutFromSessionWarning() async {
     var didClearSession = false;
     try {
-      await ref.read(authProvider.notifier).logout(localFirst: false);
+      await ref.read(authProvider.notifier).logout();
       didClearSession = true;
     } catch (e) {
       AppLogger('SessionManager').warn('Could not log out from warning', e);
@@ -200,7 +200,7 @@ class _SessionManagerState extends ConsumerState<SessionManager>
   Future<void> _expireSession() async {
     var didClearSession = false;
     try {
-      await ref.read(authProvider.notifier).logout(localFirst: false);
+      await ref.read(authProvider.notifier).logout();
       didClearSession = true;
     } catch (e) {
       AppLogger('SessionManager').warn('Could not handle session expiry', e);
@@ -339,7 +339,7 @@ class _SessionExpiringOverlay extends StatelessWidget {
                       width: 80,
                       height: 80,
                       child: CircularProgressIndicator(
-                        value: remainingSeconds / 30, // Assuming 30s warning
+                        value: (remainingSeconds / 60).clamp(0.0, 1.0),
                         strokeWidth: 6,
                         backgroundColor: colors.borderSubtle,
                         valueColor: AlwaysStoppedAnimation<Color>(timerColor),

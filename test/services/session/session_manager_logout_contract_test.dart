@@ -3,47 +3,44 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test(
-    'session timeout actions revoke the backend session before local cleanup',
-    () {
-      final source = File(
-        'lib/services/session/session_manager.dart',
-      ).readAsStringSync();
+  test('session timeout actions clear local session before remote cleanup', () {
+    final source = File(
+      'lib/services/session/session_manager.dart',
+    ).readAsStringSync();
 
-      final warningLogoutBody = _methodBody(
-        source,
-        '_logoutFromSessionWarning',
-      );
-      final expireSessionBody = _methodBody(source, '_expireSession');
+    final warningLogoutBody = _methodBody(source, '_logoutFromSessionWarning');
+    final expireSessionBody = _methodBody(source, '_expireSession');
 
-      // Contract: the backend session must be revoked via logout() first;
-      // clearLocalSession() is only the fallback when backend logout fails,
-      // so the user is never left locally authenticated.
-      _expectBackendRevokeBeforeLocalCleanup(warningLogoutBody);
-      _expectBackendRevokeBeforeLocalCleanup(expireSessionBody);
+    // Contract: logout from the warning/expiry path must use AuthNotifier's
+    // default local-first logout. Backend revocation and push-token cleanup
+    // continue best-effort in the background so the user is never left
+    // locally authenticated behind the modal.
+    _expectLocalFirstLogout(warningLogoutBody);
+    _expectLocalFirstLogout(expireSessionBody);
 
-      expect(source, contains('isResolving: _isResolvingSessionWarning'));
-      expect(source, isNot(contains('!_isResolvingSessionWarning &&')));
-      expect(source, contains('isLoading: isResolving'));
-      expect(source, contains('onPressed: isResolving ? null : onLogout'));
-    },
-  );
+    expect(source, contains('isResolving: _isResolvingSessionWarning'));
+    expect(source, isNot(contains('!_isResolvingSessionWarning &&')));
+    expect(source, contains('isLoading: isResolving'));
+    expect(source, contains('onPressed: isResolving ? null : onLogout'));
+    expect(source, contains('(remainingSeconds / 60).clamp(0.0, 1.0)'));
+  });
 }
 
-void _expectBackendRevokeBeforeLocalCleanup(String body) {
-  expect(body, contains('.logout(localFirst: false)'));
-  final logoutIndex = body.indexOf('.logout(localFirst: false)');
+void _expectLocalFirstLogout(String body) {
+  expect(body, contains('.logout()'));
+  expect(body, isNot(contains('.logout(localFirst: false)')));
+  final logoutIndex = body.indexOf('.logout()');
   final clearIndex = body.indexOf('.clearLocalSession()');
   if (clearIndex >= 0) {
     expect(
       logoutIndex,
       lessThan(clearIndex),
-      reason: 'backend logout must be attempted before local cleanup',
+      reason: 'local-first logout should be attempted before fallback cleanup',
     );
     expect(
       body,
       contains('if (!didClearSession)'),
-      reason: 'local cleanup must only run when backend logout failed',
+      reason: 'fallback cleanup should only run when logout itself failed',
     );
   }
 }
