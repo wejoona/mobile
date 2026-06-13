@@ -492,10 +492,36 @@ Map<String, dynamic> _walletPayload(Map<String, dynamic> json) {
 Map<String, dynamic> _unwrapWalletPayload(Map<String, dynamic> payload) {
   for (final key in const ['wallet', 'account', 'result']) {
     final nested = payload[key];
-    if (nested is Map<String, dynamic>) return nested;
-    if (nested is Map) return Map<String, dynamic>.from(nested);
+    if (nested is Map<String, dynamic>) {
+      return _mergeWalletEnvelope(payload, nested);
+    }
+    if (nested is Map) {
+      return _mergeWalletEnvelope(payload, Map<String, dynamic>.from(nested));
+    }
   }
   return payload;
+}
+
+Map<String, dynamic> _mergeWalletEnvelope(
+  Map<String, dynamic> envelope,
+  Map<String, dynamic> wallet,
+) {
+  final merged = <String, dynamic>{...envelope, ...wallet};
+  for (final key in const [
+    'balances',
+    'balance',
+    'available',
+    'availableBalance',
+    'balanceUsdc',
+    'pending',
+    'pendingBalance',
+    'total',
+  ]) {
+    if (merged[key] == null && envelope.containsKey(key)) {
+      merged[key] = envelope[key];
+    }
+  }
+  return merged;
 }
 
 double _readAmount(Map<String, dynamic> json, List<String> keys) {

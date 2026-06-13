@@ -143,6 +143,39 @@ void main() {
       expect(response.balances.single.total, 17.5);
     });
 
+    test(
+      'wallet balance parser keeps balances beside nested wallet object',
+      () {
+        final response = WalletBalanceResponse.fromJson({
+          'success': true,
+          'data': {
+            'wallet': {
+              'id': 'wallet_nested',
+              'address': '0xnested',
+              'currency': 'USDC',
+            },
+            'balances': [
+              {
+                'currency': 'USDC',
+                'availableDecimal': '52.000000',
+                'pendingDecimal': '3.000000',
+                'totalDecimal': '55.000000',
+              },
+            ],
+            'sourceOfTruth': 'blnk',
+            'readStatus': 'fresh',
+          },
+        });
+
+        expect(response.walletId, 'wallet_nested');
+        expect(response.walletAddress, '0xnested');
+        expect(response.balances.single.available, 52);
+        expect(response.balances.single.pending, 3);
+        expect(response.sourceOfTruth, 'blnk');
+        expect(response.readStatus, 'fresh');
+      },
+    );
+
     test('wallet balance parser accepts flat live balance aliases', () {
       final response = WalletBalanceResponse.fromJson({
         'walletId': 'wallet_1',

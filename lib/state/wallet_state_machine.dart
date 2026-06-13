@@ -315,6 +315,15 @@ class WalletStateMachine extends Notifier<WalletState> {
       state = previousState.hasBalanceData
           ? previousState.copyWith(status: WalletStatus.loaded, error: null)
           : state.copyWith(status: WalletStatus.error, error: e.toString());
+    } finally {
+      if (ref.mounted && state.status == WalletStatus.refreshing) {
+        state = previousState.hasBalanceData
+            ? previousState.copyWith(status: WalletStatus.loaded, error: null)
+            : state.copyWith(
+                status: WalletStatus.error,
+                error: 'Unable to refresh balance right now',
+              );
+      }
     }
   }
 
