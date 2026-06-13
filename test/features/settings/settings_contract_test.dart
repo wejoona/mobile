@@ -68,7 +68,9 @@ void main() {
     expect(loadSessions, isNot(contains('clearLocalSession')));
     expect(loadSessions, contains('error: _friendlyError(e)'));
     expect(loadSessions, contains('error: _friendlyError(retryError)'));
+    expect(loadSessions, contains('requiresUnlock: true'));
     expect(revokeSession, isNot(contains('clearLocalSession')));
+    expect(revokeSession, contains('requiresUnlock: true'));
     expect(logoutAllDevices, contains('clearLocalSession'));
   });
 

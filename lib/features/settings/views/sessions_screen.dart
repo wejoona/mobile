@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -51,6 +52,10 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
   ) {
     if (state.isLoading && state.sessions.isEmpty) {
       return _buildLoading();
+    }
+
+    if (state.requiresUnlock && state.sessions.isEmpty) {
+      return _buildUnlockRequired(l10n, state.error);
     }
 
     if (state.error != null && state.sessions.isEmpty) {
@@ -269,6 +274,39 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
               onPressed: () =>
                   ref.read(sessionsProvider.notifier).loadSessions(),
               variant: AppButtonVariant.secondary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUnlockRequired(AppLocalizations l10n, String? message) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.lock_outline, size: 64, color: context.colors.gold),
+            SizedBox(height: AppSpacing.md),
+            AppText(
+              l10n.session_unlockReason,
+              variant: AppTextVariant.titleMedium,
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: AppSpacing.sm),
+            AppText(
+              message ?? l10n.session_unlockReason,
+              variant: AppTextVariant.bodySmall,
+              color: context.colors.textSecondary,
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: AppSpacing.lg),
+            AppButton(
+              label: l10n.auth_tapToUnlock,
+              onPressed: () => context.go('/session-locked'),
+              variant: AppButtonVariant.primary,
             ),
           ],
         ),

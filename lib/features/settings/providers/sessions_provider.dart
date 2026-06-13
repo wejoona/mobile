@@ -12,23 +12,27 @@ class SessionsState {
     this.error,
     this.sessions = const [],
     this.currentSessionId,
+    this.requiresUnlock = false,
   });
 
   final bool isLoading;
   final String? error;
   final List<Session> sessions;
   final String? currentSessionId;
+  final bool requiresUnlock;
 
   SessionsState copyWith({
     bool? isLoading,
     String? error,
     List<Session>? sessions,
     String? currentSessionId,
+    bool? requiresUnlock,
   }) => SessionsState(
     isLoading: isLoading ?? this.isLoading,
     error: error,
     sessions: sessions ?? this.sessions,
     currentSessionId: currentSessionId ?? this.currentSessionId,
+    requiresUnlock: requiresUnlock ?? this.requiresUnlock,
   );
 }
 
@@ -50,6 +54,7 @@ class SessionsNotifier extends Notifier<SessionsState> {
         isLoading: false,
         sessions: sessions,
         currentSessionId: currentSession?.id,
+        requiresUnlock: false,
       );
     } on ApiException catch (e) {
       if (e.statusCode == 401 && await _refreshAuthForRetry()) {
@@ -61,6 +66,7 @@ class SessionsNotifier extends Notifier<SessionsState> {
             sessions: sessions,
             currentSessionId: currentSession?.id,
             error: null,
+            requiresUnlock: false,
           );
           return;
         } on ApiException catch (retryError) {
@@ -69,12 +75,14 @@ class SessionsNotifier extends Notifier<SessionsState> {
               isLoading: false,
               sessions: const [],
               error: _friendlyError(retryError),
+              requiresUnlock: true,
             );
             return;
           }
           state = state.copyWith(
             isLoading: false,
             error: _friendlyError(retryError),
+            requiresUnlock: false,
           );
           return;
         }
@@ -84,14 +92,20 @@ class SessionsNotifier extends Notifier<SessionsState> {
           isLoading: false,
           sessions: const [],
           error: _friendlyError(e),
+          requiresUnlock: true,
         );
         return;
       }
-      state = state.copyWith(isLoading: false, error: _friendlyError(e));
+      state = state.copyWith(
+        isLoading: false,
+        error: _friendlyError(e),
+        requiresUnlock: false,
+      );
     } on Object {
       state = state.copyWith(
         isLoading: false,
         error: 'Unable to load active sessions. Please try again.',
+        requiresUnlock: false,
       );
     }
   }
@@ -107,14 +121,15 @@ class SessionsNotifier extends Notifier<SessionsState> {
       return true;
     } on ApiException catch (e) {
       if (await _handleExpiredSession(e)) {
-        state = state.copyWith(error: null);
+        state = state.copyWith(error: _friendlyError(e), requiresUnlock: true);
         return false;
       }
-      state = state.copyWith(error: _friendlyError(e));
+      state = state.copyWith(error: _friendlyError(e), requiresUnlock: false);
       return false;
     } on Object {
       state = state.copyWith(
         error: 'Unable to revoke this device. Please try again.',
+        requiresUnlock: false,
       );
       return false;
     }
@@ -131,14 +146,15 @@ class SessionsNotifier extends Notifier<SessionsState> {
       return true;
     } on ApiException catch (e) {
       if (await _handleExpiredSession(e)) {
-        state = state.copyWith(error: null);
+        state = state.copyWith(error: _friendlyError(e), requiresUnlock: true);
         return false;
       }
-      state = state.copyWith(error: _friendlyError(e));
+      state = state.copyWith(error: _friendlyError(e), requiresUnlock: false);
       return false;
     } on Object {
       state = state.copyWith(
         error: 'Unable to log out other devices. Please try again.',
+        requiresUnlock: false,
       );
       return false;
     }
