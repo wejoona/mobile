@@ -382,26 +382,11 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
 
     final contactsService = ref.read(contactsServiceProvider);
     final hasPermission = await contactsService.hasContactsPermission();
-    final canReadContacts =
-        hasPermission || await contactsService.requestContactsPermission();
-
-    if (!mounted) {
-      return;
+    if (!hasPermission) {
+      await contactsService.requestContactsPermission();
     }
 
-    if (!canReadContacts) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            localizedSendCopy(
-              context,
-              en: 'Allow contacts access to pick a recipient from your phone.',
-              fr: 'Autorisez l’accès aux contacts pour choisir un destinataire.',
-            ),
-          ),
-          backgroundColor: context.colors.warning,
-        ),
-      );
+    if (!mounted) {
       return;
     }
 

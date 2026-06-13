@@ -257,13 +257,22 @@ class ContactsService {
       return false;
     }
 
-    final granted = await FlutterContacts.requestPermission(readonly: true);
-    if (granted) {
+    final requested = await Permission.contacts.request();
+    if (_canReadContacts(requested)) {
+      return true;
+    }
+    if (requested.isPermanentlyDenied || requested.isRestricted) {
+      return false;
+    }
+
+    // Some platform/plugin combinations update FlutterContacts before
+    // permission_handler observes the new state. Keep this as a narrow fallback
+    // for the actual contact reader package.
+    if (await FlutterContacts.requestPermission(readonly: true)) {
       return true;
     }
 
-    final status = await Permission.contacts.status;
-    return _canReadContacts(status);
+    return _canReadContacts(await Permission.contacts.status);
   }
 
   /// Check if contacts permission is granted
