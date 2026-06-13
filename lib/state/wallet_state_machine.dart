@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/index.dart';
-import 'package:usdc_wallet/services/wallet/wallet_service.dart';
 import 'package:usdc_wallet/services/storage/local_cache_service.dart';
 import 'package:usdc_wallet/services/storage/sync_service.dart';
 import 'package:usdc_wallet/state/app_state.dart';
@@ -202,7 +201,9 @@ class WalletStateMachine extends Notifier<WalletState> {
     ref.read(appFsmProvider.notifier).fetchWallet();
 
     try {
-      final response = await _service.getBalance();
+      final response = await _service.getBalance().timeout(
+        const Duration(seconds: 12),
+      );
 
       if (!ref.mounted) return;
 

@@ -379,7 +379,14 @@ class WalletBalanceResponse {
         payload['walletId'] as String? ?? payload['id'] as String? ?? '';
     final walletAddress =
         payload['walletAddress'] as String? ??
-        payload['circleWalletAddress'] as String?;
+        payload['wallet_address'] as String? ??
+        payload['circleWalletAddress'] as String? ??
+        payload['circle_wallet_address'] as String? ??
+        payload['address'] as String? ??
+        payload['publicAddress'] as String? ??
+        payload['public_address'] as String? ??
+        payload['depositAddress'] as String? ??
+        payload['deposit_address'] as String?;
 
     // If balances array is empty but balance field exists, create a synthetic balance
     List<WalletBalance> balances;

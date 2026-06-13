@@ -188,6 +188,53 @@ void main() {
     );
 
     test(
+      'hydrates live backend balance metadata and address aliases',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'walletId': 'wallet-live',
+            'address': '0xfeedface',
+            'blockchain': 'stellar',
+            'currency': 'USDC',
+            'sourceOfTruth': 'blnk',
+            'readStatus': 'fresh',
+            'isStale': false,
+            'degraded': false,
+            'balances': [
+              {
+                'currency': 'USDC',
+                'availableDecimal': '123.450000',
+                'pendingDecimal': '6.550000',
+                'totalDecimal': '130.000000',
+              },
+            ],
+          });
+
+        final container = ProviderContainer(
+          overrides: [
+            dioProvider.overrideWithValue(dio),
+            appFsmProvider.overrideWith(_NoopAppFsmNotifier.new),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await container.read(walletStateMachineProvider.notifier).fetch();
+
+        final state = container.read(walletStateMachineProvider);
+        expect(state.status, WalletStatus.loaded);
+        expect(state.walletId, 'wallet-live');
+        expect(state.walletAddress, '0xfeedface');
+        expect(state.blockchain, 'stellar');
+        expect(state.usdcBalance, 123.45);
+        expect(state.pendingBalance, 6.55);
+        expect(state.balanceSourceOfTruth, 'blnk');
+        expect(state.balanceReadStatus, 'fresh');
+        expect(state.isStale, isFalse);
+        expect(state.isDegraded, isFalse);
+      },
+    );
+
+    test(
       'manual refresh creates a wallet when the API reports no wallet',
       () async {
         final dio = MockDio()
