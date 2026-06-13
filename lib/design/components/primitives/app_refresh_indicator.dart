@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
-import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 
 /// Custom pull-to-refresh indicator with Korido styling.
 /// Provides haptic feedback and uses brand colors.
@@ -48,6 +48,9 @@ class AppRefreshIndicator extends StatelessWidget {
     } on TimeoutException {
       // Screen-level refresh handlers should handle their own errors. This
       // timeout only protects the gesture affordance from spinning forever.
+    } on Object {
+      // Refresh is a gesture affordance; the owning screen should render the
+      // error state while the pull indicator always resolves.
     }
     // Provide subtle feedback when refresh completes
     try {
