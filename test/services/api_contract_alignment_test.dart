@@ -571,6 +571,31 @@ void main() {
       },
     );
 
+    test(
+      'notification facade list and device-token cleanup use live backend shape',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({'notifications': [], 'total': 0})
+          ..queueResponse(null, statusCode: 204);
+        final api = NotificationsApi(dio);
+
+        await api.list(page: 3, limit: 20);
+        await api.unregisterDeviceToken('abc/def:ghi');
+
+        expect(dio.requestHistory[0].method, 'GET');
+        expect(dio.requestHistory[0].path, '/notifications');
+        expect(dio.requestHistory[0].queryParameters, {
+          'limit': 20,
+          'offset': 40,
+        });
+        expect(dio.requestHistory[1].method, 'DELETE');
+        expect(
+          dio.requestHistory[1].path,
+          '/notifications/device-token/abc%2Fdef%3Aghi',
+        );
+      },
+    );
+
     test('notification preferences full save sends exact backend DTO keys', () {
       final preferences = UserNotificationPreferences.defaults().copyWith(
         pushEnabled: false,

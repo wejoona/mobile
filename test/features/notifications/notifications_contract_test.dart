@@ -151,21 +151,45 @@ void main() {
     expect(dio.requestHistory[1].path, '/notifications/read-all');
   });
 
-  test('notifications feed surfaces missing backend route', () async {
+  test('notifications feed parses live backend route envelope', () async {
     final dio = MockDio()
-      ..queueErrorResponse(statusCode: 404, message: 'Not found');
+      ..queueResponse({
+        'notifications': [
+          {
+            'id': 'notif-live-1',
+            'type': 'transfer_received',
+            'presentationType': 'transfer',
+            'severity': 'success',
+            'action': 'open_transaction',
+            'status': 'delivered',
+            'title': 'Payment received',
+            'body': 'You received 25 USDC.',
+            'data': {'transactionId': 'txn_live_1'},
+            'referenceType': 'transaction',
+            'referenceId': 'txn_live_1',
+            'sentAt': DateTime.utc(2026, 6, 12).toIso8601String(),
+            'deliveredAt': DateTime.utc(2026, 6, 12).toIso8601String(),
+            'readAt': null,
+            'createdAt': DateTime.utc(2026, 6, 12).toIso8601String(),
+            'isUnread': true,
+          },
+        ],
+        'total': 1,
+        'unreadCount': 1,
+        'limit': 50,
+        'offset': 0,
+      });
     final service = NotificationsService(dio);
 
-    await expectLater(
-      service.getNotifications(),
-      throwsA(
-        isA<ApiException>().having(
-          (error) => error.statusCode,
-          'statusCode',
-          404,
-        ),
-      ),
-    );
+    final notifications = await service.getNotifications();
+
+    expect(dio.requestHistory.single.path, '/notifications');
+    expect(dio.requestHistory.single.queryParameters, {
+      'limit': 50,
+      'offset': 0,
+    });
+    expect(notifications, hasLength(1));
+    expect(notifications.single.navigationRoute, '/transactions/txn_live_1');
   });
 
   test('device token removal encodes path segment', () async {

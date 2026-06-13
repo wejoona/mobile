@@ -8,11 +8,14 @@ class NotificationsApi {
   final Dio _dio;
 
   /// GET /notifications
-  Future<Response> list({int? page, int? limit}) => _dio.get(
+  Future<Response> list({int? page, int? limit, int? offset}) => _dio.get(
     '/notifications',
     queryParameters: {
-      if (page != null) 'page': page,
       if (limit != null) 'limit': limit,
+      if (offset != null)
+        'offset': offset
+      else if (page != null && limit != null)
+        'offset': (page - 1) * limit,
     },
   );
 
@@ -32,7 +35,7 @@ class NotificationsApi {
 
   /// DELETE /notifications/device-token/:token
   Future<Response> unregisterDeviceToken(String token) =>
-      _dio.delete('/notifications/device-token/$token');
+      _dio.delete('/notifications/device-token/${Uri.encodeComponent(token)}');
 
   /// POST /notifications/push/token
   Future<Response> registerPushToken(Map<String, dynamic> data) =>
