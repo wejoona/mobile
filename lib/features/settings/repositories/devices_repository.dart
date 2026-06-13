@@ -45,18 +45,25 @@ class DevicesRepository {
 
   /// Get all active devices for the current user
   Future<List<Device>> getDevices() async {
-    final response = await _dio.get('/devices');
-    final raw = _unwrapDevicePayload(response.data);
-    final List<dynamic> devicesJson;
-    if (raw is Map<String, dynamic>) {
-      devicesJson =
-          (raw['devices'] ?? raw['data'] ?? raw['items']) as List? ?? [];
-    } else if (raw is List) {
-      devicesJson = raw;
-    } else {
-      devicesJson = [];
+    try {
+      final response = await _dio.get('/devices');
+      final raw = _unwrapDevicePayload(response.data);
+      final List<dynamic> devicesJson;
+      if (raw is Map<String, dynamic>) {
+        devicesJson =
+            (raw['devices'] ?? raw['data'] ?? raw['items']) as List? ?? [];
+      } else if (raw is List) {
+        devicesJson = raw;
+      } else {
+        devicesJson = [];
+      }
+      return devicesJson
+          .map(_deviceMapFromPayload)
+          .map(Device.fromJson)
+          .toList();
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
     }
-    return devicesJson.map(_deviceMapFromPayload).map(Device.fromJson).toList();
   }
 
   /// Trust a device

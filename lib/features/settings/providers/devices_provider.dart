@@ -1,10 +1,13 @@
-import 'package:usdc_wallet/features/settings/models/devices_state.dart';
 import 'dart:async';
 import 'dart:io';
+
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/device.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/settings/models/devices_state.dart';
 import 'package:usdc_wallet/features/settings/repositories/devices_repository.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Registered devices provider — wired to GET /devices.
 final devicesProvider = FutureProvider<List<Device>>((ref) async {
@@ -12,7 +15,15 @@ final devicesProvider = FutureProvider<List<Device>>((ref) async {
   final link = ref.keepAlive();
   final timer = Timer(const Duration(minutes: 5), () => link.close());
   ref.onDispose(() => timer.cancel());
-  return repository.getDevices();
+  try {
+    return await repository.getDevices();
+  } on ApiException catch (e) {
+    if (e.statusCode == 401) {
+      ref.read(authProvider.notifier).setLocked();
+      return const <Device>[];
+    }
+    rethrow;
+  }
 });
 
 /// Local device identifier (vendor ID on iOS, android.id on Android).
@@ -94,7 +105,19 @@ final devicesStateProvider = Provider<DevicesState>((ref) {
   final async = ref.watch(devicesProvider);
   return DevicesState(
     isLoading: async.isLoading,
-    error: async.error?.toString(),
+    error: _friendlyDeviceError(async.error),
     devices: async.value ?? [],
   );
 });
+
+String? _friendlyDeviceError(Object? error) {
+  if (error == null) return null;
+  if (error is ApiException) {
+    if (error.statusCode == 401) return null;
+    if (error.statusCode == 403) {
+      return 'You do not have permission to manage devices right now.';
+    }
+    return error.message;
+  }
+  return 'Unable to load devices. Please try again.';
+}
