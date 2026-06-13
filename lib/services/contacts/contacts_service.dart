@@ -144,6 +144,7 @@ class ContactsService {
   static const String _contactsKey = 'app_contacts';
   static const String _recentKey = 'recent_contacts';
   static const int _maxContactSyncBatchSize = 500;
+  bool _contactsGrantedByFlutterPlugin = false;
 
   ContactsService(this._storage);
 
@@ -154,10 +155,19 @@ class ContactsService {
   /// iOS Contacts system prompt.
   Future<List<Contact>> getDeviceContacts() async {
     final status = await Permission.contacts.status;
-    if (!_canReadContacts(status)) {
+    if (!_canReadContacts(status) && !_contactsGrantedByFlutterPlugin) {
       return [];
     }
-    return FlutterContacts.getContacts(withProperties: true, withPhoto: false);
+
+    try {
+      return await FlutterContacts.getContacts(
+        withProperties: true,
+        withPhoto: false,
+      );
+    } on Object {
+      _contactsGrantedByFlutterPlugin = false;
+      return [];
+    }
   }
 
   /// Get contacts as ContactInfo (simplified for picker)
@@ -251,14 +261,21 @@ class ContactsService {
   Future<bool> requestContactsPermission() async {
     final current = await Permission.contacts.status;
     if (_canReadContacts(current)) {
+      _contactsGrantedByFlutterPlugin = true;
       return true;
     }
     if (current.isPermanentlyDenied) {
       return false;
     }
 
+    if (await FlutterContacts.requestPermission(readonly: true)) {
+      _contactsGrantedByFlutterPlugin = true;
+      return true;
+    }
+
     final requested = await Permission.contacts.request();
     if (_canReadContacts(requested)) {
+      _contactsGrantedByFlutterPlugin = true;
       return true;
     }
     if (requested.isPermanentlyDenied || requested.isRestricted) {
@@ -269,16 +286,24 @@ class ContactsService {
     // permission_handler observes the new state. Keep this as a narrow fallback
     // for the actual contact reader package.
     if (await FlutterContacts.requestPermission(readonly: true)) {
+      _contactsGrantedByFlutterPlugin = true;
       return true;
     }
 
-    return _canReadContacts(await Permission.contacts.status);
+    final refreshed = _canReadContacts(await Permission.contacts.status);
+    _contactsGrantedByFlutterPlugin = refreshed;
+    return refreshed;
   }
 
   /// Check if contacts permission is granted
   Future<bool> hasContactsPermission() async {
+    if (_contactsGrantedByFlutterPlugin) {
+      return true;
+    }
     final status = await Permission.contacts.status;
-    return _canReadContacts(status);
+    final granted = _canReadContacts(status);
+    _contactsGrantedByFlutterPlugin = granted;
+    return granted;
   }
 
   Future<bool> contactsPermissionRequiresSettings() async {

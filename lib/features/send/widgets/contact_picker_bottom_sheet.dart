@@ -70,31 +70,18 @@ class _ContactPickerBottomSheetState
 
   Future<List<SyncedContact>> _loadDeviceContacts() async {
     final contactsService = ref.read(contactsServiceProvider);
-    var status = await Permission.contacts.status;
-    if (!status.isGranted && !status.isLimited) {
+    var hasPermission = await contactsService.hasContactsPermission();
+    if (!hasPermission) {
+      final status = await Permission.contacts.status;
       if (!status.isPermanentlyDenied && !status.isRestricted) {
         final granted = await contactsService.requestContactsPermission();
         if (granted) {
-          status = await Permission.contacts.status;
+          hasPermission = true;
         }
       }
 
-      if (status.isGranted || status.isLimited) {
-        final deviceContacts = await contactsService.getDeviceContacts();
-        var contacts = contactsService.deviceContactsToSyncedContacts(
-          deviceContacts,
-          defaultCountryPrefix: _defaultCountryPrefix(),
-        );
-        try {
-          contacts = await contactsService.getKoridoContacts(
-            ref.read(dioProvider),
-            contacts,
-          );
-        } on Object {
-          // Keep the picker usable even if the API cannot return account matches.
-        }
-        _sortContacts(contacts);
-        return contacts;
+      if (hasPermission) {
+        return _readSyncedDeviceContacts(contactsService);
       }
 
       if (mounted) {
@@ -107,6 +94,12 @@ class _ContactPickerBottomSheetState
       return const [];
     }
 
+    return _readSyncedDeviceContacts(contactsService);
+  }
+
+  Future<List<SyncedContact>> _readSyncedDeviceContacts(
+    ContactsService contactsService,
+  ) async {
     final deviceContacts = await contactsService.getDeviceContacts();
     var contacts = contactsService.deviceContactsToSyncedContacts(
       deviceContacts,

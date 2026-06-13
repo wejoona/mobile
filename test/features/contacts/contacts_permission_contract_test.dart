@@ -10,6 +10,9 @@ void main() {
     final pickerSource = File(
       'lib/features/send/widgets/contact_picker_bottom_sheet.dart',
     ).readAsStringSync();
+    final serviceSource = File(
+      'lib/services/contacts/contacts_service.dart',
+    ).readAsStringSync();
     final recipientSource = File(
       'lib/features/send/views/recipient_screen.dart',
     ).readAsStringSync();
@@ -43,6 +46,10 @@ void main() {
       pickerPermissionCard,
       isNot(contains('variant: AppButtonVariant.secondary')),
     );
+    expect(serviceSource, contains('_contactsGrantedByFlutterPlugin'));
+    expect(serviceSource, contains('FlutterContacts.requestPermission'));
+    expect(pickerSource, contains('contactsService.hasContactsPermission'));
+    expect(pickerSource, contains('_readSyncedDeviceContacts'));
 
     final recipientContactBody = _methodBody(
       recipientSource,
