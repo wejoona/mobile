@@ -59,7 +59,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
     _FaqItem(
       question: 'Mon argent est-il en sécurité ?',
       answer:
-          'Oui ! Korido utilise un chiffrement de niveau bancaire et vos USDC sont garantis 1:1 par des réserves en USD. Nous offrons aussi la connexion biométrique et la 2FA pour plus de sécurité.',
+          'Oui. Korido utilise un chiffrement de niveau bancaire et vos USDC sont garantis 1:1 par des réserves en USD. Votre portefeuille est protégé par PIN, biométrie et vérification d’appareil. La 2FA par application d’authentification arrive bientôt.',
       category: 'Sécurité',
     ),
     _FaqItem(
