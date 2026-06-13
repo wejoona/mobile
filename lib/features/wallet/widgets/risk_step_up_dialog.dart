@@ -85,10 +85,7 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
     }
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      decoration: _sheetDecoration(context),
       padding: const EdgeInsets.all(AppSpacing.xxl),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -109,19 +106,17 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
           const SizedBox(height: AppSpacing.xxl),
 
           // Title and description
-          Text(
+          AppText(
             _getTitle(),
-            style: AppTypography.titleMedium.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            variant: AppTextVariant.titleMedium,
+            color: context.colors.textPrimary,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.md),
-          Text(
+          AppText(
             widget.decision.description,
-            style: AppTypography.bodyLarge.copyWith(
-              color: context.colors.textSecondary,
-            ),
+            variant: AppTextVariant.bodyMedium,
+            color: context.colors.textSecondary,
             textAlign: TextAlign.center,
           ),
 
@@ -145,9 +140,10 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
                   Icon(Icons.error_outline, color: context.colors.error),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
-                    child: Text(
+                    child: AppText(
                       _error!,
-                      style: TextStyle(color: context.colors.errorText),
+                      variant: AppTextVariant.bodySmall,
+                      color: context.colors.errorText,
                     ),
                   ),
                 ],
@@ -309,7 +305,11 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
         const SizedBox(height: AppSpacing.md),
         TextButton(
           onPressed: _isProcessing ? null : widget.onCancel,
-          child: Text(AppLocalizations.of(context)!.action_cancel),
+          child: AppText(
+            AppLocalizations.of(context)!.action_cancel,
+            variant: AppTextVariant.labelMedium,
+            color: context.colors.textSecondary,
+          ),
         ),
       ],
     );
@@ -386,11 +386,18 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
   }
 
   Future<void> _sendOtp() async {
+    final challengeToken = widget.decision.challengeToken;
+    if (challengeToken == null || challengeToken.isEmpty) {
+      if (mounted)
+        setState(() => _error = 'Verification challenge is missing.');
+      return;
+    }
+
     try {
       final dio = ref.read(dioProvider);
       await dio.post(
         '/step-up/send-otp',
-        data: {'challengeToken': widget.decision.challengeToken},
+        data: {'challengeToken': challengeToken},
       );
       _startResendCountdown();
     } catch (e) {
@@ -414,6 +421,12 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
   }
 
   Future<void> _verifyOtp(String code) async {
+    final challengeToken = widget.decision.challengeToken;
+    if (challengeToken == null || challengeToken.isEmpty) {
+      setState(() => _error = 'Verification challenge is missing.');
+      return;
+    }
+
     setState(() {
       _isProcessing = true;
       _error = null;
@@ -422,7 +435,7 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
       final dio = ref.read(dioProvider);
       final response = await dio.post(
         '/step-up/verify-otp',
-        data: {'challengeToken': widget.decision.challengeToken, 'code': code},
+        data: {'challengeToken': challengeToken, 'code': code},
       );
       final body = response.data is Map
           ? Map<String, dynamic>.from(response.data as Map)
@@ -445,10 +458,7 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
 
   Widget _buildOtpView() {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      decoration: _sheetDecoration(context),
       padding: const EdgeInsets.all(AppSpacing.xxl),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -464,16 +474,17 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
           const SizedBox(height: AppSpacing.xxl),
           Icon(Icons.sms, size: 48, color: context.colors.warning),
           const SizedBox(height: AppSpacing.lg),
-          Text(
+          AppText(
             AppLocalizations.of(context)!.bankLinking_enterCode,
-            style: AppTypography.titleMedium.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            variant: AppTextVariant.titleMedium,
+            color: context.colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.sm),
-          Text(
+          AppText(
             'A 6-digit code has been sent to your phone',
-            style: TextStyle(color: context.colors.textSecondary),
+            variant: AppTextVariant.bodySmall,
+            color: context.colors.textSecondary,
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.xxl),
 
@@ -528,7 +539,11 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
 
           if (_error != null) ...[
             const SizedBox(height: AppSpacing.lg),
-            Text(_error!, style: TextStyle(color: context.colors.error)),
+            AppText(
+              _error!,
+              variant: AppTextVariant.bodySmall,
+              color: context.colors.error,
+            ),
           ],
 
           if (_isProcessing) ...[
@@ -541,16 +556,22 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
           // Resend button
           TextButton(
             onPressed: _resendCountdown > 0 ? null : _sendOtp,
-            child: Text(
+            child: AppText(
               _resendCountdown > 0
                   ? 'Resend code in ${_resendCountdown}s'
                   : 'Resend code',
+              variant: AppTextVariant.labelMedium,
+              color: context.colors.gold,
             ),
           ),
 
           TextButton(
             onPressed: widget.onCancel,
-            child: Text(AppLocalizations.of(context)!.action_cancel),
+            child: AppText(
+              AppLocalizations.of(context)!.action_cancel,
+              variant: AppTextVariant.labelMedium,
+              color: context.colors.textSecondary,
+            ),
           ),
         ],
       ),
@@ -560,10 +581,7 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
   Widget _buildLivenessView() {
     return Container(
       height: MediaQuery.of(context).size.height * 0.9,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      decoration: _sheetDecoration(context),
       child: LivenessCheckWidget(
         onComplete: _onLivenessComplete,
         onCancel: () {
@@ -608,6 +626,14 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
     }
 
     setState(() => _isProcessing = false);
+  }
+
+  BoxDecoration _sheetDecoration(BuildContext context) {
+    return BoxDecoration(
+      color: context.colors.surface,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      border: Border(top: BorderSide(color: context.colors.border)),
+    );
   }
 }
 

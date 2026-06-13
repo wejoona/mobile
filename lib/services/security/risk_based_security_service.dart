@@ -135,9 +135,9 @@ class RiskBasedSecurityService {
     required Dio dio,
     required BiometricService biometricService,
     required LivenessService livenessService,
-  })  : _dio = dio,
-        _biometricService = biometricService,
-        _livenessService = livenessService;
+  }) : _dio = dio,
+       _biometricService = biometricService,
+       _livenessService = livenessService;
 
   /// Evaluate step-up for a transaction
   /// Returns the risk decision with flow color and required verification
@@ -150,14 +150,17 @@ class RiskBasedSecurityService {
     bool isFirstTransactionToRecipient = false,
   }) async {
     try {
-      final response = await _dio.post('/step-up/transaction', data: {
-        'type': type,
-        'amount': amount,
-        'currency': currency,
-        'recipientId': recipientId,
-        'recipientType': recipientType,
-        'isFirstTransactionToRecipient': isFirstTransactionToRecipient,
-      });
+      final response = await _dio.post(
+        '/step-up/transaction',
+        data: {
+          'type': type,
+          'amount': amount,
+          'currency': currency,
+          'recipientId': recipientId,
+          'recipientType': recipientType,
+          'isFirstTransactionToRecipient': isFirstTransactionToRecipient,
+        },
+      );
 
       // ignore: avoid_dynamic_calls
       if (response.data['success'] == true) {
@@ -167,7 +170,9 @@ class RiskBasedSecurityService {
 
       throw Exception('Failed to evaluate transaction risk');
     } catch (e) {
-      AppLogger('Risk evaluation failed, defaulting to biometric').error('Risk evaluation failed, defaulting to biometric', e);
+      AppLogger(
+        'Risk evaluation failed, defaulting to biometric',
+      ).error('Risk evaluation failed, defaulting to biometric', e);
       // Fallback to yellow flow on error
       return StepUpDecision(
         flow: RiskFlow.yellow,
@@ -188,10 +193,10 @@ class RiskBasedSecurityService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      final response = await _dio.post('/step-up/operation', data: {
-        'operation': operation,
-        'metadata': metadata,
-      });
+      final response = await _dio.post(
+        '/step-up/operation',
+        data: {'operation': operation, 'metadata': metadata},
+      );
 
       // ignore: avoid_dynamic_calls
       if (response.data['success'] == true) {
@@ -201,7 +206,9 @@ class RiskBasedSecurityService {
 
       throw Exception('Failed to evaluate operation risk');
     } catch (e) {
-      AppLogger('Risk evaluation failed for operation').error('Risk evaluation failed for operation', e);
+      AppLogger(
+        'Risk evaluation failed for operation',
+      ).error('Risk evaluation failed for operation', e);
       // Default requirements for known operations
       return _getDefaultOperationDecision(operation);
     }
@@ -219,13 +226,17 @@ class RiskBasedSecurityService {
         return true;
 
       case StepUpType.biometric:
-        return await _executeBiometric(decision.reason ?? 'Verify your identity');
+        return await _executeBiometric(
+          decision.reason ?? 'Verify your identity',
+        );
 
       case StepUpType.liveness:
         return await _executeLiveness(decision.challengeToken);
 
       case StepUpType.biometricAndLiveness:
-        final biometricOk = await _executeBiometric('First, verify with biometric');
+        final biometricOk = await _executeBiometric(
+          'First, verify with biometric',
+        );
         if (!biometricOk) return false;
         return await _executeLiveness(decision.challengeToken);
 
@@ -245,11 +256,12 @@ class RiskBasedSecurityService {
   Future<bool> _executeBiometric(String reason) async {
     final isEnabled = await _biometricService.isBiometricEnabled();
     if (!isEnabled) {
-      // Biometric not enabled, allow (user preference)
-      return true;
+      return false;
     }
 
-    final result = await _biometricService.authenticate(localizedReason: reason);
+    final result = await _biometricService.authenticate(
+      localizedReason: reason,
+    );
     return result.success;
   }
 
@@ -260,7 +272,9 @@ class RiskBasedSecurityService {
 
       // Note: In production, UI should show LivenessCheckWidget
       // and handle the actual liveness flow
-      AppLogger('Debug').debug('Liveness session started: ${session.sessionToken}');
+      AppLogger(
+        'Debug',
+      ).debug('Liveness session started: ${session.sessionToken}');
 
       // Return false to indicate UI should handle liveness
       // The calling code should show the liveness widget
@@ -278,16 +292,26 @@ class RiskBasedSecurityService {
     bool? biometricVerified,
   }) async {
     try {
-      final response = await _dio.post('/step-up/validate', data: {
-        'challengeToken': challengeToken,
-        'livenessSessionId': livenessSessionId,
-        'biometricVerified': biometricVerified,
-      });
+      final response = await _dio.post(
+        '/step-up/validate',
+        data: {
+          'challengeToken': challengeToken,
+          'livenessSessionId': livenessSessionId,
+          'biometricVerified': biometricVerified,
+        },
+      );
 
-      // ignore: avoid_dynamic_calls
-      return response.data['success'] == true && response.data['data']['valid'] == true;
+      final body = response.data is Map
+          ? Map<String, dynamic>.from(response.data as Map)
+          : const <String, dynamic>{};
+      final data = body['data'] is Map
+          ? Map<String, dynamic>.from(body['data'] as Map)
+          : const <String, dynamic>{};
+      return body['success'] == true && data['valid'] == true;
     } catch (e) {
-      AppLogger('Step-up validation failed').error('Step-up validation failed', e);
+      AppLogger(
+        'Step-up validation failed',
+      ).error('Step-up validation failed', e);
       return false;
     }
   }
@@ -304,16 +328,26 @@ class RiskBasedSecurityService {
     };
 
     final stepUpType = defaults[operation] ?? StepUpType.biometric;
-    final flow = stepUpType == StepUpType.liveness || stepUpType == StepUpType.biometricAndLiveness
+    final flow =
+        stepUpType == StepUpType.liveness ||
+            stepUpType == StepUpType.biometricAndLiveness
         ? RiskFlow.red
         : stepUpType == StepUpType.biometric
-            ? RiskFlow.yellow
-            : RiskFlow.green;
+        ? RiskFlow.yellow
+        : RiskFlow.green;
 
     return StepUpDecision(
       flow: flow,
-      riskScore: flow == RiskFlow.green ? 10 : flow == RiskFlow.yellow ? 45 : 75,
-      riskLevel: flow == RiskFlow.green ? 'low' : flow == RiskFlow.yellow ? 'medium' : 'high',
+      riskScore: flow == RiskFlow.green
+          ? 10
+          : flow == RiskFlow.yellow
+          ? 45
+          : 75,
+      riskLevel: flow == RiskFlow.green
+          ? 'low'
+          : flow == RiskFlow.yellow
+          ? 'medium'
+          : 'high',
       stepUpRequired: stepUpType != StepUpType.none,
       stepUpType: stepUpType,
       localizedReason: 'Verification required for $operation',
@@ -340,7 +374,9 @@ class RiskBasedSecurityService {
       isFirstTransactionToRecipient: isFirstTransaction,
     );
 
-    AppLogger('Debug').debug('${decision.flowEmoji} Transfer \$$amount: ${decision.stepUpType.name} (score: ${decision.riskScore})');
+    AppLogger('Debug').debug(
+      '${decision.flowEmoji} Transfer \$$amount: ${decision.stepUpType.name} (score: ${decision.riskScore})',
+    );
 
     if (!decision.stepUpRequired) {
       return (approved: true, decision: decision);
@@ -373,7 +409,9 @@ class RiskBasedSecurityService {
       isFirstTransactionToRecipient: isFirstWithdrawal,
     );
 
-    AppLogger('Debug').debug('${decision.flowEmoji} Withdrawal \$$amount: ${decision.stepUpType.name} (score: ${decision.riskScore})');
+    AppLogger('Debug').debug(
+      '${decision.flowEmoji} Withdrawal \$$amount: ${decision.stepUpType.name} (score: ${decision.riskScore})',
+    );
 
     if (!decision.stepUpRequired) {
       return (approved: true, decision: decision);
@@ -417,10 +455,10 @@ class RiskBasedSecurityService {
     String blockchain = 'polygon',
   }) async {
     try {
-      final response = await _dio.post('/risk/screen-address', data: {
-        'address': address,
-        'blockchain': blockchain,
-      });
+      final response = await _dio.post(
+        '/risk/screen-address',
+        data: {'address': address, 'blockchain': blockchain},
+      );
 
       // ignore: avoid_dynamic_calls
       if (response.data['success'] == true) {
@@ -436,7 +474,9 @@ class RiskBasedSecurityService {
         provider: 'error',
       );
     } catch (e) {
-      AppLogger('Address screening failed').error('Address screening failed', e);
+      AppLogger(
+        'Address screening failed',
+      ).error('Address screening failed', e);
       // On network error, return unknown - let backend block at transfer time
       return AddressScreeningResult(
         address: address,
@@ -455,7 +495,8 @@ class RiskBasedSecurityService {
     if (result.decision == 'DENIED') {
       return (
         safe: false,
-        warning: 'This address has been flagged by our compliance system. '
+        warning:
+            'This address has been flagged by our compliance system. '
             'Transfers to this address are not allowed.',
       );
     }
@@ -469,14 +510,15 @@ class RiskBasedSecurityService {
 
     // Check for warning signals
     if (result.riskSignals.isNotEmpty) {
-      final warnings = result.riskSignals.where((s) =>
-        s.contains('HIGH_RISK') || s.contains('PEP')
-      ).toList();
+      final warnings = result.riskSignals
+          .where((s) => s.contains('HIGH_RISK') || s.contains('PEP'))
+          .toList();
 
       if (warnings.isNotEmpty) {
         return (
           safe: true,
-          warning: 'This address has elevated risk signals. '
+          warning:
+              'This address has elevated risk signals. '
               'Additional verification may be required.',
         );
       }
@@ -540,7 +582,9 @@ class ManualReviewRequiredException implements Exception {
 }
 
 /// Provider for RiskBasedSecurityService
-final riskBasedSecurityServiceProvider = Provider<RiskBasedSecurityService>((ref) {
+final riskBasedSecurityServiceProvider = Provider<RiskBasedSecurityService>((
+  ref,
+) {
   return RiskBasedSecurityService(
     dio: ref.watch(dioProvider),
     biometricService: ref.watch(biometricServiceProvider),
