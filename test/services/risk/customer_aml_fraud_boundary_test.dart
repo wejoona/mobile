@@ -13,9 +13,13 @@ void main() {
 
       final offenders = <String>{};
       for (final root in roots) {
-        if (!root.existsSync()) continue;
+        if (!root.existsSync()) {
+          continue;
+        }
         for (final entity in root.listSync(recursive: true)) {
-          if (entity is! File || !entity.path.endsWith('.dart')) continue;
+          if (entity is! File || !entity.path.endsWith('.dart')) {
+            continue;
+          }
 
           final content = entity.readAsStringSync();
           if (content.contains("'/aml/") ||
@@ -41,16 +45,53 @@ void main() {
       );
     });
 
-    test('active customer risk service remains tied to verified step-up routes', () {
-      final riskService = File(
-        'lib/services/security/risk_based_security_service.dart',
-      ).readAsStringSync();
+    test(
+      'active customer risk service remains tied to verified step-up routes',
+      () {
+        final riskService = File(
+          'lib/services/security/risk_based_security_service.dart',
+        ).readAsStringSync();
 
-      expect(riskService, contains("'/step-up/transaction'"));
-      expect(riskService, contains("'/step-up/operation'"));
-      expect(riskService, contains("'/step-up/validate'"));
-      expect(riskService, isNot(contains("'/aml/")));
-      expect(riskService, isNot(contains("'/fraud/")));
+        expect(riskService, contains("'/step-up/transaction'"));
+        expect(riskService, contains("'/step-up/operation'"));
+        expect(riskService, contains("'/step-up/validate'"));
+        expect(riskService, isNot(contains("'/aml/")));
+        expect(riskService, isNot(contains("'/fraud/")));
+      },
+    );
+
+    test('customer security code does not redirect to a dead step-up page', () {
+      final roots = [
+        Directory('lib/core'),
+        Directory('lib/features'),
+        Directory('lib/router'),
+        Directory('lib/services/security'),
+      ];
+
+      final offenders = <String>{};
+      for (final root in roots) {
+        if (!root.existsSync()) {
+          continue;
+        }
+        for (final entity in root.listSync(recursive: true)) {
+          if (entity is! File || !entity.path.endsWith('.dart')) {
+            continue;
+          }
+
+          final content = entity.readAsStringSync();
+          if (content.contains('/step-up-auth')) {
+            offenders.add(entity.path);
+          }
+        }
+      }
+
+      expect(
+        offenders.toList()..sort(),
+        isEmpty,
+        reason:
+            'Risk step-up must use the implemented backend-backed /step-up/* '
+            'dialog flow, not a missing /step-up-auth route.',
+      );
     });
 
     test('address pre-screening helper is not wired into customer screens', () {
@@ -63,9 +104,13 @@ void main() {
 
       final offenders = <String>{};
       for (final root in roots) {
-        if (!root.existsSync()) continue;
+        if (!root.existsSync()) {
+          continue;
+        }
         for (final entity in root.listSync(recursive: true)) {
-          if (entity is! File || !entity.path.endsWith('.dart')) continue;
+          if (entity is! File || !entity.path.endsWith('.dart')) {
+            continue;
+          }
 
           final content = entity.readAsStringSync();
           if (content.contains('screenAddress(') ||
