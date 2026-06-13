@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/environment_config.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
+import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
+import 'package:usdc_wallet/features/auth/widgets/otp_progress_cue.dart';
 import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.dart';
 import 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// OTP verification screen
 class OtpVerificationView extends ConsumerStatefulWidget {
@@ -125,19 +126,11 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
                     ],
                     if (isBusy) ...[
                       const SizedBox(height: AppSpacing.xxxl),
-                      Center(
-                        child: Column(
-                          children: [
-                            CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation(colors.gold),
-                            ),
-                            const SizedBox(height: AppSpacing.md),
-                            AppText(
-                              l10n.onboarding_otp_verifying,
-                              variant: AppTextVariant.bodyMedium,
-                              color: colors.textSecondary,
-                            ),
-                          ],
+                      OtpProgressCue(
+                        label: _localizedOtpCopy(
+                          context,
+                          en: 'Code accepted. Creating your secure wallet...',
+                          fr: 'Code accepté. Création de votre wallet sécurisé...',
                         ),
                       ),
                     ],
@@ -180,7 +173,7 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
   }
 
   Future<void> _holdOtpCue(DateTime submittedAt) async {
-    const minimumCueDuration = Duration(milliseconds: 520);
+    const minimumCueDuration = Duration(milliseconds: 1200);
     final elapsed = DateTime.now().difference(submittedAt);
     if (elapsed < minimumCueDuration) {
       await Future<void>.delayed(minimumCueDuration - elapsed);
@@ -216,5 +209,13 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
     final local = phone.replaceFirst(dialCode, '');
     if (local.length < 4) return local;
     return '${local.substring(0, 2)} XX XX XX XX';
+  }
+
+  String _localizedOtpCopy(
+    BuildContext context, {
+    required String en,
+    required String fr,
+  }) {
+    return Localizations.localeOf(context).languageCode == 'fr' ? fr : en;
   }
 }
