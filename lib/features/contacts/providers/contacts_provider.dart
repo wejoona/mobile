@@ -101,6 +101,7 @@ class ContactsState {
   final List<SyncedContact> contacts;
   final bool isLoading;
   final bool permissionRequired;
+  final bool permissionRequiresSettings;
   final String? error;
   final DateTime? lastSyncTime;
   final ContactSyncResult? lastSyncResult;
@@ -109,6 +110,7 @@ class ContactsState {
     this.contacts = const [],
     this.isLoading = false,
     this.permissionRequired = false,
+    this.permissionRequiresSettings = false,
     this.error,
     this.lastSyncTime,
     this.lastSyncResult,
@@ -129,6 +131,7 @@ class ContactsState {
     List<SyncedContact>? contacts,
     bool? isLoading,
     bool? permissionRequired,
+    bool? permissionRequiresSettings,
     String? error,
     bool clearError = false,
     DateTime? lastSyncTime,
@@ -137,6 +140,8 @@ class ContactsState {
     contacts: contacts ?? this.contacts,
     isLoading: isLoading ?? this.isLoading,
     permissionRequired: permissionRequired ?? this.permissionRequired,
+    permissionRequiresSettings:
+        permissionRequiresSettings ?? this.permissionRequiresSettings,
     error: clearError ? null : error ?? this.error,
     lastSyncTime: lastSyncTime ?? this.lastSyncTime,
     lastSyncResult: lastSyncResult ?? this.lastSyncResult,
@@ -158,10 +163,13 @@ class ContactsNotifier extends Notifier<ContactsState> {
 
       if (!MockConfig.useMocks &&
           !await contactsService.hasContactsPermission()) {
+        final requiresSettings = await contactsService
+            .contactsPermissionRequiresSettings();
         state = state.copyWith(
           contacts: const [],
           isLoading: false,
           permissionRequired: true,
+          permissionRequiresSettings: requiresSettings,
           clearError: true,
         );
         return;
@@ -178,6 +186,7 @@ class ContactsNotifier extends Notifier<ContactsState> {
         contacts: items,
         isLoading: false,
         permissionRequired: false,
+        permissionRequiresSettings: false,
         clearError: true,
         lastSyncTime: DateTime.now(),
         lastSyncResult: ContactSyncResult(joonaPayUsersFound: joonaPayCount),
@@ -250,6 +259,7 @@ class ContactsNotifier extends Notifier<ContactsState> {
     state = state.copyWith(
       isLoading: true,
       permissionRequired: false,
+      permissionRequiresSettings: false,
       clearError: true,
     );
 
@@ -258,9 +268,12 @@ class ContactsNotifier extends Notifier<ContactsState> {
     if (granted) {
       await syncContacts();
     } else {
+      final requiresSettings = await contactsService
+          .contactsPermissionRequiresSettings();
       state = state.copyWith(
         isLoading: false,
         permissionRequired: true,
+        permissionRequiresSettings: requiresSettings,
         error: 'contacts_permission_required',
       );
     }

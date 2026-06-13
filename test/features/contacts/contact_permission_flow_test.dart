@@ -8,6 +8,9 @@ void main() {
       final source = File(
         'lib/features/contacts/views/contacts_list_screen.dart',
       ).readAsStringSync();
+      final providerSource = File(
+        'lib/features/contacts/providers/contacts_provider.dart',
+      ).readAsStringSync();
       final loadBody = RegExp(
         r'Future<void> _loadContacts\(\) async \{([\s\S]*?)\n  Future<void> _manualSync',
       ).firstMatch(source)!.group(1)!;
@@ -21,6 +24,10 @@ void main() {
       );
       expect(loadBody, isNot(contains('requestPermission()')));
       expect(manualSyncBody, contains('requestPermission()'));
+      expect(providerSource, contains('permissionRequiresSettings'));
+      expect(providerSource, contains('contactsPermissionRequiresSettings()'));
+      expect(source, contains('requiresSettings'));
+      expect(source, contains('l10n.action_open_settings'));
     });
 
     test('contacts screen search uses backend Korido lookup', () {

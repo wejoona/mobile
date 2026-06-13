@@ -192,7 +192,10 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                   if (state.permissionRequired)
                     Padding(
                       padding: const EdgeInsets.all(AppSpacing.md),
-                      child: _ContactsPermissionCard(onAction: _manualSync),
+                      child: _ContactsPermissionCard(
+                        requiresSettings: state.permissionRequiresSettings,
+                        onAction: _manualSync,
+                      ),
                     ),
 
                   if (!state.permissionRequired)
@@ -297,6 +300,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                             showAction:
                                 state.permissionRequired ||
                                 _searchQuery.isEmpty,
+                            requiresSettings: state.permissionRequiresSettings,
                             onAction: _manualSync,
                           ),
                       ],
@@ -483,8 +487,12 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
 }
 
 class _ContactsPermissionCard extends StatelessWidget {
-  const _ContactsPermissionCard({required this.onAction});
+  const _ContactsPermissionCard({
+    required this.requiresSettings,
+    required this.onAction,
+  });
 
+  final bool requiresSettings;
   final Future<void> Function() onAction;
 
   @override
@@ -527,8 +535,12 @@ class _ContactsPermissionCard extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 AppButton(
-                  label: l10n.contacts_permission_allow,
-                  icon: Icons.person_search_rounded,
+                  label: requiresSettings
+                      ? l10n.action_open_settings
+                      : l10n.contacts_permission_allow,
+                  icon: requiresSettings
+                      ? Icons.settings_outlined
+                      : Icons.person_search_rounded,
                   isFullWidth: true,
                   onPressed: () => unawaited(onAction()),
                 ),
@@ -545,11 +557,13 @@ class _ContactsEmptyState extends StatelessWidget {
   const _ContactsEmptyState({
     required this.title,
     required this.showAction,
+    required this.requiresSettings,
     required this.onAction,
   });
 
   final String title;
   final bool showAction;
+  final bool requiresSettings;
   final Future<void> Function() onAction;
 
   @override
@@ -599,8 +613,12 @@ class _ContactsEmptyState extends StatelessWidget {
             if (showAction) ...[
               const SizedBox(height: AppSpacing.xl),
               AppButton(
-                label: l10n.contacts_permission_allow,
-                icon: Icons.person_search_rounded,
+                label: requiresSettings
+                    ? l10n.action_open_settings
+                    : l10n.contacts_permission_allow,
+                icon: requiresSettings
+                    ? Icons.settings_outlined
+                    : Icons.person_search_rounded,
                 isFullWidth: true,
                 onPressed: () {
                   unawaited(onAction());
