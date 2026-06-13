@@ -46,6 +46,10 @@ class UserApi {
   /// GET /user/email-status
   Future<Response> getEmailStatus() => _dio.get('/user/email-status');
 
+  /// POST /user/resend-email-verification
+  Future<Response> resendEmailVerification() =>
+      _dio.post('/user/resend-email-verification');
+
   // ── Locale ──
 
   /// PUT /user/locale

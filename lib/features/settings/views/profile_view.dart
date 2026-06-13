@@ -76,7 +76,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               AppText(
-                                'Vérifiez votre email',
+                                l10n.emailVerification_title,
                                 variant: AppTextVariant.labelMedium,
                                 color: colors.textPrimary,
                               ),
