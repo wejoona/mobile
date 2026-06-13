@@ -13,6 +13,7 @@ import Vision
     var biometricsChannel: FlutterMethodChannel?
     var imageAnalysisChannel: FlutterMethodChannel?
     var appIsDarkMode: Bool? = nil
+    private var screenCaptureDetectionConfigured = false
 
     override func application(
         _ application: UIApplication,
@@ -218,6 +219,11 @@ import Vision
     // MARK: - Screen Capture Detection
 
     private func setupScreenCaptureDetection() {
+        guard !screenCaptureDetectionConfigured else {
+            return
+        }
+        screenCaptureDetectionConfigured = true
+
         NotificationCenter.default.addObserver(
             forName: UIApplication.userDidTakeScreenshotNotification,
             object: nil,
