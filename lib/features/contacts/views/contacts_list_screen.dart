@@ -33,7 +33,12 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   @override
   void initState() {
     super.initState();
-    unawaited(Future.microtask(_loadContacts));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      unawaited(_requestPermissionAndSync(showSettingsDialog: false));
+    });
   }
 
   @override
@@ -41,10 +46,6 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
     _lookupDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadContacts() async {
-    await ref.read(contactsProvider.notifier).syncContacts();
   }
 
   void _handleSearchChanged(String value) {

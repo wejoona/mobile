@@ -4,26 +4,37 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Contacts permission flow', () {
-    test('contacts screen open is passive, manual sync requests permission', () {
+    test('contacts screen open requests permission, manual sync can recover', () {
       final source = File(
         'lib/features/contacts/views/contacts_list_screen.dart',
       ).readAsStringSync();
       final providerSource = File(
         'lib/features/contacts/providers/contacts_provider.dart',
       ).readAsStringSync();
-      final loadBody = RegExp(
-        r'Future<void> _loadContacts\(\) async \{([\s\S]*?)\n  Future<void> _manualSync',
+      final initBody = RegExp(
+        r'void initState\(\) \{([\s\S]*?)\n  @override',
       ).firstMatch(source)!.group(1)!;
       final manualSyncBody = RegExp(
-        r'Future<void> _manualSync\(\) async \{([\s\S]*?)\n  @override',
+        r'Future<void> _manualSync\(\) async \{([\s\S]*?)\n  Future<void> _requestPermissionAndSync',
+      ).firstMatch(source)!.group(1)!;
+      final requestAndSyncBody = RegExp(
+        r'Future<void> _requestPermissionAndSync\(\{([\s\S]*?)\n  bool _shouldOpenContactsSettings',
       ).firstMatch(source)!.group(1)!;
 
       expect(
-        loadBody,
-        contains('ref.read(contactsProvider.notifier).syncContacts()'),
+        initBody,
+        contains('WidgetsBinding.instance.addPostFrameCallback'),
       );
-      expect(loadBody, isNot(contains('requestPermission()')));
-      expect(manualSyncBody, contains('requestPermission()'));
+      expect(
+        initBody,
+        contains('_requestPermissionAndSync(showSettingsDialog: false)'),
+      );
+      expect(
+        manualSyncBody,
+        contains('_requestPermissionAndSync(showSettingsDialog: true)'),
+      );
+      expect(requestAndSyncBody, contains('notifier.requestPermission()'));
+      expect(requestAndSyncBody, contains('_showContactsSettingsDialog'));
       expect(providerSource, contains('permissionRequiresSettings'));
       expect(providerSource, contains('contactsPermissionRequiresSettings()'));
       expect(source, contains('requiresSettings'));
