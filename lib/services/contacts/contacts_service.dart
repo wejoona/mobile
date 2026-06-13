@@ -281,6 +281,15 @@ class ContactsService {
     return _canReadContacts(status);
   }
 
+  Future<bool> contactsPermissionRequiresSettings() async {
+    final status = await Permission.contacts.status;
+    return status.isPermanentlyDenied || status.isRestricted;
+  }
+
+  Future<void> openContactsSettings() async {
+    await openAppSettings();
+  }
+
   bool _canReadContacts(PermissionStatus status) =>
       status.isGranted || status.isLimited;
 

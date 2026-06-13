@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Contacts permission flow', () {
-    test('contacts screen open requests OS permission before sync', () {
+    test('contacts screen open is passive, manual sync requests permission', () {
       final source = File(
         'lib/features/contacts/views/contacts_list_screen.dart',
       ).readAsStringSync();
@@ -17,8 +17,9 @@ void main() {
 
       expect(
         loadBody,
-        contains('_requestPermissionAndSync(showSettingsDialog: false)'),
+        contains('ref.read(contactsProvider.notifier).syncContacts()'),
       );
+      expect(loadBody, isNot(contains('requestPermission()')));
       expect(manualSyncBody, contains('requestPermission()'));
     });
 
