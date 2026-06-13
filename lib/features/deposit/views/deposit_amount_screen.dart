@@ -474,7 +474,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
     ExchangeRate? rate,
     TransactionLimits? transactionLimits,
   ) {
-    final policyMaxUsdc = transactionLimits?.singleTransactionLimit;
+    final policyMaxUsdc = transactionLimits?.effectiveMax;
     final apiMax = policyMaxUsdc != null && policyMaxUsdc > 0
         ? _isXOF
               ? rate?.convertBack(policyMaxUsdc)

@@ -91,7 +91,8 @@ class TierBenefits {
       limits: TierLimits.fromJson(json['limits'] as Map<String, dynamic>),
       features: (json['features'] as List<dynamic>).cast<String>(),
       requiresAddressProof: json['requiresAddressProof'] as bool? ?? false,
-      requiresVideoVerification: json['requiresVideoVerification'] as bool? ?? false,
+      requiresVideoVerification:
+          json['requiresVideoVerification'] as bool? ?? false,
       requiresSourceOfFunds: json['requiresSourceOfFunds'] as bool? ?? false,
     );
   }
@@ -99,12 +100,12 @@ class TierBenefits {
   static TierBenefits tier0() {
     return const TierBenefits(
       tier: KycTier.tier0,
-      name: 'Basic',
-      description: 'Limited access to core features',
+      name: 'Unverified',
+      description: 'Entry limits while verification is incomplete',
       limits: TierLimits(
-        dailyLimit: '0',
-        monthlyLimit: '0',
-        perTransactionLimit: '0',
+        dailyLimit: '50',
+        monthlyLimit: '200',
+        perTransactionLimit: '25',
       ),
       features: ['View balance', 'Receive funds'],
     );
@@ -116,9 +117,9 @@ class TierBenefits {
       name: 'Verified',
       description: 'Standard transaction limits',
       limits: TierLimits(
-        dailyLimit: '500000',
-        monthlyLimit: '2000000',
-        perTransactionLimit: '100000',
+        dailyLimit: '500',
+        monthlyLimit: '5000',
+        perTransactionLimit: '250',
       ),
       features: [
         'Send & receive funds',
@@ -135,9 +136,9 @@ class TierBenefits {
       name: 'Enhanced',
       description: 'Higher limits for regular users',
       limits: TierLimits(
-        dailyLimit: '2000000',
-        monthlyLimit: '10000000',
-        perTransactionLimit: '500000',
+        dailyLimit: '5000',
+        monthlyLimit: '50000',
+        perTransactionLimit: '2500',
       ),
       features: [
         'All Tier 1 features',
@@ -156,9 +157,9 @@ class TierBenefits {
       name: 'Premium',
       description: 'Maximum limits for power users',
       limits: TierLimits(
-        dailyLimit: '10000000',
-        monthlyLimit: '50000000',
-        perTransactionLimit: '2000000',
+        dailyLimit: '50000',
+        monthlyLimit: '500000',
+        perTransactionLimit: '25000',
       ),
       features: [
         'All Tier 2 features',
