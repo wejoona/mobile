@@ -8616,6 +8616,24 @@ abstract class AppLocalizations {
   /// **'Add extra protection'**
   String get security_twoFactorDisabledSubtitle;
 
+  /// 2FA coming soon subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Authenticator app 2FA is being prepared. Biometric login and transaction PIN protect this device today.'**
+  String get security_twoFactorComingSoonSubtitle;
+
+  /// 2FA availability notification action
+  ///
+  /// In en, this message translates to:
+  /// **'Notify me'**
+  String get security_twoFactorNotifyMe;
+
+  /// 2FA notify subscription success message
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll let you know when authenticator app 2FA is ready.'**
+  String get security_twoFactorNotifySuccess;
+
   /// Transaction security section header
   ///
   /// In en, this message translates to:

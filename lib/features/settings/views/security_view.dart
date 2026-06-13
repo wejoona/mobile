@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/services/biometric/biometric_service.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/settings/providers/notification_preferences_provider.dart';
 import 'package:usdc_wallet/features/settings/providers/sessions_provider.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/router/navigation_extensions.dart';
+import 'package:usdc_wallet/services/biometric/biometric_service.dart';
+import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
+import 'package:usdc_wallet/utils/context_extensions.dart';
 
 class SecurityView extends ConsumerStatefulWidget {
   const SecurityView({super.key});
@@ -18,6 +20,8 @@ class SecurityView extends ConsumerStatefulWidget {
 }
 
 class _SecurityViewState extends ConsumerState<SecurityView> {
+  bool _isSubscribingToTwoFactor = false;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -65,12 +69,15 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             const SizedBox(height: AppSpacing.sm),
             _buildBiometricOption(l10n, colors),
             const SizedBox(height: AppSpacing.sm),
-            _buildUnavailableOption(
+            _buildFeatureSubscriptionOption(
               colors: colors,
               icon: Icons.security,
               title: l10n.security_twoFactorAuth,
-              subtitle:
-                  'Coming soon. Biometric login and transaction PIN protect this device today.',
+              subtitle: l10n.security_twoFactorComingSoonSubtitle,
+              status: l10n.common_comingSoon,
+              actionLabel: l10n.security_twoFactorNotifyMe,
+              isLoading: _isSubscribingToTwoFactor,
+              onTap: () => _subscribeToTwoFactor(l10n),
             ),
 
             const SizedBox(height: AppSpacing.xxl),
@@ -436,11 +443,15 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
     );
   }
 
-  Widget _buildUnavailableOption({
+  Widget _buildFeatureSubscriptionOption({
     required ThemeColors colors,
     required IconData icon,
     required String title,
     required String subtitle,
+    required String status,
+    required String actionLabel,
+    required bool isLoading,
+    required VoidCallback onTap,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -451,6 +462,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
           horizontal: AppSpacing.lg,
           vertical: AppSpacing.md,
         ),
+        onTap: isLoading ? null : onTap,
         child: Row(
           children: [
             Container(
@@ -468,10 +480,32 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  AppText(
-                    title,
-                    variant: AppTextVariant.labelMedium,
-                    color: colors.textPrimary,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: AppText(
+                          title,
+                          variant: AppTextVariant.labelMedium,
+                          color: colors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xxs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colors.gold.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(AppRadius.full),
+                        ),
+                        child: AppText(
+                          status,
+                          variant: AppTextVariant.labelSmall,
+                          color: colors.gold,
+                        ),
+                      ),
+                    ],
                   ),
                   AppText(
                     subtitle,
@@ -481,25 +515,116 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                 ],
               ),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.sm,
-                vertical: AppSpacing.xxs,
-              ),
-              decoration: BoxDecoration(
-                color: colors.gold.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(AppRadius.full),
-              ),
-              child: AppText(
-                'Soon',
-                variant: AppTextVariant.labelSmall,
-                color: colors.gold,
-              ),
+            const SizedBox(width: AppSpacing.sm),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 150),
+              child: isLoading
+                  ? SizedBox(
+                      key: const ValueKey('loading'),
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(colors.gold),
+                      ),
+                    )
+                  : Semantics(
+                      key: const ValueKey('notify'),
+                      button: true,
+                      label: actionLabel,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colors.gold.withValues(alpha: 0.14),
+                          borderRadius: BorderRadius.circular(AppRadius.full),
+                          border: Border.all(
+                            color: colors.gold.withValues(alpha: 0.28),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.notifications_active_outlined,
+                              size: 16,
+                              color: colors.gold,
+                            ),
+                            const SizedBox(width: AppSpacing.xxs),
+                            AppText(
+                              actionLabel,
+                              variant: AppTextVariant.labelSmall,
+                              color: colors.gold,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _subscribeToTwoFactor(AppLocalizations l10n) async {
+    if (_isSubscribingToTwoFactor) {
+      return;
+    }
+    setState(() => _isSubscribingToTwoFactor = true);
+
+    final authState = ref.read(authProvider);
+    final user = authState.user;
+    final locale =
+        user?.preferredLocale ?? Localizations.localeOf(context).languageCode;
+
+    try {
+      await ref
+          .read(featureSubscriptionServiceProvider)
+          .subscribe(
+            FeatureSubscriptionRequest(
+              featureKey: 'two_factor_auth',
+              source: 'settings_security',
+              phone: user?.phone ?? authState.phone,
+              email: user?.email,
+              featureName: 'Authenticator app 2FA',
+              requestedFeature: 'backend_enforced_mfa',
+              countryCode: user?.countryCode,
+              locale: locale,
+              metadata: const {
+                'surface': 'settings_security',
+                'currentProtections': [
+                  'transaction_pin',
+                  'device_biometrics_optional',
+                ],
+                'requiresBackendEnforcement': true,
+              },
+            ),
+          );
+
+      _showSecuritySnack(
+        l10n.security_twoFactorNotifySuccess,
+        tone: AppSnackTone.success,
+      );
+    } on Object catch (e) {
+      _showSecuritySnack(
+        l10n.common_errorFormat(e.toString()),
+        tone: AppSnackTone.error,
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSubscribingToTwoFactor = false);
+      }
+    }
+  }
+
+  void _showSecuritySnack(String message, {required AppSnackTone tone}) {
+    if (!mounted) {
+      return;
+    }
+    context.showSnack(message, tone: tone);
   }
 
   Widget _buildBiometricOption(AppLocalizations l10n, ThemeColors colors) {

@@ -5573,6 +5573,18 @@
   "@security_twoFactorDisabledSubtitle": {
     "description": "2FA disabled subtitle"
   },
+  "security_twoFactorComingSoonSubtitle": "Authenticator app 2FA is being prepared. Biometric login and transaction PIN protect this device today.",
+  "@security_twoFactorComingSoonSubtitle": {
+    "description": "2FA coming soon subtitle"
+  },
+  "security_twoFactorNotifyMe": "Notify me",
+  "@security_twoFactorNotifyMe": {
+    "description": "2FA availability notification action"
+  },
+  "security_twoFactorNotifySuccess": "We'll let you know when authenticator app 2FA is ready.",
+  "@security_twoFactorNotifySuccess": {
+    "description": "2FA notify subscription success message"
+  },
   "security_transactionSecurity": "Transação segurança",
   "@security_transactionSecurity": {
     "description": "Transaction security section header"

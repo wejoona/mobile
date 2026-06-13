@@ -4684,6 +4684,17 @@ class AppLocalizationsFr extends AppLocalizations {
       'Ajouter une protection supplémentaire';
 
   @override
+  String get security_twoFactorComingSoonSubtitle =>
+      'La 2FA par application d\'authentification est en préparation. La biométrie et le PIN de transaction protègent cet appareil aujourd\'hui.';
+
+  @override
+  String get security_twoFactorNotifyMe => 'Me notifier';
+
+  @override
+  String get security_twoFactorNotifySuccess =>
+      'Nous vous préviendrons lorsque la 2FA par application sera prête.';
+
+  @override
   String get security_transactionSecurity => 'Sécurité des transactions';
 
   @override
