@@ -160,6 +160,29 @@ void main() {
       expect(response.balances.single.total, 21.25);
     });
 
+    test(
+      'wallet balance parser exposes spendable USDC when first row is zero',
+      () {
+        final response = WalletBalanceResponse.fromJson({
+          'walletId': 'wallet_1',
+          'walletAddress': '0xabc',
+          'currency': 'USDC',
+          'balances': [
+            {'currency': 'USD', 'available': 0, 'pending': 0, 'total': 0},
+            {
+              'currency': 'USDC',
+              'availableDecimal': '84.250000',
+              'pendingDecimal': '0.750000',
+              'totalDecimal': '85.000000',
+            },
+          ],
+        });
+
+        expect(response.availableBalance, 84.25);
+        expect(response.totalBalance, 85);
+      },
+    );
+
     test('withdraw result accepts backend envelope and id aliases', () {
       final result = WithdrawResult.fromJson({
         'data': {

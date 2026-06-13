@@ -359,13 +359,36 @@ class WalletBalanceResponse {
   });
 
   double get totalBalance {
-    if (balances.isEmpty) return 0;
-    return balances.first.total;
+    return _primaryBalance()?.total ?? 0;
   }
 
   double get availableBalance {
-    if (balances.isEmpty) return 0;
-    return balances.first.available;
+    return _primaryBalance()?.available ?? 0;
+  }
+
+  WalletBalance? _primaryBalance() {
+    if (balances.isEmpty) return null;
+
+    final declaredCurrency = currency.toUpperCase();
+    for (final balance in balances) {
+      if (balance.currency.toUpperCase() == declaredCurrency) {
+        return balance;
+      }
+    }
+
+    for (final balance in balances) {
+      if (balance.currency.toUpperCase() == 'USDC') {
+        return balance;
+      }
+    }
+
+    for (final balance in balances) {
+      if (balance.available > 0 || balance.total > 0) {
+        return balance;
+      }
+    }
+
+    return balances.first;
   }
 
   factory WalletBalanceResponse.fromJson(Map<String, dynamic> json) {
@@ -445,7 +468,7 @@ class WalletBalanceResponse {
       walletId: walletId,
       walletAddress: walletAddress,
       blockchain: payload['blockchain'] as String? ?? 'polygon',
-      currency: payload['currency'] as String? ?? 'USD',
+      currency: payload['currency'] as String? ?? 'USDC',
       balances: balances,
       degraded: payload['degraded'] == true,
       isStale: payload['isStale'] == true,
