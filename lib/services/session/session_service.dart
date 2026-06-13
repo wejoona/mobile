@@ -109,6 +109,8 @@ class SessionService extends Notifier<SessionState> {
 
   FlutterSecureStorage get _storage => ref.read(secureStorageProvider);
 
+  bool get _canApplyStartupRestore => state.status == SessionStatus.inactive;
+
   @override
   SessionState build() {
     final storage = ref.read(secureStorageProvider);
@@ -274,7 +276,12 @@ class SessionService extends Notifier<SessionState> {
     final token = await storage.read(key: _accessTokenKey);
     final expiryStr = await storage.read(key: _tokenExpiryKey);
     final sessionStartStr = await storage.read(key: _sessionStartKey);
-    if (!ref.mounted) return;
+    if (!ref.mounted) {
+      return;
+    }
+    if (!_canApplyStartupRestore) {
+      return;
+    }
 
     if (token != null) {
       DateTime? expiresAt;
@@ -285,30 +292,47 @@ class SessionService extends Notifier<SessionState> {
         // Check if token is expired - try to refresh before giving up
         if (expiresAt != null && DateTime.now().isAfter(expiresAt)) {
           final refreshToken = await storage.read(key: _refreshTokenKey);
-          if (!ref.mounted) return;
+          if (!ref.mounted) {
+            return;
+          }
           if (refreshToken != null) {
             // Attempt to refresh the token
             final refreshed = await _refreshToken();
-            if (!ref.mounted) return;
+            if (!ref.mounted) {
+              return;
+            }
             if (!refreshed) {
+              if (!_canApplyStartupRestore) {
+                return;
+              }
               await _invalidateLocalSession();
               return;
             }
             // Re-read to check if refresh succeeded
             final newToken = await storage.read(key: _accessTokenKey);
-            if (!ref.mounted) return;
+            if (!ref.mounted) {
+              return;
+            }
             if (newToken == null || newToken == token) {
+              if (!_canApplyStartupRestore) {
+                return;
+              }
               // Refresh failed, end session
               await _invalidateLocalSession();
               return;
             }
             // Refresh succeeded, update expiry
             final newExpiryStr = await storage.read(key: _tokenExpiryKey);
-            if (!ref.mounted) return;
+            if (!ref.mounted) {
+              return;
+            }
             if (newExpiryStr != null) {
               expiresAt = DateTime.tryParse(newExpiryStr);
             }
           } else {
+            if (!_canApplyStartupRestore) {
+              return;
+            }
             // No refresh token, end session
             await endSession();
             return;
@@ -320,6 +344,9 @@ class SessionService extends Notifier<SessionState> {
         sessionStarted = DateTime.tryParse(sessionStartStr);
       }
 
+      if (!_canApplyStartupRestore) {
+        return;
+      }
       // Restore session - start as locked (user must enter PIN first)
       state = SessionState(
         status: SessionStatus.locked,
