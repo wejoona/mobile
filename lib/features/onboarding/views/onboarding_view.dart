@@ -739,7 +739,7 @@ class _MobileIllustration extends StatelessWidget {
     final operators = [
       ('USDC', accent),
       ('Bank', const Color(0xFF2F6F5E)),
-      ('Card', const Color(0xFF2563EB)),
+      ('Card', colors.gold),
       ('Cash', const Color(0xFFB88A2C)),
     ];
 
