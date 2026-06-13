@@ -52,6 +52,8 @@ void main() {
         'featureKey': 'virtual_card',
         'source': 'cards_screen',
         'status': 'subscribed',
+        'countryCode': 'US',
+        'locale': 'en-US',
         'metadata': {'surface': 'cards'},
       });
     });

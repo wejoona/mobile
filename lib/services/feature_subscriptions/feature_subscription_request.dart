@@ -47,8 +47,11 @@ class FeatureSubscriptionRequest {
 
   FeatureSubscriptionRequest copyWith({
     String? status,
+    String? countryCode,
+    String? locale,
     String? platform,
     String? appVersion,
+    Map<String, dynamic>? metadata,
   }) => FeatureSubscriptionRequest(
     featureKey: featureKey,
     source: source,
@@ -57,10 +60,10 @@ class FeatureSubscriptionRequest {
     email: email,
     featureName: featureName,
     requestedFeature: requestedFeature,
-    countryCode: countryCode,
-    locale: locale,
+    countryCode: countryCode ?? this.countryCode,
+    locale: locale ?? this.locale,
     platform: platform ?? this.platform,
     appVersion: appVersion ?? this.appVersion,
-    metadata: metadata,
+    metadata: metadata ?? this.metadata,
   );
 }

@@ -1,4 +1,5 @@
 import 'dart:io' show Platform;
+import 'dart:ui' show PlatformDispatcher;
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -62,16 +63,45 @@ class FeatureSubscriptionService {
     FeatureSubscriptionRequest request,
   ) async {
     final status = request.status ?? 'subscribed';
+    final countryCode = request.countryCode ?? _runtimeCountryCode();
+    final locale = request.locale ?? _runtimeLocaleTag(countryCode);
     final platform = request.platform ?? _mobilePlatform();
     final appVersion = request.appVersion ?? await _safeAppVersion();
-    if (request.status == status && platform == null && appVersion == null) {
+    if (request.status == status &&
+        request.countryCode == countryCode &&
+        request.locale == locale &&
+        request.platform == platform &&
+        request.appVersion == appVersion) {
       return request;
     }
     return request.copyWith(
       status: status,
+      countryCode: countryCode,
+      locale: locale,
       platform: platform,
       appVersion: appVersion,
     );
+  }
+
+  String? _runtimeCountryCode() {
+    final countryCode = PlatformDispatcher.instance.locale.countryCode;
+    if (countryCode == null || countryCode.trim().isEmpty) {
+      return null;
+    }
+    return countryCode.trim().toUpperCase();
+  }
+
+  String? _runtimeLocaleTag(String? countryCode) {
+    final languageCode = PlatformDispatcher.instance.locale.languageCode.trim();
+    if (languageCode.isEmpty) {
+      return null;
+    }
+
+    final normalizedLanguage = languageCode.toLowerCase();
+    if (countryCode == null || countryCode.isEmpty) {
+      return normalizedLanguage;
+    }
+    return '$normalizedLanguage-${countryCode.toUpperCase()}';
   }
 
   String? _mobilePlatform() {
