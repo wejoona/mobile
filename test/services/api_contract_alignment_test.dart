@@ -1775,6 +1775,9 @@ void main() {
       expect(users.single.joonaPayUserId, 'user_masked');
       expect(users.single.name, 'Awa Masked');
       expect(users.single.phone, isEmpty);
+      expect(users.single.maskedPhone, '+22507****63');
+      expect(users.single.displayIdentifier, '+22507****63');
+      expect(users.single.canSendInKorido, isFalse);
       expect(users.single.isKoridoUser, isTrue);
     });
 

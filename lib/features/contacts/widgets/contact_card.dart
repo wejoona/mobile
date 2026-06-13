@@ -75,11 +75,12 @@ class ContactCard extends StatelessWidget {
                         ],
                       ),
                       SizedBox(height: AppSpacing.xs),
-                      AppText(
-                        contact.phone,
-                        variant: AppTextVariant.bodySmall,
-                        color: colors.textSecondary,
-                      ),
+                      if (contact.displayIdentifier != null)
+                        AppText(
+                          contact.displayIdentifier!,
+                          variant: AppTextVariant.bodySmall,
+                          color: colors.textSecondary,
+                        ),
                     ],
                   ),
                 ),

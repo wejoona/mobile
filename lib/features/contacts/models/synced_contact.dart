@@ -3,6 +3,7 @@ class SyncedContact {
   final String id;
   final String name;
   final String phone;
+  final String? maskedPhone;
   final List<String> lookupPhones;
   final bool isKoridoUser;
   final String? joonaPayUserId;
@@ -13,6 +14,7 @@ class SyncedContact {
     required this.id,
     required this.name,
     required this.phone,
+    this.maskedPhone,
     this.lookupPhones = const [],
     this.isKoridoUser = false,
     this.joonaPayUserId,
@@ -28,10 +30,11 @@ class SyncedContact {
       return phone;
     }
     final handle = username?.trim();
-    if (handle == null || handle.isEmpty) {
-      return null;
+    if (handle != null && handle.isNotEmpty) {
+      return handle.startsWith('@') ? handle : '@$handle';
     }
-    return handle.startsWith('@') ? handle : '@$handle';
+    final masked = maskedPhone?.trim();
+    return masked == null || masked.isEmpty ? null : masked;
   }
 
   factory SyncedContact.fromJson(Map<String, dynamic> json) {
@@ -39,6 +42,7 @@ class SyncedContact {
       id: json['id'] as String,
       name: json['name'] as String,
       phone: json['phone'] as String,
+      maskedPhone: json['maskedPhone'] as String?,
       lookupPhones:
           (json['lookupPhones'] as List?)?.whereType<String>().toList() ??
           const [],
@@ -53,6 +57,7 @@ class SyncedContact {
     'id': id,
     'name': name,
     'phone': phone,
+    'maskedPhone': maskedPhone,
     'lookupPhones': lookupPhones,
     'isKoridoUser': isKoridoUser,
     'joonaPayUserId': joonaPayUserId,
@@ -64,6 +69,7 @@ class SyncedContact {
     String? id,
     String? name,
     String? phone,
+    String? maskedPhone,
     List<String>? lookupPhones,
     bool? isKoridoUser,
     String? joonaPayUserId,
@@ -74,6 +80,7 @@ class SyncedContact {
       id: id ?? this.id,
       name: name ?? this.name,
       phone: phone ?? this.phone,
+      maskedPhone: maskedPhone ?? this.maskedPhone,
       lookupPhones: lookupPhones ?? this.lookupPhones,
       isKoridoUser: isKoridoUser ?? this.isKoridoUser,
       joonaPayUserId: joonaPayUserId ?? this.joonaPayUserId,

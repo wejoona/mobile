@@ -638,7 +638,12 @@ class KoridoContactsService {
           final userId = _stringField(user, ['id', 'userId', 'koridoUserId']);
           final username = _stringField(user, ['username', 'handle']);
           final rawPhone = _stringField(user, ['phoneNumber', 'phone']);
-          final maskedPhone = _stringField(user, ['maskedPhone']);
+          final explicitMaskedPhone = _stringField(user, ['maskedPhone']);
+          final maskedPhone = explicitMaskedPhone.isNotEmpty
+              ? explicitMaskedPhone
+              : _isMaskedPhone(rawPhone)
+              ? rawPhone
+              : '';
           final safePhone = _isMaskedPhone(rawPhone) ? '' : rawPhone;
           final name = _stringField(user, [
             'name',
@@ -658,6 +663,7 @@ class KoridoContactsService {
                 ? maskedPhone
                 : 'Korido user',
             phone: safePhone,
+            maskedPhone: maskedPhone.isEmpty ? null : maskedPhone,
             isKoridoUser: user['isKoridoUser'] as bool? ?? true,
             joonaPayUserId: userId,
             username: username.isEmpty ? null : username,
