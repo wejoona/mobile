@@ -18,42 +18,72 @@ class OtpProgressCue extends StatelessWidget {
       label: label,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.md,
-        ),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: colors.gold.withValues(alpha: colors.isDark ? 0.16 : 0.12),
+          color: colors.isDark
+              ? colors.surface
+              : colors.container.withValues(alpha: 0.96),
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
             color: colors.gold.withValues(alpha: colors.isDark ? 0.34 : 0.24),
           ),
-          boxShadow: colors.isDark ? AppShadows.goldGlow : null,
+          boxShadow: colors.isDark
+              ? AppShadows.goldGlow
+              : AppShadows.lightGoldGlow,
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 34,
-              height: 34,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
                 color: colors.gold.withValues(
-                  alpha: colors.isDark ? 0.18 : 0.14,
+                  alpha: colors.isDark ? 0.20 : 0.16,
                 ),
                 shape: BoxShape.circle,
               ),
-              child: LoadingIndicator.small(
-                color: colors.gold,
-                semanticLabel: label,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  LoadingIndicator(
+                    color: colors.gold,
+                    strokeWidth: 2.2,
+                    semanticLabel: label,
+                  ),
+                  Icon(Icons.check_rounded, color: colors.gold, size: 17),
+                ],
               ),
             ),
             const SizedBox(width: AppSpacing.md),
-            Expanded(child: AppText(label, color: colors.textPrimary)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(
+                    label,
+                    variant: AppTextVariant.labelLarge,
+                    color: colors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  const SizedBox(height: AppSpacing.xxs),
+                  AppText(
+                    _isFrench(label)
+                        ? 'Connexion en cours...'
+                        : 'Signing you in...',
+                    variant: AppTextVariant.bodySmall,
+                    color: colors.textSecondary,
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
   }
+
+  bool _isFrench(String value) =>
+      value.contains('accepté') || value.contains('Sécurisation');
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
