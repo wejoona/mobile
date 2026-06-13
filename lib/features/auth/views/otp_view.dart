@@ -13,6 +13,7 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
+import 'package:usdc_wallet/features/auth/widgets/otp_progress_cue.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 
@@ -190,31 +191,14 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
 
                         if (isBusy) ...[
                           const SizedBox(height: AppSpacing.lg),
-                          AnimatedOpacity(
-                            duration: const Duration(milliseconds: 160),
-                            opacity: 1,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: colors.gold,
-                                  ),
-                                ),
-                                const SizedBox(width: AppSpacing.sm),
-                                AppText(
-                                  _localizedOtpCopy(
-                                    context,
-                                    en: 'Code received. Signing you in...',
-                                    fr: 'Code reçu. Connexion en cours...',
-                                  ),
-                                  variant: AppTextVariant.bodySmall,
-                                  color: colors.textSecondary,
-                                ),
-                              ],
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 180),
+                            child: OtpProgressCue(
+                              label: _localizedOtpCopy(
+                                context,
+                                en: 'Code accepted. Securing your session...',
+                                fr: 'Code accepté. Sécurisation de la session...',
+                              ),
                             ),
                           ),
                         ],
@@ -409,7 +393,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
     if (submittedAt == null) {
       return;
     }
-    const minimumCueDuration = Duration(milliseconds: 520);
+    const minimumCueDuration = Duration(milliseconds: 900);
     final elapsed = DateTime.now().difference(submittedAt);
     if (elapsed < minimumCueDuration) {
       await Future<void>.delayed(minimumCueDuration - elapsed);

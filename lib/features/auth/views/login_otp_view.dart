@@ -8,6 +8,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
 import 'package:usdc_wallet/features/auth/models/login_state.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
+import 'package:usdc_wallet/features/auth/widgets/otp_progress_cue.dart';
 
 /// Login OTP verification screen
 class LoginOtpView extends ConsumerStatefulWidget {
@@ -69,7 +70,18 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 180),
                       child: isBusy
-                          ? _buildOtpAcceptedStatus(context, colors)
+                          ? Padding(
+                              padding: const EdgeInsets.only(
+                                top: AppSpacing.lg,
+                              ),
+                              child: OtpProgressCue(
+                                label: _localizedOtpCopy(
+                                  context,
+                                  en: 'Code accepted. Securing your session...',
+                                  fr: 'Code accepté. Sécurisation de la session...',
+                                ),
+                              ),
+                            )
                           : const SizedBox.shrink(),
                     ),
                     if (state.error != null) ...[
@@ -161,61 +173,11 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
   }
 
   Future<void> _holdOtpCue(DateTime submittedAt) async {
-    const minimumCueDuration = Duration(milliseconds: 520);
+    const minimumCueDuration = Duration(milliseconds: 900);
     final elapsed = DateTime.now().difference(submittedAt);
     if (elapsed < minimumCueDuration) {
       await Future<void>.delayed(minimumCueDuration - elapsed);
     }
-  }
-
-  Widget _buildOtpAcceptedStatus(BuildContext context, ThemeColors colors) {
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.lg),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: colors.gold.withValues(alpha: colors.isDark ? 0.16 : 0.12),
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(
-            color: colors.gold.withValues(alpha: colors.isDark ? 0.34 : 0.24),
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: colors.gold,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Flexible(
-                child: AppText(
-                  _isSubmittingOtp
-                      ? _localizedOtpCopy(
-                          context,
-                          en: 'Code received. Signing you in...',
-                          fr: 'Code reçu. Connexion en cours...',
-                        )
-                      : AppLocalizations.of(context)!.login_verifying,
-                  variant: AppTextVariant.bodySmall,
-                  color: colors.textPrimary,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   void _clearOtp() {
