@@ -237,6 +237,17 @@ class _PinScreenState extends ConsumerState<PinScreen>
     });
   }
 
+  void _returnToPinEntry() {
+    setState(() {
+      _showUnlockTransition = false;
+      _isVerifying = false;
+      _pin = '';
+      _hasError = false;
+      _errorMessage = null;
+    });
+    unawaited(_checkBiometric());
+  }
+
   Future<void> _verifyPin() async {
     if (_isVerifying) return;
     setState(() {
@@ -358,9 +369,16 @@ class _PinScreenState extends ConsumerState<PinScreen>
                     Icon(Icons.lock_open_rounded, size: 48, color: colors.gold),
                     const SizedBox(height: 16),
                     AppText(
-                      AppLocalizations.of(context)!.pin_unlocked,
+                      l10n.pin_unlocked,
                       variant: AppTextVariant.titleMedium,
                       color: colors.textPrimary,
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                    AppButton(
+                      label: l10n.biometric_usePinInstead,
+                      icon: Icons.pin_rounded,
+                      onPressed: _returnToPinEntry,
+                      variant: AppButtonVariant.secondary,
                     ),
                   ],
                 ),
@@ -457,7 +475,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
                             _hasError = false;
                             _errorMessage = null;
                           });
-                          if (_pin.length == 6) _verifyPin();
+                          if (_pin.length == 6) {
+                            unawaited(_verifyPin());
+                          }
                         },
                         onDeletePressed: () {
                           if (_pin.isNotEmpty) {

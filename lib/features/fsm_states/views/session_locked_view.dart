@@ -53,29 +53,29 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
     }
   }
 
-  Future<void> _unlock() async {
+  Future<void> _unlock() {
     if (_isUnlocking || !mounted) {
-      return;
+      return Future<void>.value();
     }
     setState(() => _isUnlocking = true);
 
-    ref.read(authProvider.notifier).unlock();
-    ref.read(sessionServiceProvider.notifier).unlockSession();
-    ref.read(appFsmProvider.notifier).unlockSession();
+    final completion = Completer<void>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        if (!completion.isCompleted) completion.complete();
+        return;
+      }
 
-    await Future<void>.delayed(const Duration(milliseconds: 180));
-    if (!mounted) {
-      return;
-    }
-
-    final authState = ref.read(authProvider);
-    final sessionState = ref.read(sessionServiceProvider);
-    if (authState.isLocked || sessionState.isLocked) {
-      setState(() => _isUnlocking = false);
-      return;
-    }
-
-    context.go('/home');
+      try {
+        ref.read(authProvider.notifier).unlock();
+        ref.read(sessionServiceProvider.notifier).unlockSession();
+        ref.read(appFsmProvider.notifier).unlockSession();
+        context.go('/home');
+      } finally {
+        if (!completion.isCompleted) completion.complete();
+      }
+    });
+    return completion.future;
   }
 
   Future<void> _logout() async {

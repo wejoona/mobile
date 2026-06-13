@@ -75,10 +75,13 @@ class _BiometricPromptViewState extends ConsumerState<BiometricPromptView> {
 
   void _completeUnlock() {
     final router = GoRouter.of(context);
-    ref.read(authProvider.notifier).unlock();
-    ref.read(sessionServiceProvider.notifier).unlockSession();
-    ref.read(appFsmProvider.notifier).unlockSession();
-    router.go('/home');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(authProvider.notifier).unlock();
+      ref.read(sessionServiceProvider.notifier).unlockSession();
+      ref.read(appFsmProvider.notifier).unlockSession();
+      router.go('/home');
+    });
   }
 
   @override
