@@ -40,8 +40,8 @@ class SessionsNotifier extends Notifier<SessionsState> {
   /// Load all active sessions
   Future<void> loadSessions() async {
     state = state.copyWith(isLoading: true);
+    final repository = ref.read(sessionsRepositoryProvider);
     try {
-      final repository = ref.read(sessionsRepositoryProvider);
       final sessions = await repository.getSessions();
 
       final currentSession = _resolveCurrentSession(sessions);
@@ -52,6 +52,33 @@ class SessionsNotifier extends Notifier<SessionsState> {
         currentSessionId: currentSession?.id,
       );
     } on ApiException catch (e) {
+      if (e.statusCode == 401 && await _refreshAuthForRetry()) {
+        try {
+          final sessions = await repository.getSessions();
+          final currentSession = _resolveCurrentSession(sessions);
+          state = state.copyWith(
+            isLoading: false,
+            sessions: sessions,
+            currentSessionId: currentSession?.id,
+            error: null,
+          );
+          return;
+        } on ApiException catch (retryError) {
+          if (await _handleExpiredSession(retryError)) {
+            state = state.copyWith(
+              isLoading: false,
+              sessions: const [],
+              error: null,
+            );
+            return;
+          }
+          state = state.copyWith(
+            isLoading: false,
+            error: _friendlyError(retryError),
+          );
+          return;
+        }
+      }
       if (await _handleExpiredSession(e)) {
         state = state.copyWith(
           isLoading: false,
@@ -133,6 +160,12 @@ class SessionsNotifier extends Notifier<SessionsState> {
     }
     ref.read(authProvider.notifier).setLocked();
     return true;
+  }
+
+  Future<bool> _refreshAuthForRetry() {
+    return ref
+        .read(authProvider.notifier)
+        .refreshAccessTokenForForegroundRequest();
   }
 
   Session? _resolveCurrentSession(List<Session> sessions) {

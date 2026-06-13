@@ -275,10 +275,14 @@ class AuthNotifier extends Notifier<AuthState> {
     return true;
   }
 
-  Future<void> _refreshTokenOnUnlock() async {
+  Future<bool> refreshAccessTokenForForegroundRequest() {
+    return _refreshTokenOnUnlock();
+  }
+
+  Future<bool> _refreshTokenOnUnlock() async {
     try {
       final storedRefresh = await _storage.read(key: StorageKeys.refreshToken);
-      if (storedRefresh == null) return;
+      if (storedRefresh == null) return false;
 
       final response = await _authService.refreshToken(
         refreshToken: storedRefresh,
@@ -294,6 +298,7 @@ class AuthNotifier extends Notifier<AuthState> {
           value: response.refreshToken!,
         );
       }
+      return true;
     } on ApiException catch (e) {
       // Stored refresh tokens can survive app reinstall on iOS keychain.
       // If the backend rejects them, clear local state immediately instead of
@@ -301,9 +306,11 @@ class AuthNotifier extends Notifier<AuthState> {
       if (_isRefreshRejected(e)) {
         await clearLocalSession();
       }
+      return false;
     } catch (_) {
       // Keep the locked state on transient/local failures. The next API call can
       // still retry through the interceptor.
+      return false;
     }
   }
 
