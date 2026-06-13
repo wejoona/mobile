@@ -223,10 +223,20 @@ class _ContactPickerBottomSheetState
           .read(joonaPayContactsServiceProvider)
           .lookupKoridoUsers(trimmed);
       final localPhones = _contacts.map((contact) => contact.phone).toSet();
+      final localUserIds = _contacts
+          .map((contact) => contact.joonaPayUserId ?? contact.id)
+          .where((id) => id.isNotEmpty)
+          .toSet();
       final filteredResults = results
           .where(
-            (result) =>
-                result.phone.isEmpty || !localPhones.contains(result.phone),
+            (result) {
+              final userId = result.joonaPayUserId ?? result.id;
+              final duplicatePhone =
+                  result.phone.isNotEmpty && localPhones.contains(result.phone);
+              final duplicateUser =
+                  userId.isNotEmpty && localUserIds.contains(userId);
+              return !duplicatePhone && !duplicateUser;
+            },
           )
           .toList();
 
