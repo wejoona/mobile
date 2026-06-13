@@ -227,18 +227,14 @@ class _ContactPickerBottomSheetState
           .map((contact) => contact.joonaPayUserId ?? contact.id)
           .where((id) => id.isNotEmpty)
           .toSet();
-      final filteredResults = results
-          .where(
-            (result) {
-              final userId = result.joonaPayUserId ?? result.id;
-              final duplicatePhone =
-                  result.phone.isNotEmpty && localPhones.contains(result.phone);
-              final duplicateUser =
-                  userId.isNotEmpty && localUserIds.contains(userId);
-              return !duplicatePhone && !duplicateUser;
-            },
-          )
-          .toList();
+      final filteredResults = results.where((result) {
+        final userId = result.joonaPayUserId ?? result.id;
+        final duplicatePhone =
+            result.phone.isNotEmpty && localPhones.contains(result.phone);
+        final duplicateUser =
+            userId.isNotEmpty && localUserIds.contains(userId);
+        return !duplicatePhone && !duplicateUser;
+      }).toList();
 
       if (mounted && _searchController.text.trim() == trimmed) {
         setState(() {
@@ -495,7 +491,7 @@ class _ContactPickerBottomSheetState
       en: 'Verified Korido account',
       fr: 'Compte Korido vérifié',
     );
-    final canSelect = !fromLookup || contact.phone.isNotEmpty;
+    final canSelect = !fromLookup || contact.canSendInKorido;
 
     return GestureDetector(
       key: ValueKey(
@@ -557,8 +553,12 @@ class _ContactPickerBottomSheetState
                   AppText(
                     fromLookup && contact.phone.isEmpty
                         ? _localizedText(
-                            en: 'Korido account found',
-                            fr: 'Compte Korido trouvé',
+                            en:
+                                contact.displayIdentifier ??
+                                'Korido account found',
+                            fr:
+                                contact.displayIdentifier ??
+                                'Compte Korido trouvé',
                           )
                         : fromLookup
                         ? verifiedAccount
@@ -581,8 +581,8 @@ class _ContactPickerBottomSheetState
       SnackBar(
         content: Text(
           _localizedText(
-            en: 'This account is discoverable, but a phone number is required to send for now.',
-            fr: 'Ce compte est visible, mais un numéro de téléphone est requis pour envoyer pour le moment.',
+            en: 'This account is discoverable, but a username or phone is required to send.',
+            fr: 'Ce compte est visible, mais un identifiant ou un numéro est requis pour envoyer.',
           ),
         ),
       ),

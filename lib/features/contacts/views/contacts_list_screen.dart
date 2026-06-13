@@ -382,9 +382,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
           (contact) => ContactCard(
             contact: contact,
             onTap: () => _handleLookupContactTap(contact),
-            onSend: contact.phone.isNotEmpty
-                ? () => _handleSend(contact)
-                : null,
+            onSend: contact.canSendInKorido ? () => _handleSend(contact) : null,
           ),
         ),
       ],
@@ -401,13 +399,13 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   }
 
   void _handleLookupContactTap(SyncedContact contact) {
-    if (contact.phone.isEmpty) {
+    if (!contact.canSendInKorido) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             _localizedText(
-              en: 'This Korido account is discoverable, but cannot be selected until a phone number is available.',
-              fr: 'Ce compte Korido est visible, mais ne peut pas être sélectionné sans numéro disponible.',
+              en: 'This Korido account is discoverable, but cannot be selected until a username or phone is available.',
+              fr: 'Ce compte Korido est visible, mais ne peut pas être sélectionné sans identifiant ou numéro disponible.',
             ),
           ),
         ),
@@ -424,6 +422,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   Map<String, String?> _sendExtra(SyncedContact contact) => {
     'recipientId': contact.joonaPayUserId,
     'recipientPhone': contact.phone,
+    'recipientUsername': contact.username,
     'recipientName': contact.name,
   };
 

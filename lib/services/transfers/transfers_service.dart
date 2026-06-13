@@ -20,13 +20,21 @@ class TransfersService {
   /// [idempotencyKey] — required by backend IdempotencyGuard (X-Idempotency-Key header)
   /// [amount] — in user-facing USDC units. Backend transfer use cases expect major units.
   Future<TransferResult> createInternalTransfer({
-    required String recipientPhone,
+    String? recipientPhone,
+    String? recipientUsername,
     required double amount,
     String? note,
     String? riskRecipientId,
     required String pinToken,
     required String idempotencyKey,
   }) async {
+    final normalizedPhone = recipientPhone?.trim();
+    final normalizedUsername = _normalizeUsername(recipientUsername);
+    if ((normalizedPhone == null || normalizedPhone.isEmpty) &&
+        (normalizedUsername == null || normalizedUsername.isEmpty)) {
+      throw ArgumentError('Recipient phone or username is required');
+    }
+
     // Internal transfers usually get green flow (no verification)
     // But still check for anomalies
     if (_riskSecurity != null) {
@@ -34,7 +42,11 @@ class TransfersService {
         type: 'transfer',
         amount: amount,
         currency: 'USDC',
-        recipientId: riskRecipientId ?? recipientPhone,
+        recipientId:
+            riskRecipientId ??
+            normalizedUsername ??
+            normalizedPhone ??
+            'internal-recipient',
         recipientType: 'internal',
       );
 
@@ -65,7 +77,10 @@ class TransfersService {
       final response = await _dio.post(
         '/wallet/transfer/internal',
         data: {
-          'toPhone': recipientPhone,
+          if (normalizedPhone != null && normalizedPhone.isNotEmpty)
+            'toPhone': normalizedPhone,
+          if (normalizedUsername != null && normalizedUsername.isNotEmpty)
+            'recipientUsername': normalizedUsername,
           'amount': amount,
           if (note != null) 'note': note,
         },
@@ -80,6 +95,14 @@ class TransfersService {
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
+  }
+
+  String? _normalizeUsername(String? username) {
+    final trimmed = username?.trim();
+    if (trimmed == null || trimmed.isEmpty) {
+      return null;
+    }
+    return trimmed.startsWith('@') ? trimmed.substring(1) : trimmed;
   }
 
   /// POST /wallet/transfer/external

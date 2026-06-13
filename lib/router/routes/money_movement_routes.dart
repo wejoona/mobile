@@ -45,13 +45,23 @@ List<RouteBase> moneyMovementRoutes() => [
       final query = state.uri.queryParameters;
       final extra = state.extra;
       var initialPhone = query['phone'] ?? query['to'];
+      var initialUsername = query['username'] ?? query['recipientUsername'];
+      var initialRecipientId = query['recipientId'];
       var initialName = query['name'];
 
       if (extra is Map) {
         final extraPhone = extra['phone'] ?? extra['recipientPhone'];
+        final extraUsername = extra['username'] ?? extra['recipientUsername'];
+        final extraRecipientId = extra['recipientId'];
         final extraName = extra['name'] ?? extra['recipientName'];
         if (initialPhone == null && extraPhone is String) {
           initialPhone = extraPhone;
+        }
+        if (initialUsername == null && extraUsername is String) {
+          initialUsername = extraUsername;
+        }
+        if (initialRecipientId == null && extraRecipientId is String) {
+          initialRecipientId = extraRecipientId;
         }
         if (initialName == null && extraName is String) {
           initialName = extraName;
@@ -62,6 +72,8 @@ List<RouteBase> moneyMovementRoutes() => [
         state: state,
         child: RecipientScreen(
           initialPhone: initialPhone,
+          initialUsername: initialUsername,
+          initialRecipientId: initialRecipientId,
           initialName: initialName,
         ),
       );

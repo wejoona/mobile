@@ -2,29 +2,36 @@
 
 /// Transfer Request - for internal transfers
 class TransferRequest {
-  final String recipientPhone;
+  final String? recipientPhone;
+  final String? recipientUsername;
   final double amount;
   final String? note;
 
   const TransferRequest({
-    required this.recipientPhone,
+    this.recipientPhone,
+    this.recipientUsername,
     required this.amount,
     this.note,
   });
 
   Map<String, dynamic> toJson() => {
-    'recipientPhone': recipientPhone,
+    if (recipientPhone != null && recipientPhone!.isNotEmpty)
+      'recipientPhone': recipientPhone,
+    if (recipientUsername != null && recipientUsername!.isNotEmpty)
+      'recipientUsername': recipientUsername,
     'amount': amount,
     if (note != null) 'note': note,
   };
 
   TransferRequest copyWith({
     String? recipientPhone,
+    String? recipientUsername,
     double? amount,
     String? note,
   }) {
     return TransferRequest(
       recipientPhone: recipientPhone ?? this.recipientPhone,
+      recipientUsername: recipientUsername ?? this.recipientUsername,
       amount: amount ?? this.amount,
       note: note ?? this.note,
     );
@@ -36,6 +43,7 @@ class RecipientInfo {
   final String phoneNumber;
   final String? name;
   final String? userId;
+  final String? username;
   final bool isKoridoUser;
   final bool isBeneficiary;
   final String? beneficiaryId;
@@ -44,15 +52,34 @@ class RecipientInfo {
     required this.phoneNumber,
     this.name,
     this.userId,
+    this.username,
     this.isKoridoUser = false,
     this.isBeneficiary = false,
     this.beneficiaryId,
   });
 
+  bool get hasPhone => phoneNumber.trim().isNotEmpty;
+
+  bool get hasUsername => username?.trim().isNotEmpty ?? false;
+
+  bool get canSend => hasPhone || hasUsername;
+
+  String get displayIdentifier {
+    if (hasPhone) {
+      return phoneNumber;
+    }
+    final handle = username?.trim();
+    if (handle != null && handle.isNotEmpty) {
+      return handle.startsWith('@') ? handle : '@$handle';
+    }
+    return userId ?? '';
+  }
+
   RecipientInfo copyWith({
     String? phoneNumber,
     String? name,
     String? userId,
+    String? username,
     bool? isKoridoUser,
     bool? isBeneficiary,
     String? beneficiaryId,
@@ -61,6 +88,7 @@ class RecipientInfo {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       name: name ?? this.name,
       userId: userId ?? this.userId,
+      username: username ?? this.username,
       isKoridoUser: isKoridoUser ?? this.isKoridoUser,
       isBeneficiary: isBeneficiary ?? this.isBeneficiary,
       beneficiaryId: beneficiaryId ?? this.beneficiaryId,

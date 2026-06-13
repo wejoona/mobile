@@ -17,9 +17,17 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/contacts/contacts_service.dart';
 
 class RecipientScreen extends ConsumerStatefulWidget {
-  const RecipientScreen({super.key, this.initialPhone, this.initialName});
+  const RecipientScreen({
+    super.key,
+    this.initialPhone,
+    this.initialUsername,
+    this.initialRecipientId,
+    this.initialName,
+  });
 
   final String? initialPhone;
+  final String? initialUsername;
+  final String? initialRecipientId;
   final String? initialName;
 
   @override
@@ -33,6 +41,8 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
   bool _isLoading = false;
   String _selectedCountryCode = '+225';
   String? _selectedRecipientName;
+  String? _selectedRecipientUsername;
+  String? _selectedRecipientUserId;
   bool _selectedRecipientKnownKorido = false;
   bool _recipientLookupAttempted = false;
   bool _recipientLookupFailed = false;
@@ -60,9 +70,26 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
   void initState() {
     super.initState();
     final initialPhone = widget.initialPhone?.trim();
+    final initialUsername = widget.initialUsername?.trim();
     if (initialPhone != null && initialPhone.isNotEmpty) {
-      _setRecipientFields(initialPhone, widget.initialName);
-      _lookupCurrentRecipientIfNeeded(isKnownKorido: false);
+      final isKnownKorido =
+          initialUsername != null && initialUsername.isNotEmpty;
+      _setRecipientFields(
+        initialPhone,
+        widget.initialName,
+        username: initialUsername,
+        userId: widget.initialRecipientId,
+        isKnownKorido: isKnownKorido,
+      );
+      _lookupCurrentRecipientIfNeeded(isKnownKorido: isKnownKorido);
+    } else if (initialUsername != null && initialUsername.isNotEmpty) {
+      _setRecipientFields(
+        '',
+        widget.initialName,
+        username: initialUsername,
+        userId: widget.initialRecipientId,
+        isKnownKorido: true,
+      );
     }
 
     // Load recent recipients
@@ -91,13 +118,23 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     final isCompletePhone =
         _phoneController.text.length == _selectedLocalLength;
     final myPhone = authState.user?.phone ?? authState.phone;
+    final hasUsernameRecipient = _hasUsernameRecipient;
+    final isSelfSelectedAccount =
+        (_selectedRecipientUserId != null &&
+            _selectedRecipientUserId == authState.user?.id) ||
+        (_selectedRecipientUsername != null &&
+            authState.user?.username != null &&
+            _selectedRecipientUsername == authState.user?.username);
     final isSelfRecipient =
-        isCompletePhone && _samePhone(_typedPhoneNumber, myPhone);
+        (isCompletePhone && _samePhone(_typedPhoneNumber, myPhone)) ||
+        isSelfSelectedAccount;
+    final hasSelectableRecipient =
+        _selectedRecipientKnownKorido &&
+        (isCompletePhone || hasUsernameRecipient);
     final canContinue =
-        isCompletePhone &&
+        hasSelectableRecipient &&
         !_isRecipientLookupLoading &&
-        !isSelfRecipient &&
-        _selectedRecipientKnownKorido;
+        !isSelfRecipient;
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -171,6 +208,8 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
                               setState(() {
                                 _selectedCountryCode = value;
                                 _selectedRecipientName = null;
+                                _selectedRecipientUsername = null;
+                                _selectedRecipientUserId = null;
                                 _selectedRecipientKnownKorido = false;
                                 _recipientLookupAttempted = false;
                                 _recipientLookupFailed = false;
@@ -269,7 +308,8 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
                           ],
                           if (!isSelfRecipient &&
                               _selectedRecipientKnownKorido &&
-                              _selectedRecipientName != null) ...[
+                              (_selectedRecipientName != null ||
+                                  _hasUsernameRecipient)) ...[
                             const SizedBox(height: AppSpacing.md),
                             SendCallout(
                               icon: Icons.verified_user_outlined,
@@ -278,7 +318,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
                                 en: 'Korido account selected',
                                 fr: 'Compte Korido sélectionné',
                               ),
-                              body: _selectedRecipientName!,
+                              body: _selectedRecipientSubtitle,
                               tone: SendCalloutTone.success,
                             ),
                           ],
@@ -406,6 +446,8 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
       _selectRecipient(
         contact.phone,
         contact.name,
+        username: contact.username,
+        userId: contact.joonaPayUserId,
         isKnownKorido: contact.isKoridoUser,
       );
     }
@@ -470,11 +512,18 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
   void _selectRecipient(
     String phoneNumber,
     String? name, {
+    String? username,
+    String? userId,
     bool isKnownKorido = false,
   }) {
     setState(
-      () =>
-          _setRecipientFields(phoneNumber, name, isKnownKorido: isKnownKorido),
+      () => _setRecipientFields(
+        phoneNumber,
+        name,
+        username: username,
+        userId: userId,
+        isKnownKorido: isKnownKorido,
+      ),
     );
     _lookupCurrentRecipientIfNeeded(isKnownKorido: isKnownKorido);
   }
@@ -482,6 +531,8 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
   void _setRecipientFields(
     String phoneNumber,
     String? name, {
+    String? username,
+    String? userId,
     bool isKnownKorido = false,
   }) {
     var cleanPhone = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
@@ -496,6 +547,8 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
 
     _phoneController.text = cleanPhone;
     _selectedRecipientName = name;
+    _selectedRecipientUsername = _normalizeUsername(username);
+    _selectedRecipientUserId = userId;
     _selectedRecipientKnownKorido = isKnownKorido;
     _recipientLookupAttempted = isKnownKorido;
     _recipientLookupFailed = false;
@@ -506,6 +559,8 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
 
     setState(() {
       _selectedRecipientName = null;
+      _selectedRecipientUsername = null;
+      _selectedRecipientUserId = null;
       _selectedRecipientKnownKorido = false;
       _recipientLookupAttempted = false;
       _recipientLookupFailed = false;
@@ -575,6 +630,8 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
       }
       setState(() {
         _selectedRecipientName = match?.name;
+        _selectedRecipientUsername = _normalizeUsername(match?.username);
+        _selectedRecipientUserId = match?.joonaPayUserId ?? match?.id;
         _selectedRecipientKnownKorido = match != null;
         _recipientLookupAttempted = true;
         _recipientLookupFailed = false;
@@ -586,6 +643,8 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
       if (_typedPhoneNumber == phoneNumber) {
         setState(() {
           _selectedRecipientName = null;
+          _selectedRecipientUsername = null;
+          _selectedRecipientUserId = null;
           _selectedRecipientKnownKorido = false;
           _recipientLookupAttempted = true;
           _recipientLookupFailed = true;
@@ -599,7 +658,8 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
   }
 
   Future<void> _handleContinue() async {
-    if (!_formKey.currentState!.validate()) {
+    final hasUsernameRecipient = _hasUsernameRecipient;
+    if (!hasUsernameRecipient && !_formKey.currentState!.validate()) {
       return;
     }
 
@@ -608,7 +668,15 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
       final phoneNumber = '$_selectedCountryCode${_phoneController.text}';
       final authState = ref.read(authProvider);
       final myPhone = authState.user?.phone ?? authState.phone;
-      if (_samePhone(phoneNumber, myPhone)) {
+      final sameUserId =
+          _selectedRecipientUserId != null &&
+          _selectedRecipientUserId == authState.user?.id;
+      final sameUsername =
+          _selectedRecipientUsername != null &&
+          _selectedRecipientUsername == authState.user?.username;
+      if ((!hasUsernameRecipient && _samePhone(phoneNumber, myPhone)) ||
+          sameUserId ||
+          sameUsername) {
         if (!mounted) {
           return;
         }
@@ -627,9 +695,22 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
         return;
       }
 
-      await ref
-          .read(sendMoneyProvider.notifier)
-          .setRecipient(phoneNumber, name: _selectedRecipientName);
+      if (hasUsernameRecipient) {
+        await ref
+            .read(sendMoneyProvider.notifier)
+            .setKnownKoridoRecipient(
+              phoneNumber: _phoneController.text.length == _selectedLocalLength
+                  ? phoneNumber
+                  : null,
+              username: _selectedRecipientUsername,
+              name: _selectedRecipientName,
+              userId: _selectedRecipientUserId,
+            );
+      } else {
+        await ref
+            .read(sendMoneyProvider.notifier)
+            .setRecipient(phoneNumber, name: _selectedRecipientName);
+      }
 
       final sendState = ref.read(sendMoneyProvider);
       if (sendState.error != null) {
@@ -679,6 +760,30 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  bool get _hasUsernameRecipient =>
+      _selectedRecipientUsername?.trim().isNotEmpty ?? false;
+
+  String get _selectedRecipientSubtitle {
+    final label = _selectedRecipientName ?? '';
+    final handle = _selectedRecipientUsername;
+    if (handle == null || handle.isEmpty) {
+      return label;
+    }
+    final displayHandle = handle.startsWith('@') ? handle : '@$handle';
+    if (label.isEmpty) {
+      return displayHandle;
+    }
+    return '$label · $displayHandle';
+  }
+
+  String? _normalizeUsername(String? username) {
+    final trimmed = username?.trim();
+    if (trimmed == null || trimmed.isEmpty) {
+      return null;
+    }
+    return trimmed.startsWith('@') ? trimmed.substring(1) : trimmed;
   }
 
   bool _samePhone(String candidate, String? currentUserPhone) {

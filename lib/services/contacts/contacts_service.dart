@@ -611,6 +611,7 @@ class KoridoContactsService {
     return _extractMapList(response.data, ['users', 'contacts', 'items'])
         .map((user) {
           final userId = _stringField(user, ['id', 'userId', 'koridoUserId']);
+          final username = _stringField(user, ['username', 'handle']);
           final rawPhone = _stringField(user, ['phoneNumber', 'phone']);
           final maskedPhone = _stringField(user, ['maskedPhone']);
           final safePhone = _isMaskedPhone(rawPhone) ? '' : rawPhone;
@@ -634,6 +635,7 @@ class KoridoContactsService {
             phone: safePhone,
             isKoridoUser: user['isKoridoUser'] as bool? ?? true,
             joonaPayUserId: userId,
+            username: username.isEmpty ? null : username,
             avatarUrl: _stringField(user, ['avatarUrl', 'photoUrl']),
           );
         })

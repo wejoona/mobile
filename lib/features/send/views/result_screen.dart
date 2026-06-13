@@ -66,7 +66,9 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
 
   void _checkBeneficiaryStatus() {
     final state = ref.read(sendMoneyProvider);
-    if (state.recipient != null && !state.recipient!.isBeneficiary) {
+    if (state.recipient != null &&
+        state.recipient!.hasPhone &&
+        !state.recipient!.isBeneficiary) {
       setState(() => _showSaveOption = true);
     }
   }
@@ -198,7 +200,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                   Flexible(
                     child: AppText(
                       state.recipient?.name ??
-                          state.recipient?.phoneNumber ??
+                          state.recipient?.displayIdentifier ??
                           '',
                       variant: AppTextVariant.bodyLarge,
                       fontWeight: FontWeight.w600,
@@ -215,7 +217,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
               if (state.recipient?.name != null) ...[
                 const SizedBox(height: AppSpacing.xxs),
                 AppText(
-                  state.recipient!.phoneNumber,
+                  state.recipient!.displayIdentifier,
                   variant: AppTextVariant.bodySmall,
                   color: colors.textSecondary,
                 ),
@@ -350,7 +352,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
 
   Future<void> _handleSaveBeneficiary() async {
     final state = ref.read(sendMoneyProvider);
-    if (state.recipient == null) {
+    if (state.recipient == null || !state.recipient!.hasPhone) {
       return;
     }
 
@@ -358,7 +360,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     // For now, we'll add directly
     try {
       final request = CreateBeneficiaryRequest(
-        name: state.recipient!.name ?? state.recipient!.phoneNumber,
+        name: state.recipient!.name ?? state.recipient!.displayIdentifier,
         phoneE164: state.recipient!.phoneNumber,
         accountType: AccountType.joonapayUser,
       );
@@ -396,7 +398,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
 ${l10n.send_transferReceipt}
 
 ${l10n.send_amount}: ${formatUsdc(state.result!.amount)}
-${l10n.send_recipient}: ${state.recipient?.name ?? state.recipient?.phoneNumber}
+${l10n.send_recipient}: ${state.recipient?.name ?? state.recipient?.displayIdentifier}
 ${l10n.send_reference}: ${state.result!.reference}
 ${l10n.send_date}: ${Formatters.formatDateTime(state.result!.createdAt)}
 

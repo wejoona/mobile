@@ -72,7 +72,7 @@ class ConfirmScreen extends ConsumerWidget {
                             UserAvatar(
                               firstName:
                                   state.recipient!.name?.split(' ').first ??
-                                  state.recipient!.phoneNumber,
+                                  state.recipient!.displayIdentifier,
                               lastName:
                                   state.recipient!.name != null &&
                                       state.recipient!.name!.split(' ').length >
@@ -93,7 +93,9 @@ class ConfirmScreen extends ConsumerWidget {
                                       Flexible(
                                         child: AppText(
                                           state.recipient!.name ??
-                                              state.recipient!.phoneNumber,
+                                              state
+                                                  .recipient!
+                                                  .displayIdentifier,
                                           variant: AppTextVariant.bodyLarge,
                                           fontWeight: FontWeight.w600,
                                           overflow: TextOverflow.ellipsis,
@@ -107,7 +109,7 @@ class ConfirmScreen extends ConsumerWidget {
                                   ),
                                   if (state.recipient!.name != null)
                                     AppText(
-                                      state.recipient!.phoneNumber,
+                                      state.recipient!.displayIdentifier,
                                       variant: AppTextVariant.bodySmall,
                                       color: colors.textSecondary,
                                     ),
@@ -260,7 +262,9 @@ class ConfirmScreen extends ConsumerWidget {
                       riskBasedSecurityServiceProvider,
                     );
                     final riskRecipientId =
-                        state.recipient?.userId ?? state.recipient?.phoneNumber;
+                        state.recipient?.userId ??
+                        state.recipient?.username ??
+                        state.recipient?.phoneNumber;
                     final decision = await securityService.evaluateTransaction(
                       type: 'transfer',
                       amount: state.amount!,
@@ -301,7 +305,8 @@ class ConfirmScreen extends ConsumerWidget {
   ) async {
     if (ref.read(connectivityProvider).isOnline ||
         state.recipient == null ||
-        state.amount == null) {
+        state.amount == null ||
+        !state.recipient!.hasPhone) {
       return false;
     }
 

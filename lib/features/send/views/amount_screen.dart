@@ -95,7 +95,7 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                               UserAvatar(
                                 firstName:
                                     state.recipient!.name?.split(' ').first ??
-                                    state.recipient!.phoneNumber,
+                                    state.recipient!.displayIdentifier,
                                 lastName:
                                     state.recipient!.name != null &&
                                         state.recipient!.name!
@@ -126,7 +126,7 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                                     Flexible(
                                       child: AppText(
                                         state.recipient!.name ??
-                                            state.recipient!.phoneNumber,
+                                            state.recipient!.displayIdentifier,
                                         variant: AppTextVariant.bodyLarge,
                                         fontWeight: FontWeight.w600,
                                         overflow: TextOverflow.ellipsis,
@@ -136,7 +136,7 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                                 ),
                                 if (state.recipient!.name != null)
                                   AppText(
-                                    state.recipient!.phoneNumber,
+                                    state.recipient!.displayIdentifier,
                                     variant: AppTextVariant.bodySmall,
                                     color: colors.textSecondary,
                                   ),

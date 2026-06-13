@@ -166,7 +166,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
         children: [
           _summaryRow(
             l10n.send_recipient,
-            state.recipient?.name ?? state.recipient?.phoneNumber ?? '',
+            state.recipient?.name ?? state.recipient?.displayIdentifier ?? '',
             colors,
             trailing: state.recipient?.isKoridoUser == true
                 ? const KoridoAccountBadge(compact: true)
@@ -361,7 +361,8 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
   Future<bool> _queueOfflineTransferIfEligible(SendMoneyState state) async {
     if (!isOfflineQueueableErrorMessage(state.error) ||
         state.recipient == null ||
-        state.amount == null) {
+        state.amount == null ||
+        !state.recipient!.hasPhone) {
       return false;
     }
 

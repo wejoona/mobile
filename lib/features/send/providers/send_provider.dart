@@ -171,6 +171,7 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
         phoneNumber: phoneNumber,
         name: displayName,
         userId: userId,
+        username: _stringValue(match, const ['username', 'handle']),
         isKoridoUser: isKoridoUser,
       );
 
@@ -188,6 +189,36 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
         error: e.toString(),
       );
     }
+  }
+
+  Future<void> setKnownKoridoRecipient({
+    String? phoneNumber,
+    String? username,
+    String? name,
+    String? userId,
+  }) async {
+    final normalizedPhone = phoneNumber?.trim() ?? '';
+    final normalizedUsername = _normalizeUsername(username);
+    if (normalizedPhone.isEmpty &&
+        (normalizedUsername == null || normalizedUsername.isEmpty)) {
+      state = state.copyWith(
+        clearRecipient: true,
+        error: 'recipient_identifier_required',
+      );
+      return;
+    }
+
+    state = state.copyWith(
+      isLoading: false,
+      error: null,
+      recipient: RecipientInfo(
+        phoneNumber: normalizedPhone,
+        name: name,
+        userId: userId,
+        username: normalizedUsername,
+        isKoridoUser: true,
+      ),
+    );
   }
 
   /// Set transfer amount
@@ -298,9 +329,14 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
     try {
       final transfersService = ref.read(transfersServiceProvider);
       final riskRecipientId =
-          state.recipient!.userId ?? state.recipient!.phoneNumber;
+          state.recipient!.userId ??
+          state.recipient!.username ??
+          state.recipient!.phoneNumber;
       final result = await transfersService.createInternalTransfer(
-        recipientPhone: state.recipient!.phoneNumber,
+        recipientPhone: state.recipient!.phoneNumber.isNotEmpty
+            ? state.recipient!.phoneNumber
+            : null,
+        recipientUsername: state.recipient!.username,
         amount: state.amount!,
         note: state.note,
         riskRecipientId: riskRecipientId,
@@ -367,6 +403,14 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
     final country =
         SupportedCountries.findByCode(userCountryCode) ?? selectedCountry;
     return country.prefix;
+  }
+
+  String? _normalizeUsername(String? username) {
+    final trimmed = username?.trim();
+    if (trimmed == null || trimmed.isEmpty) {
+      return null;
+    }
+    return trimmed.startsWith('@') ? trimmed.substring(1) : trimmed;
   }
 }
 
