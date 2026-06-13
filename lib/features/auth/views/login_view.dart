@@ -8,12 +8,10 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
-import 'package:usdc_wallet/features/auth/views/legal_document_view.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
-import 'package:usdc_wallet/services/legal/legal_documents_service.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Login screen with two modes:
@@ -33,7 +31,6 @@ class _LoginViewState extends ConsumerState<LoginView>
   final _phoneController = TextEditingController();
   final _phoneFocusNode = FocusNode();
   CountryConfig _selectedCountry = SupportedCountries.defaultCountry;
-  bool _isRegistering = false;
   _LoginMode _mode = _LoginMode.checking;
   bool _biometricInProgress = false;
   String? _biometricError;
@@ -326,9 +323,7 @@ class _LoginViewState extends ConsumerState<LoginView>
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   AppText(
-                    _isRegistering
-                        ? l10n.auth_createWallet
-                        : l10n.auth_welcomeBack,
+                    l10n.auth_welcomeBack,
                     variant: AppTextVariant.bodyLarge,
                     color: colors.textSecondary,
                   ),
@@ -343,9 +338,7 @@ class _LoginViewState extends ConsumerState<LoginView>
 
                   // Submit
                   AppButton(
-                    label: _isRegistering
-                        ? l10n.auth_createAccount
-                        : l10n.action_continue,
+                    label: l10n.action_continue,
                     onPressed: _isPhoneValid() ? _submit : null,
                     variant: AppButtonVariant.primary,
                     size: AppButtonSize.large,
@@ -366,8 +359,7 @@ class _LoginViewState extends ConsumerState<LoginView>
 
                   // Toggle register/login
                   GestureDetector(
-                    onTap: () =>
-                        setState(() => _isRegistering = !_isRegistering),
+                    onTap: () => context.go('/onboarding'),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                         vertical: AppSpacing.sm,
@@ -376,16 +368,12 @@ class _LoginViewState extends ConsumerState<LoginView>
                         alignment: WrapAlignment.center,
                         children: [
                           AppText(
-                            _isRegistering
-                                ? l10n.auth_alreadyHaveAccount
-                                : l10n.auth_dontHaveAccount,
+                            l10n.auth_dontHaveAccount,
                             variant: AppTextVariant.bodyMedium,
                             color: colors.textSecondary,
                           ),
                           AppText(
-                            _isRegistering
-                                ? l10n.auth_signIn
-                                : l10n.auth_signUp,
+                            l10n.auth_signUp,
                             variant: AppTextVariant.labelLarge,
                             color: colors.gold,
                           ),
@@ -393,13 +381,7 @@ class _LoginViewState extends ConsumerState<LoginView>
                       ),
                     ),
                   ),
-
-                  if (_isRegistering) ...[
-                    const SizedBox(height: AppSpacing.xxxl),
-                    _buildFooter(colors),
-                    const SizedBox(height: AppSpacing.xl),
-                  ] else
-                    const SizedBox(height: AppSpacing.xl),
+                  const SizedBox(height: AppSpacing.xl),
                 ],
               ),
             ),
@@ -588,61 +570,9 @@ class _LoginViewState extends ConsumerState<LoginView>
     );
   }
 
-  Widget _buildFooter(ThemeColors colors) {
-    final l10n = AppLocalizations.of(context)!;
-    if (!_isRegistering) return const SizedBox.shrink();
-
-    return Column(
-      children: [
-        AppText(
-          l10n.auth_termsPrompt,
-          variant: AppTextVariant.bodySmall,
-          color: colors.textTertiary,
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 4),
-        Wrap(
-          alignment: WrapAlignment.center,
-          children: [
-            GestureDetector(
-              onTap: () => _openLegalDocument(LegalDocumentType.termsOfService),
-              child: AppText(
-                l10n.auth_termsOfService,
-                variant: AppTextVariant.bodySmall,
-                color: colors.gold,
-              ),
-            ),
-            AppText(
-              ' ${l10n.auth_and} ',
-              variant: AppTextVariant.bodySmall,
-              color: colors.textTertiary,
-            ),
-            GestureDetector(
-              onTap: () => _openLegalDocument(LegalDocumentType.privacyPolicy),
-              child: AppText(
-                l10n.auth_privacyPolicy,
-                variant: AppTextVariant.bodySmall,
-                color: colors.gold,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
   // ──────────────────────────────────────────
   // ACTIONS
   // ──────────────────────────────────────────
-
-  void _openLegalDocument(LegalDocumentType type) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => LegalDocumentView(documentType: type),
-      ),
-    );
-  }
 
   String _getFormattedHint() {
     final format = _selectedCountry.phoneFormat;
@@ -686,16 +616,11 @@ class _LoginViewState extends ConsumerState<LoginView>
       localNumber: _phoneController.text,
     );
     ref.read(selectedCountryProvider.notifier).select(_selectedCountry);
-    if (_isRegistering) {
-      ref.read(authProvider.notifier).register(phone, _selectedCountry.code);
-    } else {
-      ref.read(authProvider.notifier).login(phone);
-    }
+    ref.read(authProvider.notifier).login(phone);
   }
 
   void _useDevPhone() {
     setState(() {
-      _isRegistering = false;
       _selectedCountry =
           SupportedCountries.findByCode('CI') ??
           SupportedCountries.defaultCountry;
