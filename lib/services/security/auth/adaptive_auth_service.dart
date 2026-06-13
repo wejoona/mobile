@@ -1,21 +1,21 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/services/security/client_risk_score_service.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// Authentication level required based on risk.
-enum AuthLevel { none, pin, biometric, mfa, blocked }
+enum AuthLevel { none, pin, biometric, stepUp, blocked }
 
 /// Determines authentication requirements based on risk signals.
 ///
-/// Low-risk actions may proceed with PIN only, while high-risk actions
-/// require biometric + TOTP verification.
+/// Low-risk actions may proceed with PIN only. Higher-risk actions must use
+/// the backend step-up flow so the server, not the device, owns the decision.
 class AdaptiveAuthService {
-  static const _tag = 'AdaptiveAuth';
-  final AppLogger _log = AppLogger(_tag);
-  final ClientRiskScoreService _riskService;
-
   AdaptiveAuthService({required ClientRiskScoreService riskService})
-      : _riskService = riskService;
+    : _riskService = riskService;
+
+  static const _tag = 'AdaptiveAuth';
+  final AppLogger _log = const AppLogger(_tag);
+  final ClientRiskScoreService _riskService;
 
   /// Determine required auth level for an action.
   Future<AuthLevel> requiredAuthLevel({
@@ -29,16 +29,24 @@ class AdaptiveAuthService {
 
     _log.debug('Risk score for $action: ${riskScore.toStringAsFixed(2)}');
 
-    if (riskScore >= 0.8) return AuthLevel.blocked;
-    if (riskScore >= 0.6) return AuthLevel.mfa;
-    if (riskScore >= 0.3) return AuthLevel.biometric;
-    if (riskScore >= 0.1) return AuthLevel.pin;
+    if (riskScore >= 0.8) {
+      return AuthLevel.blocked;
+    }
+    if (riskScore >= 0.6) {
+      return AuthLevel.stepUp;
+    }
+    if (riskScore >= 0.3) {
+      return AuthLevel.biometric;
+    }
+    if (riskScore >= 0.1) {
+      return AuthLevel.pin;
+    }
     return AuthLevel.none;
   }
 }
 
-final adaptiveAuthServiceProvider = Provider<AdaptiveAuthService>((ref) {
-  return AdaptiveAuthService(
+final adaptiveAuthServiceProvider = Provider<AdaptiveAuthService>(
+  (ref) => AdaptiveAuthService(
     riskService: ref.watch(clientRiskScoreServiceProvider),
-  );
-});
+  ),
+);

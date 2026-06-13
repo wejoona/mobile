@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/services/security/auth/mfa_provider.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// Actions requiring step-up authentication.
 enum StepUpAction {
@@ -15,17 +15,17 @@ enum StepUpAction {
 
 /// Result of a step-up auth attempt.
 class StepUpResult {
-  final bool authorized;
-  final MfaMethod? methodUsed;
-  final DateTime? authorizedAt;
-  final String? failureReason;
-
   const StepUpResult({
     required this.authorized,
     this.methodUsed,
     this.authorizedAt,
     this.failureReason,
   });
+
+  final bool authorized;
+  final MfaMethod? methodUsed;
+  final DateTime? authorizedAt;
+  final String? failureReason;
 }
 
 /// Manages step-up authentication for sensitive operations.
@@ -33,16 +33,13 @@ class StepUpResult {
 /// When a user attempts a high-risk action, this service determines
 /// which additional verification is needed and tracks authorization.
 class StepUpAuthService {
-  static const _tag = 'StepUpAuth';
-  final AppLogger _log = AppLogger(_tag);
+  StepUpAuthService();
 
-  final List<MfaMethod> _enrolledMethods;
+  static const _tag = 'StepUpAuth';
+  final AppLogger _log = const AppLogger(_tag);
 
   /// Cached step-up authorizations with expiry.
   final Map<StepUpAction, DateTime> _authorizations = {};
-
-  StepUpAuthService({required List<MfaMethod> enrolledMethods})
-    : _enrolledMethods = enrolledMethods;
 
   /// Check if a step-up auth is needed for the given action.
   bool requiresStepUp(StepUpAction action) {
@@ -54,12 +51,7 @@ class StepUpAuthService {
   }
 
   /// Determine which MFA method to use for the action.
-  MfaMethod recommendedMethod(StepUpAction action) {
-    if (_enrolledMethods.contains(MfaMethod.biometric))
-      return MfaMethod.biometric;
-    if (_enrolledMethods.contains(MfaMethod.totp)) return MfaMethod.totp;
-    return MfaMethod.sms;
-  }
+  MfaMethod recommendedMethod(StepUpAction action) => MfaMethod.biometric;
 
   /// Record a successful step-up authorization.
   void recordAuthorization(StepUpAction action, {Duration? validity}) {
@@ -70,11 +62,12 @@ class StepUpAuthService {
 
   /// Request step-up auth by method name. Returns true if authorized.
   Future<bool> requestStepUp(String methodName) async {
-    _log.debug('Requesting step-up auth via $methodName');
-    _log.security(
-      'Step-up auth rejected because backend-backed MFA is not enabled',
-      level: 'WARN',
-    );
+    _log
+      ..debug('Requesting step-up auth via $methodName')
+      ..security(
+        'Step-up auth rejected because backend-backed MFA is not enabled',
+        level: 'WARN',
+      );
     return false;
   }
 
@@ -99,7 +92,6 @@ class StepUpAuthService {
   }
 }
 
-final stepUpAuthServiceProvider = Provider<StepUpAuthService>((ref) {
-  final mfaState = ref.watch(mfaProvider);
-  return StepUpAuthService(enrolledMethods: mfaState.enrolledMethods);
-});
+final stepUpAuthServiceProvider = Provider<StepUpAuthService>(
+  (ref) => StepUpAuthService(),
+);

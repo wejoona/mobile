@@ -4,28 +4,27 @@ import 'package:usdc_wallet/utils/logger.dart';
 /// Stockage sécurisé des secrets TOTP.
 class TotpSecretStore {
   static const _tag = 'TotpSecretStore';
-  final AppLogger _log = AppLogger(_tag);
-  final Map<String, String> _secrets = {};
+  final AppLogger _log = const AppLogger(_tag);
 
   Future<void> storeSecret(String userId, String secret) async {
-    _log.debug('Storing TOTP secret for user');
-    _secrets[userId] = secret;
+    _log.security(
+      'Rejected device-local TOTP secret storage; authenticator MFA must be backend-backed',
+      level: 'WARN',
+    );
+    throw UnsupportedError(
+      'Device-local TOTP secret storage is disabled for Korido.',
+    );
   }
 
-  Future<String?> retrieveSecret(String userId) async {
-    return _secrets[userId];
-  }
+  Future<String?> retrieveSecret(String userId) async => null;
 
   Future<void> deleteSecret(String userId) async {
-    _secrets.remove(userId);
     _log.debug('Deleted TOTP secret');
   }
 
-  Future<bool> hasSecret(String userId) async {
-    return _secrets.containsKey(userId);
-  }
+  Future<bool> hasSecret(String userId) async => false;
 }
 
-final totpSecretStoreProvider = Provider<TotpSecretStore>((ref) {
-  return TotpSecretStore();
-});
+final totpSecretStoreProvider = Provider<TotpSecretStore>(
+  (ref) => TotpSecretStore(),
+);
