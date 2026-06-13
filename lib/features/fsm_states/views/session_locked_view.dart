@@ -59,10 +59,20 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
     }
     setState(() => _isUnlocking = true);
 
+    final router = GoRouter.of(context);
     final completion = Completer<void>();
+    Future<void>.delayed(const Duration(seconds: 5), () {
+      if (!mounted || !_isUnlocking) {
+        return;
+      }
+      _restoreUnlockControls();
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) {
-        if (!completion.isCompleted) completion.complete();
+        if (!completion.isCompleted) {
+          completion.complete();
+        }
         return;
       }
 
@@ -70,12 +80,27 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
         ref.read(authProvider.notifier).unlock();
         ref.read(sessionServiceProvider.notifier).unlockSession();
         ref.read(appFsmProvider.notifier).unlockSession();
-        context.go('/home');
+        router.go('/home');
+      } on Object {
+        if (mounted) {
+          _restoreUnlockControls();
+        }
       } finally {
-        if (!completion.isCompleted) completion.complete();
+        if (!completion.isCompleted) {
+          completion.complete();
+        }
       }
     });
     return completion.future;
+  }
+
+  void _restoreUnlockControls() {
+    setState(() {
+      _isUnlocking = false;
+      _pin = '';
+      _hasError = false;
+    });
+    unawaited(_checkBiometric());
   }
 
   Future<void> _logout() async {

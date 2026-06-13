@@ -10,6 +10,9 @@ void main() {
     final biometricPromptSource = File(
       'lib/features/fsm_states/views/biometric_prompt_view.dart',
     ).readAsStringSync();
+    final sessionLockedSource = File(
+      'lib/features/fsm_states/views/session_locked_view.dart',
+    ).readAsStringSync();
 
     final pinUnlockBody = _methodBody(pinScreenSource, '_applySessionUnlock');
     final pinSuccessBody = _methodBody(pinScreenSource, '_onSuccess');
@@ -17,8 +20,13 @@ void main() {
       biometricPromptSource,
       '_completeUnlock',
     );
+    final sessionLockedUnlockBody = _methodBody(sessionLockedSource, '_unlock');
 
-    for (final body in [pinUnlockBody, biometricUnlockBody]) {
+    for (final body in [
+      pinUnlockBody,
+      biometricUnlockBody,
+      sessionLockedUnlockBody,
+    ]) {
       expect(body, contains('authProvider.notifier).unlock()'));
       expect(
         body,
@@ -49,6 +57,13 @@ void main() {
     );
     expect(biometricUnlockBody, contains('addPostFrameCallback'));
     expect(biometricUnlockBody, contains("router.go('/home')"));
+    expect(
+      sessionLockedUnlockBody,
+      contains('appFsmProvider.notifier).unlockSession()'),
+      reason:
+          'session lock unlock must clear the FSM lock state before routing home',
+    );
+    expect(sessionLockedUnlockBody, contains("router.go('/home')"));
   });
 
   test('PIN lock screen keeps biometric and manual PIN fallback available', () {
@@ -67,6 +82,37 @@ void main() {
       contains('biometric_usePinInstead'),
       reason:
           'unlock transition must let the user return to PIN if navigation stalls',
+    );
+  });
+
+  test('session lock screen restores PIN and biometric if unlock stalls', () {
+    final source = File(
+      'lib/features/fsm_states/views/session_locked_view.dart',
+    ).readAsStringSync();
+
+    final unlockBody = _methodBody(source, '_unlock');
+    final restoreBody = _methodBody(source, '_restoreUnlockControls');
+
+    expect(unlockBody, contains('Duration(seconds: 5)'));
+    expect(unlockBody, contains('_restoreUnlockControls()'));
+    expect(restoreBody, contains('_isUnlocking = false'));
+    expect(restoreBody, contains("_pin = ''"));
+    expect(restoreBody, contains('_checkBiometric()'));
+  });
+
+  test('session refresh accepts the backend response envelope', () {
+    final source = File(
+      'lib/services/session/session_service.dart',
+    ).readAsStringSync();
+
+    expect(source, contains('_responsePayload(response.data)'));
+    expect(source, contains("payload['accessToken']"));
+    expect(source, contains("payload['refreshToken']"));
+    expect(source, contains("payload['expiresIn']"));
+    expect(
+      source,
+      contains('if (nestedData is Map<String, dynamic>)'),
+      reason: 'SessionService must accept { data: { accessToken, ... } }',
     );
   });
 }

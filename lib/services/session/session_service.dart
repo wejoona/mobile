@@ -446,34 +446,78 @@ class SessionService extends Notifier<SessionState> {
       );
 
       if (response.statusCode == 200) {
-        // ignore: avoid_dynamic_calls
-        final newAccessToken = response.data['accessToken'];
-        // ignore: avoid_dynamic_calls
-        final newRefreshToken = response.data['refreshToken'];
-        // ignore: avoid_dynamic_calls
-        final expiresIn = response.data['expiresIn'] as int?; // seconds
-
-        await _storage.write(key: _accessTokenKey, value: newAccessToken);
-        await _storage.write(key: _refreshTokenKey, value: newRefreshToken);
-
-        if (expiresIn != null) {
-          final expiresAt = DateTime.now().add(Duration(seconds: expiresIn));
-          await _storage.write(
-            key: _tokenExpiryKey,
-            value: expiresAt.toIso8601String(),
-          );
-          state = state.copyWith(tokenExpiresAt: expiresAt);
+        final payload = _responsePayload(response.data);
+        if (payload == null) {
+          return false;
         }
 
-        AppLogger('Debug').debug('Token refreshed successfully');
+        final newAccessToken = payload['accessToken'] as String?;
+        final newRefreshToken = payload['refreshToken'] as String?;
+        final expiresIn = _parseExpiresIn(payload['expiresIn']) ?? 900;
+
+        if (newAccessToken == null || newAccessToken.isEmpty) {
+          return false;
+        }
+
+        await _storage.write(key: _accessTokenKey, value: newAccessToken);
+        if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
+          await _storage.write(key: _refreshTokenKey, value: newRefreshToken);
+        }
+
+        final expiresAt = DateTime.now().add(Duration(seconds: expiresIn));
+        await _storage.write(
+          key: _tokenExpiryKey,
+          value: expiresAt.toIso8601String(),
+        );
+        state = state.copyWith(tokenExpiresAt: expiresAt);
+
+        const AppLogger('Debug').debug('Token refreshed successfully');
         _startTokenRefreshTimer();
         return true;
       }
       return false;
-    } catch (e) {
-      AppLogger('Token refresh failed').error('Token refresh failed', e);
+    } on Object catch (e) {
+      const AppLogger('Token refresh failed').error('Token refresh failed', e);
       return false;
     }
+  }
+
+  Map<String, dynamic>? _responsePayload(Object? data) {
+    if (data is Map<String, dynamic>) {
+      final nestedData = data['data'];
+      if (nestedData is Map<String, dynamic>) {
+        return nestedData;
+      }
+      if (nestedData is Map) {
+        return Map<String, dynamic>.from(nestedData);
+      }
+      return data;
+    }
+    if (data is Map) {
+      final normalized = Map<String, dynamic>.from(data);
+      final nestedData = normalized['data'];
+      if (nestedData is Map<String, dynamic>) {
+        return nestedData;
+      }
+      if (nestedData is Map) {
+        return Map<String, dynamic>.from(nestedData);
+      }
+      return normalized;
+    }
+    return null;
+  }
+
+  int? _parseExpiresIn(Object? value) {
+    if (value is int) {
+      return value;
+    }
+    if (value is num) {
+      return value.toInt();
+    }
+    if (value is String) {
+      return int.tryParse(value);
+    }
+    return null;
   }
 
   Future<void> _invalidateLocalSession() async {
