@@ -2,6 +2,7 @@ import Flutter
 import UIKit
 import DeviceCheck
 import CryptoKit
+import ImageIO
 import LocalAuthentication
 import Vision
 
@@ -135,7 +136,6 @@ import Vision
             return
         }
 
-        let url = URL(fileURLWithPath: path)
         let request = VNDetectFaceRectanglesRequest { request, error in
             if let error = error {
                 DispatchQueue.main.async {
@@ -156,8 +156,22 @@ import Vision
         }
 
         DispatchQueue.global(qos: .userInitiated).async {
+            guard let image = UIImage(contentsOfFile: path),
+                  let cgImage = image.cgImage else {
+                DispatchQueue.main.async {
+                    result(FlutterError(code: "IMAGE_LOAD_FAILED",
+                                        message: "Unable to read the selected image",
+                                        details: nil))
+                }
+                return
+            }
+
             do {
-                let handler = VNImageRequestHandler(url: url, options: [:])
+                let handler = VNImageRequestHandler(
+                    cgImage: cgImage,
+                    orientation: self.cgImageOrientation(from: image.imageOrientation),
+                    options: [:]
+                )
                 try handler.perform([request])
             } catch {
                 DispatchQueue.main.async {
@@ -166,6 +180,29 @@ import Vision
                                         details: nil))
                 }
             }
+        }
+    }
+
+    private func cgImageOrientation(from orientation: UIImage.Orientation) -> CGImagePropertyOrientation {
+        switch orientation {
+        case .up:
+            return .up
+        case .upMirrored:
+            return .upMirrored
+        case .down:
+            return .down
+        case .downMirrored:
+            return .downMirrored
+        case .left:
+            return .left
+        case .leftMirrored:
+            return .leftMirrored
+        case .right:
+            return .right
+        case .rightMirrored:
+            return .rightMirrored
+        @unknown default:
+            return .up
         }
     }
 
