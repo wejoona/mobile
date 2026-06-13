@@ -3,12 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
+import 'package:usdc_wallet/router/app_router.dart';
 import 'package:usdc_wallet/services/app_review/app_review_service.dart';
+import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/utils/context_extensions.dart';
 import 'package:usdc_wallet/utils/logger.dart';
@@ -143,7 +144,8 @@ class _SessionManagerState extends ConsumerState<SessionManager>
   /// Check if we should show the expiring overlay based on current route
   bool _shouldShowExpiringOverlay(BuildContext context) {
     try {
-      final location = GoRouterState.of(context).uri.path;
+      final router = ref.read(routerProvider);
+      final location = router.routeInformationProvider.value.uri.path;
       // Don't show on auth-related screens
       const suppressedRoutes = [
         '/login',
@@ -181,7 +183,7 @@ class _SessionManagerState extends ConsumerState<SessionManager>
     if (!mounted) {
       return;
     }
-    context.go('/login');
+    _go('/login');
   }
 
   void _handleSessionExpired() {
@@ -220,7 +222,7 @@ class _SessionManagerState extends ConsumerState<SessionManager>
       'Session expired. Please log in again.',
       tone: AppSnackTone.error,
     );
-    context.go('/login');
+    _go('/login');
   }
 
   void _handleSessionLocked() {
@@ -239,13 +241,20 @@ class _SessionManagerState extends ConsumerState<SessionManager>
     // Check if we have a valid Navigator context
     if (!mounted) return;
 
+    _go('/session-locked');
+  }
+
+  void _go(String location) {
     try {
-      context.go('/session-locked');
-    } catch (e) {
-      // Navigator not ready yet, ignore
-      AppLogger(
-        'Could not show lock screen',
-      ).error('Could not show lock screen', e);
+      ref.read(routerProvider).go(location);
+    } on Object {
+      try {
+        context.go(location);
+      } on Object catch (fallbackError) {
+        AppLogger(
+          'SessionManager',
+        ).error('Could not navigate to $location', fallbackError);
+      }
     }
   }
 }
