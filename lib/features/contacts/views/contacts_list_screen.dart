@@ -44,7 +44,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   }
 
   Future<void> _loadContacts() async {
-    await _requestPermissionAndSync(showSettingsDialog: false);
+    await ref.read(contactsProvider.notifier).syncContacts();
   }
 
   void _handleSearchChanged(String value) {
@@ -126,13 +126,20 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
         return;
       }
       final granted = await notifier.requestPermission();
-      if (!granted && showSettingsDialog && mounted) {
+      final nextStatus = await Permission.contacts.status;
+      if (!granted &&
+          showSettingsDialog &&
+          mounted &&
+          _shouldOpenContactsSettings(nextStatus)) {
         await _showContactsSettingsDialog(l10n);
       }
       return;
     }
     await notifier.syncContacts();
   }
+
+  bool _shouldOpenContactsSettings(PermissionStatus status) =>
+      status.isDenied || status.isPermanentlyDenied || status.isRestricted;
 
   @override
   Widget build(BuildContext context) {

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/contacts/providers/contacts_provider.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Contacts Permission Screen
 ///
@@ -28,10 +28,7 @@ class _ContactsPermissionScreenState
 
     return Scaffold(
       backgroundColor: context.colors.canvas,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
+      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(AppSpacing.md),
@@ -48,71 +45,71 @@ class _ContactsPermissionScreenState
 
                       // Icon
                       Center(
-                child: Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: context.colors.gold.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.contacts,
-                    size: 60,
-                    color: context.colors.gold,
-                  ),
-                ),
-              ),
+                        child: Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            color: context.colors.gold.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.contacts,
+                            size: 60,
+                            color: context.colors.gold,
+                          ),
+                        ),
+                      ),
 
-              SizedBox(height: AppSpacing.xl),
+                      SizedBox(height: AppSpacing.xl),
 
-              // Title
-              AppText(
-                l10n.contacts_permission_title,
-                variant: AppTextVariant.headlineLarge,
-                color: context.colors.textPrimary,
-                textAlign: TextAlign.center,
-              ),
+                      // Title
+                      AppText(
+                        l10n.contacts_permission_title,
+                        variant: AppTextVariant.headlineLarge,
+                        color: context.colors.textPrimary,
+                        textAlign: TextAlign.center,
+                      ),
 
-              SizedBox(height: AppSpacing.md),
+                      SizedBox(height: AppSpacing.md),
 
-              // Subtitle
-              AppText(
-                l10n.contacts_permission_subtitle,
-                variant: AppTextVariant.bodyLarge,
-                color: context.colors.textSecondary,
-                textAlign: TextAlign.center,
-              ),
+                      // Subtitle
+                      AppText(
+                        l10n.contacts_permission_subtitle,
+                        variant: AppTextVariant.bodyLarge,
+                        color: context.colors.textSecondary,
+                        textAlign: TextAlign.center,
+                      ),
 
-              SizedBox(height: AppSpacing.xxl),
+                      SizedBox(height: AppSpacing.xxl),
 
-              // Benefits
-              _buildBenefit(
-                context,
-                l10n,
-                Icons.people,
-                l10n.contacts_permission_benefit1_title,
-                l10n.contacts_permission_benefit1_desc,
-              ),
+                      // Benefits
+                      _buildBenefit(
+                        context,
+                        l10n,
+                        Icons.people,
+                        l10n.contacts_permission_benefit1_title,
+                        l10n.contacts_permission_benefit1_desc,
+                      ),
 
-              SizedBox(height: AppSpacing.md),
+                      SizedBox(height: AppSpacing.md),
 
-              _buildBenefit(
-                context,
-                l10n,
-                Icons.lock,
-                l10n.contacts_permission_benefit2_title,
-                l10n.contacts_permission_benefit2_desc,
-              ),
+                      _buildBenefit(
+                        context,
+                        l10n,
+                        Icons.lock,
+                        l10n.contacts_permission_benefit2_title,
+                        l10n.contacts_permission_benefit2_desc,
+                      ),
 
-              SizedBox(height: AppSpacing.md),
+                      SizedBox(height: AppSpacing.md),
 
-              _buildBenefit(
-                context,
-                l10n,
-                Icons.sync,
-                l10n.contacts_permission_benefit3_title,
-                l10n.contacts_permission_benefit3_desc,
-              ),
+                      _buildBenefit(
+                        context,
+                        l10n,
+                        Icons.sync,
+                        l10n.contacts_permission_benefit3_title,
+                        l10n.contacts_permission_benefit3_desc,
+                      ),
 
                       const SizedBox(height: AppSpacing.xxl),
                     ],
@@ -164,11 +161,7 @@ class _ContactsPermissionScreenState
             color: context.colors.elevated,
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
-          child: Icon(
-            icon,
-            color: context.colors.gold,
-            size: 20,
-          ),
+          child: Icon(icon, color: context.colors.gold, size: 20),
         ),
         SizedBox(width: AppSpacing.md),
         Expanded(
@@ -198,38 +191,51 @@ class _ContactsPermissionScreenState
     setState(() => _isLoading = true);
 
     try {
-      final granted = await ref.read(contactsProvider.notifier).requestPermission();
+      final granted = await ref
+          .read(contactsProvider.notifier)
+          .requestPermission();
 
       if (mounted) {
         if (granted) {
           context.go('/contacts/list');
         } else {
-          // Show error dialog
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              backgroundColor: context.colors.container,
-              title: AppText(
-                AppLocalizations.of(context)!.contacts_permission_denied_title,
-                variant: AppTextVariant.headlineSmall,
-              ),
-              content: AppText(
-                AppLocalizations.of(context)!.contacts_permission_denied_message,
-              ),
-              actions: [
-                AppButton(
-                  label: AppLocalizations.of(context)!.action_cancel,
-                  variant: AppButtonVariant.secondary,
-                  size: AppButtonSize.small,
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-          );
+          await _showDeniedDialog();
         }
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _showDeniedDialog() async {
+    final l10n = AppLocalizations.of(context)!;
+    final shouldOpenSettings = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: dialogContext.colors.container,
+        title: AppText(
+          l10n.contacts_permission_denied_title,
+          variant: AppTextVariant.headlineSmall,
+        ),
+        content: AppText(l10n.contacts_permission_denied_message),
+        actions: [
+          AppButton(
+            label: l10n.action_cancel,
+            variant: AppButtonVariant.secondary,
+            size: AppButtonSize.small,
+            onPressed: () => Navigator.pop(dialogContext, false),
+          ),
+          AppButton(
+            label: l10n.action_open_settings,
+            size: AppButtonSize.small,
+            onPressed: () => Navigator.pop(dialogContext, true),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldOpenSettings == true) {
+      await openAppSettings();
     }
   }
 }
