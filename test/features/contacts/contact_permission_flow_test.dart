@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Contacts permission flow', () {
-    test('initial contact load does not request OS permission', () {
+    test('contacts screen open requests OS permission before sync', () {
       final source = File(
         'lib/features/contacts/views/contacts_list_screen.dart',
       ).readAsStringSync();
@@ -15,8 +15,10 @@ void main() {
         r'Future<void> _manualSync\(\) async \{([\s\S]*?)\n  @override',
       ).firstMatch(source)!.group(1)!;
 
-      expect(loadBody, contains('syncContacts()'));
-      expect(loadBody, isNot(contains('requestPermission()')));
+      expect(
+        loadBody,
+        contains('_requestPermissionAndSync(showSettingsDialog: false)'),
+      );
       expect(manualSyncBody, contains('requestPermission()'));
     });
 

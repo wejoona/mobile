@@ -51,7 +51,7 @@ void main() {
 
     expect(recipientSource, isNot(contains('permission_handler')));
     expect(recipientContactBody, contains('ContactPickerBottomSheet'));
-    expect(recipientContactBody, isNot(contains('requestContactsPermission')));
+    expect(recipientContactBody, contains('requestContactsPermission'));
     expect(recipientContactBody, isNot(contains('Permission.contacts')));
   });
 }

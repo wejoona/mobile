@@ -44,7 +44,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   }
 
   Future<void> _loadContacts() async {
-    await ref.read(contactsProvider.notifier).syncContacts();
+    await _requestPermissionAndSync(showSettingsDialog: false);
   }
 
   void _handleSearchChanged(String value) {
