@@ -1084,7 +1084,13 @@ class _KycViewState extends ConsumerState<KycView> {
       ),
     );
 
-    if (result != null && result.isLive) {
+    final faceScore = result?.faceMatchScore ?? 1.0;
+    final passed = result != null &&
+        result.isLive &&
+        result.confidence >= 0.50 &&
+        faceScore >= 0.50;
+
+    if (passed) {
       setState(() {
         _livenessCheckPassed = true;
         _livenessSessionId = result.sessionId;
@@ -1098,7 +1104,7 @@ class _KycViewState extends ConsumerState<KycView> {
           ),
         );
       }
-    } else if (result != null && !result.isLive) {
+    } else if (result != null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

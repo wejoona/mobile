@@ -581,27 +581,30 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
       _showLiveness = false;
     });
 
-    if (result.isLive) {
-      // Validate with backend
-      try {
-        final securityService = ref.read(riskBasedSecurityServiceProvider);
-        final validated = await securityService.validateStepUp(
-          challengeToken: widget.decision.challengeToken!,
-          livenessSessionId: result.sessionId,
-          biometricVerified:
-              widget.decision.stepUpType == StepUpType.biometricAndLiveness,
-        );
-
-        if (validated) {
-          widget.onSuccess();
-        } else {
-          setState(() => _error = 'Verification failed. Please try again.');
-        }
-      } catch (e) {
-        setState(() => _error = 'Verification error: $e');
-      }
-    } else {
+    final faceScore = result.faceMatchScore ?? 1.0;
+    if (!result.isLive || result.confidence < 0.50 || faceScore < 0.50) {
       setState(() => _error = 'Liveness check failed. Please try again.');
+      setState(() => _isProcessing = false);
+      return;
+    }
+
+    // Validate with backend
+    try {
+      final securityService = ref.read(riskBasedSecurityServiceProvider);
+      final validated = await securityService.validateStepUp(
+        challengeToken: widget.decision.challengeToken!,
+        livenessSessionId: result.sessionId,
+        biometricVerified:
+            widget.decision.stepUpType == StepUpType.biometricAndLiveness,
+      );
+
+      if (validated) {
+        widget.onSuccess();
+      } else {
+        setState(() => _error = 'Verification failed. Please try again.');
+      }
+    } catch (e) {
+      setState(() => _error = 'Verification error: $e');
     }
 
     setState(() => _isProcessing = false);
