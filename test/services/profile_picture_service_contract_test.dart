@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/profile/services/profile_picture_service.dart';
+import 'package:usdc_wallet/services/user/avatar_multipart.dart';
 
 import '../helpers/test_utils.dart';
 
@@ -25,6 +26,14 @@ void main() {
       expect(dio.requestHistory.single.path, '/user/avatar');
       final formData = dio.requestHistory.single.data as FormData;
       expect(formData.files.single.key, 'avatar');
+      expect(
+        formData.fields.any(
+          (entry) =>
+              entry.key == avatarDeviceFaceCheckField &&
+              entry.value == avatarDeviceFaceCheckToken,
+        ),
+        isTrue,
+      );
       expect(result.avatarUrl, '/user/avatar/usr_profile_picture');
       expect(result.avatarThumb, startsWith('data:image/jpeg;base64,'));
       expect(result.message, 'Avatar uploaded successfully');

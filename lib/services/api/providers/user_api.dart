@@ -29,6 +29,7 @@ class UserApi {
   /// POST /user/avatar — upload avatar image
   Future<Response> uploadAvatar(File file) async {
     final formData = FormData.fromMap({
+      avatarDeviceFaceCheckField: avatarDeviceFaceCheckToken,
       'avatar': await avatarMultipartFile(file),
     });
     return _dio.post('/user/avatar', data: formData);

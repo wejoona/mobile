@@ -72,6 +72,7 @@ class ProfilePictureService {
 
       final fileName = imageFile.path.split('/').last;
       final formData = FormData.fromMap({
+        avatarDeviceFaceCheckField: avatarDeviceFaceCheckToken,
         'avatar': await avatarMultipartFile(imageFile, filename: fileName),
       });
 

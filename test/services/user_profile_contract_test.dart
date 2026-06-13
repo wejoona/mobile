@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:dio/dio.dart';
 import 'package:usdc_wallet/services/storage/hive_models.dart';
+import 'package:usdc_wallet/services/user/avatar_multipart.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/state/app_state.dart';
 
@@ -136,6 +138,34 @@ void main() {
       expect(dio.requestHistory.single.data, {'email': null});
       expect(profile.email, isNull);
     });
+
+    test(
+      'user avatar upload declares the device face-check contract',
+      () async {
+        final avatarFile = await _writeTinyJpeg();
+        final dio = MockDio()
+          ..queueResponse({
+            'avatarUrl': '/user/avatar/usr_face_checked',
+            'avatarThumb': 'data:image/jpeg;base64,/9j/thumb',
+          });
+        final service = UserService(dio);
+
+        final avatar = await service.uploadAvatar(avatarFile.path);
+
+        final formData = dio.requestHistory.single.data as FormData;
+        expect(dio.requestHistory.single.path, '/user/avatar');
+        expect(formData.files.single.key, 'avatar');
+        expect(
+          formData.fields.any(
+            (entry) =>
+                entry.key == avatarDeviceFaceCheckField &&
+                entry.value == avatarDeviceFaceCheckToken,
+          ),
+          isTrue,
+        );
+        expect(avatar.avatarUrl, '/user/avatar/usr_face_checked');
+      },
+    );
   });
 
   group('UserState avatar contract', () {
@@ -224,4 +254,25 @@ void main() {
       expect(userStateSource, contains('avatarThumb: cached.avatarThumb'));
     });
   });
+}
+
+Future<File> _writeTinyJpeg() async {
+  final file = File('${Directory.systemTemp.path}/korido-user-avatar.jpg');
+  await file.writeAsBytes(const [
+    0xFF,
+    0xD8,
+    0xFF,
+    0xE0,
+    0x00,
+    0x10,
+    0x4A,
+    0x46,
+    0x49,
+    0x46,
+    0x00,
+    0x01,
+    0xFF,
+    0xD9,
+  ]);
+  return file;
 }

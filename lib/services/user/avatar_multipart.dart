@@ -2,6 +2,9 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 
+const avatarDeviceFaceCheckField = 'deviceFaceCheck';
+const avatarDeviceFaceCheckToken = 'single_face_device_v1';
+
 DioMediaType avatarContentTypeForPath(String path) {
   final extension = path.split('.').last.toLowerCase();
   return switch (extension) {

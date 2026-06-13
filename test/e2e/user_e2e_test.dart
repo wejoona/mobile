@@ -6,6 +6,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:usdc_wallet/services/user/avatar_multipart.dart';
 import 'package:test/test.dart';
 import 'e2e_test_client.dart';
 
@@ -71,6 +72,7 @@ void main() {
             fieldName: 'avatar',
             file: avatarFile,
             filename: 'korido-profile-e2e.jpg',
+            fields: {avatarDeviceFaceCheckField: avatarDeviceFaceCheckToken},
           );
           uploadRes.expectOk();
           final upload = uploadRes.data?['data'] ?? uploadRes.data;

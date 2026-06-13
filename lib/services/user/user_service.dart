@@ -48,6 +48,7 @@ class UserService {
   Future<AvatarUploadResult> uploadAvatar(String filePath) async {
     try {
       final formData = FormData.fromMap({
+        avatarDeviceFaceCheckField: avatarDeviceFaceCheckToken,
         'avatar': await avatarMultipartFile(File(filePath)),
       });
 
