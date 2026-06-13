@@ -19,6 +19,7 @@ class FaceDetectionResult {
 }
 
 class ImageAnalysisService {
+  static const _faceDetectionTimeout = Duration(seconds: 15);
   static const MethodChannel _channel = MethodChannel(
     'com.joonapay.usdc_wallet/image_analysis',
   );
@@ -29,7 +30,7 @@ class ImageAnalysisService {
           .invokeMapMethod<String, Object?>('detectFaces', {
             'path': imageFile.path,
           })
-          .timeout(const Duration(seconds: 8));
+          .timeout(_faceDetectionTimeout);
       return FaceDetectionResult(
         faceCount: (result?['faceCount'] as num?)?.toInt() ?? 0,
         isAvailable: result?['available'] as bool? ?? true,
@@ -40,7 +41,7 @@ class ImageAnalysisService {
         faceCount: 0,
         isAvailable: false,
         message:
-            'Face check timed out. Try a brighter, smaller selfie and keep your face centered.',
+            'Face check is taking too long. Try a brighter selfie with your face centered.',
       );
     } on MissingPluginException {
       return const FaceDetectionResult(

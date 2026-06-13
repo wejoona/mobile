@@ -158,13 +158,14 @@ class CachedUserProfileAdapter extends TypeAdapter<CachedUserProfile> {
       countryCode: fields[7] as String,
       kycStatus: fields[8] as String,
       cachedAt: fields[9] as DateTime,
+      avatarThumb: fields[10] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, CachedUserProfile obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.userId)
       ..writeByte(1)
@@ -184,7 +185,9 @@ class CachedUserProfileAdapter extends TypeAdapter<CachedUserProfile> {
       ..writeByte(8)
       ..write(obj.kycStatus)
       ..writeByte(9)
-      ..write(obj.cachedAt);
+      ..write(obj.cachedAt)
+      ..writeByte(10)
+      ..write(obj.avatarThumb);
   }
 
   @override

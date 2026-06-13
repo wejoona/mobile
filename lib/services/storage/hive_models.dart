@@ -149,6 +149,9 @@ class CachedUserProfile extends HiveObject {
   @HiveField(9)
   final DateTime cachedAt;
 
+  @HiveField(10)
+  final String? avatarThumb;
+
   CachedUserProfile({
     required this.userId,
     this.phone,
@@ -160,6 +163,7 @@ class CachedUserProfile extends HiveObject {
     required this.countryCode,
     required this.kycStatus,
     required this.cachedAt,
+    this.avatarThumb,
   });
 
   bool isStale(Duration maxAge) {

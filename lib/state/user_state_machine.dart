@@ -151,7 +151,7 @@ class UserStateMachine extends Notifier<UserState> {
         avatarUrl: profile.avatarUrl,
         avatarThumb: profile.avatarThumb,
         clearAvatarUrl: !hasServerAvatar,
-        clearAvatarThumb: !hasServerAvatar || !hasAvatarThumb,
+        clearAvatarThumb: !hasAvatarThumb,
         countryCode: profile.countryCode,
         kycStatus: _parseKycStatus(profile.kycStatus),
         canTransact: profile.canTransact,
@@ -216,9 +216,10 @@ class UserStateMachine extends Notifier<UserState> {
           lastName: cached.lastName,
           email: cached.email,
           avatarUrl: cached.avatarUrl,
+          avatarThumb: cached.avatarThumb,
           clearAvatarUrl: cached.avatarUrl == null || cached.avatarUrl!.isEmpty,
           clearAvatarThumb:
-              cached.avatarUrl == null || cached.avatarUrl!.isEmpty,
+              cached.avatarThumb == null || cached.avatarThumb!.isEmpty,
           countryCode: cached.countryCode,
         );
       }

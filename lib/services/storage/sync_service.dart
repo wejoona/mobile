@@ -127,6 +127,7 @@ class SyncService {
       email: state.email,
       emailVerified: state.emailVerified,
       avatarUrl: state.avatarUrl,
+      avatarThumb: state.avatarThumb,
       countryCode: state.countryCode,
       kycStatus: state.kycStatus.name,
     );

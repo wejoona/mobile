@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:usdc_wallet/services/storage/hive_models.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/state/app_state.dart';
 
@@ -197,6 +198,27 @@ void main() {
       expect(profileEditSource, contains('detectFaces(compressed)'));
       expect(profileEditSource, contains('uploadAvatar(compressed)'));
       expect(profileEditSource, contains('_selectedImage = null'));
+    });
+
+    test('cached profile preserves avatar thumbnail for offline rendering', () {
+      final cached = CachedUserProfile(
+        userId: 'usr_cached',
+        avatarUrl: '/user/avatar/usr_cached',
+        avatarThumb: 'data:image/jpeg;base64,/9j/cached',
+        countryCode: 'CI',
+        kycStatus: 'approved',
+        cachedAt: DateTime.parse('2026-06-04T10:00:00.000Z'),
+      );
+      final syncSource = File(
+        'lib/services/storage/sync_service.dart',
+      ).readAsStringSync();
+      final userStateSource = File(
+        'lib/state/user_state_machine.dart',
+      ).readAsStringSync();
+
+      expect(cached.avatarThumb, startsWith('data:image/jpeg;base64,'));
+      expect(syncSource, contains('avatarThumb: state.avatarThumb'));
+      expect(userStateSource, contains('avatarThumb: cached.avatarThumb'));
     });
   });
 }

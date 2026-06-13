@@ -139,6 +139,7 @@ class LocalCacheService {
     String? email,
     bool emailVerified = false,
     String? avatarUrl,
+    String? avatarThumb,
     required String countryCode,
     required String kycStatus,
   }) async {
@@ -152,6 +153,7 @@ class LocalCacheService {
         email: email,
         emailVerified: emailVerified,
         avatarUrl: avatarUrl,
+        avatarThumb: avatarThumb,
         countryCode: countryCode,
         kycStatus: kycStatus,
         cachedAt: DateTime.now(),
