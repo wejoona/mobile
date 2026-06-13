@@ -151,6 +151,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
           lastName: profile.lastName,
           email: profile.email,
           emailVerified: profile.emailVerified,
+          clearEmail: profile.email == null || profile.email!.isEmpty,
           avatarUrl: profile.avatarUrl,
           avatarThumb: profile.avatarThumb,
           clearAvatarUrl:

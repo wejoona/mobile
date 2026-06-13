@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/profile/services/profile_picture_service.dart';
 
@@ -22,6 +23,8 @@ void main() {
       final result = await service.uploadAvatar(file, onProgress: (_) {});
 
       expect(dio.requestHistory.single.path, '/user/avatar');
+      final formData = dio.requestHistory.single.data as FormData;
+      expect(formData.files.single.key, 'avatar');
       expect(result.avatarUrl, '/user/avatar/usr_profile_picture');
       expect(result.avatarThumb, startsWith('data:image/jpeg;base64,'));
       expect(result.message, 'Avatar uploaded successfully');

@@ -26,6 +26,7 @@ class UserService {
     String? firstName,
     String? lastName,
     String? email,
+    bool clearEmail = false,
   }) async {
     try {
       final response = await _dio.put(
@@ -34,6 +35,7 @@ class UserService {
           if (firstName != null) 'firstName': firstName,
           if (lastName != null) 'lastName': lastName,
           if (email != null) 'email': email,
+          if (clearEmail) 'email': null,
         },
       );
       return UserProfile.fromJson(_readPayload(response.data));

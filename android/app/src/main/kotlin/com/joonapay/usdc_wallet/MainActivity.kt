@@ -1,6 +1,9 @@
 package com.joonapay.usdc_wallet
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.media.FaceDetector
 import android.os.Build
 import android.os.Bundle
 import android.security.keystore.KeyGenParameterSpec
@@ -24,11 +27,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
+import java.io.File
 
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "com.joonapay.usdc_wallet/attestation"
     private val SECURITY_CHANNEL = "com.joonapay.usdc_wallet/security"
     private val BIOMETRICS_CHANNEL = "com.joonapay.usdc_wallet/biometrics"
+    private val IMAGE_ANALYSIS_CHANNEL = "com.joonapay.usdc_wallet/image_analysis"
     private val BIOMETRIC_KEY_ALIAS = "korido_biometric_enrollment_guard"
     private val BIOMETRIC_PREFS = "korido_biometric_state"
     private val BIOMETRIC_GENERATION_KEY = "generation"
@@ -84,6 +90,109 @@ class MainActivity : FlutterActivity() {
             when (call.method) {
                 "getEnrollmentStateHash" -> getBiometricEnrollmentStateHash(result)
                 else -> result.notImplemented()
+            }
+        }
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, IMAGE_ANALYSIS_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "detectFaces" -> {
+                    val path = call.argument<String>("path")
+                    if (path.isNullOrBlank()) {
+                        result.error("INVALID_ARGUMENT", "Image path is required", null)
+                    } else {
+                        detectFaces(path, result)
+                    }
+                }
+                else -> result.notImplemented()
+            }
+        }
+    }
+
+    private fun detectFaces(path: String, result: MethodChannel.Result) {
+        if (!File(path).exists()) {
+            result.error("FILE_NOT_FOUND", "Image file was not found", null)
+            return
+        }
+
+        CoroutineScope(Dispatchers.Default).launch {
+            try {
+                val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                BitmapFactory.decodeFile(path, bounds)
+                if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
+                    withContext(Dispatchers.Main) {
+                        result.error("IMAGE_LOAD_FAILED", "Unable to read the selected image", null)
+                    }
+                    return@launch
+                }
+
+                var sampleSize = 1
+                while (bounds.outWidth / sampleSize > 1024 || bounds.outHeight / sampleSize > 1024) {
+                    sampleSize *= 2
+                }
+
+                val decoded = BitmapFactory.decodeFile(
+                    path,
+                    BitmapFactory.Options().apply {
+                        inSampleSize = sampleSize
+                        inPreferredConfig = Bitmap.Config.RGB_565
+                    }
+                )
+
+                if (decoded == null) {
+                    withContext(Dispatchers.Main) {
+                        result.error("IMAGE_LOAD_FAILED", "Unable to read the selected image", null)
+                    }
+                    return@launch
+                }
+
+                val rgb565 = if (decoded.config == Bitmap.Config.RGB_565) {
+                    decoded
+                } else {
+                    decoded.copy(Bitmap.Config.RGB_565, false) ?: decoded
+                }
+
+                if (rgb565.width < 2 || rgb565.height < 2) {
+                    withContext(Dispatchers.Main) {
+                        result.success(
+                            hashMapOf(
+                                "available" to true,
+                                "faceCount" to 0
+                            )
+                        )
+                    }
+                    return@launch
+                }
+
+                val analysisBitmap = if (rgb565.width % 2 == 0) {
+                    rgb565
+                } else {
+                    Bitmap.createBitmap(rgb565, 0, 0, rgb565.width - 1, rgb565.height)
+                }
+
+                val maxFaces = 8
+                val faces = arrayOfNulls<FaceDetector.Face>(maxFaces)
+                val faceCount = FaceDetector(
+                    analysisBitmap.width,
+                    analysisBitmap.height,
+                    maxFaces
+                ).findFaces(analysisBitmap, faces)
+
+                withContext(Dispatchers.Main) {
+                    result.success(
+                        hashMapOf(
+                            "available" to true,
+                            "faceCount" to faceCount
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    result.error(
+                        "FACE_DETECTION_FAILED",
+                        e.message ?: "Face detection failed",
+                        e.stackTraceToString()
+                    )
+                }
             }
         }
     }

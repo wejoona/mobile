@@ -531,6 +531,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             email: _emailController.text.trim().isEmpty
                 ? null
                 : _emailController.text.trim(),
+            clearEmail: _emailController.text.trim().isEmpty,
           );
 
       await ref.read(profileProvider.notifier).applyProfileSnapshot(profile);

@@ -340,6 +340,7 @@ class UserStateMachine extends Notifier<UserState> {
     String? avatarUrl,
     String? avatarThumb,
     KycStatus? kycStatus,
+    bool clearEmail = false,
     bool clearAvatarUrl = false,
     bool clearAvatarThumb = false,
   }) {
@@ -348,6 +349,7 @@ class UserStateMachine extends Notifier<UserState> {
       lastName: lastName ?? state.lastName,
       email: email ?? state.email,
       emailVerified: emailVerified ?? state.emailVerified,
+      clearEmail: clearEmail,
       avatarUrl: avatarUrl ?? state.avatarUrl,
       avatarThumb: avatarThumb ?? state.avatarThumb,
       clearAvatarUrl: clearAvatarUrl,

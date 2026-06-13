@@ -121,6 +121,20 @@ void main() {
       expect(profile.avatarUrl, '/user/avatar/usr_enveloped');
       expect(profile.countryCode, 'CI');
     });
+
+    test('user service can explicitly clear profile email', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'data': {'id': 'usr_clear_email', 'email': null},
+        });
+      final service = UserService(dio);
+
+      final profile = await service.updateProfile(clearEmail: true);
+
+      expect(dio.requestHistory.single.path, '/user/profile');
+      expect(dio.requestHistory.single.data, {'email': null});
+      expect(profile.email, isNull);
+    });
   });
 
   group('UserState avatar contract', () {
@@ -138,6 +152,15 @@ void main() {
       expect(cleared.avatarUrl, isNull);
       expect(cleared.avatarThumb, isNull);
       expect(cleared.effectiveAvatarUrl, isNull);
+    });
+
+    test('can explicitly clear stale profile email', () {
+      const state = UserState(email: 'old@korido.co', emailVerified: true);
+
+      final cleared = state.copyWith(clearEmail: true, emailVerified: false);
+
+      expect(cleared.email, isNull);
+      expect(cleared.emailVerified, isFalse);
     });
 
     test('profile edit screen rebuilds after hydrating existing avatar', () {
@@ -171,11 +194,9 @@ void main() {
       expect(userStateSource, contains("delete(key: 'local_avatar_path')"));
       expect(profileProviderSource, contains('await _applyAvatarUploadResult'));
       expect(profileProviderSource, contains('applyServerAvatar('));
-      expect(profileEditSource, contains('await ref'));
-      expect(
-        profileEditSource,
-        contains('avatarChanged: _selectedImage != null'),
-      );
+      expect(profileEditSource, contains('detectFaces(compressed)'));
+      expect(profileEditSource, contains('uploadAvatar(compressed)'));
+      expect(profileEditSource, contains('_selectedImage = null'));
     });
   });
 }

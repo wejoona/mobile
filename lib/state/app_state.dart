@@ -191,6 +191,7 @@ class UserState {
     bool? canWithdraw,
     String? accessToken,
     String? error,
+    bool clearEmail = false,
     bool clearAvatarUrl = false,
     bool clearAvatarThumb = false,
   }) {
@@ -200,7 +201,7 @@ class UserState {
       phone: phone ?? this.phone,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
-      email: email ?? this.email,
+      email: clearEmail ? null : email ?? this.email,
       emailVerified: emailVerified ?? this.emailVerified,
       avatarUrl: clearAvatarUrl ? null : avatarUrl ?? this.avatarUrl,
       avatarThumb: clearAvatarThumb ? null : avatarThumb ?? this.avatarThumb,
