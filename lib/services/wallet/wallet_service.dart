@@ -451,9 +451,21 @@ class WalletBalanceResponse {
 
 Map<String, dynamic> _walletPayload(Map<String, dynamic> json) {
   final data = json['data'];
-  if (data is Map<String, dynamic>) return data;
-  if (data is Map) return Map<String, dynamic>.from(data);
-  return json;
+  final payload = data is Map<String, dynamic>
+      ? data
+      : data is Map
+      ? Map<String, dynamic>.from(data)
+      : json;
+  return _unwrapWalletPayload(payload);
+}
+
+Map<String, dynamic> _unwrapWalletPayload(Map<String, dynamic> payload) {
+  for (final key in const ['wallet', 'account', 'result']) {
+    final nested = payload[key];
+    if (nested is Map<String, dynamic>) return nested;
+    if (nested is Map) return Map<String, dynamic>.from(nested);
+  }
+  return payload;
 }
 
 double _readAmount(Map<String, dynamic> json, List<String> keys) {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
@@ -13,6 +15,7 @@ class AppRefreshIndicator extends StatelessWidget {
     this.displacement = 40.0,
     this.edgeOffset = 0.0,
     this.notificationPredicate = defaultScrollNotificationPredicate,
+    this.refreshTimeout = const Duration(seconds: 20),
   });
 
   /// The widget below this widget in the tree.
@@ -32,12 +35,20 @@ class AppRefreshIndicator extends StatelessWidget {
   /// handled by this widget.
   final bool Function(ScrollNotification) notificationPredicate;
 
+  /// Safety cap so a screen-level refresh can never leave the indicator stuck.
+  final Duration refreshTimeout;
+
   Future<void> _handleRefresh() async {
     // Provide haptic feedback when refresh starts
     try {
       await hapticService.refresh().timeout(const Duration(milliseconds: 500));
     } catch (_) {}
-    await onRefresh();
+    try {
+      await onRefresh().timeout(refreshTimeout);
+    } on TimeoutException {
+      // Screen-level refresh handlers should handle their own errors. This
+      // timeout only protects the gesture affordance from spinning forever.
+    }
     // Provide subtle feedback when refresh completes
     try {
       await hapticService.lightTap().timeout(const Duration(milliseconds: 500));

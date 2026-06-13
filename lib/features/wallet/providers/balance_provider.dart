@@ -81,7 +81,9 @@ final walletBalanceProvider = FutureProvider<WalletBalance>((ref) async {
 WalletBalance _walletBalanceFromPayload(dynamic payload) {
   final data = _asMap(payload);
   final envelopeData = _asMap(data['data']);
-  final wallet = envelopeData.isNotEmpty ? envelopeData : data;
+  final wallet = _unwrapWalletMap(
+    envelopeData.isNotEmpty ? envelopeData : data,
+  );
 
   // GET /wallet returns { walletId, currency, balances: [...] }.
   // POST /wallet/create returns { id, currency, balance }.
@@ -156,6 +158,14 @@ Map<String, dynamic> _asMap(dynamic value) {
   if (value is Map<String, dynamic>) return value;
   if (value is Map) return Map<String, dynamic>.from(value);
   return const {};
+}
+
+Map<String, dynamic> _unwrapWalletMap(Map<String, dynamic> value) {
+  for (final key in const ['wallet', 'account', 'result']) {
+    final nested = _asMap(value[key]);
+    if (nested.isNotEmpty) return nested;
+  }
+  return value;
 }
 
 double? _amountFromString(Object? value) {
