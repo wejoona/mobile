@@ -149,17 +149,23 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       final syncData = response.data as Map<String, dynamic>;
       final matches = _extractContactSyncMatches(syncData);
       final isKoridoUser = matches.isNotEmpty;
+      if (!isKoridoUser) {
+        state = state.copyWith(
+          isLoading: false,
+          clearRecipient: true,
+          error: 'recipient_not_korido_user',
+        );
+        return;
+      }
 
       String? userId;
       String? displayName = name;
-      if (isKoridoUser) {
-        final match = matches.first;
-        userId = match['userId'] as String?;
-        displayName =
-            displayName ??
-            (match['displayName'] as String?) ??
-            (match['name'] as String?);
-      }
+      final match = matches.first;
+      userId = match['userId'] as String?;
+      displayName =
+          displayName ??
+          (match['displayName'] as String?) ??
+          (match['name'] as String?);
 
       final recipient = RecipientInfo(
         phoneNumber: phoneNumber,

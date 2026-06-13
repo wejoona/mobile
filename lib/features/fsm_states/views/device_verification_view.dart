@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/state/fsm/session_fsm.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/session_fsm.dart';
+import 'package:usdc_wallet/state/user_state_machine.dart';
 
 /// Device Verification View
 /// Shown when a new or changed device is detected
@@ -15,10 +16,12 @@ class DeviceVerificationView extends ConsumerStatefulWidget {
   const DeviceVerificationView({super.key});
 
   @override
-  ConsumerState<DeviceVerificationView> createState() => _DeviceVerificationViewState();
+  ConsumerState<DeviceVerificationView> createState() =>
+      _DeviceVerificationViewState();
 }
 
-class _DeviceVerificationViewState extends ConsumerState<DeviceVerificationView> {
+class _DeviceVerificationViewState
+    extends ConsumerState<DeviceVerificationView> {
   bool _isVerifying = false;
 
   @override
@@ -81,7 +84,10 @@ class _DeviceVerificationViewState extends ConsumerState<DeviceVerificationView>
                               color: context.colors.textSecondary,
                             ),
                             AppText(
-                              deviceId.substring(0, deviceId.length > 20 ? 20 : deviceId.length),
+                              deviceId.substring(
+                                0,
+                                deviceId.length > 20 ? 20 : deviceId.length,
+                              ),
                               variant: AppTextVariant.bodySmall,
                               color: context.colors.textPrimary,
                             ),
@@ -129,8 +135,8 @@ class _DeviceVerificationViewState extends ConsumerState<DeviceVerificationView>
               SizedBox(height: AppSpacing.md),
               AppButton(
                 label: l10n.common_logout,
-                onPressed: () {
-                  ref.read(appFsmProvider.notifier).logout();
+                onPressed: () async {
+                  await ref.read(authProvider.notifier).logout();
                 },
                 variant: AppButtonVariant.ghost,
                 isFullWidth: true,
@@ -145,46 +151,46 @@ class _DeviceVerificationViewState extends ConsumerState<DeviceVerificationView>
   Future<void> _verifyWithOtp() async {
     setState(() => _isVerifying = true);
     try {
-      final dio = ref.read(dioProvider);
-      // Request OTP via the login endpoint (sends OTP to user's phone)
-      await dio.post('/auth/login', data: {
-        'phone': ref.read(appFsmProvider).session is SessionDeviceChanged
-            ? null // Phone will be resolved from auth token
-            : null,
-      });
-
-      if (!mounted) return;
-
-      // Show OTP input dialog
-      final otp = await _showOtpDialog();
-      if (otp == null || !mounted) return;
-
-      // Verify OTP with backend
-      final response = await dio.post('/auth/verify-otp', data: {
-        'otp': otp,
-      });
-
-      if (response.statusCode == 200 && mounted) {
-        // Register device as trusted
-        await dio.post('/devices/register', data: {
-          'deviceIdentifier': (ref.read(appFsmProvider).session as SessionDeviceChanged).deviceId,
-          'platform': 'mobile',
-        });
-
-        if (mounted) {
-          ref.read(appFsmProvider.notifier).dispatch(
-                const AppSessionEvent(SessionDeviceVerified()),
-              );
-        }
+      final phone = await _currentPhone();
+      if (phone == null) {
+        _showSnackBar('Phone number unavailable. Please log in again.');
+        return;
       }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.deviceVerification_failed),
-            backgroundColor: context.colors.error,
-          ),
+
+      await ref.read(authProvider.notifier).login(phone);
+      if (!mounted) {
+        return;
+      }
+
+      final loginState = ref.read(authProvider);
+      if (loginState.status == AuthStatus.error) {
+        _showSnackBar(loginState.error ?? _deviceVerificationFailedMessage());
+        return;
+      }
+
+      final otp = await _showOtpDialog();
+      if (otp == null || !mounted) {
+        return;
+      }
+
+      final verified = await ref.read(authProvider.notifier).verifyOtp(otp);
+      if (!mounted) {
+        return;
+      }
+
+      if (!verified) {
+        _showSnackBar(
+          ref.read(authProvider).error ?? _deviceVerificationFailedMessage(),
         );
+        return;
+      }
+
+      ref
+          .read(appFsmProvider.notifier)
+          .dispatch(const AppSessionEvent(SessionDeviceVerified()));
+    } on Object catch (_) {
+      if (mounted) {
+        _showSnackBar(_deviceVerificationFailedMessage());
       }
     } finally {
       if (mounted) {
@@ -217,7 +223,10 @@ class _DeviceVerificationViewState extends ConsumerState<DeviceVerificationView>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: AppText(l10n.common_cancel, color: context.colors.textSecondary),
+            child: AppText(
+              l10n.common_cancel,
+              color: context.colors.textSecondary,
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, controller.text),
@@ -229,48 +238,44 @@ class _DeviceVerificationViewState extends ConsumerState<DeviceVerificationView>
   }
 
   Future<void> _verifyWithEmail() async {
-    setState(() => _isVerifying = true);
-    try {
-      final dio = ref.read(dioProvider);
-      // Request email verification from backend
-      await dio.post('/auth/login', data: {
-        // Backend sends OTP to registered email
-      });
+    _showSnackBar(
+      'Email device verification is not available yet. Use SMS code.',
+    );
+  }
 
-      if (!mounted) return;
-
-      final otp = await _showOtpDialog();
-      if (otp == null || !mounted) return;
-
-      final response = await dio.post('/auth/verify-otp', data: {
-        'otp': otp,
-      });
-
-      if (response.statusCode == 200 && mounted) {
-        await dio.post('/devices/register', data: {
-          'deviceIdentifier': (ref.read(appFsmProvider).session as SessionDeviceChanged).deviceId,
-          'platform': 'mobile',
-        });
-
-        if (mounted) {
-          ref.read(appFsmProvider.notifier).dispatch(
-                const AppSessionEvent(SessionDeviceVerified()),
-              );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.deviceVerification_failed),
-            backgroundColor: context.colors.error,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isVerifying = false);
-      }
+  Future<String?> _currentPhone() async {
+    final authState = ref.read(authProvider);
+    final authPhone = authState.user?.phone ?? authState.phone;
+    if (_hasValue(authPhone)) {
+      return authPhone!.trim();
     }
+
+    final userPhone = ref.read(userStateMachineProvider).phone;
+    if (_hasValue(userPhone)) {
+      return userPhone!.trim();
+    }
+
+    final storedPhone = await ref
+        .read(secureStorageProvider)
+        .read(key: 'user_phone');
+    if (_hasValue(storedPhone)) {
+      return storedPhone!.trim();
+    }
+
+    return null;
+  }
+
+  bool _hasValue(String? value) => value != null && value.trim().isNotEmpty;
+
+  String _deviceVerificationFailedMessage() =>
+      AppLocalizations.of(context)!.deviceVerification_failed;
+
+  void _showSnackBar(String message) {
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: context.colors.error),
+    );
   }
 }

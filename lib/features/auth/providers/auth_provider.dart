@@ -672,7 +672,7 @@ class AuthNotifier extends Notifier<AuthState> {
       e.statusCode == 400 || e.statusCode == 401 || e.statusCode == 403;
 
   /// Logout
-  Future<void> logout({bool localFirst = false}) async {
+  Future<void> logout({bool localFirst = true}) async {
     final accessToken = await _storage.read(key: StorageKeys.accessToken);
     final refreshToken = await _storage.read(key: StorageKeys.refreshToken);
 

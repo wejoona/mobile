@@ -62,6 +62,16 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
       backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_rounded, color: colors.textPrimary),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/cards');
+            }
+          },
+        ),
         title: AppText(
           l10n.cards_requestCard,
           variant: AppTextVariant.titleLarge,

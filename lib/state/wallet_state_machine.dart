@@ -211,7 +211,7 @@ class WalletStateMachine extends Notifier<WalletState> {
       // Fresh users should not be blocked by an internal wallet bootstrap step.
       // If the API says no wallet exists, create the local USDC wallet and
       // let the FSM continue to Home once creation succeeds.
-      if (e.statusCode == 404 && e.message.contains('Wallet not found')) {
+      if (e.statusCode == 404) {
         state = state.copyWith(status: WalletStatus.initial, error: null);
         await createWallet();
       } else if (_keepCachedBalanceOnFailure()) {
@@ -287,7 +287,7 @@ class WalletStateMachine extends Notifier<WalletState> {
       // A fresh user may not have a wallet provisioned yet. Mirror fetch():
       // create it instead of silently completing with an empty balance the
       // home screen can never render.
-      if (e.statusCode == 404 && e.message.contains('Wallet not found')) {
+      if (e.statusCode == 404) {
         state = state.copyWith(status: WalletStatus.initial, error: null);
         await createWallet();
       } else {
@@ -326,7 +326,9 @@ class WalletStateMachine extends Notifier<WalletState> {
     state = state.copyWith(status: WalletStatus.loading);
 
     try {
-      final response = await _service.createWallet();
+      final response = await _service.createWallet().timeout(
+        const Duration(seconds: 18),
+      );
 
       // Debug: log the response data
       debugPrint(

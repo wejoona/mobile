@@ -203,15 +203,16 @@ class KycService {
 
   Future<KycStatusResponse> getKycStatus() async {
     final response = await _dio.get('/kyc/status');
+    final data = response.data as Map<String, dynamic>;
     // ignore: avoid_dynamic_calls
-    final kycStatus = response.data['status'] as String? ?? 'pending';
+    final kycStatus = data['status'] as String? ?? 'pending';
     // ignore: avoid_dynamic_calls
-    final rejectionReason = response.data['rejectionReason'] as String?;
+    final rejectionReason = data['rejectionReason'] as String?;
 
-    return KycStatusResponse(
-      status: KycStatus.fromString(kycStatus),
-      rejectionReason: rejectionReason,
-    );
+    return KycStatusResponse.fromJson(
+      data,
+      fallbackStatus: kycStatus,
+    ).copyWith(rejectionReason: rejectionReason);
   }
 
   Future<void> submitAddressVerification({
@@ -458,9 +459,63 @@ class KycService {
 
 class KycStatusResponse {
   final KycStatus status;
+  final String rawStatus;
+  final double? score;
   final String? rejectionReason;
+  final DateTime? submittedAt;
+  final DateTime? approvedAt;
+  final bool canResubmit;
 
-  const KycStatusResponse({required this.status, this.rejectionReason});
+  const KycStatusResponse({
+    required this.status,
+    required this.rawStatus,
+    this.score,
+    this.rejectionReason,
+    this.submittedAt,
+    this.approvedAt,
+    this.canResubmit = false,
+  });
+
+  factory KycStatusResponse.fromJson(
+    Map<String, dynamic> json, {
+    String fallbackStatus = 'pending',
+  }) {
+    final rawStatus = json['status'] as String? ?? fallbackStatus;
+    return KycStatusResponse(
+      status: KycStatus.fromString(rawStatus),
+      rawStatus: rawStatus,
+      score: (json['score'] as num?)?.toDouble(),
+      rejectionReason: json['rejectionReason'] as String?,
+      submittedAt: _parseKycDate(json['submittedAt']),
+      approvedAt: _parseKycDate(json['approvedAt']),
+      canResubmit: json['canResubmit'] as bool? ?? false,
+    );
+  }
+
+  KycStatusResponse copyWith({
+    KycStatus? status,
+    String? rawStatus,
+    double? score,
+    String? rejectionReason,
+    DateTime? submittedAt,
+    DateTime? approvedAt,
+    bool? canResubmit,
+  }) => KycStatusResponse(
+    status: status ?? this.status,
+    rawStatus: rawStatus ?? this.rawStatus,
+    score: score ?? this.score,
+    rejectionReason: rejectionReason ?? this.rejectionReason,
+    submittedAt: submittedAt ?? this.submittedAt,
+    approvedAt: approvedAt ?? this.approvedAt,
+    canResubmit: canResubmit ?? this.canResubmit,
+  );
+}
+
+DateTime? _parseKycDate(dynamic value) {
+  if (value is String && value.isNotEmpty) {
+    return DateTime.tryParse(value);
+  }
+  return null;
 }
 
 // ==========================================
@@ -541,10 +596,7 @@ class FullVerificationStatus {
     final verifyData = json['verification'] as Map<String, dynamic>?;
 
     return FullVerificationStatus(
-      kyc: KycStatusResponse(
-        status: KycStatus.fromString(kycData['status'] as String? ?? 'pending'),
-        rejectionReason: kycData['rejectionReason'] as String?,
-      ),
+      kyc: KycStatusResponse.fromJson(kycData),
       verification: verifyData != null
           ? VerifyHqStatus.fromJson(verifyData)
           : null,

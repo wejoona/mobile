@@ -44,7 +44,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   }
 
   Future<void> _loadContacts() async {
-    await ref.read(contactsProvider.notifier).syncContacts();
+    await _requestPermissionAndSync(showSettingsDialog: false);
   }
 
   void _handleSearchChanged(String value) {
@@ -108,16 +108,25 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   }
 
   Future<void> _manualSync() async {
+    await _requestPermissionAndSync(showSettingsDialog: true);
+  }
+
+  Future<void> _requestPermissionAndSync({
+    required bool showSettingsDialog,
+  }) async {
     final l10n = AppLocalizations.of(context)!;
     final notifier = ref.read(contactsProvider.notifier);
     final status = await Permission.contacts.status;
     if (!status.isGranted && !status.isLimited) {
       if (status.isPermanentlyDenied || status.isRestricted) {
-        if (mounted) await _showContactsSettingsDialog(l10n);
+        await notifier.syncContacts();
+        if (showSettingsDialog && mounted) {
+          await _showContactsSettingsDialog(l10n);
+        }
         return;
       }
       final granted = await notifier.requestPermission();
-      if (!granted && mounted) {
+      if (!granted && showSettingsDialog && mounted) {
         await _showContactsSettingsDialog(l10n);
       }
       return;

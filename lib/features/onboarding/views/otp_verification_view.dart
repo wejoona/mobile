@@ -22,12 +22,14 @@ class OtpVerificationView extends ConsumerStatefulWidget {
 class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
   Key _codeInputKey = UniqueKey();
   bool _hasError = false;
+  bool _isSubmittingOtp = false;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(onboardingProvider);
     final colors = context.colors;
+    final isBusy = state.isLoading || _isSubmittingOtp;
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -63,7 +65,7 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
                       key: _codeInputKey,
                       obscureText: false,
                       hasError: _hasError,
-                      enabled: !state.isLoading,
+                      enabled: !isBusy,
                       onChanged: (code) {
                         if (_hasError) {
                           setState(() => _hasError = false);
@@ -107,7 +109,7 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
                             )
                           : AppButton(
                               label: l10n.onboarding_otp_resend,
-                              onPressed: state.isLoading ? null : _handleResend,
+                              onPressed: isBusy ? null : _handleResend,
                               variant: AppButtonVariant.ghost,
                             ),
                     ),
@@ -116,14 +118,12 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
                       Center(
                         child: AppButton(
                           label: 'Use dev OTP',
-                          onPressed: state.isLoading
-                              ? null
-                              : () => _submitOtp('123456'),
+                          onPressed: isBusy ? null : () => _submitOtp('123456'),
                           variant: AppButtonVariant.ghost,
                         ),
                       ),
                     ],
-                    if (state.isLoading) ...[
+                    if (isBusy) ...[
                       const SizedBox(height: AppSpacing.xxxl),
                       Center(
                         child: Column(
@@ -154,19 +154,36 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
 
   Future<void> _submitOtp(String otp) async {
     if (otp.length == 6) {
+      final submittedAt = DateTime.now();
+      setState(() {
+        _isSubmittingOtp = true;
+        _hasError = false;
+      });
       ref.read(onboardingProvider.notifier).updateOtp(otp);
       await ref.read(onboardingProvider.notifier).verifyOtp();
+      await _holdOtpCue(submittedAt);
 
       if (mounted) {
         final state = ref.read(onboardingProvider);
         if (state.error == null) {
           await _goToNextStep();
         } else {
-          setState(() => _hasError = true);
+          setState(() {
+            _hasError = true;
+            _isSubmittingOtp = false;
+          });
           // Clear inputs and shake
           _clearOtp();
         }
       }
+    }
+  }
+
+  Future<void> _holdOtpCue(DateTime submittedAt) async {
+    const minimumCueDuration = Duration(milliseconds: 520);
+    final elapsed = DateTime.now().difference(submittedAt);
+    if (elapsed < minimumCueDuration) {
+      await Future<void>.delayed(minimumCueDuration - elapsed);
     }
   }
 

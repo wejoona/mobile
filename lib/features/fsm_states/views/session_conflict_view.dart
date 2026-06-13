@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/state/fsm/session_fsm.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
@@ -14,7 +15,8 @@ class SessionConflictView extends ConsumerStatefulWidget {
   const SessionConflictView({super.key});
 
   @override
-  ConsumerState<SessionConflictView> createState() => _SessionConflictViewState();
+  ConsumerState<SessionConflictView> createState() =>
+      _SessionConflictViewState();
 }
 
 class _SessionConflictViewState extends ConsumerState<SessionConflictView> {
@@ -38,11 +40,7 @@ class _SessionConflictViewState extends ConsumerState<SessionConflictView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.devices,
-                size: 80,
-                color: context.colors.warning,
-              ),
+              Icon(Icons.devices, size: 80, color: context.colors.warning),
               SizedBox(height: AppSpacing.xxl),
               AppText(
                 l10n.session_conflict,
@@ -80,8 +78,12 @@ class _SessionConflictViewState extends ConsumerState<SessionConflictView> {
                               color: context.colors.textSecondary,
                             ),
                             AppText(
-                              conflictingDeviceId.substring(0,
-                                conflictingDeviceId.length > 20 ? 20 : conflictingDeviceId.length),
+                              conflictingDeviceId.substring(
+                                0,
+                                conflictingDeviceId.length > 20
+                                    ? 20
+                                    : conflictingDeviceId.length,
+                              ),
                               variant: AppTextVariant.bodySmall,
                               color: context.colors.textPrimary,
                             ),
@@ -122,8 +124,8 @@ class _SessionConflictViewState extends ConsumerState<SessionConflictView> {
               SizedBox(height: AppSpacing.md),
               AppButton(
                 label: l10n.common_logout,
-                onPressed: () {
-                  ref.read(appFsmProvider.notifier).logout();
+                onPressed: () async {
+                  await ref.read(authProvider.notifier).logout();
                 },
                 variant: AppButtonVariant.ghost,
                 isFullWidth: true,
@@ -138,9 +140,9 @@ class _SessionConflictViewState extends ConsumerState<SessionConflictView> {
   Future<void> _resolveConflict() async {
     setState(() => _isResolving = true);
     try {
-      ref.read(appFsmProvider.notifier).dispatch(
-            const AppSessionEvent(SessionResolveConflict()),
-          );
+      ref
+          .read(appFsmProvider.notifier)
+          .dispatch(const AppSessionEvent(SessionResolveConflict()));
     } finally {
       if (mounted) {
         setState(() => _isResolving = false);

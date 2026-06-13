@@ -1,6 +1,7 @@
 import 'package:usdc_wallet/features/cards/models/cards_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -10,10 +11,7 @@ import 'package:usdc_wallet/features/cards/providers/cards_provider.dart';
 ///
 /// Shows transaction history for a specific card
 class CardTransactionsView extends ConsumerStatefulWidget {
-  const CardTransactionsView({
-    super.key,
-    required this.cardId,
-  });
+  const CardTransactionsView({super.key, required this.cardId});
 
   final String cardId;
 
@@ -46,6 +44,16 @@ class _CardTransactionsViewState extends ConsumerState<CardTransactionsView> {
       backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_rounded, color: colors.textPrimary),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/cards');
+            }
+          },
+        ),
         title: AppText(
           l10n.cards_transactions,
           variant: AppTextVariant.titleLarge,
@@ -58,8 +66,8 @@ class _CardTransactionsViewState extends ConsumerState<CardTransactionsView> {
         child: cardsState.isLoading && cardsState.transactions.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : cardsState.transactions.isEmpty
-                ? _buildEmptyState(context, l10n, colors)
-                : _buildTransactionsList(context, l10n, colors, cardsState),
+            ? _buildEmptyState(context, l10n, colors)
+            : _buildTransactionsList(context, l10n, colors, cardsState),
       ),
     );
   }
@@ -144,8 +152,8 @@ class _CardTransactionsViewState extends ConsumerState<CardTransactionsView> {
               color: isSuccess
                   ? colors.success.withValues(alpha: 0.1)
                   : isPending
-                      ? colors.warning.withValues(alpha: 0.1)
-                      : colors.error.withValues(alpha: 0.1),
+                  ? colors.warning.withValues(alpha: 0.1)
+                  : colors.error.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: Icon(
@@ -154,8 +162,8 @@ class _CardTransactionsViewState extends ConsumerState<CardTransactionsView> {
               color: isSuccess
                   ? colors.success
                   : isPending
-                      ? colors.warning
-                      : colors.error,
+                  ? colors.warning
+                  : colors.error,
             ),
           ),
 
@@ -213,8 +221,8 @@ class _CardTransactionsViewState extends ConsumerState<CardTransactionsView> {
                   color: isSuccess
                       ? colors.success.withValues(alpha: 0.1)
                       : isPending
-                          ? colors.warning.withValues(alpha: 0.1)
-                          : colors.error.withValues(alpha: 0.1),
+                      ? colors.warning.withValues(alpha: 0.1)
+                      : colors.error.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: AppText(
@@ -224,8 +232,8 @@ class _CardTransactionsViewState extends ConsumerState<CardTransactionsView> {
                   color: isSuccess
                       ? colors.success
                       : isPending
-                          ? colors.warning
-                          : colors.error,
+                      ? colors.warning
+                      : colors.error,
                 ),
               ),
             ],

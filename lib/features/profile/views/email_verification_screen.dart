@@ -176,7 +176,7 @@ class _EmailVerificationScreenState
       setState(() {
         _isResending = false;
         _hasPendingCode = true;
-        _resendMessage = 'Code envoyé. Vérifiez votre boîte mail.';
+        _resendMessage = _emailCodeSentMessage(result);
       });
       _startResendCountdown();
     } on Object catch (_) {
@@ -203,6 +203,14 @@ class _EmailVerificationScreenState
     } else if (index > 0) {
       _focusNodes[index - 1].requestFocus();
     }
+  }
+
+  String _emailCodeSentMessage(EmailVerificationResendResult result) {
+    final debugCode = result.debugCode;
+    if (debugCode != null && debugCode.isNotEmpty) {
+      return 'Code envoyé. Code test: $debugCode';
+    }
+    return 'Code envoyé. Vérifiez votre boîte mail.';
   }
 
   @override
@@ -384,6 +392,9 @@ class _EmailVerificationScreenState
             focusNode: _focusNodes[index],
             textAlign: TextAlign.center,
             keyboardType: TextInputType.number,
+            autofillHints: index == 0
+                ? const [AutofillHints.oneTimeCode]
+                : null,
             maxLength: 1,
             style: AppTypography.headlineMedium.copyWith(
               color: colors.textPrimary,

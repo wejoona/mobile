@@ -34,25 +34,24 @@ class KycProfile {
   });
 
   /// Full name.
-  String get fullName => [firstName, lastName]
-      .where((n) => n != null && n.isNotEmpty)
-      .join(' ');
+  String get fullName =>
+      [firstName, lastName].where((n) => n != null && n.isNotEmpty).join(' ');
 
   /// Whether KYC is fully verified.
   bool get isVerified => status == KycStatus.verified;
 
   /// Whether KYC is pending review.
-  bool get isPending => status == KycStatus.pending;
+  bool get isPending => status.isPending || status.isSubmitted;
 
   /// Whether KYC has been rejected.
   bool get isRejected => status == KycStatus.rejected;
 
   /// Whether KYC verification has expired.
-  bool get isExpired =>
-      expiresAt != null && DateTime.now().isAfter(expiresAt!);
+  bool get isExpired => expiresAt != null && DateTime.now().isAfter(expiresAt!);
 
   /// Whether the user needs to complete KYC for higher limits.
-  bool get needsUpgrade => level == KycLevel.none || level == KycLevel.basic;
+  bool get needsUpgrade =>
+      status.canSubmit && (level == KycLevel.none || level == KycLevel.basic);
 
   /// Transaction limits based on KYC level (USDC).
   double get dailyLimit {
@@ -72,15 +71,9 @@ class KycProfile {
 
   factory KycProfile.fromJson(Map<String, dynamic> json) {
     return KycProfile(
-      userId: json['userId'] as String,
-      level: KycLevel.values.firstWhere(
-        (e) => e.name == json['level'],
-        orElse: () => KycLevel.none,
-      ),
-      status: KycStatus.values.firstWhere(
-        (e) => e.name == json['status'],
-        orElse: () => KycStatus.none,
-      ),
+      userId: json['userId'] as String? ?? '',
+      level: _parseKycLevel(json),
+      status: KycStatus.fromString(json['status'] as String? ?? 'none'),
       firstName: json['firstName'] as String?,
       lastName: json['lastName'] as String?,
       dateOfBirth: json['dateOfBirth'] != null
@@ -104,5 +97,39 @@ class KycProfile {
 }
 
 enum KycLevel { none, basic, standard, enhanced, premium }
+
+KycLevel _parseKycLevel(Map<String, dynamic> json) {
+  final rawLevel = json['level'] as String? ?? json['tierName'] as String?;
+  final rawTier = json['kycTier'];
+
+  if (rawTier is num) {
+    switch (rawTier.toInt()) {
+      case 1:
+        return KycLevel.basic;
+      case 2:
+        return KycLevel.standard;
+      case 3:
+        return KycLevel.premium;
+      default:
+        return KycLevel.none;
+    }
+  }
+
+  switch (rawLevel?.toLowerCase()) {
+    case 'basic':
+      return KycLevel.basic;
+    case 'standard':
+    case 'verified':
+    case 'full':
+      return KycLevel.standard;
+    case 'enhanced':
+      return KycLevel.enhanced;
+    case 'premium':
+    case 'business':
+      return KycLevel.premium;
+    default:
+      return KycLevel.none;
+  }
+}
 
 // Re-export moved to top of file

@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/state/fsm/auth_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
@@ -36,11 +37,7 @@ class AuthSuspendedView extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.block,
-                size: 80,
-                color: context.colors.error,
-              ),
+              Icon(Icons.block, size: 80, color: context.colors.error),
               SizedBox(height: AppSpacing.xxl),
               AppText(
                 l10n.auth_accountSuspended,
@@ -117,8 +114,8 @@ class AuthSuspendedView extends ConsumerWidget {
               SizedBox(height: AppSpacing.md),
               AppButton(
                 label: l10n.common_backToLogin,
-                onPressed: () {
-                  ref.read(appFsmProvider.notifier).logout();
+                onPressed: () async {
+                  await ref.read(authProvider.notifier).logout();
                 },
                 variant: AppButtonVariant.ghost,
                 isFullWidth: true,

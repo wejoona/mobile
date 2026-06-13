@@ -52,7 +52,14 @@ class SessionsNotifier extends Notifier<SessionsState> {
         currentSessionId: currentSession?.id,
       );
     } on ApiException catch (e) {
-      await _handleExpiredSession(e);
+      if (await _handleExpiredSession(e)) {
+        state = state.copyWith(
+          isLoading: false,
+          sessions: const [],
+          error: null,
+        );
+        return;
+      }
       state = state.copyWith(isLoading: false, error: _friendlyError(e));
     } on Object {
       state = state.copyWith(
@@ -72,7 +79,10 @@ class SessionsNotifier extends Notifier<SessionsState> {
       await loadSessions();
       return true;
     } on ApiException catch (e) {
-      await _handleExpiredSession(e);
+      if (await _handleExpiredSession(e)) {
+        state = state.copyWith(error: null);
+        return false;
+      }
       state = state.copyWith(error: _friendlyError(e));
       return false;
     } on Object {
@@ -93,7 +103,10 @@ class SessionsNotifier extends Notifier<SessionsState> {
       state = state.copyWith(sessions: []);
       return true;
     } on ApiException catch (e) {
-      await _handleExpiredSession(e);
+      if (await _handleExpiredSession(e)) {
+        state = state.copyWith(error: null);
+        return false;
+      }
       state = state.copyWith(error: _friendlyError(e));
       return false;
     } on Object {
@@ -114,11 +127,12 @@ class SessionsNotifier extends Notifier<SessionsState> {
     return error.message;
   }
 
-  Future<void> _handleExpiredSession(ApiException error) async {
+  Future<bool> _handleExpiredSession(ApiException error) async {
     if (error.statusCode != 401) {
-      return;
+      return false;
     }
     ref.read(authProvider.notifier).setLocked();
+    return true;
   }
 
   Session? _resolveCurrentSession(List<Session> sessions) {

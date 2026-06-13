@@ -84,7 +84,7 @@ class UserService {
   Future<Map<String, dynamic>> getEmailStatus() async {
     try {
       final response = await _dio.get('/user/email-status');
-      return response.data as Map<String, dynamic>;
+      return _readPayload(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }

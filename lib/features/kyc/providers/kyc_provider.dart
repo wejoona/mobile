@@ -4,6 +4,8 @@ import 'package:usdc_wallet/domain/entities/kyc_profile.dart';
 import 'package:usdc_wallet/features/kyc/models/document_type.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_document.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_tier.dart';
+import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
+import 'package:usdc_wallet/services/limits/limits_service.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
 
@@ -15,11 +17,20 @@ final kycProfileProvider = FutureProvider<KycProfile>((ref) async {
   ref.onDispose(() => timer.cancel());
 
   final data = await service.getKycStatus();
+  TransactionLimits? limits;
+  try {
+    limits = await ref.read(limitsServiceProvider).getLimits();
+  } catch (_) {
+    limits = null;
+  }
+
   return KycProfile(
     userId: '',
-    level: KycLevel.none,
+    level: _levelFromStatusAndLimits(data.status, limits),
     status: data.status,
     rejectionReason: data.rejectionReason,
+    submittedAt: data.submittedAt,
+    verifiedAt: data.approvedAt,
   );
 });
 
@@ -35,6 +46,26 @@ final kycLevelProvider = Provider<KycLevel>((ref) {
 
 /// KYC actions delegate.
 final kycActionsProvider = Provider((ref) => ref.watch(kycServiceProvider));
+
+KycLevel _levelFromStatusAndLimits(
+  KycStatus status,
+  TransactionLimits? limits,
+) {
+  if (limits != null) {
+    switch (limits.kycTier) {
+      case 1:
+        return KycLevel.basic;
+      case 2:
+        return KycLevel.standard;
+      case 3:
+        return KycLevel.premium;
+      default:
+        return KycLevel.none;
+    }
+  }
+
+  return status.isVerified ? KycLevel.standard : KycLevel.none;
+}
 
 // ── KYC Flow State & Notifier ──
 

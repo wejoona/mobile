@@ -404,6 +404,34 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       setState(() {
         _selectedImage = compressed;
       });
+
+      await ref.read(profileProvider.notifier).uploadAvatar(compressed);
+      final profileState = ref.read(profileProvider);
+      if (!mounted) return;
+
+      if (profileState.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(profileState.error!),
+            backgroundColor: context.colors.error,
+          ),
+        );
+        return;
+      }
+
+      final userState = ref.read(userStateMachineProvider);
+      setState(() {
+        _selectedImage = null;
+        _avatarUrl = userState.avatarUrl;
+        _avatarThumb = userState.avatarThumb;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.settings_profileUpdated),
+          backgroundColor: context.colors.success,
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -431,9 +459,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
     try {
       if (hadRemoteAvatar) {
-        await ref.read(profilePictureServiceProvider).deleteAvatar();
+        await ref.read(profileProvider.notifier).removeAvatar();
+      } else {
+        await ref.read(userStateMachineProvider.notifier).clearAvatar();
       }
-      await ref.read(userStateMachineProvider.notifier).clearAvatar();
 
       if (!mounted) return;
       setState(() {
@@ -492,14 +521,6 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     setState(() => _isLoading = true);
 
     try {
-      AvatarUploadResult? avatar;
-
-      if (_selectedImage != null) {
-        avatar = await ref
-            .read(profilePictureServiceProvider)
-            .uploadAvatar(_selectedImage!, onProgress: (_) {});
-      }
-
       final profile = await ref
           .read(userServiceProvider)
           .updateProfile(
@@ -510,33 +531,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                 : _emailController.text.trim(),
           );
 
-      var nextAvatarUrl = avatar?.avatarUrl ?? profile.avatarUrl;
-      var nextAvatarThumb = avatar?.avatarThumb ?? profile.avatarThumb;
-
-      if (_selectedImage != null &&
-          (nextAvatarUrl == null || nextAvatarUrl.isEmpty) &&
-          (nextAvatarThumb == null || nextAvatarThumb.isEmpty)) {
-        final refreshedProfile = await ref
-            .read(userServiceProvider)
-            .getProfile();
-        nextAvatarUrl = refreshedProfile.avatarUrl;
-        nextAvatarThumb = refreshedProfile.avatarThumb;
-      }
-
-      if (_selectedImage != null &&
-          (nextAvatarUrl == null || nextAvatarUrl.isEmpty) &&
-          (nextAvatarThumb == null || nextAvatarThumb.isEmpty)) {
-        throw StateError('Avatar upload did not return an image reference');
-      }
-
-      await ref
-          .read(profileProvider.notifier)
-          .applyProfileSnapshot(
-            profile,
-            avatarUrl: nextAvatarUrl,
-            avatarThumb: nextAvatarThumb,
-            avatarChanged: _selectedImage != null,
-          );
+      await ref.read(profileProvider.notifier).applyProfileSnapshot(profile);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

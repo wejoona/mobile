@@ -7,6 +7,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/features/settings/providers/notification_preferences_provider.dart';
 import 'package:usdc_wallet/features/settings/providers/sessions_provider.dart';
 
 class SecurityView extends ConsumerStatefulWidget {
@@ -17,10 +18,6 @@ class SecurityView extends ConsumerStatefulWidget {
 }
 
 class _SecurityViewState extends ConsumerState<SecurityView> {
-  bool _transactionPinRequired = true;
-  bool _loginNotifications = true;
-  bool _newDeviceAlerts = true;
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -85,15 +82,13 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.md),
-            _buildToggleOption(
+            _buildStatusOption(
               l10n: l10n,
               colors: colors,
               icon: Icons.pin,
               title: l10n.security_requirePinForTransactions,
               subtitle: l10n.security_requirePinSubtitle,
-              value: _transactionPinRequired,
-              onChanged: (value) =>
-                  setState(() => _transactionPinRequired = value),
+              status: l10n.notifications_required,
             ),
 
             const SizedBox(height: AppSpacing.xxl),
@@ -105,24 +100,20 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.md),
-            _buildToggleOption(
+            _buildSecurityAlertOption(
               l10n: l10n,
               colors: colors,
               icon: Icons.login,
               title: l10n.security_loginNotifications,
               subtitle: l10n.security_loginNotificationsSubtitle,
-              value: _loginNotifications,
-              onChanged: (value) => setState(() => _loginNotifications = value),
             ),
             const SizedBox(height: AppSpacing.sm),
-            _buildToggleOption(
+            _buildSecurityAlertOption(
               l10n: l10n,
               colors: colors,
               icon: Icons.devices,
               title: l10n.security_newDeviceAlerts,
               subtitle: l10n.security_newDeviceAlertsSubtitle,
-              value: _newDeviceAlerts,
-              onChanged: (value) => setState(() => _newDeviceAlerts = value),
             ),
 
             const SizedBox(height: AppSpacing.xxl),
@@ -344,24 +335,104 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
     );
   }
 
-  Widget _buildToggleOption({
+  Widget _buildStatusOption({
     required AppLocalizations l10n,
     required ThemeColors colors,
     required IconData icon,
     required String title,
     required String subtitle,
-    required bool value,
-    required ValueChanged<bool> onChanged,
+    required String status,
+    VoidCallback? onTap,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: AppToggleTile(
-        icon: icon,
-        title: title,
-        subtitle: subtitle,
-        value: value,
-        onChanged: onChanged,
+      child: AppCard(
+        variant: AppCardVariant.flat,
+        borderRadius: AppRadius.lg,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
+        onTap: onTap,
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: colors.gold.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(AppRadius.md),
+              ),
+              child: Icon(icon, color: colors.gold, size: 22),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(
+                    title,
+                    variant: AppTextVariant.labelMedium,
+                    color: colors.textPrimary,
+                  ),
+                  AppText(
+                    subtitle,
+                    variant: AppTextVariant.bodySmall,
+                    color: colors.textSecondary,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xxs,
+              ),
+              decoration: BoxDecoration(
+                color: colors.gold.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(AppRadius.full),
+              ),
+              child: AppText(
+                status,
+                variant: AppTextVariant.labelSmall,
+                color: colors.gold,
+              ),
+            ),
+            if (onTap != null) ...[
+              const SizedBox(width: AppSpacing.xs),
+              Icon(Icons.chevron_right, color: colors.textTertiary),
+            ],
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildSecurityAlertOption({
+    required AppLocalizations l10n,
+    required ThemeColors colors,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
+    final prefsState = ref.watch(notificationPreferencesProvider);
+    final prefs = prefsState.preferences;
+    final enabled = prefs?.smsSecurity == true || prefs?.pushSecurity == true;
+    final status = prefsState.isLoading
+        ? l10n.security_loading
+        : (enabled ? l10n.notifications_required : l10n.settings_preferences);
+
+    return _buildStatusOption(
+      l10n: l10n,
+      colors: colors,
+      icon: icon,
+      title: title,
+      subtitle: prefsState.error == null
+          ? subtitle
+          : l10n.notifications_loadError,
+      status: status,
+      onTap: () => context.push('/settings/notifications'),
     );
   }
 
@@ -473,8 +544,10 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
 
     int score = 40; // Base score for having account
     if (biometricsOn) score += 20;
-    if (_transactionPinRequired) score += 10;
-    if (_loginNotifications) score += 5;
+    score += 10; // Transaction PIN is mandatory for money movement.
+    final prefsState = ref.watch(notificationPreferencesProvider);
+    final prefs = prefsState.preferences;
+    if (prefs?.smsSecurity == true || prefs?.pushSecurity == true) score += 5;
     return score.clamp(0, 100);
   }
 
@@ -493,7 +566,6 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
     );
 
     if (!biometricsOn) return l10n.security_tipEnableBiometrics;
-    if (!_transactionPinRequired) return l10n.security_tipRequirePin;
     return l10n.security_tipEnableNotifications;
   }
 

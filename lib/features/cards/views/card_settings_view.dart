@@ -40,7 +40,10 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
     if (card == null) {
       return Scaffold(
         backgroundColor: colors.canvas,
-        appBar: AppBar(backgroundColor: Colors.transparent),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          leading: _backButton(context, colors),
+        ),
         body: Center(
           child: AppText(
             l10n.cards_cardNotFound,
@@ -55,6 +58,7 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
       backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
+        leading: _backButton(context, colors),
         title: AppText(
           l10n.cards_cardSettings,
           variant: AppTextVariant.titleLarge,
@@ -243,6 +247,17 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
       ),
     );
   }
+
+  Widget _backButton(BuildContext context, ThemeColors colors) => IconButton(
+    icon: Icon(Icons.arrow_back_rounded, color: colors.textPrimary),
+    onPressed: () {
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/cards');
+      }
+    },
+  );
 
   Future<void> _toggleFreeze(
     BuildContext context,

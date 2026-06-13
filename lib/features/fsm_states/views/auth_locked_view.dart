@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/state/fsm/auth_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
@@ -78,11 +79,7 @@ class _AuthLockedViewState extends ConsumerState<AuthLockedView> {
                   shape: BoxShape.circle,
                   border: Border.all(color: colors.border),
                 ),
-                child: Icon(
-                  Icons.lock_clock,
-                  color: colors.error,
-                  size: 40,
-                ),
+                child: Icon(Icons.lock_clock, color: colors.error, size: 40),
               ),
               const SizedBox(height: AppSpacing.xxl),
               AppText(
@@ -125,8 +122,8 @@ class _AuthLockedViewState extends ConsumerState<AuthLockedView> {
               const SizedBox(height: AppSpacing.xxxl),
               AppButton(
                 label: l10n.common_backToLogin,
-                onPressed: () {
-                  ref.read(appFsmProvider.notifier).logout();
+                onPressed: () async {
+                  await ref.read(authProvider.notifier).logout();
                 },
                 variant: AppButtonVariant.secondary,
                 isFullWidth: true,
