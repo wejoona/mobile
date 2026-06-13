@@ -57,6 +57,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
   bool _isLocked = false;
   int _lockSeconds = 0;
   bool _biometricAvailable = false;
+  BiometricType _biometricType = BiometricType.none;
   bool _isVerifying = false;
   bool _showUnlockTransition = false;
 
@@ -95,7 +96,13 @@ class _PinScreenState extends ConsumerState<PinScreen>
     final bio = ref.read(biometricServiceProvider);
     final available = await bio.isAvailable();
     final enabled = await bio.isBiometricEnabled();
-    if (mounted) setState(() => _biometricAvailable = available && enabled);
+    final type = await bio.getAvailableType();
+    if (mounted) {
+      setState(() {
+        _biometricAvailable = available && enabled;
+        _biometricType = type;
+      });
+    }
   }
 
   /// What happens after successful verification — depends on context.
@@ -431,6 +438,17 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
                       const Spacer(flex: 1),
 
+                      if (_shouldShowBiometricUnlock) ...[
+                        AppButton(
+                          label: _biometricButtonLabel(l10n),
+                          icon: _biometricIcon,
+                          onPressed: _handleBiometric,
+                          variant: AppButtonVariant.secondary,
+                          isFullWidth: true,
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                      ],
+
                       PinPad(
                         onDigitPressed: (digit) {
                           if (_pin.length >= 6) return;
@@ -449,8 +467,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
                             });
                           }
                         },
-                        showBiometric: _biometricAvailable && !_isVerifying,
-                        onBiometricPressed: _biometricAvailable && !_isVerifying
+                        showBiometric: _shouldShowBiometricUnlock,
+                        biometricIcon: _biometricIcon,
+                        onBiometricPressed: _shouldShowBiometricUnlock
                             ? _handleBiometric
                             : null,
                       ),
@@ -503,6 +522,32 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
   Widget _buildLogo(ThemeColors colors, {required double size}) {
     return KoridoMark(size: size);
+  }
+
+  bool get _shouldShowBiometricUnlock => _biometricAvailable && !_isVerifying;
+
+  String _biometricButtonLabel(AppLocalizations l10n) {
+    switch (_biometricType) {
+      case BiometricType.faceId:
+        return l10n.biometric_type_face_id;
+      case BiometricType.fingerprint:
+        return l10n.biometric_type_fingerprint;
+      case BiometricType.iris:
+        return l10n.biometric_type_iris;
+      case BiometricType.none:
+        return l10n.security_biometricLogin;
+    }
+  }
+
+  IconData get _biometricIcon {
+    switch (_biometricType) {
+      case BiometricType.faceId:
+        return Icons.face_rounded;
+      case BiometricType.fingerprint:
+      case BiometricType.iris:
+      case BiometricType.none:
+        return Icons.fingerprint_rounded;
+    }
   }
 
   Widget _buildLockedView(AppLocalizations l10n, ThemeColors colors) {
