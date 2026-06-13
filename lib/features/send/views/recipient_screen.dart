@@ -119,12 +119,13 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
         _phoneController.text.length == _selectedLocalLength;
     final myPhone = authState.user?.phone ?? authState.phone;
     final hasUsernameRecipient = _hasUsernameRecipient;
+    final myUsername = _normalizeUsername(authState.user?.username);
     final isSelfSelectedAccount =
         (_selectedRecipientUserId != null &&
             _selectedRecipientUserId == authState.user?.id) ||
         (_selectedRecipientUsername != null &&
-            authState.user?.username != null &&
-            _selectedRecipientUsername == authState.user?.username);
+            myUsername != null &&
+            _selectedRecipientUsername == myUsername);
     final isSelfRecipient =
         (isCompletePhone && _samePhone(_typedPhoneNumber, myPhone)) ||
         isSelfSelectedAccount;
@@ -671,9 +672,11 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
       final sameUserId =
           _selectedRecipientUserId != null &&
           _selectedRecipientUserId == authState.user?.id;
+      final myUsername = _normalizeUsername(authState.user?.username);
       final sameUsername =
           _selectedRecipientUsername != null &&
-          _selectedRecipientUsername == authState.user?.username;
+          myUsername != null &&
+          _selectedRecipientUsername == myUsername;
       if ((!hasUsernameRecipient && _samePhone(phoneNumber, myPhone)) ||
           sameUserId ||
           sameUsername) {

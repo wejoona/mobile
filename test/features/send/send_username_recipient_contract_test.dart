@@ -82,5 +82,12 @@ void main() {
     expect(route, contains("extra['username'] ?? extra['recipientUsername']"));
     expect(recipient, contains('setKnownKoridoRecipient'));
     expect(recipient, contains('_hasUsernameRecipient'));
+    expect(
+      recipient,
+      contains(
+        'final myUsername = _normalizeUsername(authState.user?.username);',
+      ),
+    );
+    expect(recipient, contains('_selectedRecipientUsername == myUsername'));
   });
 }
