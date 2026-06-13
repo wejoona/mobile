@@ -13895,6 +13895,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This will only take a moment'**
   String get wallet_setupMoment;
+
+  /// No description provided for @emailVerification_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verification'**
+  String get emailVerification_title;
+
+  /// No description provided for @emailVerification_statusLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not check email status. Try again.'**
+  String get emailVerification_statusLoadFailed;
+
+  /// No description provided for @emailVerification_invalidCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid code. Please try again.'**
+  String get emailVerification_invalidCode;
+
+  /// No description provided for @emailVerification_alreadyVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Email already verified.'**
+  String get emailVerification_alreadyVerified;
+
+  /// No description provided for @emailVerification_codeSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Code sent. Check your inbox.'**
+  String get emailVerification_codeSent;
+
+  /// No description provided for @emailVerification_codeSentDebug.
+  ///
+  /// In en, this message translates to:
+  /// **'Code sent. Test code: {code}'**
+  String emailVerification_codeSentDebug(String code);
+
+  /// No description provided for @emailVerification_resendFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not resend the code. Try again.'**
+  String get emailVerification_resendFailed;
+
+  /// No description provided for @emailVerification_enterCodeSentTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the code sent to'**
+  String get emailVerification_enterCodeSentTo;
+
+  /// No description provided for @emailVerification_noActiveCodeFor.
+  ///
+  /// In en, this message translates to:
+  /// **'No active code for'**
+  String get emailVerification_noActiveCodeFor;
+
+  /// No description provided for @emailVerification_sendCodePrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a verification code to confirm this email address.'**
+  String get emailVerification_sendCodePrompt;
+
+  /// No description provided for @emailVerification_resendCountdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code in {seconds}s'**
+  String emailVerification_resendCountdown(int seconds);
+
+  /// No description provided for @emailVerification_resendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code'**
+  String get emailVerification_resendCode;
+
+  /// No description provided for @emailVerification_sendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Send code'**
+  String get emailVerification_sendCode;
+
+  /// No description provided for @emailVerification_successTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verified'**
+  String get emailVerification_successTitle;
+
+  /// No description provided for @emailVerification_successMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your email address has been verified successfully.'**
+  String get emailVerification_successMessage;
 }
 
 class _AppLocalizationsDelegate

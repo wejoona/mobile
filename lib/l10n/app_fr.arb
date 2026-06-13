@@ -3128,5 +3128,34 @@
   "auth_tapToUnlock": "Appuyez pour déverrouiller",
   "auth_usePhoneInstead": "Utiliser le numéro de téléphone",
   "wallet_settingUp": "Configuration de votre portefeuille...",
-  "wallet_setupMoment": "Cela ne prendra qu'un instant"
+  "wallet_setupMoment": "Cela ne prendra qu'un instant",
+  "emailVerification_title": "Vérification email",
+  "emailVerification_statusLoadFailed": "Impossible de vérifier le statut email. Réessayez.",
+  "emailVerification_invalidCode": "Code invalide. Veuillez réessayer.",
+  "emailVerification_alreadyVerified": "Email déjà vérifié.",
+  "emailVerification_codeSent": "Code envoyé. Vérifiez votre boîte mail.",
+  "emailVerification_codeSentDebug": "Code envoyé. Code test : {code}",
+  "@emailVerification_codeSentDebug": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "emailVerification_resendFailed": "Impossible de renvoyer le code. Réessayez.",
+  "emailVerification_enterCodeSentTo": "Saisissez le code envoyé à",
+  "emailVerification_noActiveCodeFor": "Aucun code actif pour",
+  "emailVerification_sendCodePrompt": "Envoyez un code de vérification pour confirmer cette adresse email.",
+  "emailVerification_resendCountdown": "Renvoyer le code dans {seconds}s",
+  "@emailVerification_resendCountdown": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "emailVerification_resendCode": "Renvoyer le code",
+  "emailVerification_sendCode": "Envoyer le code",
+  "emailVerification_successTitle": "Email vérifié",
+  "emailVerification_successMessage": "Votre adresse email a été vérifiée avec succès."
 }

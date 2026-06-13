@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
 
@@ -65,10 +66,11 @@ class _EmailVerificationScreenState
       }
     } on Object catch (_) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       setState(() {
         _isCheckingStatus = false;
         _resendCountdown = 0;
-        _resendMessage = 'Impossible de vérifier le statut email. Réessayez.';
+        _resendMessage = l10n.emailVerification_statusLoadFailed;
       });
     }
   }
@@ -133,10 +135,11 @@ class _EmailVerificationScreenState
       if (mounted) context.pop();
     } catch (e) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       setState(() {
         _isLoading = false;
         _hasError = true;
-        _errorMessage = 'Code invalide. Veuillez réessayer.';
+        _errorMessage = l10n.emailVerification_invalidCode;
       });
       _clearOtp();
     }
@@ -161,11 +164,13 @@ class _EmailVerificationScreenState
       final result = await userService.resendEmailVerification();
       if (!mounted) return;
       if (!result.pendingVerification && !result.sent) {
+        final l10n = AppLocalizations.of(context)!;
         setState(() {
           _isResending = false;
           _isSuccess = true;
           _hasPendingCode = false;
-          _resendMessage = result.message ?? 'Email déjà vérifié.';
+          _resendMessage =
+              result.message ?? l10n.emailVerification_alreadyVerified;
         });
         ref
             .read(userStateMachineProvider.notifier)
@@ -176,14 +181,18 @@ class _EmailVerificationScreenState
       setState(() {
         _isResending = false;
         _hasPendingCode = true;
-        _resendMessage = _emailCodeSentMessage(result);
+        _resendMessage = _emailCodeSentMessage(
+          result,
+          AppLocalizations.of(context)!,
+        );
       });
       _startResendCountdown();
     } on Object catch (_) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       setState(() {
         _isResending = false;
-        _resendMessage = 'Impossible de renvoyer le code. Réessayez.';
+        _resendMessage = l10n.emailVerification_resendFailed;
       });
     }
   }
@@ -205,17 +214,21 @@ class _EmailVerificationScreenState
     }
   }
 
-  String _emailCodeSentMessage(EmailVerificationResendResult result) {
+  String _emailCodeSentMessage(
+    EmailVerificationResendResult result,
+    AppLocalizations l10n,
+  ) {
     final debugCode = result.debugCode;
     if (debugCode != null && debugCode.isNotEmpty) {
-      return 'Code envoyé. Code test: $debugCode';
+      return l10n.emailVerification_codeSentDebug(debugCode);
     }
-    return 'Code envoyé. Vérifiez votre boîte mail.';
+    return l10n.emailVerification_codeSent;
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     final userState = ref.watch(userStateMachineProvider);
     final email = userState.email ?? '';
 
@@ -232,7 +245,7 @@ class _EmailVerificationScreenState
           onPressed: () => context.pop(),
         ),
         title: AppText(
-          'Vérification email',
+          l10n.emailVerification_title,
           variant: AppTextVariant.titleLarge,
           color: colors.textPrimary,
         ),
@@ -246,8 +259,8 @@ class _EmailVerificationScreenState
               const SizedBox(height: AppSpacing.lg),
               AppText(
                 _hasPendingCode
-                    ? 'Saisissez le code envoyé à'
-                    : 'Aucun code actif pour',
+                    ? l10n.emailVerification_enterCodeSentTo
+                    : l10n.emailVerification_noActiveCodeFor,
                 variant: AppTextVariant.bodyLarge,
                 color: colors.textSecondary,
               ),
@@ -280,7 +293,7 @@ class _EmailVerificationScreenState
                     border: Border.all(color: colors.border),
                   ),
                   child: AppText(
-                    'Envoyez un code de vérification pour confirmer cette adresse email.',
+                    l10n.emailVerification_sendCodePrompt,
                     variant: AppTextVariant.bodyMedium,
                     color: colors.textSecondary,
                     textAlign: TextAlign.center,
@@ -322,14 +335,16 @@ class _EmailVerificationScreenState
               Center(
                 child: _resendCountdown > 0 && _hasPendingCode
                     ? AppText(
-                        'Renvoyer le code dans ${_resendCountdown}s',
+                        l10n.emailVerification_resendCountdown(
+                          _resendCountdown,
+                        ),
                         variant: AppTextVariant.bodyMedium,
                         color: colors.textSecondary,
                       )
                     : AppButton(
                         label: _hasPendingCode
-                            ? 'Renvoyer le code'
-                            : 'Envoyer le code',
+                            ? l10n.emailVerification_resendCode
+                            : l10n.emailVerification_sendCode,
                         onPressed: _isCheckingStatus || _isResending
                             ? null
                             : _resend,
@@ -346,7 +361,11 @@ class _EmailVerificationScreenState
                   child: AppText(
                     _resendMessage!,
                     variant: AppTextVariant.bodySmall,
-                    color: _resendMessage!.startsWith('Impossible')
+                    color:
+                        _resendMessage ==
+                                l10n.emailVerification_statusLoadFailed ||
+                            _resendMessage ==
+                                l10n.emailVerification_resendFailed
                         ? colors.errorText
                         : colors.textSecondary,
                     textAlign: TextAlign.center,
@@ -414,6 +433,7 @@ class _EmailVerificationScreenState
   }
 
   Widget _buildSuccessView(ThemeColors colors) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: colors.canvas,
       body: Center(
@@ -431,13 +451,13 @@ class _EmailVerificationScreenState
             ),
             const SizedBox(height: AppSpacing.xl),
             AppText(
-              'Email vérifié',
+              l10n.emailVerification_successTitle,
               variant: AppTextVariant.headlineMedium,
               color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
             AppText(
-              'Votre adresse email a été vérifiée avec succès.',
+              l10n.emailVerification_successMessage,
               variant: AppTextVariant.bodyLarge,
               color: colors.textSecondary,
               textAlign: TextAlign.center,

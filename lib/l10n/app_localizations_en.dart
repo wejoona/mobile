@@ -7527,4 +7527,57 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get wallet_setupMoment => 'This will only take a moment';
+
+  @override
+  String get emailVerification_title => 'Email verification';
+
+  @override
+  String get emailVerification_statusLoadFailed =>
+      'Could not check email status. Try again.';
+
+  @override
+  String get emailVerification_invalidCode => 'Invalid code. Please try again.';
+
+  @override
+  String get emailVerification_alreadyVerified => 'Email already verified.';
+
+  @override
+  String get emailVerification_codeSent => 'Code sent. Check your inbox.';
+
+  @override
+  String emailVerification_codeSentDebug(String code) {
+    return 'Code sent. Test code: $code';
+  }
+
+  @override
+  String get emailVerification_resendFailed =>
+      'Could not resend the code. Try again.';
+
+  @override
+  String get emailVerification_enterCodeSentTo => 'Enter the code sent to';
+
+  @override
+  String get emailVerification_noActiveCodeFor => 'No active code for';
+
+  @override
+  String get emailVerification_sendCodePrompt =>
+      'Send a verification code to confirm this email address.';
+
+  @override
+  String emailVerification_resendCountdown(int seconds) {
+    return 'Resend code in ${seconds}s';
+  }
+
+  @override
+  String get emailVerification_resendCode => 'Resend code';
+
+  @override
+  String get emailVerification_sendCode => 'Send code';
+
+  @override
+  String get emailVerification_successTitle => 'Email verified';
+
+  @override
+  String get emailVerification_successMessage =>
+      'Your email address has been verified successfully.';
 }

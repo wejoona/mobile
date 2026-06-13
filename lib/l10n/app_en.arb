@@ -8710,5 +8710,34 @@
   "wallet_setupMoment": "This will only take a moment",
   "@wallet_setupMoment": {
     "description": "Wallet auto-creation loading subtitle"
-  }
+  },
+  "emailVerification_title": "Email verification",
+  "emailVerification_statusLoadFailed": "Could not check email status. Try again.",
+  "emailVerification_invalidCode": "Invalid code. Please try again.",
+  "emailVerification_alreadyVerified": "Email already verified.",
+  "emailVerification_codeSent": "Code sent. Check your inbox.",
+  "emailVerification_codeSentDebug": "Code sent. Test code: {code}",
+  "@emailVerification_codeSentDebug": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "emailVerification_resendFailed": "Could not resend the code. Try again.",
+  "emailVerification_enterCodeSentTo": "Enter the code sent to",
+  "emailVerification_noActiveCodeFor": "No active code for",
+  "emailVerification_sendCodePrompt": "Send a verification code to confirm this email address.",
+  "emailVerification_resendCountdown": "Resend code in {seconds}s",
+  "@emailVerification_resendCountdown": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "emailVerification_resendCode": "Resend code",
+  "emailVerification_sendCode": "Send code",
+  "emailVerification_successTitle": "Email verified",
+  "emailVerification_successMessage": "Your email address has been verified successfully."
 }
