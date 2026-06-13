@@ -16,9 +16,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
-import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
-import 'package:usdc_wallet/state/fsm/session_fsm.dart';
 
 /// Reset PIN View
 /// Multi-step flow to reset PIN via OTP
@@ -604,21 +602,17 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       final unlocked = await ref
           .read(authProvider.notifier)
           .unlockAfterAccountRecovery();
-      if (unlocked) return true;
+      if (!unlocked || !mounted) return false;
     } catch (_) {}
 
-    try {
-      ref.read(authProvider.notifier).unlock();
-    } catch (_) {}
-    try {
-      ref.read(sessionServiceProvider.notifier).unlockSession();
-    } catch (_) {}
-    try {
-      ref
-          .read(appFsmProvider.notifier)
-          .dispatch(const AppSessionEvent(SessionUnlock()));
-    } catch (_) {}
-    return true;
+    final authState = ref.read(authProvider);
+    final sessionState = ref.read(sessionServiceProvider);
+    final appState = ref.read(appFsmProvider);
+
+    return authState.isAuthenticated &&
+        !sessionState.isLocked &&
+        appState.currentRoute != '/session-locked' &&
+        appState.currentRoute != '/auth-locked';
   }
 
   void _resetNewPin() {

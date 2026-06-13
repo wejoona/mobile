@@ -242,9 +242,20 @@ class AuthNotifier extends Notifier<AuthState> {
     if (token == null || token.isEmpty) {
       return false;
     }
+    final refreshToken = await _storage.read(key: StorageKeys.refreshToken);
+    final userId = await _storage.read(key: 'user_id');
 
     state = state.copyWith(status: AuthStatus.authenticated, error: null);
 
+    try {
+      ref
+          .read(appFsmProvider.notifier)
+          .restoreSession(
+            userId: userId ?? '',
+            accessToken: token,
+            refreshToken: refreshToken,
+          );
+    } catch (_) {}
     try {
       ref.read(sessionServiceProvider.notifier).unlockSession();
     } catch (_) {}
