@@ -255,6 +255,17 @@ void main() {
       expect(initStateBody, contains('_avatarThumb = userState.avatarThumb'));
     });
 
+    test('email verification auto-requests a missing active code once', () {
+      final source = File(
+        'lib/features/profile/views/email_verification_screen.dart',
+      ).readAsStringSync();
+
+      expect(source, contains('_autoRequestedCode'));
+      expect(source, contains('!pendingVerification'));
+      expect(source, contains('email.isNotEmpty'));
+      expect(source, contains('unawaited(_resend())'));
+    });
+
     test(
       'profile edit prefers uploaded avatar thumbnail for immediate preview',
       () {

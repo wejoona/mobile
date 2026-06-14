@@ -33,6 +33,7 @@ class _EmailVerificationScreenState
   bool _isCheckingStatus = true;
   bool _hasPendingCode = false;
   bool _isResending = false;
+  bool _autoRequestedCode = false;
   String? _errorMessage;
   String? _resendMessage;
   int _resendCountdown = 0;
@@ -49,6 +50,13 @@ class _EmailVerificationScreenState
       final status = await ref.read(userServiceProvider).getEmailStatus();
       final verified = status['verified'] == true;
       final pendingVerification = status['pendingVerification'] == true;
+      final email = (status['email'] as String?)?.trim();
+      final shouldAutoRequestCode =
+          !verified &&
+          !pendingVerification &&
+          email != null &&
+          email.isNotEmpty &&
+          !_autoRequestedCode;
 
       if (!mounted) return;
       if (verified) {
@@ -63,6 +71,9 @@ class _EmailVerificationScreenState
       });
       if (pendingVerification) {
         _startResendCountdown();
+      } else if (shouldAutoRequestCode) {
+        _autoRequestedCode = true;
+        unawaited(_resend());
       }
     } on Object catch (_) {
       if (!mounted) return;
