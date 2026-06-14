@@ -1513,16 +1513,20 @@ void main() {
     );
 
     test(
-      'session repository revokes all sessions through sessions API',
+      'session repository invalidates tokens before cleaning session rows',
       () async {
-        final dio = MockDio()..queueResponse({'success': true});
+        final dio = MockDio()
+          ..queueResponse({'success': true})
+          ..queueResponse({'success': true});
         final repository = SessionsRepository(dio);
 
         await repository.logoutAllDevices();
 
-        expect(dio.requestHistory.single.method, 'DELETE');
-        expect(dio.requestHistory.single.path, '/sessions');
-        expect(dio.requestHistory.single.data, {
+        expect(dio.requestHistory[0].method, 'POST');
+        expect(dio.requestHistory[0].path, '/auth/logout-all');
+        expect(dio.requestHistory[1].method, 'DELETE');
+        expect(dio.requestHistory[1].path, '/sessions');
+        expect(dio.requestHistory[1].data, {
           'reason': 'user_logout_all_devices',
         });
       },

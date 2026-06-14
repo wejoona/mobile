@@ -35,10 +35,18 @@ class SessionsRepository {
   /// Logout from all devices and invalidate refresh tokens.
   Future<void> logoutAllDevices() async {
     try {
-      await _dio.delete(
-        '/sessions',
-        data: {'reason': 'user_logout_all_devices'},
-      );
+      await _dio.post('/auth/logout-all');
+
+      // Token invalidation above is the security boundary; session row cleanup
+      // keeps the device list honest but should not resurrect a failed logout.
+      try {
+        await _dio.delete(
+          '/sessions',
+          data: {'reason': 'user_logout_all_devices'},
+        );
+      } on DioException {
+        // Best effort only.
+      }
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
