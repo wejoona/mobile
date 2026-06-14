@@ -1,7 +1,8 @@
 import 'dart:io';
 
-import 'package:flutter_test/flutter_test.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:usdc_wallet/services/session/user_session.dart';
 import 'package:usdc_wallet/services/storage/hive_models.dart';
 import 'package:usdc_wallet/services/user/avatar_multipart.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
@@ -192,6 +193,51 @@ void main() {
 
       expect(cleared.email, isNull);
       expect(cleared.emailVerified, isFalse);
+    });
+
+    test('secure session profile fields can be explicitly cleared', () {
+      final session = UserSession(
+        userId: 'usr_001',
+        phoneNumber: '+22507080910',
+        displayName: 'Old Name',
+        firstName: 'Old',
+        lastName: 'Name',
+        email: 'old@korido.co',
+        avatarUrl: '/old/avatar',
+        accessToken: 'access',
+        refreshToken: 'refresh',
+        tokenExpiresAt: DateTime.parse('2026-06-04T10:15:00.000Z'),
+        lastActive: DateTime.parse('2026-06-04T10:00:00.000Z'),
+        sessionCreatedAt: DateTime.parse('2026-06-04T09:00:00.000Z'),
+      );
+
+      final cleared = session.copyWith(
+        clearDisplayName: true,
+        clearFirstName: true,
+        clearLastName: true,
+        clearEmail: true,
+        clearAvatarUrl: true,
+      );
+
+      expect(cleared.displayName, isNull);
+      expect(cleared.firstName, isNull);
+      expect(cleared.lastName, isNull);
+      expect(cleared.email, isNull);
+      expect(cleared.avatarUrl, isNull);
+      expect(cleared.userId, 'usr_001');
+      expect(cleared.accessToken, 'access');
+    });
+
+    test('profile snapshots update auth user and persistent session state', () {
+      final source = File(
+        'lib/features/profile/providers/profile_provider.dart',
+      ).readAsStringSync();
+
+      expect(source, contains('auth.authProvider.notifier'));
+      expect(source, contains('updateUser(user)'));
+      expect(source, contains('userSessionRepositoryProvider'));
+      expect(source, contains('clearEmail: profile.email == null'));
+      expect(source, contains('clearAvatarUrl: sessionAvatar == null'));
     });
 
     test('profile edit screen rebuilds after hydrating existing avatar', () {

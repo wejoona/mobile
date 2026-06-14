@@ -2,8 +2,10 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/user.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
+import 'package:usdc_wallet/services/session/user_session_repository.dart';
 import 'package:usdc_wallet/services/user/user_service.dart'
     hide userServiceProvider;
 import 'package:usdc_wallet/state/user_state_machine.dart';
@@ -46,7 +48,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
       final service = ref.read(userServiceProvider);
       final profile = await service.getProfile();
       final user = User.fromJson(profile.toJson());
-      _syncUserState(profile);
+      await _syncUserState(profile);
       state = state.copyWith(user: user, isLoading: false, error: null);
     } on ApiException catch (e) {
       state = state.copyWith(isLoading: false, error: _friendlyError(e));
@@ -105,7 +107,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
       'avatarThumb': avatarThumb ?? profile.avatarThumb,
     });
 
-    _syncUserState(mergedProfile);
+    await _syncUserState(mergedProfile);
     if (avatarChanged) {
       await _applyAvatarUploadResult(
         AvatarUploadResult(avatarUrl: avatarUrl, avatarThumb: avatarThumb),
@@ -143,7 +145,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
     }
   }
 
-  void _syncUserState(UserProfile profile) {
+  Future<void> _syncUserState(UserProfile profile) async {
     ref
         .read(userStateMachineProvider.notifier)
         .updateProfile(
@@ -158,6 +160,32 @@ class ProfileNotifier extends Notifier<ProfileState> {
               profile.avatarUrl == null || profile.avatarUrl!.isEmpty,
           clearAvatarThumb:
               profile.avatarThumb == null || profile.avatarThumb!.isEmpty,
+        );
+
+    final user = User.fromJson(profile.toJson());
+    ref.read(auth.authProvider.notifier).updateUser(user);
+
+    final sessionAvatar = (profile.avatarThumb?.isNotEmpty ?? false)
+        ? profile.avatarThumb
+        : profile.avatarUrl;
+    await ref
+        .read(userSessionRepositoryProvider)
+        .updateProfile(
+          displayName: profile.displayName.isNotEmpty
+              ? profile.displayName
+              : null,
+          firstName: profile.firstName,
+          lastName: profile.lastName,
+          email: profile.email,
+          avatarUrl: sessionAvatar,
+          kycStatus: profile.kycStatus,
+          hasCompletedKyc: profile.isKycVerified,
+          clearDisplayName: profile.displayName.isEmpty,
+          clearFirstName:
+              profile.firstName == null || profile.firstName!.isEmpty,
+          clearLastName: profile.lastName == null || profile.lastName!.isEmpty,
+          clearEmail: profile.email == null || profile.email!.isEmpty,
+          clearAvatarUrl: sessionAvatar == null || sessionAvatar.isEmpty,
         );
   }
 
