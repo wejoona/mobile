@@ -38,12 +38,14 @@ class LimitUsageCard extends StatelessWidget {
             used: limits.dailyUsed,
             limit: limits.dailyLimit,
           ),
-          const SizedBox(height: AppSpacing.md),
-          _LimitRow(
-            label: '7 days',
-            used: limits.weeklyUsed,
-            limit: limits.weeklyLimit,
-          ),
+          if (limits.weeklyLimit > 0) ...[
+            const SizedBox(height: AppSpacing.md),
+            _LimitRow(
+              label: '7 days',
+              used: limits.weeklyUsed,
+              limit: limits.weeklyLimit,
+            ),
+          ],
           const SizedBox(height: AppSpacing.md),
           _LimitRow(
             label: l10n.limits_monthlyLimits,

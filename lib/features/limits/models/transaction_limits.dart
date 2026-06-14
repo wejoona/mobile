@@ -50,42 +50,54 @@ class TransactionLimits {
   });
 
   factory TransactionLimits.fromJson(Map<String, dynamic> json) {
+    final daily = _mapOf(json['daily']);
+    final dailySend = _mapOf(daily['send']);
+    final monthly = _mapOf(json['monthly']);
+    final monthlyTotal = _mapOf(monthly['total']);
+    final perTransaction = _mapOf(json['perTransaction']);
+    final tier = json['tier'] as String?;
+
+    final singleTransactionLimit =
+        _numberOf(json['singleTransactionLimit']) ??
+        _numberOf(perTransaction['send']) ??
+        0.0;
+
     return TransactionLimits(
-      dailyLimit: (json['dailyLimit'] as num?)?.toDouble() ?? 0.0,
-      weeklyLimit: (json['weeklyLimit'] as num?)?.toDouble() ?? 0.0,
-      monthlyLimit: (json['monthlyLimit'] as num?)?.toDouble() ?? 0.0,
-      singleTransactionLimit:
-          (json['singleTransactionLimit'] as num?)?.toDouble() ?? 0.0,
-      singleTransactionMax:
-          (json['singleTransactionMax'] as num?)?.toDouble() ??
-          (json['singleTransactionLimit'] as num?)?.toDouble() ??
+      dailyLimit:
+          _numberOf(json['dailyLimit']) ?? _numberOf(dailySend['limit']) ?? 0.0,
+      weeklyLimit: _numberOf(json['weeklyLimit']) ?? 0.0,
+      monthlyLimit:
+          _numberOf(json['monthlyLimit']) ??
+          _numberOf(monthlyTotal['limit']) ??
           0.0,
-      withdrawalLimit: (json['withdrawalLimit'] as num?)?.toDouble() ?? 0.0,
-      dailyUsed: (json['dailyUsed'] as num?)?.toDouble() ?? 0.0,
-      weeklyUsed: (json['weeklyUsed'] as num?)?.toDouble() ?? 0.0,
-      monthlyUsed: (json['monthlyUsed'] as num?)?.toDouble() ?? 0.0,
+      singleTransactionLimit: singleTransactionLimit,
+      singleTransactionMax:
+          _numberOf(json['singleTransactionMax']) ?? singleTransactionLimit,
+      withdrawalLimit:
+          _numberOf(json['withdrawalLimit']) ??
+          _numberOf(perTransaction['withdraw']) ??
+          0.0,
+      dailyUsed:
+          _numberOf(json['dailyUsed']) ?? _numberOf(dailySend['used']) ?? 0.0,
+      weeklyUsed: _numberOf(json['weeklyUsed']) ?? 0.0,
+      monthlyUsed:
+          _numberOf(json['monthlyUsed']) ??
+          _numberOf(monthlyTotal['used']) ??
+          0.0,
       currency: json['currency'] as String? ?? 'USDC',
-      kycTier: (json['kycTier'] as num?)?.toInt() ?? 0,
-      tierName: json['tierName'] as String? ?? 'Basic',
+      kycTier: (json['kycTier'] as num?)?.toInt() ?? _tierNumberFromName(tier),
+      tierName: json['tierName'] as String? ?? _tierDisplayName(tier),
       kycStatus: json['kycStatus'] as String?,
       upgradeMessage: json['upgradeMessage'] as String?,
       nextTierName: json['nextTierName'] as String?,
-      nextTierDailyLimit: json['nextTierDailyLimit'] != null
-          ? (json['nextTierDailyLimit'] as num).toDouble()
-          : null,
-      nextTierMonthlyLimit: json['nextTierMonthlyLimit'] != null
-          ? (json['nextTierMonthlyLimit'] as num).toDouble()
-          : null,
-      resetTime: json['resetTime'] != null
-          ? DateTime.parse(json['resetTime'] as String)
-          : null,
+      nextTierDailyLimit: _numberOf(json['nextTierDailyLimit']),
+      nextTierMonthlyLimit: _numberOf(json['nextTierMonthlyLimit']),
+      resetTime: _dateOf(json['resetTime']),
       hoursUntilReset: json['hoursUntilReset'] as int?,
       minutesUntilReset: json['minutesUntilReset'] as int?,
       overrideActive: json['overrideActive'] as bool? ?? false,
       overrideReason: json['overrideReason'] as String?,
-      overrideExpiresAt: json['overrideExpiresAt'] != null
-          ? DateTime.parse(json['overrideExpiresAt'] as String)
-          : null,
+      overrideExpiresAt: _dateOf(json['overrideExpiresAt']),
     );
   }
 
@@ -193,5 +205,60 @@ class TransactionLimits {
       return 'monthly';
     }
     return null;
+  }
+}
+
+Map<String, dynamic> _mapOf(Object? value) {
+  if (value is Map<String, dynamic>) {
+    return value;
+  }
+  if (value is Map) {
+    return Map<String, dynamic>.from(value);
+  }
+  return const {};
+}
+
+double? _numberOf(Object? value) {
+  if (value is num) {
+    return value.toDouble();
+  }
+  if (value is String) {
+    return double.tryParse(value);
+  }
+  return null;
+}
+
+DateTime? _dateOf(Object? value) {
+  if (value is! String || value.isEmpty) {
+    return null;
+  }
+  return DateTime.tryParse(value);
+}
+
+int _tierNumberFromName(String? tier) {
+  switch (tier?.toLowerCase()) {
+    case 'basic':
+      return 1;
+    case 'verified':
+      return 2;
+    case 'premium':
+      return 3;
+    case 'unverified':
+    default:
+      return 0;
+  }
+}
+
+String _tierDisplayName(String? tier) {
+  switch (tier?.toLowerCase()) {
+    case 'basic':
+      return 'Basic';
+    case 'verified':
+      return 'Verified';
+    case 'premium':
+      return 'Premium';
+    case 'unverified':
+    default:
+      return 'Unverified';
   }
 }
