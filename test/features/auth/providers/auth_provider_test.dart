@@ -102,7 +102,9 @@ class MockSessionNotifier extends Notifier<SessionState>
     required String accessToken,
     String? refreshToken,
     Duration? tokenValidity,
-  }) async {}
+  }) async {
+    state = const SessionState(status: SessionStatus.active);
+  }
 
   @override
   Future<void> endSession() async {}
@@ -114,10 +116,14 @@ class MockSessionNotifier extends Notifier<SessionState>
   Future<void> extendSession() async {}
 
   @override
-  void unlockSession() {}
+  void unlockSession() {
+    state = const SessionState(status: SessionStatus.active);
+  }
 
   @override
-  Future<void> lockSession() async {}
+  Future<void> lockSession() async {
+    state = const SessionState(status: SessionStatus.locked);
+  }
 
   SessionConfig get config => const SessionConfig();
 
@@ -666,6 +672,60 @@ void main() {
         expect(container.read(authProvider).status, equals(AuthStatus.error));
         expect(mockStorage.storage[StorageKeys.accessToken], isNull);
         expect(mockStorage.storage[StorageKeys.refreshToken], isNull);
+      },
+    );
+  });
+
+  group('Account recovery unlock', () {
+    test(
+      'refreshes deterministically before unlocking after PIN reset',
+      () async {
+        // Arrange
+        await mockStorage.write(
+          key: StorageKeys.accessToken,
+          value: 'old.access.token',
+        );
+
+        final notifier = container.read(authProvider.notifier);
+        await notifier.checkAuth();
+        expect(container.read(authProvider).status, equals(AuthStatus.locked));
+
+        await mockStorage.write(
+          key: StorageKeys.refreshToken,
+          value: 'recovery.refresh.token',
+        );
+        when(
+          () => mockAuthService.refreshToken(
+            refreshToken: 'recovery.refresh.token',
+          ),
+        ).thenAnswer(
+          (_) async => const RefreshResponse(
+            accessToken: 'fresh.access.token',
+            refreshToken: 'fresh.refresh.token',
+            expiresIn: 900,
+          ),
+        );
+
+        // Act
+        final unlocked = await notifier.unlockAfterAccountRecovery();
+
+        // Assert
+        expect(unlocked, isTrue);
+        expect(container.read(authProvider).status, AuthStatus.authenticated);
+        expect(container.read(sessionServiceProvider).isLocked, isFalse);
+        expect(
+          mockStorage.storage[StorageKeys.accessToken],
+          'fresh.access.token',
+        );
+        expect(
+          mockStorage.storage[StorageKeys.refreshToken],
+          'fresh.refresh.token',
+        );
+        verify(
+          () => mockAuthService.refreshToken(
+            refreshToken: 'recovery.refresh.token',
+          ),
+        ).called(1);
       },
     );
   });
