@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
@@ -51,9 +52,8 @@ class _EmailVerificationScreenState
 
       if (!mounted) return;
       if (verified) {
-        ref
-            .read(userStateMachineProvider.notifier)
-            .updateProfile(emailVerified: true);
+        await _markEmailVerified();
+        if (!mounted) return;
       }
       setState(() {
         _isCheckingStatus = false;
@@ -125,10 +125,7 @@ class _EmailVerificationScreenState
         _isSuccess = true;
       });
 
-      // Update user state
-      ref
-          .read(userStateMachineProvider.notifier)
-          .updateProfile(emailVerified: true);
+      await _markEmailVerified();
 
       // Pop back after a short delay
       await Future.delayed(const Duration(seconds: 2));
@@ -172,9 +169,7 @@ class _EmailVerificationScreenState
           _resendMessage =
               result.message ?? l10n.emailVerification_alreadyVerified;
         });
-        ref
-            .read(userStateMachineProvider.notifier)
-            .updateProfile(emailVerified: true);
+        await _markEmailVerified();
         return;
       }
 
@@ -223,6 +218,19 @@ class _EmailVerificationScreenState
       return l10n.emailVerification_codeSentDebug(debugCode);
     }
     return l10n.emailVerification_codeSent;
+  }
+
+  Future<void> _markEmailVerified() async {
+    ref
+        .read(userStateMachineProvider.notifier)
+        .updateProfile(emailVerified: true);
+
+    try {
+      await ref.read(profileProvider.notifier).loadProfile();
+    } on Object {
+      // The local verification state is already correct; the next profile
+      // refresh will retry if this network sync fails.
+    }
   }
 
   @override
