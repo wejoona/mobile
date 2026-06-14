@@ -28,6 +28,11 @@ Do not reopen these unless new evidence changes them.
 - Production is GitOps-owned.
 - Do not mutate live k3s resources for ordinary deploys.
 - Read CI and GitOps repo before touching deployment behavior.
+- Mobile active development happens on `develop`.
+- Mobile TestFlight candidates are promoted through `staging`, which Codemagic watches.
+- Do not push every fix to `staging`; promote only stable candidates with no known crash/regression.
+- Keep the public app version below `2.0.0` before launch. Prefer keeping `1.0.0` and letting Codemagic advance the TestFlight build number from App Store Connect.
+- Use `mobile/scripts/promote_testflight_candidate.sh --yes` for deliberate candidate pushes after the candidate is stable enough.
 
 ## Dependencies
 
