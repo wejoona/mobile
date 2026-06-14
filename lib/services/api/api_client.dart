@@ -402,8 +402,7 @@ class AuthInterceptor extends Interceptor {
       return false;
     }
 
-    return data['error'] == 'DEVICE_BLACKLISTED' ||
-        data['code'] == 'DEVICE_BLACKLISTED';
+    return ApiException.errorCode(data) == 'DEVICE_BLACKLISTED';
   }
 
   /// Refresh token with race condition protection
@@ -517,7 +516,7 @@ class ApiException implements Exception {
 
     if (error.response?.data != null) {
       final data = error.response?.data;
-      final code = _errorCode(data);
+      final code = errorCode(data);
       if (code == 'DEVICE_BLACKLISTED') {
         return ApiException(
           message: 'This device has been blocked. Contact Korido support.',
@@ -557,13 +556,13 @@ class ApiException implements Exception {
       message: message,
       statusCode: statusCode,
       data: error.response?.data,
-      code: _errorCode(error.response?.data),
+      code: errorCode(error.response?.data),
     );
   }
 
   bool get isDeviceBlacklisted => code == 'DEVICE_BLACKLISTED';
 
-  static String? _errorCode(Object? data) {
+  static String? errorCode(Object? data) {
     if (data is Map) {
       final error = data['error'];
       if (error is Map && error['code'] != null) {
