@@ -21,7 +21,14 @@ void main() {
         });
       final service = ProfilePictureService(dio);
 
-      final result = await service.uploadAvatar(file, onProgress: (_) {});
+      final result = await service.uploadAvatar(
+        file,
+        onProgress: (_) {},
+        faceCheck: AvatarDeviceFaceCheck.fromDeviceAnalysis(
+          isAvailable: true,
+          faceCount: 1,
+        ),
+      );
 
       expect(dio.requestHistory.single.path, '/user/avatar');
       final formData = dio.requestHistory.single.data as FormData;
@@ -52,7 +59,14 @@ void main() {
         });
       final service = ProfilePictureService(dio);
 
-      final result = await service.uploadAvatar(file, onProgress: (_) {});
+      final result = await service.uploadAvatar(
+        file,
+        onProgress: (_) {},
+        faceCheck: AvatarDeviceFaceCheck.fromDeviceAnalysis(
+          isAvailable: true,
+          faceCount: 1,
+        ),
+      );
 
       expect(result.avatarUrl, '/user/avatar/usr_nested');
       expect(result.avatarThumb, startsWith('data:image/jpeg;base64,'));

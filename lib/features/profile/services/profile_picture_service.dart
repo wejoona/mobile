@@ -98,13 +98,14 @@ class ProfilePictureService {
   Future<AvatarUploadResult> uploadAvatar(
     File imageFile, {
     required void Function(double) onProgress,
+    required AvatarDeviceFaceCheck faceCheck,
   }) async {
     try {
       _logger.info('Uploading avatar: ${imageFile.path}');
 
       final fileName = imageFile.path.split('/').last;
       final formData = FormData.fromMap({
-        avatarDeviceFaceCheckField: avatarDeviceFaceCheckToken,
+        avatarDeviceFaceCheckField: faceCheck.token,
         'avatar': await avatarMultipartFile(imageFile, filename: fileName),
       });
 

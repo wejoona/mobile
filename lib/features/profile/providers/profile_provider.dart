@@ -6,6 +6,7 @@ import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
 import 'package:usdc_wallet/services/session/user_session_repository.dart';
+import 'package:usdc_wallet/services/user/avatar_multipart.dart';
 import 'package:usdc_wallet/services/user/user_service.dart'
     hide userServiceProvider;
 import 'package:usdc_wallet/state/user_state_machine.dart';
@@ -73,11 +74,17 @@ class ProfileNotifier extends Notifier<ProfileState> {
     }
   }
 
-  Future<AvatarUploadResult?> uploadAvatar(File file) async {
+  Future<AvatarUploadResult?> uploadAvatar(
+    File file, {
+    required AvatarDeviceFaceCheck faceCheck,
+  }) async {
     state = state.copyWith(isUploading: true, clearError: true);
     try {
       final service = ref.read(userServiceProvider);
-      final result = await service.uploadAvatar(file.path);
+      final result = await service.uploadAvatar(
+        file.path,
+        faceCheck: faceCheck,
+      );
       await _applyAvatarUploadResult(result);
       await loadProfile();
       await _applyAvatarUploadResult(result, clearLocalCache: false);

@@ -152,7 +152,13 @@ void main() {
           });
         final service = UserService(dio);
 
-        final avatar = await service.uploadAvatar(avatarFile.path);
+        final avatar = await service.uploadAvatar(
+          avatarFile.path,
+          faceCheck: AvatarDeviceFaceCheck.fromDeviceAnalysis(
+            isAvailable: true,
+            faceCount: 1,
+          ),
+        );
 
         final formData = dio.requestHistory.single.data as FormData;
         expect(dio.requestHistory.single.path, '/user/avatar');
@@ -312,11 +318,46 @@ void main() {
       expect(profileProviderSource, contains('await _applyAvatarUploadResult'));
       expect(profileProviderSource, contains('applyServerAvatar('));
       expect(profileEditSource, contains('detectFaces(compressed)'));
+      expect(
+        profileEditSource,
+        contains('AvatarDeviceFaceCheck.fromDeviceAnalysis'),
+      );
       expect(profileEditSource, contains('Checking face on this device'));
       expect(profileEditSource, contains('_profilePhotoPickErrorMessage'));
       expect(profileEditSource, contains('PlatformException'));
-      expect(profileEditSource, contains('uploadAvatar(compressed)'));
+      expect(profileEditSource, contains('uploadAvatar(compressed, faceCheck'));
       expect(profileEditSource, contains('_selectedImage = null'));
+    });
+
+    test('avatar device face-check proof is only created for one face', () {
+      expect(
+        () => AvatarDeviceFaceCheck.fromDeviceAnalysis(
+          isAvailable: true,
+          faceCount: 0,
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => AvatarDeviceFaceCheck.fromDeviceAnalysis(
+          isAvailable: true,
+          faceCount: 2,
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => AvatarDeviceFaceCheck.fromDeviceAnalysis(
+          isAvailable: false,
+          faceCount: 1,
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        AvatarDeviceFaceCheck.fromDeviceAnalysis(
+          isAvailable: true,
+          faceCount: 1,
+        ).token,
+        avatarDeviceFaceCheckToken,
+      );
     });
 
     test('cached profile preserves avatar thumbnail for offline rendering', () {

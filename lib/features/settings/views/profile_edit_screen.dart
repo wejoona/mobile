@@ -11,6 +11,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/image_analysis/image_analysis_service.dart';
+import 'package:usdc_wallet/services/user/avatar_multipart.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/state/index.dart';
 
@@ -492,18 +493,22 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     _setProfilePhotoBusy('Preparing photo...');
     final compressed = await pictureService.compressImage(picked);
     _setProfilePhotoBusy('Checking face on this device...');
-    final faceCheck = await ref
+    final faceDetection = await ref
         .read(imageAnalysisServiceProvider)
         .detectFaces(compressed);
     if (!mounted) return;
 
-    if (!faceCheck.isAvailable || !faceCheck.hasExactlyOneFace) {
+    if (!faceDetection.isAvailable || !faceDetection.hasExactlyOneFace) {
       _showProfilePhotoSnack(
-        _profilePhotoFaceMessage(faceCheck),
+        _profilePhotoFaceMessage(faceDetection),
         isError: true,
       );
       return;
     }
+    final faceCheck = AvatarDeviceFaceCheck.fromDeviceAnalysis(
+      isAvailable: faceDetection.isAvailable,
+      faceCount: faceDetection.faceCount,
+    );
 
     _setProfilePhotoBusy('Uploading photo...');
     setState(() {
@@ -512,7 +517,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
     final uploadResult = await ref
         .read(profileProvider.notifier)
-        .uploadAvatar(compressed);
+        .uploadAvatar(compressed, faceCheck: faceCheck);
     final profileState = ref.read(profileProvider);
     if (!mounted) return;
 
