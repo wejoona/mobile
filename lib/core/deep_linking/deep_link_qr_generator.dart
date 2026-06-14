@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:usdc_wallet/design/tokens/colors.dart';
+import 'package:usdc_wallet/features/qr_payment/widgets/branded_qr_image.dart';
 
 /// QR Code generator for deep links
 /// Supports payment requests, receive money, and payment links
@@ -92,12 +93,10 @@ class DeepLinkQrCode extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return QrImageView(
+    return BrandedQrImage(
       data: data,
-      version: QrVersions.auto,
       size: size,
       backgroundColor: backgroundColor ?? Colors.white,
-      errorCorrectionLevel: QrErrorCorrectLevel.M,
       eyeStyle: QrEyeStyle(
         eyeShape: QrEyeShape.square,
         color: foregroundColor ?? AppColors.obsidian,
@@ -106,10 +105,7 @@ class DeepLinkQrCode extends StatelessWidget {
         dataModuleShape: QrDataModuleShape.square,
         color: foregroundColor ?? AppColors.obsidian,
       ),
-      embeddedImage: showLogo ? const AssetImage('assets/logo_qr.png') : null,
-      embeddedImageStyle: showLogo
-          ? const QrEmbeddedImageStyle(size: Size(60, 60))
-          : null,
+      showBrandMark: showLogo,
     );
   }
 }
