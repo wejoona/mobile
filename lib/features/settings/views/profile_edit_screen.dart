@@ -470,7 +470,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       final profileState = ref.read(profileProvider);
       if (!mounted) return;
 
-      if (uploadResult == null || profileState.error != null) {
+      final uploadedAvatar = uploadResult;
+      if (uploadedAvatar == null ||
+          !((uploadedAvatar.avatarUrl?.isNotEmpty ?? false) ||
+              (uploadedAvatar.avatarThumb?.isNotEmpty ?? false))) {
         setState(() => _selectedImage = null);
         _showProfilePhotoSnack(
           profileState.error ??
@@ -483,8 +486,8 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       final userState = ref.read(userStateMachineProvider);
       setState(() {
         _selectedImage = null;
-        _avatarUrl = uploadResult.avatarUrl ?? userState.avatarUrl;
-        _avatarThumb = uploadResult.avatarThumb ?? userState.avatarThumb;
+        _avatarUrl = uploadedAvatar.avatarUrl ?? userState.avatarUrl;
+        _avatarThumb = uploadedAvatar.avatarThumb ?? userState.avatarThumb;
       });
 
       _showProfilePhotoSnack(
