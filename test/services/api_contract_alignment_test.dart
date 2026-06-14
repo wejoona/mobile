@@ -281,6 +281,26 @@ void main() {
       },
     );
 
+    test('wallet balance parser accepts keyed balance maps', () {
+      final response = WalletBalanceResponse.fromJson({
+        'walletId': 'wallet_1',
+        'walletAddress': '0xabc',
+        'currency': 'USDC',
+        'balances': {
+          'usd': {'available': '0', 'pending': '0', 'total': '0'},
+          'usdc': {
+            'availableDecimal': '42.750000',
+            'pendingDecimal': '1.250000',
+            'totalDecimal': '44.000000',
+          },
+        },
+      });
+
+      expect(response.balances, hasLength(2));
+      expect(response.availableBalance, 42.75);
+      expect(response.totalBalance, 44);
+    });
+
     test('withdraw result accepts backend envelope and id aliases', () {
       final result = WithdrawResult.fromJson({
         'data': {

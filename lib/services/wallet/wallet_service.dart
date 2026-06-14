@@ -393,7 +393,7 @@ class WalletBalanceResponse {
 
   factory WalletBalanceResponse.fromJson(Map<String, dynamic> json) {
     final payload = _walletPayload(json);
-    final List<dynamic> balanceList = payload['balances'] as List? ?? [];
+    final balanceList = _balanceEntries(payload['balances']);
 
     // Handle both GET /wallet and POST /wallet/create response formats
     // GET returns: {walletId, walletAddress, balances: [...]}
@@ -477,6 +477,28 @@ class WalletBalanceResponse {
       readStatus: payload['readStatus'] as String?,
     );
   }
+}
+
+List<Map<String, dynamic>> _balanceEntries(Object? raw) {
+  if (raw is List) {
+    return raw.whereType<Map>().map(Map<String, dynamic>.from).toList();
+  }
+
+  if (raw is Map) {
+    return raw.entries.map((entry) {
+      final currency = entry.key.toString().toUpperCase();
+      final value = entry.value;
+      if (value is Map) {
+        return {
+          'currency': value['currency'] ?? currency,
+          ...Map<String, dynamic>.from(value),
+        };
+      }
+      return {'currency': currency, 'available': value, 'total': value};
+    }).toList();
+  }
+
+  return const [];
 }
 
 Map<String, dynamic> _walletPayload(Map<String, dynamic> json) {
