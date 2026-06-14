@@ -81,9 +81,9 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.screenPadding,
-                  AppSpacing.lg,
+                  AppSpacing.md,
                   AppSpacing.screenPadding,
-                  AppSpacing.xxl,
+                  AppSpacing.lg,
                 ),
                 child: FadeTransition(
                   opacity: _fadeAnimation,
@@ -91,7 +91,7 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
                     children: [
                       AppCard(
                         variant: AppCardVariant.goldAccent,
-                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        padding: const EdgeInsets.all(AppSpacing.md),
                         borderRadius: AppRadius.lg,
                         child: Column(
                           children: [
@@ -100,8 +100,8 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
                               builder: (context, child) => Transform.scale(
                                 scale: _scaleAnimation.value,
                                 child: Container(
-                                  width: 56,
-                                  height: 56,
+                                  width: 48,
+                                  height: 48,
                                   decoration: BoxDecoration(
                                     color: context.colors.success.withValues(
                                       alpha: colors.isDark ? 0.16 : 0.1,
@@ -110,27 +110,27 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
                                   ),
                                   child: Icon(
                                     Icons.check_rounded,
-                                    size: 32,
+                                    size: 28,
                                     color: context.colors.success,
                                   ),
                                 ),
                               ),
                             ),
-                            const SizedBox(height: AppSpacing.md),
+                            const SizedBox(height: AppSpacing.sm),
                             AppText(
                               l10n.transfer_successTitle,
                               variant: AppTextVariant.titleLarge,
                               color: colors.textPrimary,
                               textAlign: TextAlign.center,
                             ),
-                            const SizedBox(height: AppSpacing.xs),
+                            const SizedBox(height: AppSpacing.xxs),
                             AppText(
                               formatUsdc(widget.amount),
                               variant: AppTextVariant.headlineMedium,
                               color: colors.textPrimary,
                               textAlign: TextAlign.center,
                             ),
-                            const SizedBox(height: AppSpacing.xs),
+                            const SizedBox(height: AppSpacing.xxs),
                             AppText(
                               widget.recipient,
                               color: colors.textSecondary,
@@ -141,11 +141,11 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
                           ],
                         ),
                       ),
-                      const SizedBox(height: AppSpacing.lg),
+                      const SizedBox(height: AppSpacing.md),
                       AppCard(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.lg,
-                          vertical: AppSpacing.md,
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.sm,
                         ),
                         borderRadius: AppRadius.lg,
                         child: Column(
@@ -155,13 +155,6 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
                               value: _truncateId(widget.transactionId),
                               canCopy: true,
                               fullValue: widget.transactionId,
-                              colors: colors,
-                              l10n: l10n,
-                            ),
-                            Divider(color: context.colors.borderSubtle),
-                            _DetailRow(
-                              label: l10n.common_amount,
-                              value: formatUsdc(widget.amount),
                               colors: colors,
                               l10n: l10n,
                             ),
@@ -196,7 +189,7 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
                 AppSpacing.screenPadding,
                 AppSpacing.sm,
                 AppSpacing.screenPadding,
-                AppSpacing.screenPadding,
+                AppSpacing.md,
               ),
               child: FadeTransition(
                 opacity: _fadeAnimation,
@@ -277,7 +270,7 @@ class _DetailRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: Row(
         children: [
           Expanded(child: AppText(label, color: colors.textSecondary)),

@@ -159,7 +159,7 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                               children: [
                                 Icon(
                                   Icons.account_balance_wallet_outlined,
-                                  color: colors.infoText,
+                                  color: colors.gold,
                                   size: 20,
                                 ),
                                 const SizedBox(width: AppSpacing.sm),

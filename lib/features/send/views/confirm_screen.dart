@@ -124,7 +124,7 @@ class ConfirmScreen extends ConsumerWidget {
                               ),
                               icon: Icon(
                                 Icons.edit_outlined,
-                                color: colors.infoText,
+                                color: colors.gold,
                                 size: 20,
                               ),
                               onPressed: () => context.go('/send'),
@@ -169,7 +169,7 @@ class ConfirmScreen extends ConsumerWidget {
                                 ),
                                 icon: Icon(
                                   Icons.edit_outlined,
-                                  color: colors.infoText,
+                                  color: colors.gold,
                                   size: 20,
                                 ),
                                 onPressed: () => context.go('/send/amount'),
