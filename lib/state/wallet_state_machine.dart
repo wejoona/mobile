@@ -11,6 +11,8 @@ import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 /// Wallet State Machine - manages wallet balance globally
 class WalletStateMachine extends Notifier<WalletState> {
   Future<void>? _refreshInFlight;
+  static const _cachedBalanceWarning =
+      'Live balance is temporarily unavailable. Showing last known balance.';
 
   @override
   WalletState build() {
@@ -24,7 +26,8 @@ class WalletStateMachine extends Notifier<WalletState> {
   bool _keepCachedBalanceOnFailure() {
     final cached = ref.read(localCacheServiceProvider).getCachedWallet();
     if (cached != null) {
-      state = state.copyWith(
+      state = _cachedBalanceState(
+        base: state,
         status: WalletStatus.loaded,
         walletId: cached.walletId,
         walletAddress: cached.address,
@@ -33,33 +36,13 @@ class WalletStateMachine extends Notifier<WalletState> {
         usdcBalance: cached.usdcBalance,
         pendingBalance: cached.pendingBalance,
         lastUpdated: cached.cachedAt,
-        isCached: true,
-        isDegraded: false,
-        isStale: false,
-        balanceWarning: null,
-        balanceSourceOfTruth: null,
-        balanceReadStatus: null,
-        clearBalanceSourceOfTruth: true,
-        clearBalanceReadStatus: true,
-        error: null,
       );
       debugPrint('[WalletState] Keeping cached balance (${cached.cachedAt})');
       return true;
     }
 
     if (state.hasBalanceData) {
-      state = state.copyWith(
-        status: WalletStatus.loaded,
-        isCached: true,
-        isDegraded: false,
-        isStale: false,
-        balanceWarning: null,
-        balanceSourceOfTruth: null,
-        balanceReadStatus: null,
-        clearBalanceSourceOfTruth: true,
-        clearBalanceReadStatus: true,
-        error: null,
-      );
+      state = _degradedBalanceState(state);
       debugPrint('[WalletState] Keeping previous balance after refresh error');
       return true;
     }
@@ -237,7 +220,8 @@ class WalletStateMachine extends Notifier<WalletState> {
       // Try to return cached data on error
       final cached = ref.read(localCacheServiceProvider).getCachedWallet();
       if (cached != null) {
-        state = state.copyWith(
+        state = _cachedBalanceState(
+          base: state,
           status: WalletStatus.loaded,
           walletId: cached.walletId,
           walletAddress: cached.address,
@@ -246,15 +230,6 @@ class WalletStateMachine extends Notifier<WalletState> {
           usdcBalance: cached.usdcBalance,
           pendingBalance: cached.pendingBalance,
           lastUpdated: cached.cachedAt,
-          isCached: true,
-          isDegraded: false,
-          isStale: false,
-          balanceWarning: null,
-          balanceSourceOfTruth: null,
-          balanceReadStatus: null,
-          clearBalanceSourceOfTruth: true,
-          clearBalanceReadStatus: true,
-          error: null,
         );
         debugPrint('[WalletState] Loaded from cache (${cached.cachedAt})');
         return;
@@ -318,7 +293,7 @@ class WalletStateMachine extends Notifier<WalletState> {
         // Other errors: keep whatever balance we already had, just clear the
         // refreshing flag. Don't surface an error on a background refresh.
         state = previousState.hasBalanceData
-            ? previousState.copyWith(status: WalletStatus.loaded, error: null)
+            ? _degradedBalanceState(previousState)
             : state.copyWith(status: WalletStatus.error, error: e.message);
       }
     } catch (e) {
@@ -326,12 +301,12 @@ class WalletStateMachine extends Notifier<WalletState> {
 
       // On refresh error, keep old data but update status
       state = previousState.hasBalanceData
-          ? previousState.copyWith(status: WalletStatus.loaded, error: null)
+          ? _degradedBalanceState(previousState)
           : state.copyWith(status: WalletStatus.error, error: e.toString());
     } finally {
       if (ref.mounted && state.status == WalletStatus.refreshing) {
         state = previousState.hasBalanceData
-            ? previousState.copyWith(status: WalletStatus.loaded, error: null)
+            ? _degradedBalanceState(previousState)
             : state.copyWith(
                 status: WalletStatus.error,
                 error: 'Unable to refresh balance right now',
@@ -344,11 +319,54 @@ class WalletStateMachine extends Notifier<WalletState> {
     if (!ref.mounted) return;
 
     state = fallbackState.hasBalanceData
-        ? fallbackState.copyWith(status: WalletStatus.loaded, error: null)
+        ? _degradedBalanceState(fallbackState)
         : state.copyWith(
             status: WalletStatus.error,
             error: 'Unable to refresh balance right now',
           );
+  }
+
+  WalletState _degradedBalanceState(WalletState base) {
+    return base.copyWith(
+      status: WalletStatus.loaded,
+      isCached: true,
+      isDegraded: true,
+      isStale: true,
+      balanceWarning: base.balanceWarning ?? _cachedBalanceWarning,
+      balanceSourceOfTruth: base.balanceSourceOfTruth ?? 'local_cache',
+      balanceReadStatus: 'cached_degraded',
+      error: null,
+    );
+  }
+
+  WalletState _cachedBalanceState({
+    required WalletState base,
+    required WalletStatus status,
+    required String walletId,
+    required String? walletAddress,
+    required String blockchain,
+    required double usdBalance,
+    required double usdcBalance,
+    required double pendingBalance,
+    required DateTime lastUpdated,
+  }) {
+    return base.copyWith(
+      status: status,
+      walletId: walletId,
+      walletAddress: walletAddress,
+      blockchain: blockchain,
+      usdBalance: usdBalance,
+      usdcBalance: usdcBalance,
+      pendingBalance: pendingBalance,
+      lastUpdated: lastUpdated,
+      isCached: true,
+      isDegraded: true,
+      isStale: true,
+      balanceWarning: _cachedBalanceWarning,
+      balanceSourceOfTruth: 'local_cache',
+      balanceReadStatus: 'cached_degraded',
+      error: null,
+    );
   }
 
   /// Update balance after a transaction (optimistic update)
