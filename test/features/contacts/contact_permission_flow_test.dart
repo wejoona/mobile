@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Contacts permission flow', () {
-    test('contacts screen open requests permission, manual sync can recover', () {
+    test('contacts screen open checks permission, manual sync can recover', () {
       final source = File(
         'lib/features/contacts/views/contacts_list_screen.dart',
       ).readAsStringSync();
@@ -25,9 +25,10 @@ void main() {
         initBody,
         contains('WidgetsBinding.instance.addPostFrameCallback'),
       );
+      expect(initBody, contains('syncContacts()'));
       expect(
         initBody,
-        contains('_requestPermissionAndSync(showSettingsDialog: false)'),
+        isNot(contains('_requestPermissionAndSync(showSettingsDialog: false)')),
       );
       expect(
         manualSyncBody,
