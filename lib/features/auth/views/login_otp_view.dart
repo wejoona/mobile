@@ -29,115 +29,116 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
     final state = ref.watch(loginProvider);
     final colors = context.colors;
     final isBusy = state.isLoading || _isSubmittingOtp;
+    final otpCueLabel = _localizedOtpCopy(
+      context,
+      en: 'Code accepted. Securing your session...',
+      fr: 'Code accepté. Sécurisation de la session...',
+    );
 
     return Scaffold(
       backgroundColor: colors.canvas,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.screenPadding,
-          ),
-          child: LayoutBuilder(
-            builder: (context, constraints) => SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: Column(
-                  children: [
-                    const SizedBox(height: AppSpacing.lg),
-                    AuthTopBar(onBack: () => context.pop()),
-                    const SizedBox(height: AppSpacing.xl),
-                    AuthScreenHeader(
-                      appName: l10n.appName,
-                      title: l10n.login_verifyCode,
-                      subtitle: l10n.login_codeSentTo(
-                        state.countryCode ?? '+225',
-                        _formatPhoneForDisplay(state.phoneNumber ?? ''),
-                      ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.screenPadding,
+              ),
+              child: LayoutBuilder(
+                builder: (context, constraints) => SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
                     ),
-                    const SizedBox(height: AppSpacing.xxxl),
-                    SecurityCodeFields(
-                      key: _codeInputKey,
-                      obscureText: false,
-                      hasError: _hasError,
-                      enabled: !isBusy,
-                      onChanged: (_) {
-                        if (_hasError) {
-                          setState(() => _hasError = false);
-                        }
-                      },
-                      onCompleted: _submitOtp,
-                    ),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 180),
-                      child: isBusy
-                          ? Padding(
-                              padding: const EdgeInsets.only(
-                                top: AppSpacing.lg,
-                              ),
-                              child: OtpProgressCue(
-                                label: _localizedOtpCopy(
-                                  context,
-                                  en: 'Code accepted. Securing your session...',
-                                  fr: 'Code accepté. Sécurisation de la session...',
-                                ),
-                              ),
-                            )
-                          : const SizedBox.shrink(),
-                    ),
-                    if (state.error != null) ...[
-                      const SizedBox(height: AppSpacing.lg),
-                      Container(
-                        padding: const EdgeInsets.all(AppSpacing.md),
-                        decoration: BoxDecoration(
-                          color: colors.error.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(AppRadius.md),
-                          border: Border.all(color: colors.error),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: AppSpacing.lg),
+                        AuthTopBar(onBack: () => context.pop()),
+                        const SizedBox(height: AppSpacing.xl),
+                        AuthScreenHeader(
+                          appName: l10n.appName,
+                          title: l10n.login_verifyCode,
+                          subtitle: l10n.login_codeSentTo(
+                            state.countryCode ?? '+225',
+                            _formatPhoneForDisplay(state.phoneNumber ?? ''),
+                          ),
                         ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.error_outline, color: colors.errorText),
-                            const SizedBox(width: AppSpacing.sm),
-                            Expanded(
-                              child: AppText(
-                                state.error!,
-                                variant: AppTextVariant.bodySmall,
-                                color: colors.errorText,
-                              ),
+                        const SizedBox(height: AppSpacing.xxxl),
+                        SecurityCodeFields(
+                          key: _codeInputKey,
+                          obscureText: false,
+                          hasError: _hasError,
+                          enabled: !isBusy,
+                          onChanged: (_) {
+                            if (_hasError) {
+                              setState(() => _hasError = false);
+                            }
+                          },
+                          onCompleted: _submitOtp,
+                        ),
+                        if (state.error != null) ...[
+                          const SizedBox(height: AppSpacing.lg),
+                          Container(
+                            padding: const EdgeInsets.all(AppSpacing.md),
+                            decoration: BoxDecoration(
+                              color: colors.error.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(AppRadius.md),
+                              border: Border.all(color: colors.error),
                             ),
-                          ],
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.error_outline,
+                                  color: colors.errorText,
+                                ),
+                                const SizedBox(width: AppSpacing.sm),
+                                Expanded(
+                                  child: AppText(
+                                    state.error!,
+                                    variant: AppTextVariant.bodySmall,
+                                    color: colors.errorText,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: AppSpacing.xxl),
+                        Center(
+                          child: state.otpResendCountdown > 0
+                              ? AppText(
+                                  l10n.login_resendIn(state.otpResendCountdown),
+                                  variant: AppTextVariant.bodyMedium,
+                                  color: colors.textSecondary,
+                                )
+                              : AppButton(
+                                  label: l10n.login_resendCode,
+                                  onPressed: isBusy ? null : _handleResend,
+                                  variant: AppButtonVariant.ghost,
+                                ),
                         ),
-                      ),
-                    ],
-                    const SizedBox(height: AppSpacing.xxl),
-                    Center(
-                      child: state.otpResendCountdown > 0
-                          ? AppText(
-                              l10n.login_resendIn(state.otpResendCountdown),
-                              variant: AppTextVariant.bodyMedium,
-                              color: colors.textSecondary,
-                            )
-                          : AppButton(
-                              label: l10n.login_resendCode,
-                              onPressed: isBusy ? null : _handleResend,
+                        if (EnvironmentConfig.showDevOtpShortcut) ...[
+                          const SizedBox(height: AppSpacing.sm),
+                          Center(
+                            child: AppButton(
+                              label: 'Use dev OTP',
+                              onPressed: isBusy
+                                  ? null
+                                  : () => _submitOtp('123456'),
                               variant: AppButtonVariant.ghost,
                             ),
+                          ),
+                        ],
+                        const SizedBox(height: AppSpacing.xl),
+                      ],
                     ),
-                    if (EnvironmentConfig.showDevOtpShortcut) ...[
-                      const SizedBox(height: AppSpacing.sm),
-                      Center(
-                        child: AppButton(
-                          label: 'Use dev OTP',
-                          onPressed: isBusy ? null : () => _submitOtp('123456'),
-                          variant: AppButtonVariant.ghost,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: AppSpacing.xl),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
+            OtpVerificationOverlay(visible: isBusy, label: otpCueLabel),
+          ],
         ),
       ),
     );

@@ -91,3 +91,48 @@ class OtpProgressCue extends StatelessWidget {
     properties.add(StringProperty('label', label));
   }
 }
+
+class OtpVerificationOverlay extends StatelessWidget {
+  const OtpVerificationOverlay({
+    required this.visible,
+    required this.label,
+    super.key,
+  });
+
+  final bool visible;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    return IgnorePointer(
+      ignoring: !visible,
+      child: AnimatedOpacity(
+        opacity: visible ? 1 : 0,
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        child: ColoredBox(
+          color: colors.scrim,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.screenPadding),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 360),
+                child: OtpProgressCue(label: label),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<bool>('visible', visible))
+      ..add(StringProperty('label', label));
+  }
+}

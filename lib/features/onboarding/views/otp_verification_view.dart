@@ -31,115 +31,123 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
     final state = ref.watch(onboardingProvider);
     final colors = context.colors;
     final isBusy = state.isLoading || _isSubmittingOtp;
+    final otpCueLabel = _localizedOtpCopy(
+      context,
+      en: 'Code accepted. Creating your secure wallet...',
+      fr: 'Code accepté. Création de votre wallet sécurisé...',
+    );
 
     return Scaffold(
       backgroundColor: colors.canvas,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.screenPadding,
-          ),
-          child: LayoutBuilder(
-            builder: (context, constraints) => SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: Column(
-                  children: [
-                    const SizedBox(height: AppSpacing.lg),
-                    AuthTopBar(onBack: () => context.pop()),
-                    const SizedBox(height: AppSpacing.lg),
-                    const OnboardingProgress(currentStep: 2, totalSteps: 5),
-                    const SizedBox(height: AppSpacing.xxl),
-                    AuthScreenHeader(
-                      appName: l10n.appName,
-                      title: l10n.onboarding_otp_title,
-                      subtitle: l10n.onboarding_otp_subtitle(
-                        state.dialCode ?? '+225',
-                        _formatPhoneForDisplay(
-                          state.phoneNumber ?? '',
-                          state.dialCode ?? '+225',
-                        ),
-                      ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.screenPadding,
+              ),
+              child: LayoutBuilder(
+                builder: (context, constraints) => SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
                     ),
-                    const SizedBox(height: AppSpacing.xxxl),
-                    SecurityCodeFields(
-                      key: _codeInputKey,
-                      obscureText: false,
-                      hasError: _hasError,
-                      enabled: !isBusy,
-                      onChanged: (code) {
-                        if (_hasError) {
-                          setState(() => _hasError = false);
-                        }
-                      },
-                      onCompleted: _submitOtp,
-                    ),
-                    if (state.error != null) ...[
-                      const SizedBox(height: AppSpacing.lg),
-                      Container(
-                        padding: const EdgeInsets.all(AppSpacing.md),
-                        decoration: BoxDecoration(
-                          color: colors.errorBg,
-                          borderRadius: BorderRadius.circular(AppRadius.md),
-                          border: Border.all(color: colors.error),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.error_outline, color: colors.errorText),
-                            const SizedBox(width: AppSpacing.sm),
-                            Expanded(
-                              child: AppText(
-                                state.error!,
-                                variant: AppTextVariant.bodySmall,
-                                color: colors.errorText,
-                              ),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: AppSpacing.lg),
+                        AuthTopBar(onBack: () => context.pop()),
+                        const SizedBox(height: AppSpacing.lg),
+                        const OnboardingProgress(currentStep: 2, totalSteps: 5),
+                        const SizedBox(height: AppSpacing.xxl),
+                        AuthScreenHeader(
+                          appName: l10n.appName,
+                          title: l10n.onboarding_otp_title,
+                          subtitle: l10n.onboarding_otp_subtitle(
+                            state.dialCode ?? '+225',
+                            _formatPhoneForDisplay(
+                              state.phoneNumber ?? '',
+                              state.dialCode ?? '+225',
                             ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ],
-                    const SizedBox(height: AppSpacing.xxl),
-                    Center(
-                      child: state.otpResendCountdown > 0
-                          ? AppText(
-                              l10n.onboarding_otp_resendIn(
-                                state.otpResendCountdown,
-                              ),
-                              variant: AppTextVariant.bodyMedium,
-                              color: colors.textSecondary,
-                            )
-                          : AppButton(
-                              label: l10n.onboarding_otp_resend,
-                              onPressed: isBusy ? null : _handleResend,
+                        const SizedBox(height: AppSpacing.xxxl),
+                        SecurityCodeFields(
+                          key: _codeInputKey,
+                          obscureText: false,
+                          hasError: _hasError,
+                          enabled: !isBusy,
+                          onChanged: (code) {
+                            if (_hasError) {
+                              setState(() => _hasError = false);
+                            }
+                          },
+                          onCompleted: _submitOtp,
+                        ),
+                        if (state.error != null) ...[
+                          const SizedBox(height: AppSpacing.lg),
+                          Container(
+                            padding: const EdgeInsets.all(AppSpacing.md),
+                            decoration: BoxDecoration(
+                              color: colors.errorBg,
+                              borderRadius: BorderRadius.circular(AppRadius.md),
+                              border: Border.all(color: colors.error),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.error_outline,
+                                  color: colors.errorText,
+                                ),
+                                const SizedBox(width: AppSpacing.sm),
+                                Expanded(
+                                  child: AppText(
+                                    state.error!,
+                                    variant: AppTextVariant.bodySmall,
+                                    color: colors.errorText,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: AppSpacing.xxl),
+                        Center(
+                          child: state.otpResendCountdown > 0
+                              ? AppText(
+                                  l10n.onboarding_otp_resendIn(
+                                    state.otpResendCountdown,
+                                  ),
+                                  variant: AppTextVariant.bodyMedium,
+                                  color: colors.textSecondary,
+                                )
+                              : AppButton(
+                                  label: l10n.onboarding_otp_resend,
+                                  onPressed: isBusy ? null : _handleResend,
+                                  variant: AppButtonVariant.ghost,
+                                ),
+                        ),
+                        if (EnvironmentConfig.showDevOtpShortcut) ...[
+                          const SizedBox(height: AppSpacing.sm),
+                          Center(
+                            child: AppButton(
+                              label: 'Use dev OTP',
+                              onPressed: isBusy
+                                  ? null
+                                  : () => _submitOtp('123456'),
                               variant: AppButtonVariant.ghost,
                             ),
+                          ),
+                        ],
+                        const SizedBox(height: AppSpacing.xl),
+                      ],
                     ),
-                    if (EnvironmentConfig.showDevOtpShortcut) ...[
-                      const SizedBox(height: AppSpacing.sm),
-                      Center(
-                        child: AppButton(
-                          label: 'Use dev OTP',
-                          onPressed: isBusy ? null : () => _submitOtp('123456'),
-                          variant: AppButtonVariant.ghost,
-                        ),
-                      ),
-                    ],
-                    if (isBusy) ...[
-                      const SizedBox(height: AppSpacing.xxxl),
-                      OtpProgressCue(
-                        label: _localizedOtpCopy(
-                          context,
-                          en: 'Code accepted. Creating your secure wallet...',
-                          fr: 'Code accepté. Création de votre wallet sécurisé...',
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: AppSpacing.xl),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
+            OtpVerificationOverlay(visible: isBusy, label: otpCueLabel),
+          ],
         ),
       ),
     );
