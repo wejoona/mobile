@@ -209,6 +209,21 @@ class _EmailVerificationScreenState
       _errorMessage = null;
     });
 
+    final digits = value.replaceAll(RegExp(r'\D'), '');
+    if (digits.length > 1) {
+      for (var i = 0; i < _controllers.length; i++) {
+        _controllers[i].text = i < digits.length ? digits[i] : '';
+      }
+      final focusIndex = digits.length >= _controllers.length
+          ? _controllers.length - 1
+          : digits.length;
+      _focusNodes[focusIndex].requestFocus();
+      if (_otp.length == 6) {
+        unawaited(_submit());
+      }
+      return;
+    }
+
     if (value.isNotEmpty) {
       if (index < 5) {
         _focusNodes[index + 1].requestFocus();
@@ -436,7 +451,7 @@ class _EmailVerificationScreenState
             autofillHints: index == 0
                 ? const [AutofillHints.oneTimeCode]
                 : null,
-            maxLength: 1,
+            maxLength: index == 0 ? 6 : 1,
             style: AppTypography.headlineMedium.copyWith(
               color: colors.textPrimary,
             ),
