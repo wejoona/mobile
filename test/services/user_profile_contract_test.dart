@@ -174,6 +174,31 @@ void main() {
         expect(avatar.avatarUrl, '/user/avatar/usr_face_checked');
       },
     );
+
+    test('user avatar upload unwraps nested user response envelopes', () async {
+      final avatarFile = await _writeTinyJpeg();
+      final dio = MockDio()
+        ..queueResponse({
+          'data': {
+            'user': {
+              'avatar_url': '/user/avatar/usr_nested',
+              'avatarBase64': 'data:image/jpeg;base64,/9j/nested',
+            },
+          },
+        });
+      final service = UserService(dio);
+
+      final avatar = await service.uploadAvatar(
+        avatarFile.path,
+        faceCheck: AvatarDeviceFaceCheck.fromDeviceAnalysis(
+          isAvailable: true,
+          faceCount: 1,
+        ),
+      );
+
+      expect(avatar.avatarUrl, '/user/avatar/usr_nested');
+      expect(avatar.avatarThumb, startsWith('data:image/jpeg;base64,'));
+    });
   });
 
   group('UserState avatar contract', () {
