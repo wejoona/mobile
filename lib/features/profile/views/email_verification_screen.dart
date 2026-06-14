@@ -228,6 +228,9 @@ class _EmailVerificationScreenState
     if (debugCode != null && debugCode.isNotEmpty) {
       return l10n.emailVerification_codeSentDebug(debugCode);
     }
+    if (!result.sent && result.message != null && result.message!.isNotEmpty) {
+      return result.message!;
+    }
     return l10n.emailVerification_codeSent;
   }
 
