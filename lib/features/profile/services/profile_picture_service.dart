@@ -62,6 +62,38 @@ class ProfilePictureService {
     }
   }
 
+  /// Recover an image selected before Android killed the activity under memory pressure.
+  Future<File?> retrieveLostImage() async {
+    if (!Platform.isAndroid) {
+      return null;
+    }
+
+    try {
+      final response = await _picker.retrieveLostData();
+      if (response.isEmpty) {
+        return null;
+      }
+
+      if (response.exception != null) {
+        throw response.exception!;
+      }
+
+      final files = response.files;
+      final image = files != null && files.isNotEmpty
+          ? files.first
+          : response.file;
+      if (image == null) {
+        return null;
+      }
+
+      _logger.info('Recovered lost profile image: ${image.path}');
+      return File(image.path);
+    } on Object catch (e) {
+      _logger.error('Error recovering lost profile image: $e');
+      rethrow;
+    }
+  }
+
   /// Upload avatar to backend.
   Future<AvatarUploadResult> uploadAvatar(
     File imageFile, {

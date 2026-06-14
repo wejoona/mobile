@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -72,6 +73,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         _avatarUrl = userState.avatarUrl;
         _avatarThumb = userState.avatarThumb;
       });
+      unawaited(_recoverLostProfileImage());
     });
   }
 
@@ -441,57 +443,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         return;
       }
 
-      _setProfilePhotoBusy('Preparing photo...');
-      final compressed = await pictureService.compressImage(picked);
-      _setProfilePhotoBusy('Checking face on this device...');
-      final faceCheck = await ref
-          .read(imageAnalysisServiceProvider)
-          .detectFaces(compressed);
-      if (!mounted) return;
-
-      if (!faceCheck.isAvailable || !faceCheck.hasExactlyOneFace) {
-        _showProfilePhotoSnack(
-          _profilePhotoFaceMessage(faceCheck),
-          isError: true,
-        );
-        return;
-      }
-
-      _setProfilePhotoBusy('Uploading photo...');
-      setState(() {
-        _selectedImage = compressed;
-      });
-
-      final uploadResult = await ref
-          .read(profileProvider.notifier)
-          .uploadAvatar(compressed);
-      final profileState = ref.read(profileProvider);
-      if (!mounted) return;
-
-      final uploadedAvatar = uploadResult;
-      if (uploadedAvatar == null ||
-          !((uploadedAvatar.avatarUrl?.isNotEmpty ?? false) ||
-              (uploadedAvatar.avatarThumb?.isNotEmpty ?? false))) {
-        setState(() => _selectedImage = null);
-        _showProfilePhotoSnack(
-          profileState.error ??
-              'Unable to upload your photo. Please try another image.',
-          isError: true,
-        );
-        return;
-      }
-
-      final userState = ref.read(userStateMachineProvider);
-      setState(() {
-        _selectedImage = null;
-        _avatarUrl = uploadedAvatar.avatarUrl ?? userState.avatarUrl;
-        _avatarThumb = uploadedAvatar.avatarThumb ?? userState.avatarThumb;
-      });
-
-      _showProfilePhotoSnack(
-        AppLocalizations.of(context)!.settings_profileUpdated,
-        isError: false,
-      );
+      await _processProfileImage(picked);
     } on PlatformException catch (error) {
       if (!mounted) return;
       setState(() => _selectedImage = null);
@@ -509,6 +461,87 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     } finally {
       _setProfilePhotoBusy(null);
     }
+  }
+
+  Future<void> _recoverLostProfileImage() async {
+    try {
+      final recovered = await ref
+          .read(profilePictureServiceProvider)
+          .retrieveLostImage();
+      if (!mounted || recovered == null) {
+        return;
+      }
+      await _processProfileImage(recovered);
+    } on PlatformException catch (error) {
+      if (!mounted) return;
+      _showProfilePhotoSnack(
+        _profilePhotoPickErrorMessage(error),
+        isError: true,
+      );
+    } on Exception catch (error) {
+      if (!mounted) return;
+      _showProfilePhotoSnack(
+        _profilePhotoPickErrorMessage(error),
+        isError: true,
+      );
+    } finally {
+      _setProfilePhotoBusy(null);
+    }
+  }
+
+  Future<void> _processProfileImage(File picked) async {
+    final pictureService = ref.read(profilePictureServiceProvider);
+    _setProfilePhotoBusy('Preparing photo...');
+    final compressed = await pictureService.compressImage(picked);
+    _setProfilePhotoBusy('Checking face on this device...');
+    final faceCheck = await ref
+        .read(imageAnalysisServiceProvider)
+        .detectFaces(compressed);
+    if (!mounted) return;
+
+    if (!faceCheck.isAvailable || !faceCheck.hasExactlyOneFace) {
+      _showProfilePhotoSnack(
+        _profilePhotoFaceMessage(faceCheck),
+        isError: true,
+      );
+      return;
+    }
+
+    _setProfilePhotoBusy('Uploading photo...');
+    setState(() {
+      _selectedImage = compressed;
+    });
+
+    final uploadResult = await ref
+        .read(profileProvider.notifier)
+        .uploadAvatar(compressed);
+    final profileState = ref.read(profileProvider);
+    if (!mounted) return;
+
+    final uploadedAvatar = uploadResult;
+    if (uploadedAvatar == null ||
+        !((uploadedAvatar.avatarUrl?.isNotEmpty ?? false) ||
+            (uploadedAvatar.avatarThumb?.isNotEmpty ?? false))) {
+      setState(() => _selectedImage = null);
+      _showProfilePhotoSnack(
+        profileState.error ??
+            'Unable to upload your photo. Please try another image.',
+        isError: true,
+      );
+      return;
+    }
+
+    final userState = ref.read(userStateMachineProvider);
+    setState(() {
+      _selectedImage = null;
+      _avatarUrl = uploadedAvatar.avatarUrl ?? userState.avatarUrl;
+      _avatarThumb = uploadedAvatar.avatarThumb ?? userState.avatarThumb;
+    });
+
+    _showProfilePhotoSnack(
+      AppLocalizations.of(context)!.settings_profileUpdated,
+      isError: false,
+    );
   }
 
   String _profilePhotoFaceMessage(FaceDetectionResult result) {
