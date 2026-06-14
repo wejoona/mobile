@@ -392,22 +392,7 @@ class WalletStateMachine extends Notifier<WalletState> {
         const Duration(seconds: 18),
       );
 
-      // Debug: log the response data
-      debugPrint(
-        '[WalletState] createWallet response - walletId: "${response.walletId}", walletAddress: "${response.walletAddress}", balances: ${response.balances.length}',
-      );
-      for (final b in response.balances) {
-        debugPrint(
-          '[WalletState] Balance: ${b.currency} available=${b.available} pending=${b.pending}',
-        );
-      }
-
       _applyBalanceResponse(response);
-
-      // Debug: log the final state
-      debugPrint(
-        '[WalletState] State updated - walletId: "${state.walletId}", status: ${state.status}, usdcBalance: ${state.usdcBalance}',
-      );
 
       // Sync with FSM: notify wallet created
       ref
