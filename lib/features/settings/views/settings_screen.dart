@@ -480,6 +480,7 @@ class _KycTile extends ConsumerWidget {
         subtitleColor = context.colors.successText;
         icon = Icons.verified_user;
       case KycStatus.submitted:
+      case KycStatus.manualReview:
         subtitle = l10n.kyc_status_submitted_title;
         subtitleColor = context.colors.warning;
         icon = Icons.hourglass_top;

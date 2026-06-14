@@ -242,6 +242,8 @@ class UserStateMachine extends Notifier<UserState> {
       case 'in_review':
       case 'pending_verification':
         return KycStatus.submitted;
+      case 'manual_review':
+        return KycStatus.manualReview;
       case 'rejected':
         return KycStatus.rejected;
       case 'additional_info_needed':

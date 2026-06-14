@@ -1,27 +1,40 @@
 enum KycStatus {
   /// No KYC started
   none,
+
   /// KYC pending (documents not yet submitted)
   pending,
+
   /// Documents submitted, awaiting upload
   documentsPending,
+
   /// All documents submitted, under review
   submitted,
+
+  /// Verification requires human review before approval/rejection
+  manualReview,
+
   /// KYC approved / verified
   verified,
+
   /// KYC rejected
   rejected,
+
   /// Additional info needed
   additionalInfoNeeded;
 
   bool get isNone => this == KycStatus.none;
-  bool get isPending => this == KycStatus.pending || this == KycStatus.documentsPending;
-  bool get isSubmitted => this == KycStatus.submitted;
+  bool get isPending =>
+      this == KycStatus.pending || this == KycStatus.documentsPending;
+  bool get isSubmitted =>
+      this == KycStatus.submitted || this == KycStatus.manualReview;
+  bool get isManualReview => this == KycStatus.manualReview;
   bool get isVerified => this == KycStatus.verified;
   bool get isRejected => this == KycStatus.rejected;
   bool get needsAdditionalInfo => this == KycStatus.additionalInfoNeeded;
 
-  bool get canSubmit => isNone || isPending || isRejected || needsAdditionalInfo;
+  bool get canSubmit =>
+      isNone || isPending || isRejected || needsAdditionalInfo;
   bool get isInReview => isSubmitted;
   bool get isComplete => isVerified;
 
@@ -38,9 +51,10 @@ enum KycStatus {
         return KycStatus.documentsPending;
       case 'submitted':
       case 'pending_verification':
-      case 'manual_review':
       case 'in_review':
         return KycStatus.submitted;
+      case 'manual_review':
+        return KycStatus.manualReview;
       case 'approved':
       case 'verified':
       case 'auto_approved':
@@ -64,6 +78,8 @@ enum KycStatus {
         return 'documents_pending';
       case KycStatus.submitted:
         return 'submitted';
+      case KycStatus.manualReview:
+        return 'manual_review';
       case KycStatus.verified:
         return 'verified';
       case KycStatus.rejected:

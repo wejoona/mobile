@@ -294,6 +294,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
     if (profile.isRejected) return KycStatus.rejected;
     if (profile.isExpired)
       return KycStatus.none; // Expired → needs re-submission
+    if (profile.status == KycStatus.manualReview) return KycStatus.manualReview;
     if (profile.status == KycStatus.submitted) return KycStatus.submitted;
     if (profile.status == KycStatus.additionalInfoNeeded)
       return KycStatus.additionalInfoNeeded;

@@ -98,6 +98,7 @@ class KycStatusBanner extends StatelessWidget {
           color: (colors) => colors.warningText,
         );
       case KycStatus.submitted:
+      case KycStatus.manualReview:
         return _KycBannerConfig(
           icon: Icons.hourglass_top_rounded,
           title: l10n.kyc_status_submitted_title,

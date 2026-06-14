@@ -70,10 +70,28 @@ class SettingsView extends ConsumerWidget {
               ),
             ),
             child: isLandscape
-                ? _buildLandscapeLayout(context, ref, l10n, colors, currentLanguageName)
+                ? _buildLandscapeLayout(
+                    context,
+                    ref,
+                    l10n,
+                    colors,
+                    currentLanguageName,
+                  )
                 : ResponsiveBuilder(
-                    mobile: _buildMobileLayout(context, ref, l10n, colors, currentLanguageName),
-                    tablet: _buildTabletLayout(context, ref, l10n, colors, currentLanguageName),
+                    mobile: _buildMobileLayout(
+                      context,
+                      ref,
+                      l10n,
+                      colors,
+                      currentLanguageName,
+                    ),
+                    tablet: _buildTabletLayout(
+                      context,
+                      ref,
+                      l10n,
+                      colors,
+                      currentLanguageName,
+                    ),
                   ),
           ),
         ),
@@ -215,10 +233,7 @@ class SettingsView extends ConsumerWidget {
                   color: colors.gold.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
-                child: Icon(
-                  Icons.card_giftcard,
-                  color: colors.gold,
-                ),
+                child: Icon(Icons.card_giftcard, color: colors.gold),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -239,10 +254,7 @@ class SettingsView extends ConsumerWidget {
                   ],
                 ),
               ),
-              Icon(
-                Icons.chevron_right,
-                color: colors.gold,
-              ),
+              Icon(Icons.chevron_right, color: colors.gold),
             ],
           ),
         ),
@@ -401,10 +413,7 @@ class SettingsView extends ConsumerWidget {
                       color: colors.gold.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
-                    child: Icon(
-                      Icons.card_giftcard,
-                      color: colors.gold,
-                    ),
+                    child: Icon(Icons.card_giftcard, color: colors.gold),
                   ),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
@@ -425,10 +434,7 @@ class SettingsView extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.chevron_right,
-                    color: colors.gold,
-                  ),
+                  Icon(Icons.chevron_right, color: colors.gold),
                 ],
               ),
             ),
@@ -563,10 +569,7 @@ class SettingsView extends ConsumerWidget {
                   color: colors.gold.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
-                child: Icon(
-                  Icons.card_giftcard,
-                  color: colors.gold,
-                ),
+                child: Icon(Icons.card_giftcard, color: colors.gold),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -587,10 +590,7 @@ class SettingsView extends ConsumerWidget {
                   ],
                 ),
               ),
-              Icon(
-                Icons.chevron_right,
-                color: colors.gold,
-              ),
+              Icon(Icons.chevron_right, color: colors.gold),
             ],
           ),
         ),
@@ -712,11 +712,7 @@ class _SettingsTile extends StatelessWidget {
                   color: subtitleColor ?? colors.textTertiary,
                 ),
               if (subtitle == null)
-                Icon(
-                  Icons.chevron_right,
-                  color: colors.textTertiary,
-                  size: 20,
-                ),
+                Icon(Icons.chevron_right, color: colors.textTertiary, size: 20),
             ],
           ),
         ),
@@ -745,6 +741,7 @@ class _KycTile extends ConsumerWidget {
         subtitleColor = context.colors.successText;
         icon = Icons.verified_user;
       case KycStatus.submitted:
+      case KycStatus.manualReview:
         subtitle = l10n.kyc_pending;
         subtitleColor = context.colors.warning;
         icon = Icons.hourglass_top;
@@ -869,14 +866,12 @@ class _ProfileCard extends ConsumerWidget {
               ],
             ),
           ),
-          Icon(
-            Icons.chevron_right,
-            color: colors.textTertiary,
-          ),
+          Icon(Icons.chevron_right, color: colors.textTertiary),
         ],
       ),
     );
   }
+
   String _formatPhone(String? phone) {
     if (phone == null || phone.isEmpty) return '';
     // Format: +225 XX XX XX XX
@@ -1029,7 +1024,10 @@ class _AccountTypeTile extends ConsumerWidget {
                 }
               },
             ),
-            SizedBox(height: MediaQuery.of(sheetContext).padding.bottom + AppSpacing.md),
+            SizedBox(
+              height:
+                  MediaQuery.of(sheetContext).padding.bottom + AppSpacing.md,
+            ),
           ],
         ),
       ),
@@ -1068,7 +1066,9 @@ class _AccountTypeOption extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
             border: Border.all(
-              color: isSelected ? colors.gold : colors.textTertiary.withValues(alpha: 0.2),
+              color: isSelected
+                  ? colors.gold
+                  : colors.textTertiary.withValues(alpha: 0.2),
               width: isSelected ? 2 : 1,
             ),
             borderRadius: BorderRadius.circular(AppRadius.md),
@@ -1109,11 +1109,7 @@ class _AccountTypeOption extends StatelessWidget {
                 ),
               ),
               if (isSelected)
-                Icon(
-                  Icons.check_circle,
-                  color: colors.gold,
-                  size: 24,
-                ),
+                Icon(Icons.check_circle, color: colors.gold, size: 24),
             ],
           ),
         ),

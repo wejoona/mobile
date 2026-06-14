@@ -920,7 +920,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     final kycStatus = userState.kycStatus;
 
     // Don't show banner if verified or already submitted (in review)
-    if (kycStatus == KycStatus.verified || kycStatus == KycStatus.submitted) {
+    if (kycStatus == KycStatus.verified || kycStatus.isInReview) {
       return const SizedBox.shrink();
     }
 
