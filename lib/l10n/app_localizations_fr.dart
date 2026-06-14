@@ -7102,6 +7102,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get budget_deleteCategory => 'Supprimer la catégorie ?';
 
   @override
+  String get budget_notifySuccess =>
+      'Nous vous préviendrons lorsque les contrôles de budget seront prêts.';
+
+  @override
   String get budget_tapCategoryToEdit =>
       'Appuyez sur une catégorie pour modifier son budget';
 
@@ -7578,6 +7582,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get withdraw_initiated => 'Retrait initié';
+
+  @override
+  String get withdraw_notifySuccess =>
+      'Nous vous préviendrons lorsque ce rail de retrait sera prêt.';
 
   @override
   String get auth_useBiometric => 'Utiliser la biométrie';

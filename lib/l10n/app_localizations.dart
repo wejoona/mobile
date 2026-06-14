@@ -12876,6 +12876,12 @@ abstract class AppLocalizations {
   /// **'Delete Category?'**
   String get budget_deleteCategory;
 
+  /// No description provided for @budget_notifySuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll notify you when budget controls are ready.'**
+  String get budget_notifySuccess;
+
   /// No description provided for @budget_tapCategoryToEdit.
   ///
   /// In en, this message translates to:
@@ -13703,6 +13709,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Withdrawal initiated'**
   String get withdraw_initiated;
+
+  /// No description provided for @withdraw_notifySuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll notify you when this withdrawal rail is ready.'**
+  String get withdraw_notifySuccess;
 
   /// No description provided for @auth_useBiometric.
   ///

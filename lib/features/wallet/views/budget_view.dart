@@ -131,7 +131,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
           );
 
       if (!mounted) return;
-      context.showSnack(l10n.cards_notifySuccess, tone: AppSnackTone.success);
+      context.showSnack(l10n.budget_notifySuccess, tone: AppSnackTone.success);
     } catch (e) {
       if (!mounted) return;
       context.showSnack(

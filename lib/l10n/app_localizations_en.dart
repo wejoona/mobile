@@ -6963,6 +6963,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budget_deleteCategory => 'Delete Category?';
 
   @override
+  String get budget_notifySuccess =>
+      'We\'ll notify you when budget controls are ready.';
+
+  @override
   String get budget_tapCategoryToEdit => 'Tap any category to edit its budget';
 
   @override
@@ -7425,6 +7429,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get withdraw_initiated => 'Withdrawal initiated';
+
+  @override
+  String get withdraw_notifySuccess =>
+      'We\'ll notify you when this withdrawal rail is ready.';
 
   @override
   String get auth_useBiometric => 'Use biometric login';

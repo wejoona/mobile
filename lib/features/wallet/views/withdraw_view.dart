@@ -395,7 +395,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
           );
       if (!mounted) return;
       context.showSnack(
-        AppLocalizations.of(context)!.deposit_notifySuccess,
+        AppLocalizations.of(context)!.withdraw_notifySuccess,
         tone: AppSnackTone.success,
       );
     } catch (e) {
