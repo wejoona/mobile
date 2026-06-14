@@ -201,6 +201,43 @@ class TransactionDetailView extends ConsumerWidget {
                     onCopy: () => _copyToClipboard(context, transaction.id),
                     colors: colors,
                   ),
+                  if (transaction.supportReference != null &&
+                      transaction.supportReference != transaction.id) ...[
+                    Divider(color: colors.borderSubtle),
+                    _DetailRow(
+                      label: 'Support reference',
+                      value: transaction.supportReference!,
+                      onCopy: () => _copyToClipboard(
+                        context,
+                        transaction.supportReference!,
+                      ),
+                      colors: colors,
+                    ),
+                  ],
+                  if (transaction.providerReference != null) ...[
+                    Divider(color: colors.borderSubtle),
+                    _DetailRow(
+                      label: 'Provider reference',
+                      value: transaction.providerReference!,
+                      onCopy: () => _copyToClipboard(
+                        context,
+                        transaction.providerReference!,
+                      ),
+                      colors: colors,
+                    ),
+                  ],
+                  if (transaction.ledgerReference != null) ...[
+                    Divider(color: colors.borderSubtle),
+                    _DetailRow(
+                      label: 'Ledger reference',
+                      value: transaction.ledgerReference!,
+                      onCopy: () => _copyToClipboard(
+                        context,
+                        transaction.ledgerReference!,
+                      ),
+                      colors: colors,
+                    ),
+                  ],
                   Divider(color: colors.borderSubtle),
                   _DetailRow(
                     label: l10n.transactionDetails_date,

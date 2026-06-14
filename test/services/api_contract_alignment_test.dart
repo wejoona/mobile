@@ -1482,6 +1482,30 @@ void main() {
     });
 
     test(
+      'transaction parser preserves backend support and provider references',
+      () {
+        final transaction = wallet_tx.Transaction.fromJson({
+          'id': 'tx_refs',
+          'walletId': 'wallet_1',
+          'type': 'deposit',
+          'status': 'completed',
+          'amountDecimal': '42.500000',
+          'currency': 'USDC',
+          'externalReference': 'yc_dep_123',
+          'supportReference': 'SUP-123',
+          'ledgerReference': 'blnk_tx_456',
+          'providerReference': 'yc_ref_789',
+          'createdAt': '2026-06-04T12:00:00.000Z',
+        });
+
+        expect(transaction.reference, 'yc_dep_123');
+        expect(transaction.supportReference, 'SUP-123');
+        expect(transaction.ledgerReference, 'blnk_tx_456');
+        expect(transaction.providerReference, 'yc_ref_789');
+      },
+    );
+
+    test(
       'transaction parser normalizes backend status and transfer aliases',
       () {
         final settledTransfer = wallet_tx.Transaction.fromJson({

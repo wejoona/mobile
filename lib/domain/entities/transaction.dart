@@ -11,6 +11,9 @@ class Transaction {
   final double? fee;
   final String? description;
   final String? externalReference;
+  final String? supportReference;
+  final String? ledgerReference;
+  final String? providerReference;
   final String? failureReason;
   final String? counterpartyName;
   final String? counterpartyPhone;
@@ -32,6 +35,9 @@ class Transaction {
     this.fee,
     this.description,
     this.externalReference,
+    this.supportReference,
+    this.ledgerReference,
+    this.providerReference,
     this.failureReason,
     this.counterpartyName,
     this.counterpartyPhone,
@@ -66,8 +72,13 @@ class Transaction {
   bool get isCompleted => status == TransactionStatus.completed;
   bool get isFailed => status == TransactionStatus.failed;
 
-  /// Reference for display - uses externalReference or id
-  String get reference => externalReference ?? id;
+  /// Best transaction reference for customer-facing display and receipts.
+  String get reference =>
+      externalReference ??
+      providerReference ??
+      ledgerReference ??
+      supportReference ??
+      id;
 
   String? get displayCounterpartyName => counterpartyName;
   String? get displayCounterpartyPhone => counterpartyPhone ?? recipientPhone;
@@ -101,7 +112,13 @@ class Transaction {
       externalReference:
           json['externalReference'] as String? ??
           json['reference'] as String? ??
-          json['supportReference'] as String?,
+          json['providerReference'] as String? ??
+          json['ledgerReference'] as String?,
+      supportReference: json['supportReference'] as String?,
+      ledgerReference: json['ledgerReference'] as String?,
+      providerReference:
+          json['providerReference'] as String? ??
+          json['yellowCardRef'] as String?,
       failureReason:
           json['failureReason'] as String? ?? json['errorMessage'] as String?,
       counterpartyName: _stringValue(json, const [
@@ -189,6 +206,9 @@ class Transaction {
       'fee': fee,
       'description': description,
       'externalReference': externalReference,
+      'supportReference': supportReference,
+      'ledgerReference': ledgerReference,
+      'providerReference': providerReference,
       'failureReason': failureReason,
       'counterpartyName': counterpartyName,
       'counterpartyPhone': counterpartyPhone,
