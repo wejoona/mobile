@@ -133,6 +133,15 @@ class DepositChannel {
     required this.currency,
   });
 
+  String get feeLabel {
+    if (fee <= 0) return 'Free';
+    final normalizedFeeType = feeType.toLowerCase();
+    if (normalizedFeeType == 'percentage') {
+      return '${_formatCompactAmount(fee)}% fee';
+    }
+    return '${_formatCompactAmount(fee)} $currency fee';
+  }
+
   factory DepositChannel.fromJson(Map<String, dynamic> json) {
     final supportedCurrencies = json['supportedCurrencies'];
     final currency =
@@ -156,6 +165,16 @@ class DepositChannel {
       currency: currency,
     );
   }
+}
+
+String _formatCompactAmount(double value) {
+  if (value == value.roundToDouble()) {
+    return value.toStringAsFixed(0);
+  }
+  return value
+      .toStringAsFixed(2)
+      .replaceFirst(RegExp(r'0+$'), '')
+      .replaceFirst(RegExp(r'\.$'), '');
 }
 
 /// Exchange Rate
