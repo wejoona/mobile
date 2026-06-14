@@ -42,10 +42,7 @@ void main() {
 
     test('should transition from loading to pending', () {
       const state = KycLoading();
-      const event = KycStatusLoaded(
-        tier: KycTier.tier1,
-        status: 'pending',
-      );
+      const event = KycStatusLoaded(tier: KycTier.tier1, status: 'pending');
 
       final result = fsm.handle(state, event);
 
@@ -78,10 +75,7 @@ void main() {
 
     test('should transition from loading to expired', () {
       const state = KycLoading();
-      const event = KycStatusLoaded(
-        tier: KycTier.tier1,
-        status: 'expired',
-      );
+      const event = KycStatusLoaded(tier: KycTier.tier1, status: 'expired');
 
       final result = fsm.handle(state, event);
 
@@ -108,6 +102,43 @@ void main() {
       final review = success.newState as KycManualReview;
       expect(review.targetTier, equals(KycTier.tier1));
       expect(review.reason, equals('Additional verification required'));
+    });
+
+    test(
+      'should preserve manual review when status loads from initial auth',
+      () {
+        const state = KycInitial();
+        const event = KycStatusLoaded(
+          tier: KycTier.tier1,
+          status: 'manual_review',
+          rejectionReason: 'Compliance review required',
+        );
+
+        final result = fsm.handle(state, event);
+
+        expect(result, isA<TransitionSuccess<KycState>>());
+        final success = result as TransitionSuccess<KycState>;
+        expect(success.newState, isA<KycManualReview>());
+        final review = success.newState as KycManualReview;
+        expect(review.targetTier, equals(KycTier.tier1));
+        expect(review.reason, equals('Compliance review required'));
+      },
+    );
+
+    test('should preserve manual review when status refreshes from none', () {
+      const state = KycNone();
+      const event = KycStatusLoaded(
+        tier: KycTier.tier1,
+        status: 'manual_review',
+      );
+
+      final result = fsm.handle(state, event);
+
+      expect(result, isA<TransitionSuccess<KycState>>());
+      final success = result as TransitionSuccess<KycState>;
+      expect(success.newState, isA<KycManualReview>());
+      final review = success.newState as KycManualReview;
+      expect(review.targetTier, equals(KycTier.tier1));
     });
   });
 
@@ -225,7 +256,9 @@ void main() {
         targetTier: KycTier.tier1,
         currentStep: KycStep.review,
       );
-      const event = KycManualReviewRequired(reason: 'Document verification needed');
+      const event = KycManualReviewRequired(
+        reason: 'Document verification needed',
+      );
 
       final result = fsm.handle(state, event);
 
@@ -390,7 +423,10 @@ void main() {
       final upgrading = success.newState as KycUpgrading;
       expect(upgrading.currentTier, equals(KycTier.tier1));
       expect(upgrading.targetTier, equals(KycTier.tier2));
-      expect(upgrading.tier, equals(KycTier.tier1)); // Maintains tier during upgrade
+      expect(
+        upgrading.tier,
+        equals(KycTier.tier1),
+      ); // Maintains tier during upgrade
     });
 
     test('should not upgrade if not available', () {
