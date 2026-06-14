@@ -1707,7 +1707,7 @@ void main() {
     );
 
     test(
-      'session repository delegates logout-all session cleanup to backend',
+      'session repository delegates logout-all session cleanup to sessions API',
       () async {
         final dio = MockDio()..queueResponse({'success': true});
         final repository = SessionsRepository(dio);
@@ -1715,9 +1715,9 @@ void main() {
         await repository.logoutAllDevices();
 
         expect(dio.requestHistory, hasLength(1));
-        expect(dio.requestHistory.single.method, 'POST');
-        expect(dio.requestHistory.single.path, '/auth/logout-all');
-        expect(dio.requestHistory.single.data, const <String, dynamic>{});
+        expect(dio.requestHistory.single.method, 'DELETE');
+        expect(dio.requestHistory.single.path, '/sessions');
+        expect(dio.requestHistory.single.data, {'reason': 'user_logout_all'});
       },
     );
 
