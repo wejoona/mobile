@@ -95,15 +95,23 @@ void main() {
     expect(unlockBody, contains('unlockAfterAccountRecovery()'));
     expect(
       unlockBody,
-      contains('authState.isAuthenticated && !sessionState.isLocked'),
-      reason:
-          'trusted PIN reset should transition home once auth and session are active',
+      contains('authState.isAuthenticated'),
+      reason: 'trusted PIN reset should transition home once auth is active',
     );
     expect(
       unlockBody,
-      isNot(contains('currentRoute')),
-      reason:
-          'the reset screen is still on a locked route until the caller navigates',
+      contains('!sessionState.isLocked'),
+      reason: 'trusted PIN reset should clear the session lock state',
+    );
+    expect(
+      unlockBody,
+      contains('!authState.isLocked'),
+      reason: 'trusted PIN reset must also clear the auth lock state',
+    );
+    expect(
+      unlockBody,
+      contains("appFsmState.currentRoute != '/session-locked'"),
+      reason: 'trusted PIN reset must clear the app FSM lock route',
     );
   });
 
@@ -117,6 +125,9 @@ void main() {
 
     expect(unlockBody, contains('Duration(seconds: 5)'));
     expect(unlockBody, contains('_restoreUnlockControls()'));
+    expect(source, contains('WidgetsBinding.instance.addObserver(this)'));
+    expect(source, contains('didChangeAppLifecycleState'));
+    expect(source, contains('biometric_usePinInstead'));
     expect(restoreBody, contains('_isUnlocking = false'));
     expect(restoreBody, contains("_pin = ''"));
     expect(restoreBody, contains('_checkBiometric()'));
