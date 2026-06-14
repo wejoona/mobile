@@ -43,6 +43,11 @@ class SessionsNotifier extends Notifier<SessionsState> {
 
   /// Load all active sessions
   Future<void> loadSessions() async {
+    final authReady = await _ensureAuthenticatedForSessionRead();
+    if (!authReady) {
+      return;
+    }
+
     state = state.copyWith(isLoading: true);
     final repository = ref.read(sessionsRepositoryProvider);
     try {
@@ -195,6 +200,29 @@ class SessionsNotifier extends Notifier<SessionsState> {
     return ref
         .read(authProvider.notifier)
         .refreshAccessTokenForForegroundRequest();
+  }
+
+  Future<bool> _ensureAuthenticatedForSessionRead() async {
+    var authState = ref.read(authProvider);
+    if (authState.status == AuthStatus.initial ||
+        authState.status == AuthStatus.loading) {
+      await ref.read(authProvider.notifier).checkAuth();
+      authState = ref.read(authProvider);
+    }
+
+    if (authState.isAuthenticated) {
+      return true;
+    }
+
+    state = state.copyWith(
+      isLoading: false,
+      sessions: const [],
+      error: authState.isLocked
+          ? 'Please unlock Korido again to continue.'
+          : 'Please sign in again to manage active sessions.',
+      requiresUnlock: authState.isLocked,
+    );
+    return false;
   }
 
   Session? _resolveCurrentSession(List<Session> sessions) {

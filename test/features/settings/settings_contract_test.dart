@@ -65,6 +65,7 @@ void main() {
     final revokeSession = _methodBody(source, 'revokeSession');
     final logoutAllDevices = _methodBody(source, 'logoutAllDevices');
 
+    expect(loadSessions, contains('_ensureAuthenticatedForSessionRead'));
     expect(loadSessions, isNot(contains('clearLocalSession')));
     expect(loadSessions, contains('error: _friendlyError(e)'));
     expect(loadSessions, contains('error: _friendlyError(retryError)'));
