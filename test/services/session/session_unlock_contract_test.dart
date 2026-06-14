@@ -110,8 +110,16 @@ void main() {
     );
     expect(
       unlockBody,
-      contains("appFsmState.currentRoute != '/session-locked'"),
-      reason: 'trusted PIN reset must clear the app FSM lock route',
+      isNot(contains('currentRoute')),
+      reason: 'trusted PIN reset should not fail because a lock route is stale',
+    );
+
+    final submitBody = _methodBody(source, '_submitReset');
+    expect(
+      submitBody,
+      contains('pinStateProvider.notifier'),
+      reason:
+          'trusted PIN reset should update in-memory PIN state, not only storage',
     );
   });
 

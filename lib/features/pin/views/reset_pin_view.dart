@@ -1,22 +1,22 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
-import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
+import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
-import 'package:usdc_wallet/state/fsm/index.dart';
 
 /// Reset PIN View
 /// Multi-step flow to reset PIN via OTP
@@ -517,7 +517,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       });
 
       if (_confirmPin.length == 6) {
-        _submitReset();
+        unawaited(_submitReset());
       }
     }
   }
@@ -550,7 +550,6 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
 
     try {
       final dio = ref.read(dioProvider);
-      final pinService = ref.read(pinServiceProvider);
       final stepUpChallengeToken = _stepUpChallengeToken;
 
       if (stepUpChallengeToken == null) {
@@ -575,8 +574,13 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         },
       );
 
-      // Also update local PIN storage
-      await pinService.setPin(_newPin);
+      // Also update local PIN storage and in-memory PIN state.
+      final pinUpdated = await ref
+          .read(pinStateProvider.notifier)
+          .setPin(_newPin);
+      if (!pinUpdated) {
+        throw StateError('Local PIN update failed after backend reset');
+      }
 
       final unlocked = await _unlockAfterReset();
       if (!mounted) return;
@@ -643,13 +647,10 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
 
     final authState = ref.read(authProvider);
     final sessionState = ref.read(sessionServiceProvider);
-    final appFsmState = ref.read(appFsmProvider);
 
     return authState.isAuthenticated &&
         !authState.isLocked &&
-        !sessionState.isLocked &&
-        appFsmState.currentRoute != '/session-locked' &&
-        appFsmState.currentRoute != '/biometric-prompt';
+        !sessionState.isLocked;
   }
 
   void _resetNewPin() {
