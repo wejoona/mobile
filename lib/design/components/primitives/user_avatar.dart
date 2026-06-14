@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/material.dart';
+
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/design/components/primitives/app_skeleton.dart';
 import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
-import 'package:usdc_wallet/design/components/primitives/app_skeleton.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// UserAvatar - Displays user profile picture with fallback
@@ -176,6 +178,10 @@ class UserAvatar extends StatelessWidget {
     return '${ApiConfig.baseUrl}$url';
   }
 
+  bool _needsAuthHeaders(String url) {
+    return url.startsWith('/user/avatar/');
+  }
+
   bool _isBase64Image(String value) {
     if (value.startsWith('data:image/')) return true;
     if (value.startsWith('http://') ||
@@ -215,8 +221,41 @@ class UserAvatar extends StatelessWidget {
   }
 
   Widget _buildNetworkImage() {
+    final rawUrl = imageUrl!;
+    if (!_needsAuthHeaders(rawUrl)) {
+      return _buildCachedNetworkImage(_resolveUrl(rawUrl));
+    }
+
+    return Consumer(
+      builder: (context, ref, _) {
+        final storage = ref.watch(secureStorageProvider);
+        return FutureBuilder<String?>(
+          future: storage.read(key: StorageKeys.accessToken),
+          builder: (context, snapshot) {
+            final token = snapshot.data;
+            if (snapshot.connectionState != ConnectionState.done) {
+              return AppSkeleton.circle(size: size);
+            }
+
+            return _buildCachedNetworkImage(
+              _resolveUrl(rawUrl),
+              httpHeaders: token == null || token.isEmpty
+                  ? null
+                  : {'Authorization': 'Bearer $token'},
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildCachedNetworkImage(
+    String resolvedUrl, {
+    Map<String, String>? httpHeaders,
+  }) {
     return CachedNetworkImage(
-      imageUrl: _resolveUrl(imageUrl!),
+      imageUrl: resolvedUrl,
+      httpHeaders: httpHeaders,
       fit: BoxFit.cover,
       placeholder: (context, url) => AppSkeleton.circle(size: size),
       errorWidget: (context, url, error) => _buildInitialsFallback(context),
