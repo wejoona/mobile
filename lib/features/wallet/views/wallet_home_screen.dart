@@ -732,8 +732,14 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
   );
 
   String _balanceSyncLabel(WalletState walletState) {
+    if (walletState.isDegraded || walletState.isStale) {
+      return 'Sync delayed';
+    }
+
     final status = walletState.balanceReadStatus;
-    if (status == 'degraded') {
+    if (status == 'degraded' ||
+        status == 'cached_degraded' ||
+        status == 'local_mirror') {
       return 'Sync delayed';
     }
 
