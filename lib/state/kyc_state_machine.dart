@@ -54,7 +54,7 @@ class KycStateMachine extends Notifier<KycStateMachineState> {
     // - "documents_pending" = needs to submit docs → 'none' (should show KYC screen)
     // - "pending" = user has status but not verified → 'none' for new signup flow
     // - "submitted" = submitted, awaiting review → 'pending' (can proceed to wallet)
-    // - "verified" / "approved" = verified → 'verified'
+    // - "verified" / "approved" / "auto_approved" = verified → 'verified'
     // - "rejected" = rejected → 'rejected'
     switch (apiStatus.toLowerCase()) {
       case 'none':
@@ -66,6 +66,7 @@ class KycStateMachine extends Notifier<KycStateMachineState> {
         return 'pending';
       case 'verified':
       case 'approved':
+      case 'auto_approved':
         return 'verified';
       case 'rejected':
         return 'rejected';

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/user/avatar_multipart.dart';
 
@@ -175,9 +176,15 @@ class UserProfile {
     return phone;
   }
 
-  bool get isKycVerified => kycStatus == 'verified';
-  bool get isKycPending => kycStatus == 'pending';
-  bool get needsKyc => kycStatus == 'none' || kycStatus == 'not_started';
+  KycStatus get normalizedKycStatus {
+    final normalized = kycStatus.toLowerCase();
+    if (normalized == 'not_started') return KycStatus.none;
+    return KycStatus.fromString(normalized);
+  }
+
+  bool get isKycVerified => normalizedKycStatus.isVerified;
+  bool get isKycPending => normalizedKycStatus.isInReview;
+  bool get needsKyc => normalizedKycStatus.needsKyc;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(

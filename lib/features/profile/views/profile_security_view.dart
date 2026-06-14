@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
 import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
 import 'package:usdc_wallet/features/settings/providers/security_settings_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
@@ -101,9 +102,7 @@ class _SecurityScoreCard extends ConsumerWidget {
     // KYC verified (+25)
     final kycVerified =
         kycStatus.whenOrNull(
-          data: (status) =>
-              status.kycStatus == 'approved' ||
-              status.kycStatus == 'auto_approved',
+          data: (status) => KycStatus.fromString(status.kycStatus).isVerified,
         ) ??
         false;
     if (kycVerified) score += 25;

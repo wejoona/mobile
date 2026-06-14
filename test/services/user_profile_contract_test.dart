@@ -105,6 +105,34 @@ void main() {
       expect(avatar.avatarThumb, startsWith('data:image/jpeg;base64,'));
     });
 
+    test('normalizes backend KYC approval statuses used by profile gating', () {
+      final approvedProfile = UserProfile.fromJson({
+        'id': 'usr_approved',
+        'kycStatus': 'approved',
+      });
+      final autoApprovedProfile = UserProfile.fromJson({
+        'id': 'usr_auto_approved',
+        'kyc_status': 'auto_approved',
+      });
+      final manualReviewProfile = UserProfile.fromJson({
+        'id': 'usr_manual_review',
+        'kycStatus': 'manual_review',
+      });
+      final notStartedProfile = UserProfile.fromJson({
+        'id': 'usr_not_started',
+        'kycStatus': 'not_started',
+      });
+
+      expect(approvedProfile.isKycVerified, isTrue);
+      expect(approvedProfile.needsKyc, isFalse);
+      expect(autoApprovedProfile.isKycVerified, isTrue);
+      expect(autoApprovedProfile.needsKyc, isFalse);
+      expect(manualReviewProfile.isKycPending, isTrue);
+      expect(manualReviewProfile.needsKyc, isFalse);
+      expect(notStartedProfile.isKycVerified, isFalse);
+      expect(notStartedProfile.needsKyc, isTrue);
+    });
+
     test('user service unwraps standard profile envelopes', () async {
       final dio = MockDio()
         ..queueResponse({
