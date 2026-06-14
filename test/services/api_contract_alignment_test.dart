@@ -7,6 +7,7 @@ import 'package:usdc_wallet/domain/entities/expense.dart';
 import 'package:usdc_wallet/domain/entities/notification.dart';
 import 'package:usdc_wallet/domain/entities/notification_preferences.dart';
 import 'package:usdc_wallet/domain/entities/transaction.dart' as wallet_tx;
+import 'package:usdc_wallet/domain/entities/user.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
@@ -73,6 +74,24 @@ class _QuietAuthNotifier extends auth.AuthNotifier {
   @override
   auth.AuthState build() =>
       const auth.AuthState(status: auth.AuthStatus.authenticated);
+}
+
+class _AuthWithUserNotifier extends auth.AuthNotifier {
+  @override
+  auth.AuthState build() => auth.AuthState(
+    status: auth.AuthStatus.authenticated,
+    user: User(
+      id: 'user_self',
+      phone: '+2250748805663',
+      username: 'SelfHandle',
+      countryCode: 'CI',
+      isPhoneVerified: true,
+      role: UserRole.user,
+      status: UserStatus.active,
+      createdAt: DateTime.parse('2026-06-04T09:00:00.000Z'),
+      updatedAt: DateTime.parse('2026-06-04T09:00:00.000Z'),
+    ),
+  );
 }
 
 void main() {
@@ -1597,8 +1616,9 @@ void main() {
               'matches': [
                 {
                   'phoneHash': phoneHash,
-                  'userId': 'user_123',
-                  'displayName': 'Awa Korido',
+                  'koridoUserId': 'user_123',
+                  'firstName': 'Awa',
+                  'lastName': 'Korido',
                 },
               ],
             },
@@ -1724,6 +1744,29 @@ void main() {
       expect(state.recipient, isNull);
       expect(state.error, 'recipient_is_current_user');
     });
+
+    test(
+      'known Korido recipient rejects current username case-insensitively',
+      () async {
+        final container = ProviderContainer(
+          overrides: [
+            auth.authProvider.overrideWith(_AuthWithUserNotifier.new),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await container
+            .read(sendMoneyProvider.notifier)
+            .setKnownKoridoRecipient(
+              username: '@selfhandle',
+              name: 'My account',
+            );
+
+        final state = container.read(sendMoneyProvider);
+        expect(state.recipient, isNull);
+        expect(state.error, 'recipient_is_current_user');
+      },
+    );
 
     test(
       'send recipient validation fails closed when contact sync is unavailable',

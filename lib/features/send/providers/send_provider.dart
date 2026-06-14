@@ -168,14 +168,18 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
         return;
       }
 
-      String? userId;
       String? displayName = name;
       final match = matches.first;
-      userId = match['userId'] as String?;
+      final userId = _stringValue(match, const [
+        'userId',
+        'koridoUserId',
+        'joonaPayUserId',
+        'id',
+      ]);
       displayName =
           displayName ??
-          (match['displayName'] as String?) ??
-          (match['name'] as String?);
+          _displayNameValue(match) ??
+          _stringValue(match, const ['username', 'handle']);
 
       final recipient = RecipientInfo(
         phoneNumber: phoneNumber,
@@ -440,7 +444,10 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
     if (trimmed == null || trimmed.isEmpty) {
       return null;
     }
-    return trimmed.startsWith('@') ? trimmed.substring(1) : trimmed;
+    final withoutPrefix = trimmed.startsWith('@')
+        ? trimmed.substring(1)
+        : trimmed;
+    return withoutPrefix.toLowerCase();
   }
 
   bool _isCurrentUserRecipient(RecipientInfo recipient) {
@@ -554,6 +561,21 @@ String? _stringValue(Map<String, dynamic> map, List<String> keys) {
     if (value is String && value.isNotEmpty) return value;
   }
   return null;
+}
+
+String? _displayNameValue(Map<String, dynamic> map) {
+  final explicit = _stringValue(map, const ['displayName', 'name']);
+  if (explicit != null) {
+    return explicit;
+  }
+
+  final first = _stringValue(map, const ['firstName', 'first_name']);
+  final last = _stringValue(map, const ['lastName', 'last_name']);
+  final fullName = [
+    first,
+    last,
+  ].where((part) => part != null && part.trim().isNotEmpty).join(' ').trim();
+  return fullName.isEmpty ? null : fullName;
 }
 
 double? _numValue(Map<String, dynamic> map, List<String> keys) {

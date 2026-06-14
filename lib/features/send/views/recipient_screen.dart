@@ -786,7 +786,10 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     if (trimmed == null || trimmed.isEmpty) {
       return null;
     }
-    return trimmed.startsWith('@') ? trimmed.substring(1) : trimmed;
+    final withoutPrefix = trimmed.startsWith('@')
+        ? trimmed.substring(1)
+        : trimmed;
+    return withoutPrefix.toLowerCase();
   }
 
   bool _samePhone(String candidate, String? currentUserPhone) {
