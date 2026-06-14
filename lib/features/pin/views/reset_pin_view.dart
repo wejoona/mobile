@@ -36,6 +36,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   String? _errorMessage;
   bool _isLoading = false;
   StepUpDecision? _riskDecision;
+  String? _stepUpChallengeToken;
 
   @override
   void dispose() {
@@ -344,6 +345,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       if (!mounted) return;
 
       _riskDecision = decision;
+      _stepUpChallengeToken = null;
 
       if (_requiresManualReview(decision)) {
         setState(() {
@@ -355,6 +357,15 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       }
 
       if (_requiresFaceAndLiveness(decision)) {
+        if (decision.challengeToken == null) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage =
+                'We could not start the required security check. Please try again.';
+          });
+          return;
+        }
+
         setState(() {
           _isLoading = false;
           _step = 5;
@@ -416,26 +427,34 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       return;
     }
 
-    final decision = _riskDecision;
-    if (decision?.challengeToken != null) {
-      final valid = await ref
-          .read(riskBasedSecurityServiceProvider)
-          .validateStepUp(
-            challengeToken: decision!.challengeToken!,
-            livenessSessionId: result.sessionId,
-          );
-      if (!mounted) return;
-      if (!valid) {
-        setState(() {
-          _showError = true;
-          _errorMessage = 'We could not validate this security check.';
-        });
-        return;
-      }
+    final challengeToken = _riskDecision?.challengeToken;
+    if (challengeToken == null) {
+      setState(() {
+        _showError = true;
+        _errorMessage =
+            'We could not validate this security check. Please try again.';
+      });
+      return;
+    }
+
+    final valid = await ref
+        .read(riskBasedSecurityServiceProvider)
+        .validateStepUp(
+          challengeToken: challengeToken,
+          livenessSessionId: result.sessionId,
+        );
+    if (!mounted) return;
+    if (!valid) {
+      setState(() {
+        _showError = true;
+        _errorMessage = 'We could not validate this security check.';
+      });
+      return;
     }
 
     setState(() {
       _step = 3;
+      _stepUpChallengeToken = challengeToken;
       _showError = false;
       _errorMessage = null;
     });
@@ -514,7 +533,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   }
 
   /// Submit PIN reset to backend
-  /// Calls POST /user/pin/reset { otp, newPinHash }
+  /// Calls POST /user/pin/reset { otp, newPinHash, stepUpChallengeToken }
   Future<void> _submitReset() async {
     final l10n = AppLocalizations.of(context)!;
 
@@ -532,6 +551,18 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     try {
       final dio = ref.read(dioProvider);
       final pinService = ref.read(pinServiceProvider);
+      final stepUpChallengeToken = _stepUpChallengeToken;
+
+      if (stepUpChallengeToken == null) {
+        setState(() {
+          _isLoading = false;
+          _showError = true;
+          _errorMessage =
+              'Complete the security check before creating a new PIN.';
+        });
+        _resetConfirmPin();
+        return;
+      }
 
       // Hash the new PIN for transmission (same method as PinService)
       // We need to call the backend reset endpoint with OTP + hashed PIN
@@ -540,6 +571,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         data: {
           'otp': _otpController.text,
           'newPinHash': _hashPinForBackend(_newPin),
+          'stepUpChallengeToken': stepUpChallengeToken,
         },
       );
 

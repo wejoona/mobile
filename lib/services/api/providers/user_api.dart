@@ -80,9 +80,14 @@ class UserApi {
   Future<Response> resetPin({
     required String otp,
     required String newPinHash,
+    required String stepUpChallengeToken,
   }) => _dio.post(
     '/user/pin/reset',
-    data: {'otp': otp, 'newPinHash': newPinHash},
+    data: {
+      'otp': otp,
+      'newPinHash': newPinHash,
+      'stepUpChallengeToken': stepUpChallengeToken,
+    },
   );
 
   // ── Search ──

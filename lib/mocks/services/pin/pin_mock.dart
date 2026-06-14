@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:usdc_wallet/mocks/base/api_contract.dart';
 import 'package:usdc_wallet/mocks/base/mock_interceptor.dart';
 
 /// PIN API mocks
@@ -110,9 +109,14 @@ class PinMock {
     final otp = data['otp'] as String?;
     final newPinHash = data['newPinHash'] as String?;
     final newPin = data['newPin'] as String?;
+    final stepUpChallengeToken = data['stepUpChallengeToken'] as String?;
 
-    if (otp == null || (newPinHash == null && newPin == null)) {
-      return MockResponse.badRequest('OTP and new PIN are required');
+    if (otp == null ||
+        stepUpChallengeToken == null ||
+        (newPinHash == null && newPin == null)) {
+      return MockResponse.badRequest(
+        'OTP, step-up verification, and new PIN are required',
+      );
     }
 
     // Mock: Accept 123456 as valid OTP
