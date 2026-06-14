@@ -9,6 +9,7 @@ class TransfersRepository {
 
   /// Send an internal transfer to another Korido user.
   Future<dynamic> sendTransfer({
+    String? recipientId,
     String? recipientPhone,
     String? recipientUsername,
     required double amount,
@@ -18,6 +19,7 @@ class TransfersRepository {
     String? description,
   }) async {
     return _service.createInternalTransfer(
+      recipientId: recipientId,
       recipientPhone: recipientPhone,
       recipientUsername: recipientUsername,
       amount: amount,

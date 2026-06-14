@@ -222,6 +222,7 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
     final normalizedPhone = phoneNumber?.trim() ?? '';
     final normalizedUsername = _normalizeUsername(username);
     if (normalizedPhone.isEmpty &&
+        (userId == null || userId.trim().isEmpty) &&
         (normalizedUsername == null || normalizedUsername.isEmpty)) {
       state = state.copyWith(
         clearRecipient: true,
@@ -367,6 +368,7 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
           state.recipient!.username ??
           state.recipient!.phoneNumber;
       final result = await transfersService.createInternalTransfer(
+        recipientId: state.recipient!.userId,
         recipientPhone: state.recipient!.phoneNumber.isNotEmpty
             ? state.recipient!.phoneNumber
             : null,

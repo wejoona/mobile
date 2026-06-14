@@ -71,7 +71,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   Future<void> _lookupKoridoUsers(String query) async {
     try {
       final results = await ref
-          .read(joonaPayContactsServiceProvider)
+          .read(koridoContactsServiceProvider)
           .lookupKoridoUsers(query);
       if (!mounted || _searchController.text.trim() != query) {
         return;

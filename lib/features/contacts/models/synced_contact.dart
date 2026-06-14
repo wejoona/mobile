@@ -23,7 +23,9 @@ class SyncedContact {
   });
 
   bool get canSendInKorido =>
-      phone.trim().isNotEmpty || (username?.trim().isNotEmpty ?? false);
+      phone.trim().isNotEmpty ||
+      (username?.trim().isNotEmpty ?? false) ||
+      (joonaPayUserId?.trim().isNotEmpty ?? false);
 
   String? get displayIdentifier {
     if (phone.trim().isNotEmpty) {

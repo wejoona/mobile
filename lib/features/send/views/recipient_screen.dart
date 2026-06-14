@@ -71,14 +71,16 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     super.initState();
     final initialPhone = widget.initialPhone?.trim();
     final initialUsername = widget.initialUsername?.trim();
+    final initialRecipientId = widget.initialRecipientId?.trim();
     if (initialPhone != null && initialPhone.isNotEmpty) {
       final isKnownKorido =
-          initialUsername != null && initialUsername.isNotEmpty;
+          (initialUsername != null && initialUsername.isNotEmpty) ||
+          (initialRecipientId != null && initialRecipientId.isNotEmpty);
       _setRecipientFields(
         initialPhone,
         widget.initialName,
         username: initialUsername,
-        userId: widget.initialRecipientId,
+        userId: initialRecipientId,
         isKnownKorido: isKnownKorido,
       );
       _lookupCurrentRecipientIfNeeded(isKnownKorido: isKnownKorido);
@@ -88,6 +90,13 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
         widget.initialName,
         username: initialUsername,
         userId: widget.initialRecipientId,
+        isKnownKorido: true,
+      );
+    } else if (initialRecipientId != null && initialRecipientId.isNotEmpty) {
+      _setRecipientFields(
+        '',
+        widget.initialName,
+        userId: initialRecipientId,
         isKnownKorido: true,
       );
     }
@@ -119,6 +128,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
         _phoneController.text.length == _selectedLocalLength;
     final myPhone = authState.user?.phone ?? authState.phone;
     final hasUsernameRecipient = _hasUsernameRecipient;
+    final hasUserIdRecipient = _hasUserIdRecipient;
     final myUsername = _normalizeUsername(authState.user?.username);
     final isSelfSelectedAccount =
         (_selectedRecipientUserId != null &&
@@ -131,7 +141,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
         isSelfSelectedAccount;
     final hasSelectableRecipient =
         _selectedRecipientKnownKorido &&
-        (isCompletePhone || hasUsernameRecipient);
+        (isCompletePhone || hasUsernameRecipient || hasUserIdRecipient);
     final canContinue =
         hasSelectableRecipient &&
         !_isRecipientLookupLoading &&
@@ -631,7 +641,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     });
     try {
       final matches = await ref
-          .read(joonaPayContactsServiceProvider)
+          .read(koridoContactsServiceProvider)
           .lookupKoridoUsers(phoneNumber);
       if (!mounted ||
           '$_selectedCountryCode${_phoneController.text}' != phoneNumber) {
@@ -675,7 +685,10 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
 
   Future<void> _handleContinue() async {
     final hasUsernameRecipient = _hasUsernameRecipient;
-    if (!hasUsernameRecipient && !_formKey.currentState!.validate()) {
+    final hasUserIdRecipient = _hasUserIdRecipient;
+    if (!hasUsernameRecipient &&
+        !hasUserIdRecipient &&
+        !_formKey.currentState!.validate()) {
       return;
     }
 
@@ -713,7 +726,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
         return;
       }
 
-      if (hasUsernameRecipient) {
+      if (hasUsernameRecipient || hasUserIdRecipient) {
         await ref
             .read(sendMoneyProvider.notifier)
             .setKnownKoridoRecipient(
@@ -775,10 +788,20 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
   bool get _hasUsernameRecipient =>
       _selectedRecipientUsername?.trim().isNotEmpty ?? false;
 
+  bool get _hasUserIdRecipient =>
+      _selectedRecipientUserId?.trim().isNotEmpty ?? false;
+
   String get _selectedRecipientSubtitle {
     final label = _selectedRecipientName ?? '';
     final handle = _selectedRecipientUsername;
     if (handle == null || handle.isEmpty) {
+      if (label.isEmpty && _hasUserIdRecipient) {
+        return localizedSendCopy(
+          context,
+          en: 'Verified Korido account',
+          fr: 'Compte Korido vérifié',
+        );
+      }
       return label;
     }
     final displayHandle = handle.startsWith('@') ? handle : '@$handle';

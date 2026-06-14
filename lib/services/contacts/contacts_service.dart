@@ -24,12 +24,16 @@ class _ContactSyncMatch {
     required this.phoneHash,
     required this.userId,
     this.displayName,
+    this.username,
+    this.maskedPhone,
     this.avatarUrl,
   });
 
   final String phoneHash;
   final String userId;
   final String? displayName;
+  final String? username;
+  final String? maskedPhone;
   final String? avatarUrl;
 }
 
@@ -446,6 +450,8 @@ class ContactsService {
             isKoridoUser: true,
             joonaPayUserId: match.userId,
             name: match.displayName ?? contact.name,
+            username: match.username,
+            maskedPhone: match.maskedPhone,
             avatarUrl: match.avatarUrl,
           );
         }
@@ -538,6 +544,11 @@ class ContactsService {
             'photoUrl',
             'profilePhotoUrl',
           ]);
+          final username = _stringField(match, ['username', 'handle']);
+          final maskedPhone = _stringField(match, [
+            'maskedPhone',
+            'masked_phone',
+          ]);
 
           return _ContactSyncMatch(
             phoneHash: _stringField(match, [
@@ -552,6 +563,8 @@ class ContactsService {
               'id',
             ]),
             displayName: displayName.isEmpty ? null : displayName,
+            username: username.isEmpty ? null : username,
+            maskedPhone: maskedPhone.isEmpty ? null : maskedPhone,
             avatarUrl: avatarUrl.isEmpty ? null : avatarUrl,
           );
         })
@@ -730,27 +743,30 @@ bool _isMaskedPhone(String value) {
 }
 
 /// Korido Contacts Service Provider
-final joonaPayContactsServiceProvider = Provider<KoridoContactsService>((ref) {
+final koridoContactsServiceProvider = Provider<KoridoContactsService>((ref) {
   return KoridoContactsService(ref.watch(dioProvider));
 });
+
+/// Deprecated alias kept for older screens while the app finishes the rename.
+final joonaPayContactsServiceProvider = koridoContactsServiceProvider;
 
 /// All Korido Contacts Provider
 final joonaPayContactsProvider =
     FutureProvider.autoDispose<List<domain.Contact>>((ref) async {
-      final service = ref.watch(joonaPayContactsServiceProvider);
+      final service = ref.watch(koridoContactsServiceProvider);
       return service.getContacts();
     });
 
 /// Favorite Contacts Provider
 final favoriteContactsProvider =
     FutureProvider.autoDispose<List<domain.Contact>>((ref) async {
-      final service = ref.watch(joonaPayContactsServiceProvider);
+      final service = ref.watch(koridoContactsServiceProvider);
       return service.getFavorites();
     });
 
 /// Recent Korido Contacts Provider
 final recentKoridoContactsProvider =
     FutureProvider.autoDispose<List<domain.Contact>>((ref) async {
-      final service = ref.watch(joonaPayContactsServiceProvider);
+      final service = ref.watch(koridoContactsServiceProvider);
       return service.getRecents();
     });

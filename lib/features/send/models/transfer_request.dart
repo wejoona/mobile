@@ -2,12 +2,14 @@
 
 /// Transfer Request - for internal transfers
 class TransferRequest {
+  final String? recipientId;
   final String? recipientPhone;
   final String? recipientUsername;
   final double amount;
   final String? note;
 
   const TransferRequest({
+    this.recipientId,
     this.recipientPhone,
     this.recipientUsername,
     required this.amount,
@@ -15,6 +17,8 @@ class TransferRequest {
   });
 
   Map<String, dynamic> toJson() => {
+    if (recipientId != null && recipientId!.isNotEmpty)
+      'recipientId': recipientId,
     if (recipientPhone != null && recipientPhone!.isNotEmpty)
       'recipientPhone': recipientPhone,
     if (recipientUsername != null && recipientUsername!.isNotEmpty)
@@ -24,12 +28,14 @@ class TransferRequest {
   };
 
   TransferRequest copyWith({
+    String? recipientId,
     String? recipientPhone,
     String? recipientUsername,
     double? amount,
     String? note,
   }) {
     return TransferRequest(
+      recipientId: recipientId ?? this.recipientId,
       recipientPhone: recipientPhone ?? this.recipientPhone,
       recipientUsername: recipientUsername ?? this.recipientUsername,
       amount: amount ?? this.amount,
@@ -62,7 +68,9 @@ class RecipientInfo {
 
   bool get hasUsername => username?.trim().isNotEmpty ?? false;
 
-  bool get canSend => hasPhone || hasUsername;
+  bool get hasUserId => userId?.trim().isNotEmpty ?? false;
+
+  bool get canSend => hasPhone || hasUsername || hasUserId;
 
   String get displayIdentifier {
     if (hasPhone) {

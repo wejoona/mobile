@@ -62,6 +62,36 @@ void main() {
     },
   );
 
+  test(
+    'internal transfer sends recipientId when selected from lookup',
+    () async {
+      final dio = MockDio();
+      dio.queueResponse({
+        'transactionId': 'tx-456',
+        'status': 'completed',
+        'amount': 12,
+        'currency': 'USDC',
+        'supportReference': 'tx-456',
+      });
+
+      final service = TransfersService(dio);
+      await service.createInternalTransfer(
+        recipientId: '123e4567-e89b-12d3-a456-426614174003',
+        amount: 12,
+        pinToken: 'pin-token',
+        idempotencyKey: 'idem-456',
+      );
+
+      final request = dio.requestHistory.single;
+      expect(request.path, '/wallet/transfer/internal');
+      expect(request.data, isA<Map<String, dynamic>>());
+      final body = request.data as Map<String, dynamic>;
+      expect(body['recipientId'], '123e4567-e89b-12d3-a456-426614174003');
+      expect(body.containsKey('toPhone'), isFalse);
+      expect(body.containsKey('recipientUsername'), isFalse);
+    },
+  );
+
   test('send screens allow discoverable username recipients', () {
     final contactsScreen = File(
       'lib/features/contacts/views/contacts_list_screen.dart',
@@ -82,6 +112,7 @@ void main() {
     expect(route, contains("extra['username'] ?? extra['recipientUsername']"));
     expect(recipient, contains('setKnownKoridoRecipient'));
     expect(recipient, contains('_hasUsernameRecipient'));
+    expect(recipient, contains('_hasUserIdRecipient'));
     expect(
       recipient,
       contains(
