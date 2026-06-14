@@ -54,9 +54,6 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     if (avatarUrl != null && avatarUrl.isNotEmpty) {
       return avatarUrl;
     }
-    if (avatarThumb != null && avatarThumb.isNotEmpty) {
-      return avatarThumb;
-    }
     return null;
   }
 

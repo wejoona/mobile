@@ -79,7 +79,6 @@ class ProfileNotifier extends Notifier<ProfileState> {
       final service = ref.read(userServiceProvider);
       final result = await service.uploadAvatar(file.path);
       await _applyAvatarUploadResult(result);
-      state = state.copyWith(isUploading: false, clearError: true);
       await loadProfile();
       await _applyAvatarUploadResult(result, clearLocalCache: false);
       state = state.copyWith(isUploading: false, clearError: true);
