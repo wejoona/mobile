@@ -5,9 +5,9 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Sessions Repository
 class SessionsRepository {
-  final Dio _dio;
-
   SessionsRepository(this._dio);
+
+  final Dio _dio;
 
   /// Get all active sessions
   Future<List<Session>> getSessions() async {
@@ -35,7 +35,7 @@ class SessionsRepository {
   /// Logout from all devices and invalidate refresh tokens.
   Future<void> logoutAllDevices() async {
     try {
-      await _dio.post('/auth/logout-all');
+      await _dio.post('/auth/logout-all', data: const <String, dynamic>{});
 
       // Token invalidation above is the security boundary; session row cleanup
       // keeps the device list honest but should not resurrect a failed logout.
@@ -62,18 +62,22 @@ final sessionsRepositoryProvider = Provider<SessionsRepository>((ref) {
 Object? _unwrapSessionPayload(Object? raw) {
   if (raw is Map<String, dynamic>) {
     final data = raw['data'];
-    if (data is Map<String, dynamic>) return data;
+    if (data is Map<String, dynamic>) {
+      return data;
+    }
   } else if (raw is Map) {
     final map = Map<String, dynamic>.from(raw);
     final data = map['data'];
-    if (data is Map) return Map<String, dynamic>.from(data);
+    if (data is Map) {
+      return Map<String, dynamic>.from(data);
+    }
   }
   return raw;
 }
 
 List<Map<String, dynamic>> _extractSessionItems(Object? raw) {
   final payload = _unwrapSessionPayload(raw);
-  final List<Object?> items = switch (payload) {
+  final items = switch (payload) {
     {'sessions': final List sessions} => sessions,
     {'items': final List items} => items,
     {'data': final List data} => data,

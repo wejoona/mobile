@@ -1524,6 +1524,7 @@ void main() {
 
         expect(dio.requestHistory[0].method, 'POST');
         expect(dio.requestHistory[0].path, '/auth/logout-all');
+        expect(dio.requestHistory[0].data, const <String, dynamic>{});
         expect(dio.requestHistory[1].method, 'DELETE');
         expect(dio.requestHistory[1].path, '/sessions');
         expect(dio.requestHistory[1].data, {
