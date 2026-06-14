@@ -80,6 +80,15 @@ String? appRedirect(BuildContext context, GoRouterState state) {
     return lockRedirect;
   }
 
+  final unlockedLockScreenRedirect = _unlockedLockScreenRedirect(
+    location: location,
+    isAuthenticated: isAuthenticated,
+    isLockedState: isLockedState,
+  );
+  if (unlockedLockScreenRedirect != null) {
+    return unlockedLockScreenRedirect;
+  }
+
   final fsmRedirect = _fsmRedirect(
     location: location,
     fsmTargetRoute: fsmTargetRoute,
@@ -148,6 +157,17 @@ String? _lockRedirect(String location, bool isLockedState) {
     return '/session-locked';
   }
   return null;
+}
+
+String? _unlockedLockScreenRedirect({
+  required String location,
+  required bool isAuthenticated,
+  required bool isLockedState,
+}) {
+  if (location != '/session-locked' || isLockedState) {
+    return null;
+  }
+  return isAuthenticated ? '/home' : '/login';
 }
 
 String? _fsmRedirect({

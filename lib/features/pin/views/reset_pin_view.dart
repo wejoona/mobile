@@ -345,7 +345,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       if (!mounted) return;
 
       _riskDecision = decision;
-      _stepUpChallengeToken = null;
+      _stepUpChallengeToken = decision.challengeToken;
 
       if (_requiresManualReview(decision)) {
         setState(() {
@@ -374,6 +374,15 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       }
 
       if (decision.stepUpRequired) {
+        if (decision.challengeToken == null) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage =
+                'We could not start the required security check. Please try again.';
+          });
+          return;
+        }
+
         final verified = await riskService.executeStepUp(decision);
         if (!mounted) return;
         if (!verified) {
@@ -383,6 +392,31 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           });
           return;
         }
+
+        final validated = await riskService.validateStepUp(
+          challengeToken: decision.challengeToken!,
+          biometricVerified:
+              decision.stepUpType == StepUpType.biometric ||
+              decision.stepUpType == StepUpType.biometricAndLiveness,
+        );
+        if (!mounted) return;
+        if (!validated) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = 'We could not validate this security check.';
+          });
+          return;
+        }
+        _stepUpChallengeToken = decision.challengeToken;
+      }
+
+      if (_stepUpChallengeToken == null) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage =
+              'We could not start the required security check. Please try again.';
+        });
+        return;
       }
 
       if (mounted) {
