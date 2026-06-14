@@ -156,8 +156,7 @@ import Vision
         }
 
         DispatchQueue.global(qos: .userInitiated).async {
-            guard let image = UIImage(contentsOfFile: path),
-                  let cgImage = image.cgImage else {
+            guard let cgImage = self.makeFaceDetectionImage(path: path) else {
                 DispatchQueue.main.async {
                     result(FlutterError(code: "IMAGE_LOAD_FAILED",
                                         message: "Unable to read the selected image",
@@ -169,7 +168,7 @@ import Vision
             do {
                 let handler = VNImageRequestHandler(
                     cgImage: cgImage,
-                    orientation: self.cgImageOrientation(from: image.imageOrientation),
+                    orientation: .up,
                     options: [:]
                 )
                 try handler.perform([request])
@@ -183,27 +182,19 @@ import Vision
         }
     }
 
-    private func cgImageOrientation(from orientation: UIImage.Orientation) -> CGImagePropertyOrientation {
-        switch orientation {
-        case .up:
-            return .up
-        case .upMirrored:
-            return .upMirrored
-        case .down:
-            return .down
-        case .downMirrored:
-            return .downMirrored
-        case .left:
-            return .left
-        case .leftMirrored:
-            return .leftMirrored
-        case .right:
-            return .right
-        case .rightMirrored:
-            return .rightMirrored
-        @unknown default:
-            return .up
+    private func makeFaceDetectionImage(path: String) -> CGImage? {
+        guard let source = CGImageSourceCreateWithURL(URL(fileURLWithPath: path) as CFURL, nil) else {
+            return nil
         }
+
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: 1200,
+            kCGImageSourceShouldCacheImmediately: false,
+        ]
+
+        return CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
     }
 
     // MARK: - Biometric Enrollment State
