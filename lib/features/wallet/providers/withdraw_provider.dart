@@ -110,12 +110,32 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
   void setPhoneNumber(String phone) =>
       state = state.copyWith(phoneNumber: phone);
 
-  /// Estimate fees locally until the API exposes a withdrawal quote endpoint.
+  /// Estimate fees from backend-owned withdrawal options.
   Future<void> setAmount(double amount) async {
-    final fee = state.method == WithdrawMethod.bankTransfer
-        ? 2.0
-        : amount * 0.005;
-    state = state.copyWith(amount: amount, fee: fee);
+    state = state.copyWith(amount: amount, fee: 0, error: null);
+    final method = state.method;
+    if (amount <= 0 || method == null) return;
+    final providerCode = method.providerCode;
+    if (providerCode == null) {
+      state = state.copyWith(
+        error: 'Bank transfer withdrawals are not available yet.',
+      );
+      return;
+    }
+
+    try {
+      final fee = await _estimateMobileMoneyFee(
+        amount: amount,
+        providerCode: providerCode,
+      );
+      state = state.copyWith(amount: amount, fee: fee, error: null);
+    } catch (e) {
+      state = state.copyWith(
+        amount: amount,
+        fee: 0,
+        error: 'Unable to estimate withdrawal fee. Please try again.',
+      );
+    }
   }
 
   /// Fix #8: Wire to real /withdrawals/initiate endpoint.
@@ -172,6 +192,47 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
   }
 
   void reset() => state = const WithdrawState();
+
+  Future<double> _estimateMobileMoneyFee({
+    required double amount,
+    required String providerCode,
+  }) async {
+    final dio = ref.read(dioProvider);
+    final response = await dio.get(
+      '/wallet/withdraw/options',
+      queryParameters: {'country': 'CI'},
+    );
+    final payload = _unwrapPayload(
+      Map<String, dynamic>.from(response.data as Map),
+    );
+    final options = payload['options'];
+    if (options is! List) {
+      throw StateError('Withdrawal options response did not include options.');
+    }
+
+    Map<String, dynamic>? option;
+    for (final rawOption in options) {
+      if (rawOption is! Map) continue;
+      final candidate = Map<String, dynamic>.from(rawOption);
+      if (candidate['providerCode']?.toString().toUpperCase() ==
+          providerCode.toUpperCase()) {
+        option = candidate;
+        break;
+      }
+    }
+    if (option == null) {
+      throw StateError('Provider $providerCode is not available.');
+    }
+
+    final feeType = option['feeType']?.toString().toLowerCase();
+    final feeValue = _readDouble(option, const ['fee']) ?? 0;
+    final minFee = _readDouble(option, const ['minFee']) ?? 0;
+    final maxFee = _readDouble(option, const ['maxFee']);
+
+    final rawFee = feeType == 'fixed' ? feeValue : amount * (feeValue / 100);
+    final clampedMin = rawFee < minFee ? minFee : rawFee;
+    return maxFee != null && clampedMin > maxFee ? maxFee : clampedMin;
+  }
 }
 
 final withdrawProvider = NotifierProvider<WithdrawNotifier, WithdrawState>(
@@ -195,6 +256,18 @@ String? _readString(Map<String, dynamic> json, List<String> keys) {
     if (value == null) continue;
     final stringValue = value.toString().trim();
     if (stringValue.isNotEmpty) return stringValue;
+  }
+  return null;
+}
+
+double? _readDouble(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is num) return value.toDouble();
+    if (value is String) {
+      final parsed = double.tryParse(value);
+      if (parsed != null) return parsed;
+    }
   }
   return null;
 }

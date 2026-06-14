@@ -110,6 +110,23 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     } else {
       setState(() => _amountError = null);
     }
+    _refreshWithdrawalQuotePreview();
+  }
+
+  void _refreshWithdrawalQuotePreview() {
+    final amount = double.tryParse(_amountController.text);
+    if (amount == null || amount <= 0) return;
+    final selectedCountry = _effectiveCountry(ref, watch: false);
+    if (_selectedMethod != WithdrawMethod.mobileMoney ||
+        selectedCountry.code != 'CI') {
+      return;
+    }
+    final localDigits = _localPhoneDigits(selectedCountry);
+    final mobileMoneyMethod = _methodForCiMobileNumber(localDigits);
+    if (mobileMoneyMethod == null) return;
+    final notifier = ref.read(withdraw_api.withdrawProvider.notifier)
+      ..selectMethod(mobileMoneyMethod);
+    unawaited(notifier.setAmount(amount));
   }
 
   bool _canSubmit() {
@@ -489,7 +506,11 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
                 child: _MethodCard(
                   method: method,
                   isSelected: _selectedMethod == method,
-                  onTap: () => setState(() => _selectedMethod = method),
+                  onTap: () {
+                    ref.read(withdraw_api.withdrawProvider.notifier).reset();
+                    setState(() => _selectedMethod = method);
+                    _refreshWithdrawalQuotePreview();
+                  },
                   colors: colors,
                   l10n: l10n,
                 ),
@@ -500,6 +521,16 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
 
             // Method-specific fields
             if (_selectedMethod != null) _buildMethodFields(colors, l10n),
+
+            if (_selectedMethod == WithdrawMethod.mobileMoney &&
+                withdrawState.fee > 0) ...[
+              const SizedBox(height: AppSpacing.md),
+              _WithdrawalFeePreview(
+                amount: withdrawState.amount ?? 0,
+                fee: withdrawState.fee,
+                colors: colors,
+              ),
+            ],
 
             const SizedBox(height: AppSpacing.xxl),
 
@@ -710,7 +741,10 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
                   hint: selectedCountry.phoneFormat ?? '07 00 00 00 00',
                   keyboardType: TextInputType.phone,
                   enabled: isMobileMoneyAvailable,
-                  onChanged: (_) => setState(() {}),
+                  onChanged: (_) {
+                    setState(() {});
+                    _refreshWithdrawalQuotePreview();
+                  },
                 ),
               ),
             ],
@@ -876,6 +910,89 @@ class _MethodCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _WithdrawalFeePreview extends StatelessWidget {
+  const _WithdrawalFeePreview({
+    required this.amount,
+    required this.fee,
+    required this.colors,
+  });
+
+  final double amount;
+  final double fee;
+  final ThemeColors colors;
+
+  @override
+  Widget build(BuildContext context) {
+    final total = amount + fee;
+
+    return AppCard(
+      variant: AppCardVariant.subtle,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Column(
+        children: [
+          _FeePreviewRow(
+            label: AppStrings.amount,
+            value: '\$${amount.toStringAsFixed(2)}',
+            colors: colors,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          _FeePreviewRow(
+            label: AppStrings.fee,
+            value: '\$${fee.toStringAsFixed(2)}',
+            colors: colors,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Divider(color: colors.borderSubtle, height: 1),
+          const SizedBox(height: AppSpacing.sm),
+          _FeePreviewRow(
+            label: AppStrings.total,
+            value: '\$${total.toStringAsFixed(2)}',
+            colors: colors,
+            emphasized: true,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeePreviewRow extends StatelessWidget {
+  const _FeePreviewRow({
+    required this.label,
+    required this.value,
+    required this.colors,
+    this.emphasized = false,
+  });
+
+  final String label;
+  final String value;
+  final ThemeColors colors;
+  final bool emphasized;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        AppText(
+          label,
+          variant: emphasized
+              ? AppTextVariant.titleSmall
+              : AppTextVariant.bodySmall,
+          color: emphasized ? colors.textPrimary : colors.textSecondary,
+        ),
+        AppText(
+          value,
+          variant: emphasized
+              ? AppTextVariant.titleSmall
+              : AppTextVariant.bodySmall,
+          color: emphasized ? context.colors.gold : colors.textPrimary,
+        ),
+      ],
     );
   }
 }
