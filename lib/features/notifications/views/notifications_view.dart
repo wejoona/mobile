@@ -4,16 +4,25 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/domain/entities/notification.dart';
 import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart';
 import 'package:usdc_wallet/features/notifications/widgets/notification_tile.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Notifications list screen.
-class NotificationsView extends ConsumerWidget {
+class NotificationsView extends ConsumerStatefulWidget {
   const NotificationsView({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<NotificationsView> createState() => _NotificationsViewState();
+}
+
+class _NotificationsViewState extends ConsumerState<NotificationsView> {
+  bool _markingAllRead = false;
+  final Set<String> _markingReadIds = {};
+
+  @override
+  Widget build(BuildContext context) {
     final notificationsAsync = ref.watch(notificationsProvider);
     final unreadCountAsync = ref.watch(unreadNotificationCountProvider);
     final unreadCount = unreadCountAsync.value ?? 0;
@@ -37,12 +46,7 @@ class NotificationsView extends ConsumerWidget {
               child: IconButton(
                 tooltip: l10n.notifications_markAllRead,
                 icon: Icon(Icons.done_all_rounded, color: colors.gold),
-                onPressed: () async {
-                  final actions = ref.read(notificationActionsProvider);
-                  await actions.markAllAsRead();
-                  ref.invalidate(notificationsProvider);
-                  ref.invalidate(unreadNotificationCountProvider);
-                },
+                onPressed: _markingAllRead ? null : _markAllAsRead,
               ),
             ),
         ],
@@ -139,22 +143,17 @@ class NotificationsView extends ConsumerWidget {
                 }
 
                 final notification = notifications[i - 1];
+                final isMarkingRead = _markingReadIds.contains(
+                  notification.id,
+                );
                 return Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                   child: NotificationTile(
                     notification: notification,
-                    onTap: () async {
-                      if (!notification.isRead) {
-                        final actions = ref.read(notificationActionsProvider);
-                        await actions.markAsRead(notification.id);
-                        ref.invalidate(notificationsProvider);
-                        ref.invalidate(unreadNotificationCountProvider);
-                      }
-                      final route = notification.navigationRoute;
-                      if (route != null && context.mounted) {
-                        context.push(route);
-                      }
-                    },
+                    isBusy: isMarkingRead,
+                    onTap: isMarkingRead
+                        ? null
+                        : () => _openNotification(notification),
                   ),
                 );
               },
@@ -163,6 +162,38 @@ class NotificationsView extends ConsumerWidget {
         },
       ),
     );
+  }
+
+  Future<void> _markAllAsRead() async {
+    if (_markingAllRead) {
+      return;
+    }
+    setState(() => _markingAllRead = true);
+    try {
+      await ref.read(notificationActionsProvider).markAllAsRead();
+    } finally {
+      if (mounted) {
+        setState(() => _markingAllRead = false);
+      }
+    }
+  }
+
+  Future<void> _openNotification(AppNotification notification) async {
+    if (!notification.isRead) {
+      setState(() => _markingReadIds.add(notification.id));
+      try {
+        await ref.read(notificationActionsProvider).markAsRead(notification.id);
+      } finally {
+        if (mounted) {
+          setState(() => _markingReadIds.remove(notification.id));
+        }
+      }
+    }
+
+    final route = notification.navigationRoute;
+    if (route != null && mounted) {
+      await context.push(route);
+    }
   }
 }
 
