@@ -9,6 +9,7 @@ import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
 import 'package:usdc_wallet/features/profile/services/profile_picture_service.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/image_analysis/image_analysis_service.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/state/index.dart';
@@ -647,9 +648,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              AppLocalizations.of(context)!.settings_failedToUpdateProfile,
-            ),
+            content: Text(_profileSaveErrorMessage(e)),
             backgroundColor: context.colors.error,
           ),
         );
@@ -659,5 +658,17 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  String _profileSaveErrorMessage(Object error) {
+    if (error is ApiException) {
+      if (error.statusCode == 401) {
+        return AppLocalizations.of(context)!.error_sessionExpired;
+      }
+      if (error.message.trim().isNotEmpty) {
+        return error.message;
+      }
+    }
+    return AppLocalizations.of(context)!.settings_failedToUpdateProfile;
   }
 }

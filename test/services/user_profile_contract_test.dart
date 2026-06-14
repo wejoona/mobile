@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
 import 'package:usdc_wallet/services/session/user_session.dart';
 import 'package:usdc_wallet/services/storage/hive_models.dart';
 import 'package:usdc_wallet/services/user/avatar_multipart.dart';
@@ -240,6 +241,13 @@ void main() {
       expect(source, contains('clearAvatarUrl: sessionAvatar == null'));
     });
 
+    test('profile provider preserves and explicitly clears errors', () {
+      const state = ProfileState(error: 'Upload failed');
+
+      expect(state.copyWith(isUploading: false).error, 'Upload failed');
+      expect(state.copyWith(clearError: true).error, isNull);
+    });
+
     test('profile edit screen rebuilds after hydrating existing avatar', () {
       final source = File(
         'lib/features/settings/views/profile_edit_screen.dart',
@@ -253,6 +261,8 @@ void main() {
       expect(initStateBody, contains('setState'));
       expect(initStateBody, contains('_avatarUrl = userState.avatarUrl'));
       expect(initStateBody, contains('_avatarThumb = userState.avatarThumb'));
+      expect(source, contains('_profileSaveErrorMessage'));
+      expect(source, contains('error is ApiException'));
     });
 
     test('email verification auto-requests a missing active code once', () {

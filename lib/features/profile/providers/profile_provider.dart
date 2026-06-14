@@ -29,10 +29,11 @@ class ProfileState {
     bool? isLoading,
     String? error,
     bool? isUploading,
+    bool clearError = false,
   }) => ProfileState(
     user: user ?? this.user,
     isLoading: isLoading ?? this.isLoading,
-    error: error,
+    error: clearError ? null : error ?? this.error,
     isUploading: isUploading ?? this.isUploading,
   );
 }
@@ -43,13 +44,13 @@ class ProfileNotifier extends Notifier<ProfileState> {
   ProfileState build() => const ProfileState();
 
   Future<void> loadProfile() async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final service = ref.read(userServiceProvider);
       final profile = await service.getProfile();
       final user = User.fromJson(profile.toJson());
       await _syncUserState(profile);
-      state = state.copyWith(user: user, isLoading: false, error: null);
+      state = state.copyWith(user: user, isLoading: false, clearError: true);
     } on ApiException catch (e) {
       state = state.copyWith(isLoading: false, error: _friendlyError(e));
     } catch (e) {
@@ -73,15 +74,15 @@ class ProfileNotifier extends Notifier<ProfileState> {
   }
 
   Future<AvatarUploadResult?> uploadAvatar(File file) async {
-    state = state.copyWith(isUploading: true);
+    state = state.copyWith(isUploading: true, clearError: true);
     try {
       final service = ref.read(userServiceProvider);
       final result = await service.uploadAvatar(file.path);
       await _applyAvatarUploadResult(result);
-      state = state.copyWith(isUploading: false);
+      state = state.copyWith(isUploading: false, clearError: true);
       await loadProfile();
       await _applyAvatarUploadResult(result, clearLocalCache: false);
-      state = state.copyWith(isUploading: false);
+      state = state.copyWith(isUploading: false, clearError: true);
       return result;
     } on ApiException catch (e) {
       state = state.copyWith(isUploading: false, error: _friendlyError(e));
@@ -117,7 +118,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
       user: User.fromJson(mergedProfile.toJson()),
       isLoading: false,
       isUploading: false,
-      error: null,
+      clearError: true,
     );
   }
 
@@ -138,6 +139,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
     try {
       final service = ref.read(userServiceProvider);
       await service.updateLocale(locale);
+      state = state.copyWith(clearError: true);
     } on ApiException catch (e) {
       state = state.copyWith(error: _friendlyError(e));
     } catch (e) {
