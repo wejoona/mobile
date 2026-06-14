@@ -55,6 +55,7 @@ class WalletActions {
   Future<double> estimateFee({
     required double amount,
     required String type, // internal, external, withdrawal
+    String? providerCode,
   }) async {
     if (type == 'external') {
       // ignore: avoid_dynamic_calls
@@ -66,7 +67,31 @@ class WalletActions {
       return (response.data['estimatedFee'] as num?)?.toDouble() ?? 0.0;
     }
     if (type == 'withdrawal') {
-      return amount * 0.005;
+      // ignore: avoid_dynamic_calls
+      final response = await _dio.get(
+        '/wallet/withdraw/options',
+        queryParameters: {'country': 'CI'},
+      );
+      // ignore: avoid_dynamic_calls
+      final options = response.data['options'] as List<dynamic>? ?? const [];
+      final normalizedProvider = providerCode?.toUpperCase();
+      final option = options.cast<Map>().firstWhere(
+        (candidate) =>
+            candidate['type'] == 'mobile_money' &&
+            (normalizedProvider == null ||
+                candidate['providerCode']?.toString().toUpperCase() ==
+                    normalizedProvider),
+        orElse: () => const {},
+      );
+      if (option.isEmpty) return 0.0;
+
+      final fee = (option['fee'] as num?)?.toDouble() ?? 0;
+      final minFee = (option['minFee'] as num?)?.toDouble() ?? 0;
+      final maxFee = (option['maxFee'] as num?)?.toDouble();
+      final feeType = option['feeType']?.toString().toLowerCase();
+      final rawFee = feeType == 'fixed' ? fee : amount * (fee / 100);
+      final clampedMin = rawFee < minFee ? minFee : rawFee;
+      return maxFee != null && clampedMin > maxFee ? maxFee : clampedMin;
     }
     return 0.0;
   }

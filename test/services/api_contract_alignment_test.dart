@@ -24,6 +24,7 @@ import 'package:usdc_wallet/features/qr_payment/providers/qr_payment_provider.da
 import 'package:usdc_wallet/features/settings/repositories/devices_repository.dart';
 import 'package:usdc_wallet/features/settings/repositories/sessions_repository.dart';
 import 'package:usdc_wallet/features/send/providers/send_provider.dart';
+import 'package:usdc_wallet/features/wallet/providers/wallet_actions_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/transaction_stats_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/withdraw_provider.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
@@ -383,6 +384,40 @@ void main() {
       expect(request.path, '/wallet/withdraw/options');
       expect(request.queryParameters, {'country': 'CI'});
       expect(container.read(withdrawProvider).fee, 1);
+    });
+
+    test('wallet actions withdrawal fee uses backend options', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'country': 'CI',
+          'currency': 'USDC',
+          'options': [
+            {
+              'id': 'mtn_momo_ci',
+              'type': 'mobile_money',
+              'providerCode': 'MTNCI',
+              'fee': 2,
+              'feeType': 'percentage',
+              'minFee': 1,
+              'maxFee': 100,
+              'enabled': true,
+            },
+          ],
+        });
+      final container = ProviderContainer(
+        overrides: [dioProvider.overrideWithValue(dio)],
+      );
+      addTearDown(container.dispose);
+
+      final fee = await container
+          .read(walletActionsProvider)
+          .estimateFee(amount: 250, type: 'withdrawal', providerCode: 'MTNCI');
+
+      final request = dio.requestHistory.single;
+      expect(request.method, 'GET');
+      expect(request.path, '/wallet/withdraw/options');
+      expect(request.queryParameters, {'country': 'CI'});
+      expect(fee, 5);
     });
 
     test('wallet crypto withdraw uses guarded backend route', () async {
