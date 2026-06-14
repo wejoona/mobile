@@ -431,36 +431,6 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
       return;
     }
 
-    final contactsService = ref.read(contactsServiceProvider);
-    var hasPermission = await contactsService.hasContactsPermission();
-
-    if (!mounted) {
-      return;
-    }
-
-    final requiresSettings =
-        !hasPermission &&
-        await contactsService.contactsPermissionRequiresSettings();
-    if (!mounted) {
-      return;
-    }
-
-    if (requiresSettings) {
-      await _showContactsPermissionDialog();
-      return;
-    }
-
-    if (!hasPermission) {
-      hasPermission = await contactsService.requestContactsPermission();
-      if (!mounted) {
-        return;
-      }
-      if (!hasPermission) {
-        await _showContactsPermissionDialog();
-        return;
-      }
-    }
-
     final contact = await showModalBottomSheet<SyncedContact>(
       context: context,
       isScrollControlled: true,
@@ -477,44 +447,6 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
         isKnownKorido: contact.isKoridoUser,
       );
     }
-  }
-
-  Future<void> _showContactsPermissionDialog() async {
-    final l10n = AppLocalizations.of(context)!;
-    final contactsService = ref.read(contactsServiceProvider);
-    final requiresSettings = await contactsService
-        .contactsPermissionRequiresSettings();
-    if (!mounted) {
-      return;
-    }
-
-    if (requiresSettings) {
-      final shouldOpen = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text(l10n.send_contactsPermissionSettingsTitle),
-          content: Text(l10n.send_contactsPermissionSettingsMessage),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: Text(l10n.action_cancel),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: Text(l10n.action_open_settings),
-            ),
-          ],
-        ),
-      );
-      if (shouldOpen ?? false) {
-        await contactsService.openContactsSettings();
-      }
-      return;
-    }
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(l10n.send_contactsPermissionDenied)));
   }
 
   Future<void> _selectFromBeneficiaries() async {
