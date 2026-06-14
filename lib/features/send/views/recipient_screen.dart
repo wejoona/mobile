@@ -720,17 +720,9 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
         if (!mounted) {
           return;
         }
+        final snack = _recipientErrorSnack(sendState.error!);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              localizedSendCopy(
-                context,
-                en: 'We could not verify this Korido account. Please try again.',
-                fr: 'Nous n’avons pas pu vérifier ce compte Korido. Veuillez réessayer.',
-              ),
-            ),
-            backgroundColor: context.colors.error,
-          ),
+          SnackBar(content: Text(snack.message), backgroundColor: snack.color),
         );
         return;
       }
@@ -800,4 +792,62 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
   }
 
   String _phoneDigits(String value) => value.replaceAll(RegExp(r'\D'), '');
+
+  _RecipientSnack _recipientErrorSnack(String errorCode) {
+    final colors = context.colors;
+    switch (errorCode) {
+      case 'recipient_is_current_user':
+        return _RecipientSnack(
+          localizedSendCopy(
+            context,
+            en: 'You cannot send money to your own Korido account.',
+            fr: 'Vous ne pouvez pas envoyer de l’argent à votre propre compte Korido.',
+          ),
+          colors.warning,
+        );
+      case 'recipient_not_korido_user':
+        return _RecipientSnack(
+          localizedSendCopy(
+            context,
+            en: 'No Korido account was found for this recipient.',
+            fr: 'Aucun compte Korido n’a été trouvé pour ce destinataire.',
+          ),
+          colors.warning,
+        );
+      case 'recipient_lookup_unavailable':
+        return _RecipientSnack(
+          localizedSendCopy(
+            context,
+            en: 'Korido account lookup is unavailable. Check your connection and try again.',
+            fr: 'La vérification du compte Korido est indisponible. Vérifiez votre connexion puis réessayez.',
+          ),
+          colors.error,
+        );
+      case 'recipient_identifier_required':
+        return _RecipientSnack(
+          localizedSendCopy(
+            context,
+            en: 'Choose a Korido contact or enter a complete phone number.',
+            fr: 'Choisissez un contact Korido ou saisissez un numéro complet.',
+          ),
+          colors.warning,
+        );
+      default:
+        return _RecipientSnack(
+          localizedSendCopy(
+            context,
+            en: 'We could not verify this Korido account. Please try again.',
+            fr: 'Nous n’avons pas pu vérifier ce compte Korido. Veuillez réessayer.',
+          ),
+          colors.error,
+        );
+    }
+  }
+}
+
+class _RecipientSnack {
+  const _RecipientSnack(this.message, this.color);
+
+  final String message;
+  final Color color;
 }
