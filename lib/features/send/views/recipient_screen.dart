@@ -422,7 +422,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     }
 
     final contactsService = ref.read(contactsServiceProvider);
-    final hasPermission = await contactsService.hasContactsPermission();
+    var hasPermission = await contactsService.hasContactsPermission();
 
     if (!mounted) {
       return;
@@ -438,6 +438,17 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     if (requiresSettings) {
       await _showContactsPermissionDialog();
       return;
+    }
+
+    if (!hasPermission) {
+      hasPermission = await contactsService.requestContactsPermission();
+      if (!mounted) {
+        return;
+      }
+      if (!hasPermission) {
+        await _showContactsPermissionDialog();
+        return;
+      }
     }
 
     final contact = await showModalBottomSheet<SyncedContact>(

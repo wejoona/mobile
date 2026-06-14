@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/index.dart';
@@ -267,13 +269,24 @@ class WalletStateMachine extends Notifier<WalletState> {
 
   /// Refresh wallet balance (shows refreshing indicator)
   Future<void> refresh() async {
+    final fallbackState = state;
     final activeRefresh = _refreshInFlight;
-    if (activeRefresh != null) return activeRefresh;
+    if (activeRefresh != null) {
+      try {
+        await activeRefresh.timeout(const Duration(seconds: 14));
+      } on TimeoutException {
+        _recoverTimedOutRefresh(fallbackState);
+        _refreshInFlight = null;
+      }
+      return;
+    }
 
     final refreshFuture = _refresh();
     _refreshInFlight = refreshFuture;
     try {
-      await refreshFuture;
+      await refreshFuture.timeout(const Duration(seconds: 14));
+    } on TimeoutException {
+      _recoverTimedOutRefresh(fallbackState);
     } finally {
       if (identical(_refreshInFlight, refreshFuture)) {
         _refreshInFlight = null;
@@ -325,6 +338,17 @@ class WalletStateMachine extends Notifier<WalletState> {
               );
       }
     }
+  }
+
+  void _recoverTimedOutRefresh(WalletState fallbackState) {
+    if (!ref.mounted) return;
+
+    state = fallbackState.hasBalanceData
+        ? fallbackState.copyWith(status: WalletStatus.loaded, error: null)
+        : state.copyWith(
+            status: WalletStatus.error,
+            error: 'Unable to refresh balance right now',
+          );
   }
 
   /// Update balance after a transaction (optimistic update)
