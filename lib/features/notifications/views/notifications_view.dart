@@ -101,7 +101,7 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
           if (notifications.isEmpty) {
             return RefreshIndicator(
               color: colors.gold,
-              onRefresh: () => ref.refresh(notificationsProvider.future),
+              onRefresh: _refreshNotifications,
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.screenPadding,
@@ -122,7 +122,7 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
           }
           return RefreshIndicator(
             color: colors.gold,
-            onRefresh: () => ref.refresh(notificationsProvider.future),
+            onRefresh: _refreshNotifications,
             child: ListView.builder(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.screenPadding,
@@ -143,9 +143,7 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
                 }
 
                 final notification = notifications[i - 1];
-                final isMarkingRead = _markingReadIds.contains(
-                  notification.id,
-                );
+                final isMarkingRead = _markingReadIds.contains(notification.id);
                 return Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                   child: NotificationTile(
@@ -176,6 +174,13 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
         setState(() => _markingAllRead = false);
       }
     }
+  }
+
+  Future<void> _refreshNotifications() async {
+    await Future.wait<Object>([
+      ref.refresh(notificationsProvider.future),
+      ref.refresh(unreadNotificationCountProvider.future),
+    ]);
   }
 
   Future<void> _openNotification(AppNotification notification) async {

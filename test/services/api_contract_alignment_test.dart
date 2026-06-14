@@ -597,6 +597,37 @@ void main() {
       },
     );
 
+    test('notifications pull refresh reloads feed and unread count', () {
+      final notificationsViewSource = File(
+        'lib/features/notifications/views/notifications_view.dart',
+      ).readAsStringSync();
+      final refreshBody = RegExp(
+        r'Future<void> _refreshNotifications\(\) async \{([\s\S]*?)\n  \}',
+      ).firstMatch(notificationsViewSource)!.group(1)!;
+
+      expect(
+        notificationsViewSource,
+        isNot(
+          contains(
+            'onRefresh: () => ref.refresh(notificationsProvider.future)',
+          ),
+        ),
+        reason:
+            'pull refresh should go through the shared refresh helper so unread count stays aligned',
+      );
+      expect(
+        RegExp(
+          r'onRefresh: _refreshNotifications',
+        ).allMatches(notificationsViewSource),
+        hasLength(2),
+      );
+      expect(refreshBody, contains('refresh(notificationsProvider.future'));
+      expect(
+        refreshBody,
+        contains('refresh(unreadNotificationCountProvider.future'),
+      );
+    });
+
     test('push token registration uses deployed mobile SDK route', () async {
       final dio = MockDio()..queueResponse({'message': 'ok'});
       final service = NotificationsService(dio);
