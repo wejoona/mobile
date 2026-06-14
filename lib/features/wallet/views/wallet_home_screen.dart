@@ -17,12 +17,12 @@ import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
 import 'package:usdc_wallet/features/limits/widgets/limit_warning_banner.dart';
 import 'package:usdc_wallet/features/notifications/providers/notification_count_provider.dart';
+import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/features/wallet/widgets/cached_data_chip.dart';
 import 'package:usdc_wallet/features/wallet/widgets/wallet_home_actions.dart';
 import 'package:usdc_wallet/features/wallet/widgets/wallet_home_status_widgets.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/currency/currency_provider.dart';
-import 'package:usdc_wallet/services/currency/currency_service.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
@@ -384,8 +384,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
 
     final currencyState = ref.watch(currencyProvider);
     final currencyService = ref.read(currencyServiceProvider);
-    final ReferenceCurrency? referenceCurrency =
-        currencyState.shouldShowReference
+    final referenceCurrency = currencyState.shouldShowReference
         ? currencyState.referenceCurrency
         : null;
     final referenceAmount = referenceCurrency == null
@@ -711,8 +710,6 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         amount: amount,
         size: AmountTextSize.small,
         color: valueColor ?? colors.textPrimary,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
       ),
     ],
   );
@@ -737,7 +734,9 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
 
   String _balanceSyncLabel(WalletState walletState) {
     final status = walletState.balanceReadStatus;
-    if (status == 'degraded') return 'Sync delayed';
+    if (status == 'degraded') {
+      return 'Sync delayed';
+    }
 
     final warning = walletState.balanceWarning;
     if (warning != null && warning.trim().isNotEmpty) {
@@ -1112,10 +1111,12 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
   }
 
   Future<void> _refreshHomeData() async {
-    await Future.wait<void>([
-      _refreshWalletForHome(),
-      _refreshTransactionsForHome(),
-    ]);
+    ref.invalidate(walletBalanceProvider);
+    unawaited(_refreshTransactionsForHome());
+    await _refreshWalletForHome().timeout(
+      const Duration(seconds: 9),
+      onTimeout: () {},
+    );
   }
 
   Future<void> _refreshWalletForHome() async {
