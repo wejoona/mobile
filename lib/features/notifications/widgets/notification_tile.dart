@@ -52,6 +52,11 @@ class NotificationTile extends StatelessWidget {
   };
 
   _NotificationTone _tone(ThemeColors colors) {
+    final severityTone = _severityTone(colors);
+    if (severityTone != null) {
+      return severityTone;
+    }
+
     switch (notification.type) {
       case NotificationType.transactionComplete:
       case NotificationType.transfer:
@@ -112,6 +117,31 @@ class NotificationTile extends StatelessWidget {
           background: colors.surface,
           foreground: colors.infoText,
         );
+    }
+  }
+
+  _NotificationTone? _severityTone(ThemeColors colors) {
+    switch (notification.severity) {
+      case 'critical':
+        return _NotificationTone(
+          accent: colors.error,
+          background: colors.errorBg,
+          foreground: colors.errorText,
+        );
+      case 'warning':
+        return _NotificationTone(
+          accent: colors.warning,
+          background: colors.warningBg,
+          foreground: colors.warningText,
+        );
+      case 'success':
+        return _NotificationTone(
+          accent: colors.success,
+          background: colors.successBg,
+          foreground: colors.successText,
+        );
+      default:
+        return null;
     }
   }
 
