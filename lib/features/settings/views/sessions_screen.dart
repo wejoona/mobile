@@ -475,17 +475,16 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
     final success = await ref
         .read(sessionsProvider.notifier)
         .logoutAllDevices();
-    if (!success || !mounted) return;
+    if (!success || !mounted || !context.mounted) {
+      return;
+    }
 
-    // ignore: use_build_context_synchronously
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: AppText(l10n.sessions_logoutAllSuccess),
         backgroundColor: context.colors.success,
       ),
     );
-    // Navigate back or to login
-    // ignore: use_build_context_synchronously
-    Navigator.of(context).pop();
+    context.go('/login');
   }
 }

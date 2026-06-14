@@ -729,19 +729,23 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                 final success = await ref
                     .read(sessionsProvider.notifier)
                     .logoutAllDevices();
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        success
-                            ? l10n.security_logoutAllSuccess
-                            : 'Erreur lors de la déconnexion',
-                      ),
-                      backgroundColor: success
-                          ? context.colors.success
-                          : context.colors.error,
+                if (!mounted || !context.mounted) {
+                  return;
+                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      success
+                          ? l10n.security_logoutAllSuccess
+                          : 'Erreur lors de la déconnexion',
                     ),
-                  );
+                    backgroundColor: success
+                        ? context.colors.success
+                        : context.colors.error,
+                  ),
+                );
+                if (success) {
+                  context.go('/login');
                 }
               },
               variant: AppButtonVariant.danger,

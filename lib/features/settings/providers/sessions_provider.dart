@@ -141,10 +141,13 @@ class SessionsNotifier extends Notifier<SessionsState> {
       final repository = ref.read(sessionsRepositoryProvider);
       await repository.logoutAllDevices();
 
-      await ref.read(authProvider.notifier).clearLocalSession();
-      state = state.copyWith(sessions: []);
+      await _clearLocalSessionAfterLogoutAll();
       return true;
     } on ApiException catch (e) {
+      if (e.statusCode == 401 || e.statusCode == 403) {
+        await _clearLocalSessionAfterLogoutAll();
+        return true;
+      }
       if (await _handleExpiredSession(e)) {
         state = state.copyWith(error: _friendlyError(e), requiresUnlock: true);
         return false;
@@ -158,6 +161,16 @@ class SessionsNotifier extends Notifier<SessionsState> {
       );
       return false;
     }
+  }
+
+  Future<void> _clearLocalSessionAfterLogoutAll() async {
+    await ref.read(authProvider.notifier).clearLocalSession();
+    state = state.copyWith(
+      sessions: const [],
+      currentSessionId: null,
+      error: null,
+      requiresUnlock: false,
+    );
   }
 
   String _friendlyError(ApiException error) {
