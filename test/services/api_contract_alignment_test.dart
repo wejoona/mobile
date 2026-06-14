@@ -1242,7 +1242,8 @@ void main() {
           'direction': 'DEBIT',
           'reference': 'INT-TXSETTLED',
           'note': 'Lunch',
-          'toPhone': '+2250748805663',
+          'counterpartyName': 'Awa Korido',
+          'counterpartyPhone': '+2250748805663',
           'createdAt': '2026-06-04T12:00:00.000Z',
         });
         final failedTransfer = wallet_tx.Transaction.fromJson({
@@ -1261,6 +1262,10 @@ void main() {
         expect(settledTransfer.isDebit, isTrue);
         expect(settledTransfer.reference, 'INT-TXSETTLED');
         expect(settledTransfer.description, 'Lunch');
+        expect(settledTransfer.counterpartyName, 'Awa Korido');
+        expect(settledTransfer.counterpartyPhone, '+2250748805663');
+        expect(settledTransfer.displayCounterpartyName, 'Awa Korido');
+        expect(settledTransfer.displayCounterpartyPhone, '+2250748805663');
         expect(settledTransfer.recipientPhone, '+2250748805663');
         expect(failedTransfer.type, TransactionType.transferInternal);
         expect(failedTransfer.status, TransactionStatus.failed);

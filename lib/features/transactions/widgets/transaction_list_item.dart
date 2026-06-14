@@ -72,7 +72,12 @@ class TransactionListItem extends StatelessWidget {
 
   String _title(AppLocalizations l10n) {
     final description = transaction.description?.trim();
+    final counterpartyName = transaction.displayCounterpartyName?.trim();
     final typeLabel = _typeLabel(l10n);
+
+    if (counterpartyName != null && counterpartyName.isNotEmpty) {
+      return counterpartyName;
+    }
 
     if (description != null &&
         description.isNotEmpty &&
@@ -109,9 +114,10 @@ class TransactionListItem extends StatelessWidget {
       case TransactionType.withdrawal:
         return l10n.transactions_mobileMoneyWithdrawal;
       case TransactionType.transferInternal:
-        return transaction.isCredit
-            ? l10n.transactions_fromKoridoUser
-            : l10n.transactions_transferSent;
+        return transaction.displayCounterpartyPhone ??
+            (transaction.isCredit
+                ? l10n.transactions_fromKoridoUser
+                : l10n.transactions_transferSent);
       case TransactionType.transferExternal:
         return l10n.transactions_externalWallet;
     }

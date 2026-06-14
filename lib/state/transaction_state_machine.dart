@@ -234,6 +234,8 @@ class TransactionStateMachine extends Notifier<TransactionListState> {
           description: tx.description,
           externalReference: tx.externalReference,
           failureReason: tx.failureReason,
+          counterpartyName: tx.counterpartyName,
+          counterpartyPhone: tx.counterpartyPhone,
           recipientPhone: tx.recipientPhone,
           recipientAddress: tx.recipientAddress,
           recipientWalletId: tx.recipientWalletId,

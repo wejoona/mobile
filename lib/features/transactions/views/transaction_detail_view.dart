@@ -216,11 +216,19 @@ class TransactionDetailView extends ConsumerWidget {
                     value: transaction.currency,
                     colors: colors,
                   ),
-                  if (transaction.recipientPhone != null) ...[
+                  if (transaction.displayCounterpartyName != null) ...[
+                    Divider(color: colors.borderSubtle),
+                    _DetailRow(
+                      label: 'Counterparty',
+                      value: transaction.displayCounterpartyName!,
+                      colors: colors,
+                    ),
+                  ],
+                  if (transaction.displayCounterpartyPhone != null) ...[
                     Divider(color: colors.borderSubtle),
                     _DetailRow(
                       label: l10n.transactionDetails_recipientPhone,
-                      value: transaction.recipientPhone!,
+                      value: transaction.displayCounterpartyPhone!,
                       colors: colors,
                     ),
                   ],
@@ -489,11 +497,7 @@ class _DetailRow extends StatelessWidget {
                   const SizedBox(width: AppSpacing.sm),
                   GestureDetector(
                     onTap: onCopy,
-                    child: Icon(
-                      Icons.copy,
-                      size: 16,
-                      color: colors.gold,
-                    ),
+                    child: Icon(Icons.copy, size: 16, color: colors.gold),
                   ),
                 ],
               ],
