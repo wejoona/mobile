@@ -1792,6 +1792,32 @@ void main() {
       },
     );
 
+    test('contact sync summary checks secondary saved phone numbers', () async {
+      final service = ContactsService(MockSecureStorage());
+      final primaryHash = service.hashPhone('+2250101010101');
+      final koridoHash = service.hashPhone('+2250748805663');
+      final contact = SyncedContact(
+        id: 'local_1',
+        name: 'Awa Local',
+        phone: '+2250101010101',
+        lookupPhones: const ['+2250101010101', '+2250748805663'],
+      );
+      final dio = MockDio()
+        ..queueResponse({
+          'matches': [
+            {'phoneHash': koridoHash, 'userId': 'user_1'},
+          ],
+        });
+
+      final result = await service.syncContactsWithKorido(dio, [contact]);
+
+      expect(result.success, isTrue);
+      expect(result.joonaPayUsersFound, 1);
+      expect(dio.requestHistory.single.path, '/contacts/sync');
+      final body = dio.requestHistory.single.data as Map<String, dynamic>;
+      expect(body['phoneHashes'], unorderedEquals([primaryHash, koridoHash]));
+    });
+
     test(
       'contact sync batches large phone books for backend max size',
       () async {

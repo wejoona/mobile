@@ -486,9 +486,22 @@ class ContactsService {
   /// Sync contacts with Korido server
   Future<ContactSyncResult> syncContactsWithKorido(
     Dio dio,
-    List<SyncedContact> contacts,
-  ) async {
-    final hashes = contacts.map((c) => hashPhone(c.phone)).toSet().toList();
+    List<SyncedContact> contacts, {
+    String defaultCountryPrefix = '225',
+  }) async {
+    final hashes = contacts
+        .expand(
+          (contact) => contact.lookupPhones.isNotEmpty
+              ? contact.lookupPhones
+              : [contact.phone],
+        )
+        .where((phone) => phone.trim().isNotEmpty)
+        .map(
+          (phone) =>
+              hashPhone(phone, defaultCountryPrefix: defaultCountryPrefix),
+        )
+        .toSet()
+        .toList();
 
     try {
       final matchCount = await syncPhoneHashes(dio, hashes);
