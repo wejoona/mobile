@@ -83,7 +83,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
                 ),
                 SizedBox(height: AppSpacing.xs),
                 AppText(
-                  formatXof(subBusiness.balance),
+                  formatCurrency(subBusiness.balance, subBusiness.currency),
                   variant: AppTextVariant.displaySmall,
                   color: context.colors.canvas,
                   fontWeight: FontWeight.bold,

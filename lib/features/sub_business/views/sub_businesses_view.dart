@@ -101,11 +101,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
     SubBusinessState state,
     AppLocalizations l10n,
   ) {
-    // Calculate total balance
-    final totalBalance = state.subBusinesses.fold<double>(
-      0.0,
-      (sum, sb) => sum + sb.balance,
-    );
+    final totalBalanceLabel = _formatTotalBalance(state, l10n);
 
     return ListView(
       padding: EdgeInsets.all(AppSpacing.md),
@@ -134,7 +130,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
               ),
               SizedBox(height: AppSpacing.xs),
               AppText(
-                formatXof(totalBalance),
+                totalBalanceLabel,
                 variant: AppTextVariant.displaySmall,
                 color: context.colors.canvas,
                 fontWeight: FontWeight.bold,
@@ -169,5 +165,24 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
         }),
       ],
     );
+  }
+
+  String _formatTotalBalance(SubBusinessState state, AppLocalizations l10n) {
+    if (state.subBusinesses.isEmpty) return formatCurrency(0, 'USDC');
+
+    final firstCurrency = state.subBusinesses.first.currency;
+    final hasSingleCurrency = state.subBusinesses.every(
+      (subBusiness) => subBusiness.currency == firstCurrency,
+    );
+
+    if (!hasSingleCurrency) {
+      return '${state.subBusinesses.length} ${state.subBusinesses.length == 1 ? l10n.subBusiness_unit : l10n.subBusiness_units}';
+    }
+
+    final totalBalance = state.subBusinesses.fold<double>(
+      0,
+      (sum, subBusiness) => sum + subBusiness.balance,
+    );
+    return formatCurrency(totalBalance, firstCurrency);
   }
 }

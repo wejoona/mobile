@@ -2577,5 +2577,16 @@
   "emailVerification_successMessage": "Your email address has been verified successfully.",
   "security_twoFactorComingSoonSubtitle": "Authenticator app 2FA is being prepared. Biometric login and transaction PIN protect this device today.",
   "security_twoFactorNotifyMe": "Notify me",
-  "security_twoFactorNotifySuccess": "We'll let you know when authenticator app 2FA is ready."
+  "security_twoFactorNotifySuccess": "We'll let you know when authenticator app 2FA is ready.",
+  "subBusiness_transferTitle": "Transfer funds",
+  "subBusiness_transferFrom": "From",
+  "subBusiness_transferTo": "To",
+  "subBusiness_chooseDestination": "Choose destination",
+  "subBusiness_noTransferDestination": "Create another sub-business before moving funds.",
+  "subBusiness_transferAmountHelper": "Funds move between business wallets immediately after confirmation.",
+  "subBusiness_transferNoteHint": "Optional note",
+  "subBusiness_transferReviewTitle": "Transfer summary",
+  "subBusiness_transferSubmit": "Send transfer",
+  "subBusiness_transferSuccessTitle": "Transfer complete",
+  "subBusiness_transferSuccessMessage": "Funds were moved between sub-business wallets."
 }

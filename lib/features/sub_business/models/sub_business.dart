@@ -1,9 +1,12 @@
 /// Sub-business entity (department, branch, subsidiary)
 class SubBusiness {
   final String id;
+  final String? walletId;
   final String name;
   final String? description;
   final double balance;
+  final String currency;
+  final String status;
   final SubBusinessType type;
   final int staffCount;
   final DateTime createdAt;
@@ -11,9 +14,12 @@ class SubBusiness {
 
   const SubBusiness({
     required this.id,
+    this.walletId,
     required this.name,
     this.description,
     required this.balance,
+    this.currency = 'USDC',
+    this.status = 'active',
     required this.type,
     required this.staffCount,
     required this.createdAt,
@@ -26,10 +32,14 @@ class SubBusiness {
         : DateTime.now();
     return SubBusiness(
       id: json['id'] as String,
+      walletId: json['walletId'] as String?,
       name: json['name'] as String? ?? json['_name'] as String? ?? '',
       description:
           json['description'] as String? ?? json['_description'] as String?,
       balance: (json['balance'] as num?)?.toDouble() ?? 0,
+      currency: json['currency'] as String? ?? 'USDC',
+      status:
+          json['status'] as String? ?? json['_status'] as String? ?? 'active',
       type: SubBusinessType.values.firstWhere(
         (e) => e.name == (json['type'] ?? json['_type']),
         orElse: () => SubBusinessType.department,
@@ -44,9 +54,12 @@ class SubBusiness {
 
   Map<String, dynamic> toJson() => {
     'id': id,
+    'walletId': walletId,
     'name': name,
     'description': description,
     'balance': balance,
+    'currency': currency,
+    'status': status,
     'type': type.name,
     'staffCount': staffCount,
     'createdAt': createdAt.toIso8601String(),

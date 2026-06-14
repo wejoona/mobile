@@ -3160,5 +3160,16 @@
   "emailVerification_resendCode": "Renvoyer le code",
   "emailVerification_sendCode": "Envoyer le code",
   "emailVerification_successTitle": "Email vérifié",
-  "emailVerification_successMessage": "Votre adresse email a été vérifiée avec succès."
+  "emailVerification_successMessage": "Votre adresse email a été vérifiée avec succès.",
+  "subBusiness_transferTitle": "Transférer des fonds",
+  "subBusiness_transferFrom": "Depuis",
+  "subBusiness_transferTo": "Vers",
+  "subBusiness_chooseDestination": "Choisir la destination",
+  "subBusiness_noTransferDestination": "Créez une autre sous-entreprise avant de déplacer des fonds.",
+  "subBusiness_transferAmountHelper": "Les fonds sont déplacés entre portefeuilles d'entreprise dès la confirmation.",
+  "subBusiness_transferNoteHint": "Note optionnelle",
+  "subBusiness_transferReviewTitle": "Résumé du transfert",
+  "subBusiness_transferSubmit": "Envoyer le transfert",
+  "subBusiness_transferSuccessTitle": "Transfert terminé",
+  "subBusiness_transferSuccessMessage": "Les fonds ont été déplacés entre les portefeuilles des sous-entreprises."
 }

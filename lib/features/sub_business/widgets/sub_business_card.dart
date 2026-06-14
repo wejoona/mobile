@@ -79,7 +79,7 @@ class SubBusinessCard extends StatelessWidget {
 
             // Balance
             AppText(
-              formatXof(subBusiness.balance),
+              formatCurrency(subBusiness.balance, subBusiness.currency),
               variant: AppTextVariant.headlineMedium,
               color: context.colors.gold,
               fontWeight: FontWeight.bold,

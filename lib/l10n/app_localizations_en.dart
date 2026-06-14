@@ -7591,4 +7591,40 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get emailVerification_successMessage =>
       'Your email address has been verified successfully.';
+
+  @override
+  String get subBusiness_transferTitle => 'Transfer funds';
+
+  @override
+  String get subBusiness_transferFrom => 'From';
+
+  @override
+  String get subBusiness_transferTo => 'To';
+
+  @override
+  String get subBusiness_chooseDestination => 'Choose destination';
+
+  @override
+  String get subBusiness_noTransferDestination =>
+      'Create another sub-business before moving funds.';
+
+  @override
+  String get subBusiness_transferAmountHelper =>
+      'Funds move between business wallets immediately after confirmation.';
+
+  @override
+  String get subBusiness_transferNoteHint => 'Optional note';
+
+  @override
+  String get subBusiness_transferReviewTitle => 'Transfer summary';
+
+  @override
+  String get subBusiness_transferSubmit => 'Send transfer';
+
+  @override
+  String get subBusiness_transferSuccessTitle => 'Transfer complete';
+
+  @override
+  String get subBusiness_transferSuccessMessage =>
+      'Funds were moved between sub-business wallets.';
 }

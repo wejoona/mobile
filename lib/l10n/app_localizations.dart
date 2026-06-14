@@ -14003,6 +14003,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your email address has been verified successfully.'**
   String get emailVerification_successMessage;
+
+  /// No description provided for @subBusiness_transferTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer funds'**
+  String get subBusiness_transferTitle;
+
+  /// No description provided for @subBusiness_transferFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get subBusiness_transferFrom;
+
+  /// No description provided for @subBusiness_transferTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get subBusiness_transferTo;
+
+  /// No description provided for @subBusiness_chooseDestination.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose destination'**
+  String get subBusiness_chooseDestination;
+
+  /// No description provided for @subBusiness_noTransferDestination.
+  ///
+  /// In en, this message translates to:
+  /// **'Create another sub-business before moving funds.'**
+  String get subBusiness_noTransferDestination;
+
+  /// No description provided for @subBusiness_transferAmountHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Funds move between business wallets immediately after confirmation.'**
+  String get subBusiness_transferAmountHelper;
+
+  /// No description provided for @subBusiness_transferNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional note'**
+  String get subBusiness_transferNoteHint;
+
+  /// No description provided for @subBusiness_transferReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer summary'**
+  String get subBusiness_transferReviewTitle;
+
+  /// No description provided for @subBusiness_transferSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Send transfer'**
+  String get subBusiness_transferSubmit;
+
+  /// No description provided for @subBusiness_transferSuccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer complete'**
+  String get subBusiness_transferSuccessTitle;
+
+  /// No description provided for @subBusiness_transferSuccessMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Funds were moved between sub-business wallets.'**
+  String get subBusiness_transferSuccessMessage;
 }
 
 class _AppLocalizationsDelegate

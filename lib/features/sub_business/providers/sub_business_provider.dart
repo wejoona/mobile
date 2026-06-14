@@ -153,9 +153,12 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
         if (sb.id == subBusinessId) {
           return SubBusiness(
             id: sb.id,
+            walletId: sb.walletId,
             name: sb.name,
             description: sb.description,
             balance: sb.balance,
+            currency: sb.currency,
+            status: sb.status,
             type: sb.type,
             staffCount: sb.staffCount + 1,
             createdAt: sb.createdAt,
@@ -261,9 +264,12 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
         if (sb.id == subBusinessId) {
           return SubBusiness(
             id: sb.id,
+            walletId: sb.walletId,
             name: sb.name,
             description: sb.description,
             balance: sb.balance,
+            currency: sb.currency,
+            status: sb.status,
             type: sb.type,
             staffCount: sb.staffCount - 1,
             createdAt: sb.createdAt,
@@ -298,6 +304,7 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
     required String fromSubBusinessId,
     required String toSubBusinessId,
     required double amount,
+    String? note,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
@@ -308,48 +315,19 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
           'fromSubBusinessId': fromSubBusinessId,
           'toSubBusinessId': toSubBusinessId,
           'amount': amount,
+          if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
         },
       );
 
-      // Update balances locally
-      final updatedSubBusinesses = state.subBusinesses.map((sb) {
-        if (sb.id == fromSubBusinessId) {
-          return SubBusiness(
-            id: sb.id,
-            name: sb.name,
-            description: sb.description,
-            balance: sb.balance - amount,
-            type: sb.type,
-            staffCount: sb.staffCount,
-            createdAt: sb.createdAt,
-            updatedAt: DateTime.now(),
-          );
-        } else if (sb.id == toSubBusinessId) {
-          return SubBusiness(
-            id: sb.id,
-            name: sb.name,
-            description: sb.description,
-            balance: sb.balance + amount,
-            type: sb.type,
-            staffCount: sb.staffCount,
-            createdAt: sb.createdAt,
-            updatedAt: DateTime.now(),
-          );
-        }
-        return sb;
-      }).toList();
-
-      state = state.copyWith(
-        isLoading: false,
-        subBusinesses: updatedSubBusinesses,
-      );
+      await loadSubBusinesses();
+      state = state.copyWith(isLoading: false);
       return true;
     } on DioException catch (e) {
       state = state.copyWith(
         isLoading: false,
         error: _isMissingEndpoint(e)
             ? 'Sub-business transfers are not available yet.'
-            : e.toString(),
+            : _readDioMessage(e),
       );
       return false;
     } catch (e) {
@@ -413,4 +391,15 @@ String _backendSubBusinessType(SubBusinessType type) {
 bool _isMissingEndpoint(DioException e) {
   final statusCode = e.response?.statusCode;
   return statusCode == 404 || statusCode == 405;
+}
+
+String _readDioMessage(DioException e) {
+  final data = e.response?.data;
+  if (data is Map) {
+    final message = data['message'];
+    if (message is String && message.isNotEmpty) return message;
+    final error = data['error'];
+    if (error is String && error.isNotEmpty) return error;
+  }
+  return e.message ?? 'Request failed. Please try again.';
 }

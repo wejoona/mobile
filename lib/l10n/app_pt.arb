@@ -7876,5 +7876,16 @@
   "emailVerification_resendCode": "Resend code",
   "emailVerification_sendCode": "Send code",
   "emailVerification_successTitle": "Email verified",
-  "emailVerification_successMessage": "Your email address has been verified successfully."
+  "emailVerification_successMessage": "Your email address has been verified successfully.",
+  "subBusiness_transferTitle": "Transfer funds",
+  "subBusiness_transferFrom": "From",
+  "subBusiness_transferTo": "To",
+  "subBusiness_chooseDestination": "Choose destination",
+  "subBusiness_noTransferDestination": "Create another sub-business before moving funds.",
+  "subBusiness_transferAmountHelper": "Funds move between business wallets immediately after confirmation.",
+  "subBusiness_transferNoteHint": "Optional note",
+  "subBusiness_transferReviewTitle": "Transfer summary",
+  "subBusiness_transferSubmit": "Send transfer",
+  "subBusiness_transferSuccessTitle": "Transfer complete",
+  "subBusiness_transferSuccessMessage": "Funds were moved between sub-business wallets."
 }

@@ -7748,4 +7748,40 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get emailVerification_successMessage =>
       'Votre adresse email a été vérifiée avec succès.';
+
+  @override
+  String get subBusiness_transferTitle => 'Transférer des fonds';
+
+  @override
+  String get subBusiness_transferFrom => 'Depuis';
+
+  @override
+  String get subBusiness_transferTo => 'Vers';
+
+  @override
+  String get subBusiness_chooseDestination => 'Choisir la destination';
+
+  @override
+  String get subBusiness_noTransferDestination =>
+      'Créez une autre sous-entreprise avant de déplacer des fonds.';
+
+  @override
+  String get subBusiness_transferAmountHelper =>
+      'Les fonds sont déplacés entre portefeuilles d\'entreprise dès la confirmation.';
+
+  @override
+  String get subBusiness_transferNoteHint => 'Note optionnelle';
+
+  @override
+  String get subBusiness_transferReviewTitle => 'Résumé du transfert';
+
+  @override
+  String get subBusiness_transferSubmit => 'Envoyer le transfert';
+
+  @override
+  String get subBusiness_transferSuccessTitle => 'Transfert terminé';
+
+  @override
+  String get subBusiness_transferSuccessMessage =>
+      'Les fonds ont été déplacés entre les portefeuilles des sous-entreprises.';
 }
