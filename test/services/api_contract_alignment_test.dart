@@ -1513,23 +1513,17 @@ void main() {
     );
 
     test(
-      'session repository invalidates tokens before cleaning session rows',
+      'session repository delegates logout-all session cleanup to backend',
       () async {
-        final dio = MockDio()
-          ..queueResponse({'success': true})
-          ..queueResponse({'success': true});
+        final dio = MockDio()..queueResponse({'success': true});
         final repository = SessionsRepository(dio);
 
         await repository.logoutAllDevices();
 
-        expect(dio.requestHistory[0].method, 'POST');
-        expect(dio.requestHistory[0].path, '/auth/logout-all');
-        expect(dio.requestHistory[0].data, const <String, dynamic>{});
-        expect(dio.requestHistory[1].method, 'DELETE');
-        expect(dio.requestHistory[1].path, '/sessions');
-        expect(dio.requestHistory[1].data, {
-          'reason': 'user_logout_all_devices',
-        });
+        expect(dio.requestHistory, hasLength(1));
+        expect(dio.requestHistory.single.method, 'POST');
+        expect(dio.requestHistory.single.path, '/auth/logout-all');
+        expect(dio.requestHistory.single.data, const <String, dynamic>{});
       },
     );
 
@@ -1945,34 +1939,37 @@ void main() {
       expect(users.single.avatarUrl, 'https://cdn.example/avatar.png');
     });
 
-    test('contact lookup keeps masked backend users discoverable', () async {
-      final dio = MockDio()
-        ..queueResponse({
-          'users': [
-            {
-              'userId': 'user_masked',
-              'displayName': 'Awa Masked',
-              'phone': '+22507****63',
-              'avatarUrl': null,
-              'isKoridoUser': true,
-            },
-          ],
-          'total': 1,
-        });
-      final service = KoridoContactsService(dio);
+    test(
+      'contact lookup keeps masked backend users selectable by id',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'users': [
+              {
+                'userId': 'user_masked',
+                'displayName': 'Awa Masked',
+                'phone': '+22507****63',
+                'avatarUrl': null,
+                'isKoridoUser': true,
+              },
+            ],
+            'total': 1,
+          });
+        final service = KoridoContactsService(dio);
 
-      final users = await service.lookupKoridoUsers('awa');
+        final users = await service.lookupKoridoUsers('awa');
 
-      expect(dio.requestHistory.single.path, '/contacts/lookup');
-      expect(users.single.id, 'user_masked');
-      expect(users.single.joonaPayUserId, 'user_masked');
-      expect(users.single.name, 'Awa Masked');
-      expect(users.single.phone, isEmpty);
-      expect(users.single.maskedPhone, '+22507****63');
-      expect(users.single.displayIdentifier, '+22507****63');
-      expect(users.single.canSendInKorido, isFalse);
-      expect(users.single.isKoridoUser, isTrue);
-    });
+        expect(dio.requestHistory.single.path, '/contacts/lookup');
+        expect(users.single.id, 'user_masked');
+        expect(users.single.joonaPayUserId, 'user_masked');
+        expect(users.single.name, 'Awa Masked');
+        expect(users.single.phone, isEmpty);
+        expect(users.single.maskedPhone, '+22507****63');
+        expect(users.single.displayIdentifier, '+22507****63');
+        expect(users.single.canSendInKorido, isTrue);
+        expect(users.single.isKoridoUser, isTrue);
+      },
+    );
 
     test('post-transaction refresh invalidates recipient lists', () {
       final realtimeSource = File(
