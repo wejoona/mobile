@@ -544,6 +544,18 @@ List<RecentRecipient> _extractRecentRecipients(Object? payload) {
     return RecentRecipient(
       phoneNumber: phone ?? '',
       name: name ?? '',
+      userId: _stringValue(map, const [
+        'userId',
+        'recipientId',
+        'contactUserId',
+        'koridoUserId',
+        'joonaPayUserId',
+      ]),
+      username: _stringValue(map, const [
+        'username',
+        'recipientUsername',
+        'handle',
+      ]),
       lastTransferDate: _parseDate(dateValue) ?? DateTime.now(),
       lastAmount: _numValue(map, const ['lastAmount', 'amount']) ?? 0.0,
       isKoridoUser:

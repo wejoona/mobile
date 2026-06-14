@@ -108,6 +108,8 @@ class RecipientInfo {
 class RecentRecipient {
   final String phoneNumber;
   final String name;
+  final String? userId;
+  final String? username;
   final DateTime lastTransferDate;
   final double lastAmount;
   final bool isKoridoUser;
@@ -115,6 +117,8 @@ class RecentRecipient {
   const RecentRecipient({
     required this.phoneNumber,
     required this.name,
+    this.userId,
+    this.username,
     required this.lastTransferDate,
     required this.lastAmount,
     this.isKoridoUser = false,
@@ -124,6 +128,10 @@ class RecentRecipient {
     return RecentRecipient(
       phoneNumber: (json['phoneNumber'] ?? json['phone']) as String,
       name: json['name'] as String,
+      userId:
+          (json['userId'] ?? json['recipientId'] ?? json['contactUserId'])
+              as String?,
+      username: (json['username'] ?? json['recipientUsername']) as String?,
       lastTransferDate: DateTime.parse(json['lastTransferDate'] as String),
       lastAmount: (json['lastAmount'] as num).toDouble(),
       isKoridoUser:
@@ -134,6 +142,8 @@ class RecentRecipient {
   Map<String, dynamic> toJson() => {
     'phoneNumber': phoneNumber,
     'name': name,
+    if (userId != null && userId!.isNotEmpty) 'userId': userId,
+    if (username != null && username!.isNotEmpty) 'username': username,
     'lastTransferDate': lastTransferDate.toIso8601String(),
     'lastAmount': lastAmount,
     'isKoridoUser': isKoridoUser,

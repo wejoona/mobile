@@ -386,6 +386,8 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
                           onTap: () => _selectRecipient(
                             recipient.phoneNumber,
                             recipient.name,
+                            username: recipient.username,
+                            userId: recipient.userId,
                             isKnownKorido: recipient.isKoridoUser,
                           ),
                         ),

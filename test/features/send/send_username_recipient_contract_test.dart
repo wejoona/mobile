@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:usdc_wallet/features/send/models/transfer_request.dart';
 import 'package:usdc_wallet/services/contacts/contacts_service.dart';
 import 'package:usdc_wallet/services/transfers/transfers_service.dart';
 
@@ -120,5 +121,27 @@ void main() {
       ),
     );
     expect(recipient, contains('_selectedRecipientUsername == myUsername'));
+  });
+
+  test('recent recipients preserve Korido user identity for stable sends', () {
+    final recent = RecentRecipient.fromJson({
+      'phoneNumber': '+2250748805663',
+      'name': 'Awa Konan',
+      'userId': 'user-123',
+      'username': 'awa_k',
+      'lastTransferDate': '2026-06-14T10:00:00.000Z',
+      'lastAmount': 15,
+      'isKoridoUser': true,
+    });
+
+    expect(recent.userId, 'user-123');
+    expect(recent.username, 'awa_k');
+    expect(recent.isKoridoUser, isTrue);
+
+    final recipientScreen = File(
+      'lib/features/send/views/recipient_screen.dart',
+    ).readAsStringSync();
+    expect(recipientScreen, contains('username: recipient.username'));
+    expect(recipientScreen, contains('userId: recipient.userId'));
   });
 }
