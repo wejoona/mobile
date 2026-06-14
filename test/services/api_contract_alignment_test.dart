@@ -257,6 +257,26 @@ void main() {
       },
     );
 
+    test('wallet balance parser prefers USDC over declared wallet currency', () {
+      final response = WalletBalanceResponse.fromJson({
+        'walletId': 'wallet_1',
+        'walletAddress': '0xabc',
+        'currency': 'USD',
+        'balances': [
+          {'currency': 'USD', 'available': 0, 'pending': 0, 'total': 0},
+          {
+            'currency': 'USDC',
+            'availableDecimal': '31.500000',
+            'pendingDecimal': '0.500000',
+            'totalDecimal': '32.000000',
+          },
+        ],
+      });
+
+      expect(response.availableBalance, 31.5);
+      expect(response.totalBalance, 32);
+    });
+
     test('withdraw result accepts backend envelope and id aliases', () {
       final result = WithdrawResult.fromJson({
         'data': {

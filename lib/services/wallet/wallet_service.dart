@@ -369,15 +369,15 @@ class WalletBalanceResponse {
   WalletBalance? _primaryBalance() {
     if (balances.isEmpty) return null;
 
-    final declaredCurrency = currency.toUpperCase();
     for (final balance in balances) {
-      if (balance.currency.toUpperCase() == declaredCurrency) {
+      if (balance.currency.toUpperCase() == 'USDC') {
         return balance;
       }
     }
 
+    final declaredCurrency = currency.toUpperCase();
     for (final balance in balances) {
-      if (balance.currency.toUpperCase() == 'USDC') {
+      if (balance.currency.toUpperCase() == declaredCurrency) {
         return balance;
       }
     }
