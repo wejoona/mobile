@@ -568,7 +568,7 @@ void main() {
 
       final request = dio.requestHistory.single;
       expect(request.method, 'POST');
-      expect(request.path, '/notifications/device-token');
+      expect(request.path, '/notifications/push/token');
       expect(request.data, {
         'token': 'fcm-token-1',
         'platform': 'ios',
