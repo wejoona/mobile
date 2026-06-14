@@ -156,7 +156,7 @@ import Vision
         }
 
         DispatchQueue.global(qos: .userInitiated).async {
-            guard let cgImage = self.makeFaceDetectionImage(path: path) else {
+            guard let faceImage = self.makeFaceDetectionImage(path: path) else {
                 DispatchQueue.main.async {
                     result(FlutterError(code: "IMAGE_LOAD_FAILED",
                                         message: "Unable to read the selected image",
@@ -167,8 +167,8 @@ import Vision
 
             do {
                 let handler = VNImageRequestHandler(
-                    cgImage: cgImage,
-                    orientation: .up,
+                    cgImage: faceImage.image,
+                    orientation: faceImage.orientation,
                     options: [:]
                 )
                 try handler.perform([request])
@@ -182,19 +182,25 @@ import Vision
         }
     }
 
-    private func makeFaceDetectionImage(path: String) -> CGImage? {
+    private func makeFaceDetectionImage(path: String) -> (image: CGImage, orientation: CGImagePropertyOrientation)? {
         guard let source = CGImageSourceCreateWithURL(URL(fileURLWithPath: path) as CFURL, nil) else {
             return nil
         }
+        let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]
+        let orientation = (properties?[kCGImagePropertyOrientation] as? UInt32)
+            .flatMap(CGImagePropertyOrientation.init(rawValue:)) ?? .up
 
         let options: [CFString: Any] = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
-            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceCreateThumbnailWithTransform: false,
             kCGImageSourceThumbnailMaxPixelSize: 1200,
             kCGImageSourceShouldCacheImmediately: false,
         ]
 
-        return CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
+        guard let image = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
+            return nil
+        }
+        return (image, orientation)
     }
 
     // MARK: - Biometric Enrollment State
