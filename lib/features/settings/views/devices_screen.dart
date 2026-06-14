@@ -401,6 +401,10 @@ class _CurrentDeviceCard extends ConsumerWidget {
             device: device,
             fallbackLastActive: l10n.settings_justNow,
           ),
+          if (device?.cannotAccess == true) ...[
+            const SizedBox(height: AppSpacing.md),
+            _DeviceAccessNotice(device: device!),
+          ],
         ],
       ),
     );
@@ -491,6 +495,10 @@ class _OtherDeviceCard extends ConsumerWidget {
                       ),
                   ],
                 ),
+                if (device.cannotAccess) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  _DeviceAccessNotice(device: device),
+                ],
               ],
             ),
           ),
@@ -718,6 +726,57 @@ class _DeviceMenu extends ConsumerWidget {
         );
       }
     }
+  }
+}
+
+class _DeviceAccessNotice extends StatelessWidget {
+  const _DeviceAccessNotice({required this.device});
+
+  final Device device;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
+    final isBlocked = device.isBlocked;
+    final rawReason = device.blockedReason?.trim();
+    final message = rawReason != null && rawReason.isNotEmpty
+        ? rawReason
+        : isBlocked
+        ? l10n.settings_deviceBlockedDescription
+        : l10n.settings_deviceInactiveDescription;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: isBlocked ? colors.errorBg : colors.warningBg,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+        border: Border.all(
+          color: (isBlocked ? colors.error : colors.warning).withValues(
+            alpha: 0.26,
+          ),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            isBlocked ? Icons.shield_rounded : Icons.info_outline_rounded,
+            size: 16,
+            color: isBlocked ? colors.errorText : colors.warningText,
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          Expanded(
+            child: AppText(
+              message,
+              variant: AppTextVariant.bodySmall,
+              color: isBlocked ? colors.errorText : colors.warningText,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
