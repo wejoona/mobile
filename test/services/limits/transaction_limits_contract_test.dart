@@ -1,5 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
+import 'package:usdc_wallet/services/limits/limits_service.dart';
+
+import '../../helpers/test_utils.dart';
 
 void main() {
   group('TransactionLimits contract', () {
@@ -61,6 +64,43 @@ void main() {
       expect(limits.withdrawalLimit, 800);
       expect(limits.kycTier, 1);
       expect(limits.tierName, 'Basic');
+    });
+  });
+
+  group('LimitsService contract', () {
+    test('unwraps standard response envelopes for limits and usage', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'data': {
+            'dailyLimit': 1000,
+            'dailyUsed': 100,
+            'monthlyLimit': 10000,
+            'monthlyUsed': 750,
+            'singleTransactionLimit': 500,
+            'withdrawalLimit': 800,
+            'kycTier': 1,
+            'tierName': 'Basic',
+          },
+        })
+        ..queueResponse({
+          'data': {
+            'dailyUsed': 100,
+            'weeklyUsed': 200,
+            'monthlyUsed': 750,
+            'resetAt': '2026-06-15T00:00:00.000Z',
+          },
+        });
+      final service = LimitsService(dio);
+
+      final limits = await service.getLimits();
+      final usage = await service.getUsage();
+
+      expect(dio.requestHistory[0].path, '/user/limits');
+      expect(dio.requestHistory[1].path, '/user/limits/usage');
+      expect(limits.singleTransactionLimit, 500);
+      expect(limits.dailyUsed, 100);
+      expect(usage.weeklyUsed, 200);
+      expect(usage.resetAt, DateTime.utc(2026, 6, 15));
     });
   });
 }
