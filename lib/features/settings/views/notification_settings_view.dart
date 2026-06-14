@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/domain/entities/notification_preferences.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/settings/providers/notification_preferences_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
@@ -429,6 +430,8 @@ class _NotificationSettingsViewState
     if (_localPrefs == null) return;
 
     setState(() => _isSaving = true);
+    final authState = ref.read(authProvider);
+    final user = authState.user;
 
     try {
       final success = await ref
@@ -438,12 +441,16 @@ class _NotificationSettingsViewState
         await ref
             .read(featureSubscriptionServiceProvider)
             .subscribe(
-              const FeatureSubscriptionRequest(
+              FeatureSubscriptionRequest(
                 featureKey: 'product_newsletter',
                 source: 'notification_settings',
+                phone: user?.phone ?? authState.phone,
+                email: user?.email,
                 featureName: 'Korido newsletter',
                 requestedFeature: 'product_newsletter',
-                metadata: {
+                countryCode: user?.countryCode,
+                locale: user?.preferredLocale,
+                metadata: const {
                   'surface': 'notification_settings',
                   'channel': 'email',
                   'preference': 'emailMarketing',
