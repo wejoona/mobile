@@ -46,9 +46,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
     final avatarUrl = _avatarUrl?.trim();
     final avatarThumb = _avatarThumb?.trim();
-    if (avatarThumb != null &&
-        avatarThumb.isNotEmpty &&
-        _isProtectedRelativeAvatarUrl(avatarUrl)) {
+    if (avatarThumb != null && avatarThumb.isNotEmpty) {
       return avatarThumb;
     }
     if (avatarUrl != null && avatarUrl.isNotEmpty) {
@@ -580,13 +578,6 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       return '$countryCode $formatted'.trim();
     }
     return phone;
-  }
-
-  bool _isProtectedRelativeAvatarUrl(String? value) {
-    if (value == null || value.isEmpty) {
-      return false;
-    }
-    return value.startsWith('/user/avatar/');
   }
 
   Future<void> _handleSave() async {

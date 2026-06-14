@@ -255,6 +255,25 @@ void main() {
       expect(initStateBody, contains('_avatarThumb = userState.avatarThumb'));
     });
 
+    test(
+      'profile edit prefers uploaded avatar thumbnail for immediate preview',
+      () {
+        final source = File(
+          'lib/features/settings/views/profile_edit_screen.dart',
+        ).readAsStringSync();
+        final effectiveAvatarBody = RegExp(
+          r'String\? get _effectiveAvatarImage \{([\s\S]*?)\n  @override',
+        ).firstMatch(source)!.group(1)!;
+
+        expect(
+          effectiveAvatarBody.indexOf('return avatarThumb'),
+          lessThan(effectiveAvatarBody.indexOf('return avatarUrl')),
+          reason:
+              'fresh upload thumbnails should render before network avatar URLs',
+        );
+      },
+    );
+
     test('avatar upload paths clear stale local avatar cache', () {
       final userStateSource = File(
         'lib/state/user_state_machine.dart',
