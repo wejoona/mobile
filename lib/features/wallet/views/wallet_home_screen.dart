@@ -527,6 +527,19 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                         ),
                       ),
                       const SizedBox(width: AppSpacing.sm),
+                      if (walletState.isRefreshing) ...[
+                        SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              colors.gold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                      ],
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.md,
@@ -660,10 +673,14 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                           colors: colors,
                           icon: walletState.isDegraded || walletState.isStale
                               ? Icons.cloud_off_rounded
-                              : Icons.sync_rounded,
-                          label: walletState.isDegraded || walletState.isStale
+                              : walletState.isRefreshing
+                              ? Icons.sync_rounded
+                              : Icons.verified_rounded,
+                          label: walletState.isRefreshing
+                              ? 'Refreshing balance'
+                              : walletState.isDegraded || walletState.isStale
                               ? _balanceSyncLabel(walletState)
-                              : l10n.converter_updatedJustNow,
+                              : _balanceSyncLabel(walletState),
                           color: walletState.isDegraded || walletState.isStale
                               ? colors.warningText
                               : null,
@@ -732,6 +749,10 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
   );
 
   String _balanceSyncLabel(WalletState walletState) {
+    if (walletState.isRefreshing) {
+      return 'Refreshing balance';
+    }
+
     if (walletState.isDegraded || walletState.isStale) {
       return 'Sync delayed';
     }
@@ -748,7 +769,16 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
       return 'Sync delayed';
     }
 
-    return 'Local balance';
+    if (walletState.balanceReadStatus == 'fresh' ||
+        walletState.balanceSourceOfTruth == 'blnk') {
+      return 'Live balance';
+    }
+
+    if (walletState.walletId.isNotEmpty) {
+      return 'Wallet active';
+    }
+
+    return 'Balance ready';
   }
 
   Widget _buildMobileLayout(
