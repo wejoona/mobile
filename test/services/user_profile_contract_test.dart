@@ -354,6 +354,16 @@ void main() {
       expect(profileEditSource, contains('_selectedImage = null'));
     });
 
+    test('profile completion applies backend profile snapshot', () {
+      final profileCompleteSource = File(
+        'lib/features/onboarding/views/profile_complete_view.dart',
+      ).readAsStringSync();
+
+      expect(profileCompleteSource, contains('final profile ='));
+      expect(profileCompleteSource, contains('applyProfileSnapshot(profile)'));
+      expect(profileCompleteSource, isNot(contains('updateName(')));
+    });
+
     test('avatar device face-check proof is only created for one face', () {
       expect(
         () => AvatarDeviceFaceCheck.fromDeviceAnalysis(
