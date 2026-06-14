@@ -336,6 +336,20 @@ void main() {
       expect(response.totalBalance, 44);
     });
 
+    test(
+      'home balance keeps rendering cached balance during degraded errors',
+      () {
+        final source = File(
+          'lib/features/wallet/views/wallet_home_screen.dart',
+        ).readAsStringSync();
+
+        expect(
+          source,
+          contains('if (walletState.hasError && !walletState.hasBalanceData)'),
+        );
+      },
+    );
+
     test('withdraw result accepts backend envelope and id aliases', () {
       final result = WithdrawResult.fromJson({
         'data': {

@@ -356,7 +356,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
       );
     }
 
-    if (walletState.hasError) {
+    if (walletState.hasError && !walletState.hasBalanceData) {
       return WalletErrorCard(
         colors: colors,
         error: walletState.error ?? l10n.error_failedToLoadBalance,
