@@ -238,17 +238,17 @@ class WalletService {
     }
   }
 
-  /// GET /wallet/kyc/status
+  /// GET /kyc/status
   Future<KycStatusResponse> getKycStatus() async {
     try {
-      final response = await _dio.get('/wallet/kyc/status');
+      final response = await _dio.get('/kyc/status');
       return KycStatusResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
   }
 
-  /// POST /wallet/kyc/submit
+  /// POST /kyc/submit
   Future<KycStatusResponse> submitKyc({
     required String firstName,
     required String lastName,
@@ -261,7 +261,7 @@ class WalletService {
   }) async {
     try {
       final response = await _dio.post(
-        '/wallet/kyc/submit',
+        '/kyc/submit',
         data: {
           'firstName': firstName,
           'lastName': lastName,
@@ -733,15 +733,27 @@ class KycStatusResponse {
 
   factory KycStatusResponse.fromJson(Map<String, dynamic> json) {
     return KycStatusResponse(
-      walletId: json['walletId'] as String,
-      kycStatus: json['kycStatus'] as String,
-      providerStatus: json['providerStatus'] as String?,
-      verifiedAt: json['verifiedAt'] != null
-          ? DateTime.parse(json['verifiedAt'] as String)
-          : null,
+      walletId:
+          json['walletId'] as String? ?? json['wallet_id'] as String? ?? '',
+      kycStatus:
+          json['kycStatus'] as String? ??
+          json['kyc_status'] as String? ??
+          json['status'] as String? ??
+          'pending',
+      providerStatus:
+          json['providerStatus'] as String? ??
+          json['provider_status'] as String?,
+      verifiedAt: _parseOptionalDate(json['verifiedAt'] ?? json['approvedAt']),
       message: json['message'] as String?,
     );
   }
+}
+
+DateTime? _parseOptionalDate(Object? value) {
+  if (value is String && value.isNotEmpty) {
+    return DateTime.tryParse(value);
+  }
+  return null;
 }
 
 /// Transaction Limits Response

@@ -159,6 +159,40 @@ void main() {
       });
     });
 
+    test('wallet KYC facade uses canonical KYC routes', () async {
+      final dio = MockDio()
+        ..queueResponse({'status': 'pending', 'canResubmit': false})
+        ..queueResponse({'status': 'pending_verification'});
+      final service = WalletService(dio);
+
+      await service.getKycStatus();
+      await service.submitKyc(
+        firstName: 'Ben',
+        lastName: 'Ouattara',
+        dateOfBirth: '1990-01-01',
+        country: 'CI',
+        idType: 'passport',
+        idNumber: 'A1234567',
+      );
+
+      expect(dio.requestHistory.map((request) => request.method), [
+        'GET',
+        'POST',
+      ]);
+      expect(dio.requestHistory.map((request) => request.path), [
+        '/kyc/status',
+        '/kyc/submit',
+      ]);
+      expect(dio.requestHistory.last.data, {
+        'firstName': 'Ben',
+        'lastName': 'Ouattara',
+        'dateOfBirth': '1990-01-01',
+        'country': 'CI',
+        'idType': 'passport',
+        'idNumber': 'A1234567',
+      });
+    });
+
     test('wallet balance parser accepts backend data envelope', () {
       final response = WalletBalanceResponse.fromJson({
         'success': true,
