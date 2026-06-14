@@ -70,26 +70,13 @@ class _ContactPickerBottomSheetState
 
   Future<List<SyncedContact>> _loadDeviceContacts() async {
     final contactsService = ref.read(contactsServiceProvider);
-    var hasPermission = await contactsService.hasContactsPermission();
+    final hasPermission = await contactsService.hasContactsPermission();
     if (!hasPermission) {
       final status = await Permission.contacts.status;
-      if (!status.isPermanentlyDenied && !status.isRestricted) {
-        final granted = await contactsService.requestContactsPermission();
-        if (granted) {
-          hasPermission = true;
-        }
-      }
-
-      if (hasPermission) {
-        return _readSyncedDeviceContacts(contactsService);
-      }
-
-      final nextStatus = await Permission.contacts.status;
       if (mounted) {
         setState(() {
           _permissionRequired = true;
-          _requiresSettings =
-              nextStatus.isPermanentlyDenied || nextStatus.isRestricted;
+          _requiresSettings = status.isPermanentlyDenied || status.isRestricted;
           _isLoading = false;
         });
       }
