@@ -17,7 +17,6 @@ import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
 import 'package:usdc_wallet/features/limits/widgets/limit_warning_banner.dart';
 import 'package:usdc_wallet/features/notifications/providers/notification_count_provider.dart';
-import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/features/wallet/widgets/cached_data_chip.dart';
 import 'package:usdc_wallet/features/wallet/widgets/wallet_home_actions.dart';
 import 'package:usdc_wallet/features/wallet/widgets/wallet_home_status_widgets.dart';
@@ -1111,7 +1110,6 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
   }
 
   Future<void> _refreshHomeData() async {
-    ref.invalidate(walletBalanceProvider);
     unawaited(_refreshTransactionsForHome());
     await _refreshWalletForHome().timeout(
       const Duration(seconds: 9),
