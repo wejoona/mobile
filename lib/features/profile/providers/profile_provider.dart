@@ -217,17 +217,27 @@ class ProfileNotifier extends Notifier<ProfileState> {
           clearLocalCache: clearLocalCache,
         );
 
-    final currentUser = state.user;
+    final currentUser = state.user ?? ref.read(auth.authProvider).user;
     if (currentUser != null) {
-      state = state.copyWith(
-        user: currentUser.copyWith(
-          avatarUrl: hasAvatarUrl ? result.avatarUrl : currentUser.avatarUrl,
-          avatarBase64: hasAvatarThumb
-              ? result.avatarThumb
-              : currentUser.avatarBase64,
-        ),
+      final updatedUser = currentUser.copyWith(
+        avatarUrl: hasAvatarUrl ? result.avatarUrl : currentUser.avatarUrl,
+        avatarBase64: hasAvatarThumb
+            ? result.avatarThumb
+            : currentUser.avatarBase64,
       );
+      state = state.copyWith(user: updatedUser);
+      ref.read(auth.authProvider.notifier).updateUser(updatedUser);
     }
+
+    final sessionAvatar = hasAvatarThumb
+        ? result.avatarThumb
+        : result.avatarUrl;
+    await ref
+        .read(userSessionRepositoryProvider)
+        .updateProfile(
+          avatarUrl: sessionAvatar,
+          clearAvatarUrl: sessionAvatar == null || sessionAvatar.isEmpty,
+        );
   }
 
   String _friendlyError(ApiException error) {

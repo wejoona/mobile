@@ -370,6 +370,9 @@ void main() {
       expect(userStateSource, contains("delete(key: 'local_avatar_path')"));
       expect(profileProviderSource, contains('await _applyAvatarUploadResult'));
       expect(profileProviderSource, contains('applyServerAvatar('));
+      expect(profileProviderSource, contains('auth.authProvider).user'));
+      expect(profileProviderSource, contains('updateUser(updatedUser)'));
+      expect(profileProviderSource, contains('userSessionRepositoryProvider'));
       expect(profileEditSource, contains('detectFaces(compressed)'));
       expect(
         profileEditSource,
