@@ -1112,8 +1112,10 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
   }
 
   Future<void> _refreshHomeData() async {
-    await _refreshWalletForHome();
-    unawaited(_refreshTransactionsForHome());
+    await Future.wait<void>([
+      _refreshWalletForHome(),
+      _refreshTransactionsForHome(),
+    ]);
   }
 
   Future<void> _refreshWalletForHome() async {
