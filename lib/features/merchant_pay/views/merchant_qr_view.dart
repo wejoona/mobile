@@ -17,10 +17,7 @@ import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 class MerchantQrView extends ConsumerStatefulWidget {
   final MerchantResponse merchant;
 
-  const MerchantQrView({
-    super.key,
-    required this.merchant,
-  });
+  const MerchantQrView({super.key, required this.merchant});
 
   static const String routeName = '/merchant-qr';
 
@@ -44,14 +41,18 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
       final file = File(imagePath);
       await file.writeAsBytes(image);
 
-      await SharePlus.instance.share(ShareParams(
-        files: [XFile(imagePath)],
-        text: 'Pay ${widget.merchant.displayName} with Korido',
-      ));
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(imagePath)],
+          text: 'Pay ${widget.merchant.displayName} with Korido',
+        ),
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.qr_failedToShare)),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.qr_failedToShare),
+          ),
         );
       }
     } finally {
@@ -80,7 +81,10 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
     return Scaffold(
       backgroundColor: context.colors.canvas,
       appBar: AppBar(
-        title: AppText(AppLocalizations.of(context)!.qr_myCode, variant: AppTextVariant.titleMedium),
+        title: AppText(
+          AppLocalizations.of(context)!.qr_myCode,
+          variant: AppTextVariant.titleMedium,
+        ),
         backgroundColor: Colors.transparent,
         actions: [
           IconButton(
@@ -142,17 +146,17 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
                       ),
                       SizedBox(height: AppSpacing.xs),
                       AppText(
-                        _formatCategory(widget.merchant.category),
+                        _merchantCategoryLabel(
+                          widget.merchant.category,
+                          widget.merchant.mcc,
+                        ),
                         variant: AppTextVariant.bodyMedium,
                         color: context.colors.textSecondary,
                       ),
                       SizedBox(height: AppSpacing.lg),
 
                       // QR Display using existing widget
-                      QrCodeDisplay(
-                        data: widget.merchant.qrCode,
-                        size: 220,
-                      ),
+                      QrCodeDisplay(data: widget.merchant.qrCode, size: 220),
                       SizedBox(height: AppSpacing.lg),
 
                       // Instructions
@@ -222,7 +226,10 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
                 padding: EdgeInsets.all(AppSpacing.md),
                 child: Row(
                   children: [
-                    Icon(Icons.account_balance_wallet, color: context.colors.gold),
+                    Icon(
+                      Icons.account_balance_wallet,
+                      color: context.colors.gold,
+                    ),
                     SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: Column(
@@ -276,5 +283,10 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
 
   String _formatCategory(String category) {
     return category[0].toUpperCase() + category.substring(1);
+  }
+
+  String _merchantCategoryLabel(String category, String? mcc) {
+    final label = _formatCategory(category);
+    return mcc == null || mcc.isEmpty ? label : '$label • MCC $mcc';
   }
 }

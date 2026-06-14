@@ -103,6 +103,9 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
       pinToken: pinToken,
       idempotencyKey: generateIdempotencyKey(),
       amount: widget.merchant.isStaticQr ? _amount : null,
+      merchantId: widget.merchant.merchantId,
+      merchantMcc: widget.merchant.mcc,
+      merchantCategory: widget.merchant.category,
     );
 
     if (mounted) {
@@ -289,7 +292,10 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  _formatCategory(widget.merchant.category),
+                  _merchantCategoryLabel(
+                    widget.merchant.category,
+                    widget.merchant.mcc,
+                  ),
                   style: AppTypography.bodyMedium.copyWith(
                     color: context.colors.textSecondary,
                   ),
@@ -438,5 +444,10 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
 
   String _formatCategory(String category) {
     return category[0].toUpperCase() + category.substring(1);
+  }
+
+  String _merchantCategoryLabel(String category, String? mcc) {
+    final label = _formatCategory(category);
+    return mcc == null || mcc.isEmpty ? label : '$label • MCC $mcc';
   }
 }

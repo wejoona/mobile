@@ -18,6 +18,7 @@ import 'package:usdc_wallet/features/notifications/providers/notifications_provi
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 import 'package:usdc_wallet/features/payment_links/repositories/payment_links_repository.dart';
 import 'package:usdc_wallet/features/payment_links/providers/pay_link_provider.dart';
+import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
 import 'package:usdc_wallet/features/qr_payment/models/qr_data.dart';
 import 'package:usdc_wallet/features/qr_payment/providers/qr_payment_provider.dart';
 import 'package:usdc_wallet/features/settings/repositories/devices_repository.dart';
@@ -257,25 +258,28 @@ void main() {
       },
     );
 
-    test('wallet balance parser prefers USDC over declared wallet currency', () {
-      final response = WalletBalanceResponse.fromJson({
-        'walletId': 'wallet_1',
-        'walletAddress': '0xabc',
-        'currency': 'USD',
-        'balances': [
-          {'currency': 'USD', 'available': 0, 'pending': 0, 'total': 0},
-          {
-            'currency': 'USDC',
-            'availableDecimal': '31.500000',
-            'pendingDecimal': '0.500000',
-            'totalDecimal': '32.000000',
-          },
-        ],
-      });
+    test(
+      'wallet balance parser prefers USDC over declared wallet currency',
+      () {
+        final response = WalletBalanceResponse.fromJson({
+          'walletId': 'wallet_1',
+          'walletAddress': '0xabc',
+          'currency': 'USD',
+          'balances': [
+            {'currency': 'USD', 'available': 0, 'pending': 0, 'total': 0},
+            {
+              'currency': 'USDC',
+              'availableDecimal': '31.500000',
+              'pendingDecimal': '0.500000',
+              'totalDecimal': '32.000000',
+            },
+          ],
+        });
 
-      expect(response.availableBalance, 31.5);
-      expect(response.totalBalance, 32);
-    });
+        expect(response.availableBalance, 31.5);
+        expect(response.totalBalance, 32);
+      },
+    );
 
     test('withdraw result accepts backend envelope and id aliases', () {
       final result = WithdrawResult.fromJson({
@@ -1027,6 +1031,8 @@ void main() {
           scannedData: QrPaymentData(
             type: 'merchant',
             merchantId: 'merchant_1',
+            merchantMcc: '5812',
+            merchantCategory: 'restaurant',
           ),
           rawData: qrData,
           pinToken: 'pin_token',
@@ -1039,6 +1045,84 @@ void main() {
         expect(dio.requestHistory.single.data, {
           'qrData': qrData,
           'amount': 12.5,
+          'merchantId': 'merchant_1',
+          'merchantMcc': '5812',
+          'merchantCategory': 'restaurant',
+        });
+      },
+    );
+
+    test(
+      'merchant service preserves MCC in profile and receipt contracts',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'merchantId': 'merchant_1',
+            'businessName': 'Cafe Abidjan SARL',
+            'displayName': 'Cafe Abidjan',
+            'category': 'restaurant',
+            'mcc': '5812',
+            'country': 'CI',
+            'walletId': 'wallet_1',
+            'qrCode': 'joonapay://pay?v=1&t=static&m=merchant_1',
+            'isVerified': true,
+            'feePercent': 1.5,
+            'dailyLimit': 10000,
+            'monthlyLimit': 100000,
+            'dailyVolume': 125,
+            'monthlyVolume': 900,
+            'remainingDailyLimit': 9875,
+            'remainingMonthlyLimit': 99100,
+            'totalTransactions': 12,
+            'status': 'active',
+            'createdAt': '2026-06-14T09:00:00.000Z',
+            'updatedAt': '2026-06-14T09:00:00.000Z',
+          })
+          ..queueResponse({
+            'paymentId': 'pay_1',
+            'reference': 'MP-1',
+            'merchantId': 'merchant_1',
+            'merchantName': 'Cafe Abidjan',
+            'amount': 12.5,
+            'fee': 0.19,
+            'netAmount': 12.31,
+            'currency': 'USDC',
+            'status': 'completed',
+            'createdAt': '2026-06-14T09:05:00.000Z',
+            'receipt': {
+              'transactionId': 'pay_1',
+              'merchantName': 'Cafe Abidjan',
+              'merchantCategory': 'restaurant',
+              'merchantMcc': '5812',
+              'amount': 12.5,
+              'fee': 0.19,
+              'total': 12.5,
+              'timestamp': '2026-06-14T09:05:00.000Z',
+              'reference': 'MP-1',
+            },
+          });
+
+        final service = MerchantService(dio);
+        final merchant = await service.getMyMerchant();
+        final payment = await service.processPayment(
+          qrData: merchant.qrCode,
+          pinToken: 'pin_token',
+          idempotencyKey: 'idem_merchant',
+          amount: 12.5,
+          merchantId: merchant.merchantId,
+          merchantMcc: merchant.mcc,
+          merchantCategory: merchant.category,
+        );
+
+        expect(merchant.mcc, '5812');
+        expect(payment.receipt.merchantMcc, '5812');
+        expect(dio.requestHistory[1].path, '/merchants/pay');
+        expect(dio.requestHistory[1].data, {
+          'qrData': merchant.qrCode,
+          'amount': 12.5,
+          'merchantId': 'merchant_1',
+          'merchantMcc': '5812',
+          'merchantCategory': 'restaurant',
         });
       },
     );

@@ -165,6 +165,7 @@ class MerchantRegistrationNotifier extends Notifier<MerchantRegistrationState> {
     String? displayName,
     required String category,
     required String country,
+    String? mcc,
     String? businessAddress,
     String? businessPhone,
     String? businessEmail,
@@ -177,6 +178,7 @@ class MerchantRegistrationNotifier extends Notifier<MerchantRegistrationState> {
         businessName: businessName,
         displayName: displayName,
         category: category,
+        mcc: mcc,
         country: country,
         businessAddress: businessAddress,
         businessPhone: businessPhone,
@@ -340,6 +342,9 @@ class ScanToPayNotifier extends Notifier<ScanToPayState> {
     required String pinToken,
     String? idempotencyKey,
     double? amount,
+    String? merchantId,
+    String? merchantMcc,
+    String? merchantCategory,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
 
@@ -349,6 +354,9 @@ class ScanToPayNotifier extends Notifier<ScanToPayState> {
         pinToken: pinToken,
         idempotencyKey: idempotencyKey,
         amount: amount,
+        merchantId: merchantId,
+        merchantMcc: merchantMcc,
+        merchantCategory: merchantCategory,
       );
       state = state.copyWith(isLoading: false, payment: payment);
       return true;
