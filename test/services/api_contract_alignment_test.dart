@@ -1904,6 +1904,17 @@ void main() {
         reason:
             'manual contact sync must hash local numbers with the active market prefix',
       );
+
+      final contactsListSource = File(
+        'lib/features/contacts/views/contacts_list_screen.dart',
+      ).readAsStringSync();
+      expect(contactsListSource, contains('syncContacts()'));
+      expect(
+        contactsListSource,
+        isNot(contains('_requestPermissionAndSync(showSettingsDialog: false)')),
+        reason:
+            'screen entry should show the permission card; the OS prompt belongs to the explicit Allow action',
+      );
     });
 
     test('contact lookup accepts backend nested user envelope', () async {

@@ -84,10 +84,12 @@ class _ContactPickerBottomSheetState
         return _readSyncedDeviceContacts(contactsService);
       }
 
+      final nextStatus = await Permission.contacts.status;
       if (mounted) {
         setState(() {
           _permissionRequired = true;
-          _requiresSettings = status.isPermanentlyDenied || status.isRestricted;
+          _requiresSettings =
+              nextStatus.isPermanentlyDenied || nextStatus.isRestricted;
           _isLoading = false;
         });
       }
