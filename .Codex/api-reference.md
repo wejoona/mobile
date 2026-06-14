@@ -50,8 +50,8 @@ Use with local API:
 | External transfer | POST | `/wallet/transfer/external` |
 | Estimate external fee | GET | `/wallet/transfer/external/estimate-fee` |
 | Withdraw | POST | `/wallet/withdraw` |
-| KYC status | GET | `/wallet/kyc/status` |
-| Submit KYC | POST | `/wallet/kyc/submit` |
+| KYC status | GET | `/kyc/status` |
+| Submit KYC | POST | `/kyc/submit` |
 
 ## Contacts
 
