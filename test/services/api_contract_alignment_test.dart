@@ -1875,6 +1875,40 @@ void main() {
       },
     );
 
+    test('contact list sync uses the active market phone prefix', () async {
+      final service = ContactsService(MockSecureStorage());
+      final phoneHash = service.hashPhone(
+        '(415) 555-0101',
+        defaultCountryPrefix: '1',
+      );
+      final contact = SyncedContact(
+        id: 'local_us',
+        name: 'Awa US',
+        phone: '(415) 555-0101',
+      );
+      final dio = MockDio()
+        ..queueResponse({
+          'matches': [
+            {
+              'phoneHash': phoneHash,
+              'userId': 'user_us',
+              'displayName': 'Awa US',
+            },
+          ],
+        });
+
+      final contacts = await service.getKoridoContacts(dio, [
+        contact,
+      ], defaultCountryPrefix: '1');
+
+      expect(dio.requestHistory.single.path, '/contacts/sync');
+      expect(dio.requestHistory.single.data, {
+        'phoneHashes': [phoneHash],
+      });
+      expect(contacts.single.isKoridoUser, isTrue);
+      expect(contacts.single.joonaPayUserId, 'user_us');
+    });
+
     test('contact sync summary checks secondary saved phone numbers', () async {
       final service = ContactsService(MockSecureStorage());
       final primaryHash = service.hashPhone('+2250101010101');

@@ -405,15 +405,21 @@ class ContactsService {
   /// Sends hashed phone numbers, receives matches with user info
   Future<List<SyncedContact>> getKoridoContacts(
     Dio dio,
-    List<SyncedContact> allContacts,
-  ) async {
+    List<SyncedContact> allContacts, {
+    String defaultCountryPrefix = '225',
+  }) async {
     final contactHashes = {
       for (final contact in allContacts)
         contact:
             (contact.lookupPhones.isNotEmpty
                     ? contact.lookupPhones
                     : [contact.phone])
-                .map(hashPhone)
+                .map(
+                  (phone) => hashPhone(
+                    phone,
+                    defaultCountryPrefix: defaultCountryPrefix,
+                  ),
+                )
                 .toSet(),
     };
     final hashes = contactHashes.values

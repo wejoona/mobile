@@ -216,7 +216,11 @@ class ContactsNotifier extends Notifier<ContactsState> {
       defaultCountryPrefix: defaultPrefix,
     );
 
-    return contactsService.getKoridoContacts(dio, items);
+    return contactsService.getKoridoContacts(
+      dio,
+      items,
+      defaultCountryPrefix: defaultPrefix,
+    );
   }
 
   String _defaultCountryPrefix() {
