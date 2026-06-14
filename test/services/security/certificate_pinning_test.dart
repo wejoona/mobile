@@ -9,7 +9,7 @@ void main() {
       expect(CertificatePinning.isConfigured(), isTrue);
     });
 
-    test('matches production hosts and subdomains only', () {
+    test('matches configured production hosts only', () {
       expect(
         CertificatePinning.hostRequiresPinning('api.joonapay.com'),
         isTrue,
@@ -17,7 +17,11 @@ void main() {
       expect(CertificatePinning.hostRequiresPinning('joonapay.com'), isTrue);
       expect(
         CertificatePinning.hostRequiresPinning('mobile.api.joonapay.com'),
-        isTrue,
+        isFalse,
+      );
+      expect(
+        CertificatePinning.hostRequiresPinning('staging-api.joonapay.com'),
+        isFalse,
       );
       expect(
         CertificatePinning.hostRequiresPinning('api.example.com'),
@@ -33,6 +37,34 @@ void main() {
       final adapter = dio.httpClientAdapter;
       expect(adapter, isA<IOHttpClientAdapter>());
       expect((adapter as IOHttpClientAdapter).validateCertificate, isNotNull);
+    });
+
+    test('keeps host-specific leaf certificate pins separate', () {
+      const apiLeafDer = 'gvcwFV4jHJrKyc2rrHFNlZbenxWnWywAezu5tpkv7is=';
+      const apexLeafDer = 'BWCq7vFEHnLEBB9FD9tOUTlIeFRPNHIJL7vPHgNjodc=';
+
+      expect(
+        CertificatePinning.trustedFingerprintsForHost('api.joonapay.com'),
+        contains(apiLeafDer),
+      );
+      expect(
+        CertificatePinning.trustedFingerprintsForHost('api.joonapay.com'),
+        isNot(contains(apexLeafDer)),
+      );
+      expect(
+        CertificatePinning.trustedFingerprintsForHost('joonapay.com'),
+        contains(apexLeafDer),
+      );
+      expect(
+        CertificatePinning.trustedFingerprintsForHost('joonapay.com'),
+        isNot(contains(apiLeafDer)),
+      );
+      expect(
+        CertificatePinning.trustedFingerprintsForHost(
+          'staging-api.joonapay.com',
+        ),
+        isEmpty,
+      );
     });
   });
 }

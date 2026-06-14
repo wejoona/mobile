@@ -8,9 +8,7 @@ void main() {
     const gtsWe1Spki = 'kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=';
 
     test('keeps separate production leaf pins for API and apex hosts', () {
-      final productionPins = CertificatePinRegistry.getPins(
-        isProduction: true,
-      );
+      final productionPins = CertificatePinRegistry.getPins(isProduction: true);
 
       final apiPins = productionPins.singleWhere(
         (config) => config.host == 'api.joonapay.com',
@@ -57,6 +55,20 @@ void main() {
           isProduction: true,
         ),
         isFalse,
+      );
+    });
+
+    test('does not keep placeholder staging pins', () {
+      final stagingPins = CertificatePinRegistry.getPins(isProduction: false);
+
+      expect(stagingPins, isEmpty);
+      expect(
+        CertificatePinRegistry.validatePin(
+          'staging-api.joonapay.com',
+          'unconfigured-pin',
+          isProduction: false,
+        ),
+        isTrue,
       );
     });
   });
