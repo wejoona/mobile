@@ -760,6 +760,59 @@ void main() {
     });
 
     test(
+      'authenticator 2FA is subscribed as backend-enforced, not local-only',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'id': 'sub_2',
+            'featureKey': 'two_factor_auth',
+            'source': 'settings_security',
+            'status': 'subscribed',
+            'metadata': {
+              'requestedFeature': 'backend_enforced_mfa',
+              'requiresBackendEnforcement': true,
+            },
+            'isActive': true,
+          });
+        final service = FeatureSubscriptionService(dio);
+
+        await service.subscribe(
+          const FeatureSubscriptionRequest(
+            featureKey: 'two_factor_auth',
+            source: 'settings_security',
+            phone: '+2250748805663',
+            featureName: 'Authenticator app 2FA',
+            requestedFeature: 'backend_enforced_mfa',
+            countryCode: 'CI',
+            locale: 'fr-CI',
+            platform: 'ios',
+            appVersion: '1.0.0+1',
+            metadata: {
+              'surface': 'settings_security',
+              'currentProtections': [
+                'transaction_pin',
+                'device_biometrics_optional',
+              ],
+              'requiresBackendEnforcement': true,
+            },
+          ),
+        );
+
+        final request = dio.requestHistory.single;
+        final data = Map<String, dynamic>.from(request.data as Map);
+        final metadata = Map<String, dynamic>.from(data['metadata'] as Map);
+        expect(request.method, 'POST');
+        expect(request.path, '/feature-subscriptions');
+        expect(data['featureKey'], 'two_factor_auth');
+        expect(data['source'], 'settings_security');
+        expect(data['requestedFeature'], 'backend_enforced_mfa');
+        expect(metadata, containsPair('requiresBackendEnforcement', true));
+        expect(metadata, isNot(contains('totpSecret')));
+        expect(metadata, isNot(contains('enabledLocally')));
+      },
+    );
+
+    test(
       'feature subscription service accepts backend data envelope',
       () async {
         final dio = MockDio()
