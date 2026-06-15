@@ -15,6 +15,7 @@ import 'package:usdc_wallet/features/send/widgets/recent_recipient_card.dart';
 import 'package:usdc_wallet/features/send/widgets/send_flow_visuals.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/contacts/contacts_service.dart';
+import 'package:usdc_wallet/state/user_state_machine.dart';
 
 class RecipientScreen extends ConsumerStatefulWidget {
   const RecipientScreen({
@@ -123,16 +124,18 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(sendMoneyProvider);
     final authState = ref.watch(authProvider);
+    final userState = ref.watch(userStateMachineProvider);
     final colors = context.colors;
     final isCompletePhone =
         _phoneController.text.length == _selectedLocalLength;
-    final myPhone = authState.user?.phone ?? authState.phone;
+    final myPhone = authState.user?.phone ?? authState.phone ?? userState.phone;
     final hasUsernameRecipient = _hasUsernameRecipient;
     final hasUserIdRecipient = _hasUserIdRecipient;
     final myUsername = _normalizeUsername(authState.user?.username);
     final isSelfSelectedAccount =
         (_selectedRecipientUserId != null &&
-            _selectedRecipientUserId == authState.user?.id) ||
+            _selectedRecipientUserId ==
+                (authState.user?.id ?? userState.userId)) ||
         (_selectedRecipientUsername != null &&
             myUsername != null &&
             _selectedRecipientUsername == myUsername);
@@ -528,7 +531,8 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     });
 
     final authState = ref.read(authProvider);
-    final myPhone = authState.user?.phone ?? authState.phone;
+    final userState = ref.read(userStateMachineProvider);
+    final myPhone = authState.user?.phone ?? authState.phone ?? userState.phone;
     if (value.length != _selectedLocalLength ||
         _samePhone(_typedPhoneNumber, myPhone)) {
       return;
@@ -546,7 +550,8 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     }
 
     final authState = ref.read(authProvider);
-    final myPhone = authState.user?.phone ?? authState.phone;
+    final userState = ref.read(userStateMachineProvider);
+    final myPhone = authState.user?.phone ?? authState.phone ?? userState.phone;
     if (_samePhone(_typedPhoneNumber, myPhone)) {
       return;
     }
@@ -560,7 +565,8 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
 
   Future<void> _lookupTypedRecipient(String phoneNumber) async {
     final authState = ref.read(authProvider);
-    final myPhone = authState.user?.phone ?? authState.phone;
+    final userState = ref.read(userStateMachineProvider);
+    final myPhone = authState.user?.phone ?? authState.phone ?? userState.phone;
     if (_samePhone(phoneNumber, myPhone)) {
       return;
     }
@@ -630,10 +636,12 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     try {
       final phoneNumber = '$_selectedCountryCode${_phoneController.text}';
       final authState = ref.read(authProvider);
-      final myPhone = authState.user?.phone ?? authState.phone;
+      final userState = ref.read(userStateMachineProvider);
+      final myPhone =
+          authState.user?.phone ?? authState.phone ?? userState.phone;
       final sameUserId =
           _selectedRecipientUserId != null &&
-          _selectedRecipientUserId == authState.user?.id;
+          _selectedRecipientUserId == (authState.user?.id ?? userState.userId);
       final myUsername = _normalizeUsername(authState.user?.username);
       final sameUsername =
           _selectedRecipientUsername != null &&
