@@ -220,6 +220,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
         .applyServerAvatar(
           avatarUrl: result.avatarUrl,
           avatarThumb: result.avatarThumb,
+          clearAvatarThumb: hasAvatarUrl && !hasAvatarThumb,
           clearLocalCache: clearLocalCache,
         );
 
@@ -230,6 +231,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
         avatarBase64: hasAvatarThumb
             ? result.avatarThumb
             : currentUser.avatarBase64,
+        clearAvatarBase64: hasAvatarUrl && !hasAvatarThumb,
       );
       state = state.copyWith(user: updatedUser);
       ref.read(auth.authProvider.notifier).updateUser(updatedUser);

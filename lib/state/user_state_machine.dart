@@ -371,6 +371,7 @@ class UserStateMachine extends Notifier<UserState> {
   Future<void> applyServerAvatar({
     String? avatarUrl,
     String? avatarThumb,
+    bool clearAvatarThumb = false,
     bool clearLocalCache = true,
   }) async {
     final hasAvatarUrl = avatarUrl != null && avatarUrl.isNotEmpty;
@@ -383,7 +384,11 @@ class UserStateMachine extends Notifier<UserState> {
       await _clearLocalAvatarCache();
     }
 
-    updateProfile(avatarUrl: avatarUrl, avatarThumb: avatarThumb);
+    updateProfile(
+      avatarUrl: avatarUrl,
+      avatarThumb: avatarThumb,
+      clearAvatarThumb: clearAvatarThumb,
+    );
   }
 
   /// Clear all avatar references after the backend confirms removal.

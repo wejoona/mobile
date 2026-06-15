@@ -129,6 +129,26 @@ void main() {
       expect(user.displayName, 'Ben Ouattara');
     });
 
+    test(
+      'core user entity can clear stale avatar thumbnail after replacement',
+      () {
+        final user = User.fromJson({
+          'id': 'usr_avatar',
+          'phone': '+2250748805663',
+          'avatarUrl': '/user/avatar/usr_avatar?v=123',
+          'avatarThumb': 'data:image/jpeg;base64,/9j/old',
+        });
+
+        final updated = user.copyWith(
+          avatarUrl: '/user/avatar/usr_avatar?v=456',
+          clearAvatarBase64: true,
+        );
+
+        expect(updated.avatarUrl, '/user/avatar/usr_avatar?v=456');
+        expect(updated.avatarBase64, isNull);
+      },
+    );
+
     test('email verification resend accepts backend aliases', () {
       final result = EmailVerificationResendResult.fromJson({
         'data': {
@@ -471,9 +491,15 @@ void main() {
 
       expect(userStateSource, contains('Future<void> applyServerAvatar'));
       expect(userStateSource, contains('await _clearLocalAvatarCache();'));
+      expect(userStateSource, contains('clearAvatarThumb: clearAvatarThumb'));
       expect(userStateSource, contains("delete(key: 'local_avatar_path')"));
       expect(profileProviderSource, contains('await _applyAvatarUploadResult'));
       expect(profileProviderSource, contains('applyServerAvatar('));
+      expect(profileProviderSource, contains('clearAvatarThumb: hasAvatarUrl'));
+      expect(
+        profileProviderSource,
+        contains('clearAvatarBase64: hasAvatarUrl'),
+      );
       expect(profileProviderSource, contains('auth.authProvider).user'));
       expect(profileProviderSource, contains('updateUser(updatedUser)'));
       expect(profileProviderSource, contains('userSessionRepositoryProvider'));

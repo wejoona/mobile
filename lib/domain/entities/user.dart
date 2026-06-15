@@ -161,6 +161,8 @@ class User {
     bool? hasPin,
     DateTime? createdAt,
     DateTime? updatedAt,
+    bool clearAvatarUrl = false,
+    bool clearAvatarBase64 = false,
   }) {
     return User(
       id: id ?? this.id,
@@ -169,8 +171,10 @@ class User {
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
       email: email ?? this.email,
-      avatarUrl: avatarUrl ?? this.avatarUrl,
-      avatarBase64: avatarBase64 ?? this.avatarBase64,
+      avatarUrl: clearAvatarUrl ? null : avatarUrl ?? this.avatarUrl,
+      avatarBase64: clearAvatarBase64
+          ? null
+          : avatarBase64 ?? this.avatarBase64,
       preferredLocale: preferredLocale ?? this.preferredLocale,
       countryCode: countryCode ?? this.countryCode,
       isPhoneVerified: isPhoneVerified ?? this.isPhoneVerified,
