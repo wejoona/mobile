@@ -241,7 +241,9 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
           _selectedCountry.code,
           _selectedCountry.dialCode,
         );
-    await ref.read(onboardingProvider.notifier).submitPhoneNumber();
+    await ref
+        .read(onboardingProvider.notifier)
+        .submitPhoneNumber(acceptedTerms: _termsAccepted);
 
     if (mounted && ref.read(onboardingProvider).error == null) {
       context.go('/onboarding/otp');

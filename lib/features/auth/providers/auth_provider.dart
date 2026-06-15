@@ -354,7 +354,13 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   /// Register new user
-  Future<void> register(String phone, String countryCode) async {
+  Future<void> register(
+    String phone,
+    String countryCode, {
+    bool acceptedTerms = false,
+    String? termsVersion,
+    String? privacyVersion,
+  }) async {
     state = state.copyWith(status: AuthStatus.loading, phone: phone);
 
     // Sync with FSM: notify that login/register is starting
@@ -364,6 +370,9 @@ class AuthNotifier extends Notifier<AuthState> {
       final response = await _authService.register(
         phone: phone,
         countryCode: countryCode,
+        acceptedTerms: acceptedTerms,
+        termsVersion: termsVersion,
+        privacyVersion: privacyVersion,
       );
 
       state = state.copyWith(

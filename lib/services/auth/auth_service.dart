@@ -17,6 +17,9 @@ class AuthService {
   Future<OtpResponse> register({
     required String phone,
     required String countryCode,
+    bool acceptedTerms = false,
+    String? termsVersion,
+    String? privacyVersion,
   }) async {
     try {
       final normalizedPhone = PhoneNormalizer.toE164(
@@ -31,6 +34,9 @@ class AuthService {
             countryCode,
             normalizedPhone,
           ),
+          'acceptedTerms': acceptedTerms,
+          if (termsVersion != null) 'termsVersion': termsVersion,
+          if (privacyVersion != null) 'privacyVersion': privacyVersion,
         },
       );
       return OtpResponse.fromJson(response.data);
