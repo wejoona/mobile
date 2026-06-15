@@ -18,7 +18,7 @@ void main() {
         r'Future<void> _manualSync\(\) async \{([\s\S]*?)\n  Future<void> _requestPermissionAndSync',
       ).firstMatch(source)!.group(1)!;
       final requestAndSyncBody = RegExp(
-        r'Future<void> _requestPermissionAndSync\(\{([\s\S]*?)\n  bool _shouldOpenContactsSettings',
+        r'Future<void> _requestPermissionAndSync\(\{([\s\S]*?)\n  @override',
       ).firstMatch(source)!.group(1)!;
 
       expect(
@@ -35,6 +35,8 @@ void main() {
         contains('_requestPermissionAndSync(showSettingsDialog: true)'),
       );
       expect(requestAndSyncBody, contains('notifier.requestPermission()'));
+      expect(requestAndSyncBody, isNot(contains('Permission.contacts.status')));
+      expect(requestAndSyncBody, contains('state.permissionRequiresSettings'));
       expect(requestAndSyncBody, contains('_showContactsSettingsDialog'));
       expect(providerSource, contains('permissionRequiresSettings'));
       expect(providerSource, contains('contactsPermissionRequiresSettings()'));

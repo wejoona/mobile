@@ -128,30 +128,16 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   }) async {
     final l10n = AppLocalizations.of(context)!;
     final notifier = ref.read(contactsProvider.notifier);
-    final status = await Permission.contacts.status;
-    if (!status.isGranted && !status.isLimited) {
-      if (status.isPermanentlyDenied || status.isRestricted) {
-        await notifier.syncContacts();
-        if (showSettingsDialog && mounted) {
-          await _showContactsSettingsDialog(l10n);
-        }
-        return;
-      }
-      final granted = await notifier.requestPermission();
-      final nextStatus = await Permission.contacts.status;
-      if (!granted &&
-          showSettingsDialog &&
-          mounted &&
-          _shouldOpenContactsSettings(nextStatus)) {
-        await _showContactsSettingsDialog(l10n);
-      }
+    final granted = await notifier.requestPermission();
+    if (granted || !showSettingsDialog || !mounted) {
       return;
     }
-    await notifier.syncContacts();
-  }
 
-  bool _shouldOpenContactsSettings(PermissionStatus status) =>
-      status.isDenied || status.isPermanentlyDenied || status.isRestricted;
+    final state = ref.read(contactsProvider);
+    if (state.permissionRequiresSettings) {
+      await _showContactsSettingsDialog(l10n);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -478,7 +464,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
         ],
       ),
     );
-    if (shouldOpen == true) {
+    if (shouldOpen ?? false) {
       await openAppSettings();
     }
   }
