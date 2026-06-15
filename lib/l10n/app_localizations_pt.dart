@@ -2136,6 +2136,18 @@ class AppLocalizationsPt extends AppLocalizations {
   String get transactionDetails_transactionId => 'Transação id';
 
   @override
+  String get transactionDetails_supportReference => 'Referência de suporte';
+
+  @override
+  String get transactionDetails_providerReference => 'Referência do provedor';
+
+  @override
+  String get transactionDetails_ledgerReference => 'Referência do ledger';
+
+  @override
+  String get transactionDetails_counterparty => 'Contraparte';
+
+  @override
   String get transactionDetails_date => 'Data';
 
   @override
@@ -2185,6 +2197,74 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get filters_clear => 'Limpar';
+
+  @override
+  String get filters_apply => 'Aplicar filtros';
+
+  @override
+  String filters_applyWithCount(int count) {
+    return 'Aplicar filtros ($count)';
+  }
+
+  @override
+  String get filters_all => 'Todos';
+
+  @override
+  String get filters_deposits => 'Depósitos';
+
+  @override
+  String get filters_withdrawals => 'Levantamentos';
+
+  @override
+  String get filters_received => 'Recebidos';
+
+  @override
+  String get filters_sent => 'Enviados';
+
+  @override
+  String get filters_completed => 'Concluídos';
+
+  @override
+  String get filters_pending => 'Pendentes';
+
+  @override
+  String get filters_processing => 'Em processamento';
+
+  @override
+  String get filters_failed => 'Falharam';
+
+  @override
+  String get filters_allTime => 'Todo o período';
+
+  @override
+  String get filters_today => 'Hoje';
+
+  @override
+  String get filters_thisWeek => 'Esta semana';
+
+  @override
+  String get filters_thisMonth => 'Este mês';
+
+  @override
+  String get filters_last3Months => '3 meses';
+
+  @override
+  String get filters_custom => 'Personalizado';
+
+  @override
+  String get filters_selectDate => 'Selecionar';
+
+  @override
+  String get filters_sortDate => 'Data';
+
+  @override
+  String get filters_sortAmount => 'Valor';
+
+  @override
+  String get filters_descendingFirst => 'Mais recente ou maior primeiro';
+
+  @override
+  String get filters_ascendingFirst => 'Mais antigo ou menor primeiro';
 
   @override
   String get onboarding_skip => 'Saltar';

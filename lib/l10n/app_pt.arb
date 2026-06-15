@@ -2440,6 +2440,10 @@
   "@transactionDetails_transactionId": {
     "description": "Transaction ID label"
   },
+  "transactionDetails_supportReference": "Referência de suporte",
+  "transactionDetails_providerReference": "Referência do provedor",
+  "transactionDetails_ledgerReference": "Referência do ledger",
+  "transactionDetails_counterparty": "Contraparte",
   "transactionDetails_date": "Data",
   "@transactionDetails_date": {
     "description": "Transaction date label"
@@ -2508,6 +2512,28 @@
   "@filters_clear": {
     "description": "Clear filters button"
   },
+  "filters_apply": "Aplicar filtros",
+  "filters_applyWithCount": "Aplicar filtros ({count})",
+  "filters_all": "Todos",
+  "filters_deposits": "Depósitos",
+  "filters_withdrawals": "Levantamentos",
+  "filters_received": "Recebidos",
+  "filters_sent": "Enviados",
+  "filters_completed": "Concluídos",
+  "filters_pending": "Pendentes",
+  "filters_processing": "Em processamento",
+  "filters_failed": "Falharam",
+  "filters_allTime": "Todo o período",
+  "filters_today": "Hoje",
+  "filters_thisWeek": "Esta semana",
+  "filters_thisMonth": "Este mês",
+  "filters_last3Months": "3 meses",
+  "filters_custom": "Personalizado",
+  "filters_selectDate": "Selecionar",
+  "filters_sortDate": "Data",
+  "filters_sortAmount": "Valor",
+  "filters_descendingFirst": "Mais recente ou maior primeiro",
+  "filters_ascendingFirst": "Mais antigo ou menor primeiro",
   "onboarding_skip": "Saltar",
   "@onboarding_skip": {
     "description": "Skip button on welcome slides"

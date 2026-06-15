@@ -2432,6 +2432,10 @@
   "@transactionDetails_transactionId": {
     "description": "Transaction ID label"
   },
+  "transactionDetails_supportReference": "مرجع الدعم",
+  "transactionDetails_providerReference": "مرجع المزود",
+  "transactionDetails_ledgerReference": "مرجع السجل",
+  "transactionDetails_counterparty": "الطرف المقابل",
   "transactionDetails_date": "التاريخ",
   "@transactionDetails_date": {
     "description": "Transaction date label"
@@ -2500,6 +2504,28 @@
   "@filters_clear": {
     "description": "Clear filters button"
   },
+  "filters_apply": "تطبيق الفلاتر",
+  "filters_applyWithCount": "تطبيق الفلاتر ({count})",
+  "filters_all": "الكل",
+  "filters_deposits": "الإيداعات",
+  "filters_withdrawals": "السحوبات",
+  "filters_received": "المستلمة",
+  "filters_sent": "المرسلة",
+  "filters_completed": "مكتملة",
+  "filters_pending": "قيد الانتظار",
+  "filters_processing": "قيد المعالجة",
+  "filters_failed": "فاشلة",
+  "filters_allTime": "كل الوقت",
+  "filters_today": "اليوم",
+  "filters_thisWeek": "هذا الأسبوع",
+  "filters_thisMonth": "هذا الشهر",
+  "filters_last3Months": "3 أشهر",
+  "filters_custom": "مخصص",
+  "filters_selectDate": "اختر",
+  "filters_sortDate": "التاريخ",
+  "filters_sortAmount": "المبلغ",
+  "filters_descendingFirst": "الأحدث أو الأعلى أولاً",
+  "filters_ascendingFirst": "الأقدم أو الأقل أولاً",
   "send_noContactsFound": "لم يتم العثور على جهات اتصال",
   "@send_noContactsFound": {
     "description": "No contacts found message"

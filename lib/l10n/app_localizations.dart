@@ -4008,6 +4008,30 @@ abstract class AppLocalizations {
   /// **'Transaction ID'**
   String get transactionDetails_transactionId;
 
+  /// Support reference label
+  ///
+  /// In en, this message translates to:
+  /// **'Support reference'**
+  String get transactionDetails_supportReference;
+
+  /// Provider reference label
+  ///
+  /// In en, this message translates to:
+  /// **'Provider reference'**
+  String get transactionDetails_providerReference;
+
+  /// Ledger reference label
+  ///
+  /// In en, this message translates to:
+  /// **'Ledger reference'**
+  String get transactionDetails_ledgerReference;
+
+  /// Counterparty label
+  ///
+  /// In en, this message translates to:
+  /// **'Counterparty'**
+  String get transactionDetails_counterparty;
+
   /// Transaction date label
   ///
   /// In en, this message translates to:
@@ -4109,6 +4133,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear'**
   String get filters_clear;
+
+  /// Apply filters button with no active filter count
+  ///
+  /// In en, this message translates to:
+  /// **'Apply Filters'**
+  String get filters_apply;
+
+  /// Apply filters button with active filter count
+  ///
+  /// In en, this message translates to:
+  /// **'Apply Filters ({count})'**
+  String filters_applyWithCount(int count);
+
+  /// All option in transaction filters
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get filters_all;
+
+  /// Deposits transaction type filter
+  ///
+  /// In en, this message translates to:
+  /// **'Deposits'**
+  String get filters_deposits;
+
+  /// Withdrawals transaction type filter
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawals'**
+  String get filters_withdrawals;
+
+  /// Received transaction type filter
+  ///
+  /// In en, this message translates to:
+  /// **'Received'**
+  String get filters_received;
+
+  /// Sent transaction type filter
+  ///
+  /// In en, this message translates to:
+  /// **'Sent'**
+  String get filters_sent;
+
+  /// Completed transaction status filter
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get filters_completed;
+
+  /// Pending transaction status filter
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get filters_pending;
+
+  /// Processing transaction status filter
+  ///
+  /// In en, this message translates to:
+  /// **'Processing'**
+  String get filters_processing;
+
+  /// Failed transaction status filter
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get filters_failed;
+
+  /// All time date range filter
+  ///
+  /// In en, this message translates to:
+  /// **'All Time'**
+  String get filters_allTime;
+
+  /// Today date range filter
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get filters_today;
+
+  /// This week date range filter
+  ///
+  /// In en, this message translates to:
+  /// **'This Week'**
+  String get filters_thisWeek;
+
+  /// This month date range filter
+  ///
+  /// In en, this message translates to:
+  /// **'This Month'**
+  String get filters_thisMonth;
+
+  /// Last three months date range filter
+  ///
+  /// In en, this message translates to:
+  /// **'3 Months'**
+  String get filters_last3Months;
+
+  /// Custom date range filter
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get filters_custom;
+
+  /// Placeholder for selecting a date
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get filters_selectDate;
+
+  /// Sort by date option
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get filters_sortDate;
+
+  /// Sort by amount option
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get filters_sortAmount;
+
+  /// Tooltip for descending sort order
+  ///
+  /// In en, this message translates to:
+  /// **'Newest or highest first'**
+  String get filters_descendingFirst;
+
+  /// Tooltip for ascending sort order
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest or lowest first'**
+  String get filters_ascendingFirst;
 
   /// Skip button on welcome slides
   ///

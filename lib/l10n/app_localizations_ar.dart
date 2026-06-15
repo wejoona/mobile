@@ -2122,6 +2122,18 @@ class AppLocalizationsAr extends AppLocalizations {
   String get transactionDetails_transactionId => 'معرف المعاملة';
 
   @override
+  String get transactionDetails_supportReference => 'مرجع الدعم';
+
+  @override
+  String get transactionDetails_providerReference => 'مرجع المزود';
+
+  @override
+  String get transactionDetails_ledgerReference => 'مرجع السجل';
+
+  @override
+  String get transactionDetails_counterparty => 'الطرف المقابل';
+
+  @override
   String get transactionDetails_date => 'التاريخ';
 
   @override
@@ -2171,6 +2183,74 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get filters_clear => 'مسح';
+
+  @override
+  String get filters_apply => 'تطبيق الفلاتر';
+
+  @override
+  String filters_applyWithCount(int count) {
+    return 'تطبيق الفلاتر ($count)';
+  }
+
+  @override
+  String get filters_all => 'الكل';
+
+  @override
+  String get filters_deposits => 'الإيداعات';
+
+  @override
+  String get filters_withdrawals => 'السحوبات';
+
+  @override
+  String get filters_received => 'المستلمة';
+
+  @override
+  String get filters_sent => 'المرسلة';
+
+  @override
+  String get filters_completed => 'مكتملة';
+
+  @override
+  String get filters_pending => 'قيد الانتظار';
+
+  @override
+  String get filters_processing => 'قيد المعالجة';
+
+  @override
+  String get filters_failed => 'فاشلة';
+
+  @override
+  String get filters_allTime => 'كل الوقت';
+
+  @override
+  String get filters_today => 'اليوم';
+
+  @override
+  String get filters_thisWeek => 'هذا الأسبوع';
+
+  @override
+  String get filters_thisMonth => 'هذا الشهر';
+
+  @override
+  String get filters_last3Months => '3 أشهر';
+
+  @override
+  String get filters_custom => 'مخصص';
+
+  @override
+  String get filters_selectDate => 'اختر';
+
+  @override
+  String get filters_sortDate => 'التاريخ';
+
+  @override
+  String get filters_sortAmount => 'المبلغ';
+
+  @override
+  String get filters_descendingFirst => 'الأحدث أو الأعلى أولاً';
+
+  @override
+  String get filters_ascendingFirst => 'الأقدم أو الأقل أولاً';
 
   @override
   String get onboarding_skip => 'Skip';

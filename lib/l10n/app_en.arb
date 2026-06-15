@@ -2751,6 +2751,22 @@
   "@transactionDetails_transactionId": {
     "description": "Transaction ID label"
   },
+  "transactionDetails_supportReference": "Support reference",
+  "@transactionDetails_supportReference": {
+    "description": "Support reference label"
+  },
+  "transactionDetails_providerReference": "Provider reference",
+  "@transactionDetails_providerReference": {
+    "description": "Provider reference label"
+  },
+  "transactionDetails_ledgerReference": "Ledger reference",
+  "@transactionDetails_ledgerReference": {
+    "description": "Ledger reference label"
+  },
+  "transactionDetails_counterparty": "Counterparty",
+  "@transactionDetails_counterparty": {
+    "description": "Counterparty label"
+  },
   "transactionDetails_date": "Date",
   "@transactionDetails_date": {
     "description": "Transaction date label"
@@ -2818,6 +2834,99 @@
   "filters_clear": "Clear",
   "@filters_clear": {
     "description": "Clear filters button"
+  },
+  "filters_apply": "Apply Filters",
+  "@filters_apply": {
+    "description": "Apply filters button with no active filter count"
+  },
+  "filters_applyWithCount": "Apply Filters ({count})",
+  "@filters_applyWithCount": {
+    "description": "Apply filters button with active filter count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filters_all": "All",
+  "@filters_all": {
+    "description": "All option in transaction filters"
+  },
+  "filters_deposits": "Deposits",
+  "@filters_deposits": {
+    "description": "Deposits transaction type filter"
+  },
+  "filters_withdrawals": "Withdrawals",
+  "@filters_withdrawals": {
+    "description": "Withdrawals transaction type filter"
+  },
+  "filters_received": "Received",
+  "@filters_received": {
+    "description": "Received transaction type filter"
+  },
+  "filters_sent": "Sent",
+  "@filters_sent": {
+    "description": "Sent transaction type filter"
+  },
+  "filters_completed": "Completed",
+  "@filters_completed": {
+    "description": "Completed transaction status filter"
+  },
+  "filters_pending": "Pending",
+  "@filters_pending": {
+    "description": "Pending transaction status filter"
+  },
+  "filters_processing": "Processing",
+  "@filters_processing": {
+    "description": "Processing transaction status filter"
+  },
+  "filters_failed": "Failed",
+  "@filters_failed": {
+    "description": "Failed transaction status filter"
+  },
+  "filters_allTime": "All Time",
+  "@filters_allTime": {
+    "description": "All time date range filter"
+  },
+  "filters_today": "Today",
+  "@filters_today": {
+    "description": "Today date range filter"
+  },
+  "filters_thisWeek": "This Week",
+  "@filters_thisWeek": {
+    "description": "This week date range filter"
+  },
+  "filters_thisMonth": "This Month",
+  "@filters_thisMonth": {
+    "description": "This month date range filter"
+  },
+  "filters_last3Months": "3 Months",
+  "@filters_last3Months": {
+    "description": "Last three months date range filter"
+  },
+  "filters_custom": "Custom",
+  "@filters_custom": {
+    "description": "Custom date range filter"
+  },
+  "filters_selectDate": "Select",
+  "@filters_selectDate": {
+    "description": "Placeholder for selecting a date"
+  },
+  "filters_sortDate": "Date",
+  "@filters_sortDate": {
+    "description": "Sort by date option"
+  },
+  "filters_sortAmount": "Amount",
+  "@filters_sortAmount": {
+    "description": "Sort by amount option"
+  },
+  "filters_descendingFirst": "Newest or highest first",
+  "@filters_descendingFirst": {
+    "description": "Tooltip for descending sort order"
+  },
+  "filters_ascendingFirst": "Oldest or lowest first",
+  "@filters_ascendingFirst": {
+    "description": "Tooltip for ascending sort order"
   },
   "onboarding_skip": "Skip",
   "@onboarding_skip": {
