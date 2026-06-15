@@ -99,6 +99,67 @@ void main() {
         expect(balance.currency, 'USDC');
       },
     );
+
+    test('parses keyed balance maps from wallet responses', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'walletId': 'wallet_1',
+          'currency': 'USDC',
+          'balances': {
+            'usd': {'available': '0', 'pending': '0', 'total': '0'},
+            'usdc': {
+              'availableDecimal': '42.750000',
+              'pendingDecimal': '1.250000',
+              'totalDecimal': '44.000000',
+            },
+          },
+        });
+
+      final container = ProviderContainer(
+        overrides: [dioProvider.overrideWithValue(dio)],
+      );
+      addTearDown(container.dispose);
+
+      final balance = await container.read(walletBalanceProvider.future);
+
+      expect(balance.available, 42.75);
+      expect(balance.pending, 1.25);
+      expect(balance.total, 44);
+      expect(balance.currency, 'USDC');
+    });
+
+    test('keeps sibling balances beside nested wallet envelope', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'data': {
+            'wallet': {
+              'id': 'wallet_nested',
+              'address': '0xnested',
+              'currency': 'USDC',
+            },
+            'balances': [
+              {
+                'currency': 'USDC',
+                'availableDecimal': '52.000000',
+                'pendingDecimal': '3.000000',
+                'totalDecimal': '55.000000',
+              },
+            ],
+          },
+        });
+
+      final container = ProviderContainer(
+        overrides: [dioProvider.overrideWithValue(dio)],
+      );
+      addTearDown(container.dispose);
+
+      final balance = await container.read(walletBalanceProvider.future);
+
+      expect(balance.available, 52);
+      expect(balance.pending, 3);
+      expect(balance.total, 55);
+      expect(balance.currency, 'USDC');
+    });
   });
 
   group('exchangeRateProvider', () {

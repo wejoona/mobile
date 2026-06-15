@@ -110,12 +110,9 @@ WalletBalance _walletBalanceFromPayload(dynamic payload) {
   // POST /wallet/create returns { id, currency, balance }.
   // Prefer the spendable USDC row, then the wallet currency row, then the
   // first positive row. Backend row order is not a UI contract.
-  final balances = wallet['balances'] as List? ?? [];
+  final balances = _balanceEntries(wallet['balances']);
   if (balances.isNotEmpty) {
-    final selected = _selectBalanceRow(
-      balances.whereType<Map>().map(Map<String, dynamic>.from).toList(),
-      wallet['currency'] as String?,
-    );
+    final selected = _selectBalanceRow(balances, wallet['currency'] as String?);
     if (selected != null) {
       return WalletBalance.fromJson({
         'available': selected['available'],
@@ -184,9 +181,53 @@ Map<String, dynamic> _asMap(dynamic value) {
 Map<String, dynamic> _unwrapWalletMap(Map<String, dynamic> value) {
   for (final key in const ['wallet', 'account', 'result']) {
     final nested = _asMap(value[key]);
-    if (nested.isNotEmpty) return nested;
+    if (nested.isNotEmpty) return _mergeWalletEnvelope(value, nested);
   }
   return value;
+}
+
+Map<String, dynamic> _mergeWalletEnvelope(
+  Map<String, dynamic> envelope,
+  Map<String, dynamic> wallet,
+) {
+  final merged = <String, dynamic>{...envelope, ...wallet};
+  for (final key in const [
+    'balances',
+    'balance',
+    'available',
+    'availableBalance',
+    'balanceUsdc',
+    'pending',
+    'pendingBalance',
+    'total',
+  ]) {
+    if (merged[key] == null && envelope.containsKey(key)) {
+      merged[key] = envelope[key];
+    }
+  }
+  return merged;
+}
+
+List<Map<String, dynamic>> _balanceEntries(Object? raw) {
+  if (raw is List) {
+    return raw.whereType<Map>().map(Map<String, dynamic>.from).toList();
+  }
+
+  if (raw is Map) {
+    return raw.entries.map((entry) {
+      final currency = entry.key.toString().toUpperCase();
+      final value = entry.value;
+      if (value is Map) {
+        return {
+          'currency': value['currency'] ?? currency,
+          ...Map<String, dynamic>.from(value),
+        };
+      }
+      return {'currency': currency, 'available': value, 'total': value};
+    }).toList();
+  }
+
+  return const [];
 }
 
 double? _amountFromString(Object? value) {
