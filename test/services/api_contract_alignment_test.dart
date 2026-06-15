@@ -644,6 +644,30 @@ void main() {
       expect(notifications.single.isRead, isFalse);
     });
 
+    test('notification list accepts loosely typed JSON maps', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'notifications': <Map<dynamic, dynamic>>[
+            {
+              'id': 'notif_loose',
+              'type': 'transfer_received',
+              'title': 'Payment received',
+              'body': 'You received USDC.',
+              'referenceType': 'transaction',
+              'referenceId': 'txn_loose',
+              'createdAt': '2026-06-04T10:00:00.000Z',
+            },
+          ],
+        });
+      final service = NotificationsService(dio);
+
+      final notifications = await service.getNotifications();
+
+      expect(notifications.single.id, 'notif_loose');
+      expect(notifications.single.transactionId, 'txn_loose');
+      expect(notifications.single.navigationRoute, '/transactions/txn_loose');
+    });
+
     test('notification actions use deployed backend verbs', () async {
       final dio = MockDio()
         ..queueResponse({'success': true})

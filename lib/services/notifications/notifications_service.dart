@@ -22,7 +22,8 @@ class NotificationsService {
       final data = _notificationItems(response.data);
 
       return data
-          .map((e) => AppNotification.fromJson(e as Map<String, dynamic>))
+          .whereType<Map>()
+          .map((e) => AppNotification.fromJson(Map<String, dynamic>.from(e)))
           .toList();
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);

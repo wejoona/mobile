@@ -19,6 +19,7 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart'
     hide TransactionItem, TransactionPage;
 import 'package:usdc_wallet/services/sdk/usdc_wallet_sdk.dart';
+import 'package:usdc_wallet/services/notifications/notifications_service.dart';
 import 'package:usdc_wallet/services/transactions/transactions_service.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
 
@@ -324,14 +325,8 @@ int _intAmount(Map<String, dynamic> json, String key) {
 /// Notifications notifier provider — wired to GET /notifications.
 final notificationsNotifierProvider = FutureProvider.autoDispose<List<dynamic>>(
   (ref) async {
-    final dio = ref.watch(dioProvider);
-    try {
-      final response = await dio.get('/notifications');
-      final data = response.data as Map<String, dynamic>;
-      return (data['data'] as List?) ?? [];
-    } catch (_) {
-      return [];
-    }
+    final service = ref.watch(notificationsServiceProvider);
+    return service.getNotifications(pageSize: 100);
   },
 );
 
