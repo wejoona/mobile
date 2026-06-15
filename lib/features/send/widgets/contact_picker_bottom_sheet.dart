@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:usdc_wallet/config/countries.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -72,11 +71,12 @@ class _ContactPickerBottomSheetState
     final contactsService = ref.read(contactsServiceProvider);
     final hasPermission = await contactsService.hasContactsPermission();
     if (!hasPermission) {
-      final status = await Permission.contacts.status;
+      final requiresSettings = await contactsService
+          .contactsPermissionRequiresSettings();
       if (mounted) {
         setState(() {
           _permissionRequired = true;
-          _requiresSettings = status.isPermanentlyDenied || status.isRestricted;
+          _requiresSettings = requiresSettings;
           _isLoading = false;
         });
       }
@@ -119,8 +119,8 @@ class _ContactPickerBottomSheetState
 
   Future<void> _requestContactsPermission() async {
     setState(() => _isLoading = true);
-    final currentStatus = await Permission.contacts.status;
-    if (currentStatus.isPermanentlyDenied || currentStatus.isRestricted) {
+    final contactsService = ref.read(contactsServiceProvider);
+    if (await contactsService.contactsPermissionRequiresSettings()) {
       if (mounted) {
         setState(() {
           _permissionRequired = true;
@@ -128,13 +128,11 @@ class _ContactPickerBottomSheetState
           _isLoading = false;
         });
       }
-      await openAppSettings();
+      await contactsService.openContactsSettings();
       return;
     }
 
-    final granted = await ref
-        .read(contactsServiceProvider)
-        .requestContactsPermission();
+    final granted = await contactsService.requestContactsPermission();
     if (!mounted) {
       return;
     }
@@ -142,11 +140,11 @@ class _ContactPickerBottomSheetState
       await _loadContacts();
       return;
     }
-    final nextStatus = await Permission.contacts.status;
+    final requiresSettings = await contactsService
+        .contactsPermissionRequiresSettings();
     setState(() {
       _permissionRequired = true;
-      _requiresSettings =
-          nextStatus.isPermanentlyDenied || nextStatus.isRestricted;
+      _requiresSettings = requiresSettings;
       _isLoading = false;
     });
   }

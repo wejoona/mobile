@@ -40,7 +40,12 @@ void main() {
     );
 
     expect(pickerPermissionBody, contains('requestContactsPermission'));
-    expect(pickerPermissionBody, contains('openAppSettings'));
+    expect(
+      pickerPermissionBody,
+      contains('contactsPermissionRequiresSettings'),
+    );
+    expect(pickerPermissionBody, contains('openContactsSettings'));
+    expect(pickerPermissionBody, isNot(contains('Permission.contacts.status')));
     expect(pickerPermissionCard, contains('_requiresSettings'));
     expect(
       pickerPermissionCard,
@@ -49,6 +54,7 @@ void main() {
     expect(serviceSource, contains('_contactsGrantedByFlutterPlugin'));
     expect(serviceSource, contains('FlutterContacts.requestPermission'));
     expect(pickerSource, contains('contactsService.hasContactsPermission'));
+    expect(pickerSource, isNot(contains('permission_handler')));
     expect(pickerSource, contains('_readSyncedDeviceContacts'));
 
     final recipientContactBody = _methodBody(
