@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:usdc_wallet/domain/entities/user.dart';
 import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
 import 'package:usdc_wallet/services/session/user_session.dart';
 import 'package:usdc_wallet/services/storage/hive_models.dart';
@@ -104,6 +105,28 @@ void main() {
       expect(profile.hasPin, isTrue);
       expect(avatar.avatarUrl, '/user/avatar/usr_alias');
       expect(avatar.avatarThumb, startsWith('data:image/jpeg;base64,'));
+    });
+
+    test('core user entity accepts backend avatar aliases', () {
+      final user = User.fromJson({
+        'id': 'usr_avatar',
+        'phone': '+2250748805663',
+        'firstName': 'Ben',
+        'lastName': 'Ouattara',
+        'avatar_url': '/user/avatar/usr_avatar?v=123',
+        'avatar_thumb': 'data:image/jpeg;base64,/9j/thumb',
+        'countryCode': 'CI',
+        'phoneVerified': true,
+        'role': 'user',
+        'status': 'active',
+        'hasPin': true,
+        'createdAt': '2026-06-04T10:00:00.000Z',
+        'updatedAt': '2026-06-04T10:00:00.000Z',
+      });
+
+      expect(user.avatarUrl, '/user/avatar/usr_avatar?v=123');
+      expect(user.avatarBase64, startsWith('data:image/jpeg;base64,'));
+      expect(user.displayName, 'Ben Ouattara');
     });
 
     test('email verification resend accepts backend aliases', () {
