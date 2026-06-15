@@ -73,19 +73,10 @@ class _ContactPickerBottomSheetState
     final hasPermission = await contactsService.hasContactsPermission();
     if (!hasPermission) {
       final status = await Permission.contacts.status;
-      if (!status.isPermanentlyDenied && !status.isRestricted) {
-        final granted = await contactsService.requestContactsPermission();
-        if (granted) {
-          return _readSyncedDeviceContacts(contactsService);
-        }
-      }
-
-      final nextStatus = await Permission.contacts.status;
       if (mounted) {
         setState(() {
           _permissionRequired = true;
-          _requiresSettings =
-              nextStatus.isPermanentlyDenied || nextStatus.isRestricted;
+          _requiresSettings = status.isPermanentlyDenied || status.isRestricted;
           _isLoading = false;
         });
       }
@@ -108,6 +99,7 @@ class _ContactPickerBottomSheetState
       contacts = await contactsService.getKoridoContacts(
         ref.read(dioProvider),
         contacts,
+        defaultCountryPrefix: _defaultCountryPrefix(),
       );
     } on Object {
       // Keep the picker usable even if the API cannot return account matches.
