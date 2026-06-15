@@ -264,8 +264,7 @@ class _SessionManagerState extends ConsumerState<SessionManager>
     // Check if we have a valid Navigator context
     if (!mounted) return;
     final session = ref.read(sessionServiceProvider);
-    final auth = ref.read(authProvider);
-    if (!session.isLocked || !auth.isLocked) {
+    if (!session.isLocked) {
       return;
     }
 

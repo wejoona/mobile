@@ -149,9 +149,22 @@ void main() {
     final showLockBody = _methodBody(source, '_showLockScreen');
 
     expect(showLockBody, contains('ref.read(sessionServiceProvider)'));
-    expect(showLockBody, contains('ref.read(authProvider)'));
-    expect(showLockBody, contains('!session.isLocked || !auth.isLocked'));
+    expect(showLockBody, isNot(contains('!auth.isLocked')));
+    expect(
+      showLockBody,
+      contains('!session.isLocked'),
+      reason: 'session lock state is authoritative for lock navigation',
+    );
     expect(showLockBody, contains("'/session-locked'"));
+
+    final redirectorSource = File(
+      'lib/router/app_redirector.dart',
+    ).readAsStringSync();
+    expect(redirectorSource, contains('sessionServiceProvider'));
+    expect(
+      redirectorSource,
+      contains('authState.isLocked || sessionState.isLocked'),
+    );
   });
 
   test('session refresh accepts the backend response envelope', () {
