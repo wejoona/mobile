@@ -173,19 +173,53 @@ class UserAvatar extends StatelessWidget {
 
   /// Resolve URL: if it's a relative path like /user/avatar/xxx, prepend base URL
   String _resolveUrl(String url) {
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    final trimmed = url.trim();
+    if (trimmed.startsWith('http://') ||
+        trimmed.startsWith('https://') ||
+        trimmed.startsWith('data:image/')) {
+      return trimmed;
+    }
+
     final base = Uri.parse(ApiConfig.baseUrl);
-    final origin = '${base.scheme}://${base.authority}';
+    final relative = Uri.parse(trimmed);
+    final origin = base.replace(path: '', query: null, fragment: null);
 
-    if (url.startsWith('/api/')) {
-      return '$origin$url';
+    if (relative.path.startsWith('/api/')) {
+      return origin
+          .replace(
+            path: relative.path,
+            query: relative.hasQuery ? relative.query : null,
+          )
+          .toString();
     }
 
-    if (url.startsWith('/')) {
-      return '${ApiConfig.baseUrl}$url';
-    }
+    final baseSegments = base.pathSegments
+        .where((segment) => segment.isNotEmpty)
+        .toList(growable: false);
+    final relativeSegments = relative.pathSegments
+        .where((segment) => segment.isNotEmpty)
+        .toList(growable: false);
 
-    return '${ApiConfig.baseUrl}/$url';
+    final resolvedSegments = _startsWithSegments(relativeSegments, baseSegments)
+        ? relativeSegments
+        : [...baseSegments, ...relativeSegments];
+
+    return base
+        .replace(
+          pathSegments: resolvedSegments,
+          query: relative.hasQuery ? relative.query : null,
+          fragment: relative.hasFragment ? relative.fragment : null,
+        )
+        .toString();
+  }
+
+  bool _startsWithSegments(List<String> value, List<String> prefix) {
+    if (prefix.isEmpty) return true;
+    if (value.length < prefix.length) return false;
+    for (var i = 0; i < prefix.length; i++) {
+      if (value[i] != prefix[i]) return false;
+    }
+    return true;
   }
 
   bool _needsAuthHeaders(String url) {

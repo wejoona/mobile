@@ -534,9 +534,10 @@ void main() {
         'lib/design/components/primitives/user_avatar.dart',
       ).readAsStringSync();
 
-      expect(avatarSource, contains("url.startsWith('/api/')"));
+      expect(avatarSource, contains("relative.path.startsWith('/api/')"));
       expect(avatarSource, contains("resolvedPath.contains('/user/avatar/')"));
-      expect(avatarSource, contains("return '\${ApiConfig.baseUrl}/\$url';"));
+      expect(avatarSource, contains('pathSegments: resolvedSegments'));
+      expect(avatarSource, contains('_startsWithSegments'));
     });
 
     test('profile completion applies backend profile snapshot', () {
