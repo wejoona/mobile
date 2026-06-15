@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/components/dialogs/index.dart'
     hide AlertDialog;
@@ -87,6 +88,10 @@ class DevicesScreen extends ConsumerWidget {
       return Center(
         child: CircularProgressIndicator(color: context.colors.gold),
       );
+    }
+
+    if (state.requiresUnlock && state.devices.isEmpty) {
+      return _buildUnlockRequired(context, l10n);
     }
 
     if (state.error != null && state.devices.isEmpty) {
@@ -211,6 +216,41 @@ class DevicesScreen extends ConsumerWidget {
             AppButton(
               label: l10n.action_retry,
               onPressed: () => ref.read(deviceActionsProvider).refresh(),
+              variant: AppButtonVariant.primary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUnlockRequired(BuildContext context, AppLocalizations l10n) {
+    final colors = context.colors;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xxl),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.lock_outline_rounded, size: 48, color: colors.gold),
+            const SizedBox(height: AppSpacing.xl),
+            AppText(
+              l10n.session_unlockReason,
+              variant: AppTextVariant.titleMedium,
+              textAlign: TextAlign.center,
+              color: colors.textPrimary,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            AppText(
+              l10n.settings_devicesDescription,
+              variant: AppTextVariant.bodyMedium,
+              color: colors.textSecondary,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            AppButton(
+              label: l10n.auth_tapToUnlock,
+              onPressed: () => context.go('/session-locked'),
               variant: AppButtonVariant.primary,
             ),
           ],

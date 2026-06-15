@@ -75,6 +75,18 @@ void main() {
     expect(logoutAllDevices, contains('clearLocalSession'));
   });
 
+  test('devices 401 preserves unlock state instead of showing empty list', () {
+    final source = File(
+      'lib/features/settings/providers/devices_provider.dart',
+    ).readAsStringSync();
+
+    expect(source, contains('setLocked()'));
+    expect(source, isNot(contains('return const <Device>[];')));
+    expect(source, contains('requiresUnlock'));
+    expect(source, contains('authState.isLocked'));
+    expect(source, contains('error.statusCode == 401'));
+  });
+
   test('DevicesRepository parses bare backend array', () async {
     final dio = MockDio();
     dio.queueResponse([

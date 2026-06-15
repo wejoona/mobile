@@ -20,7 +20,6 @@ final devicesProvider = FutureProvider<List<Device>>((ref) async {
   } on ApiException catch (e) {
     if (e.statusCode == 401) {
       ref.read(authProvider.notifier).setLocked();
-      return const <Device>[];
     }
     rethrow;
   }
@@ -103,10 +102,15 @@ final deviceActionsProvider = Provider<DeviceActions>((ref) {
 /// Adapter: wraps raw list into DevicesState for views.
 final devicesStateProvider = Provider<DevicesState>((ref) {
   final async = ref.watch(devicesProvider);
+  final authState = ref.watch(authProvider);
+  final error = async.error;
+  final requiresUnlock =
+      authState.isLocked || (error is ApiException && error.statusCode == 401);
   return DevicesState(
     isLoading: async.isLoading,
-    error: _friendlyDeviceError(async.error),
+    error: requiresUnlock ? null : _friendlyDeviceError(error),
     devices: async.value ?? [],
+    requiresUnlock: requiresUnlock,
   );
 });
 
