@@ -354,6 +354,30 @@
   "@wallet_securedWallet": {
     "description": "Wallet security status label"
   },
+  "wallet_liveBalance": "Live balance",
+  "@wallet_liveBalance": {
+    "description": "Wallet balance sync status when the ledger is fresh"
+  },
+  "wallet_refreshingBalance": "Refreshing balance",
+  "@wallet_refreshingBalance": {
+    "description": "Wallet balance sync status while refreshing"
+  },
+  "wallet_syncDelayed": "Sync delayed",
+  "@wallet_syncDelayed": {
+    "description": "Wallet balance sync status when fresh ledger sync is delayed"
+  },
+  "wallet_active": "Wallet active",
+  "@wallet_active": {
+    "description": "Wallet balance sync status when the wallet is active"
+  },
+  "wallet_balanceReady": "Balance ready",
+  "@wallet_balanceReady": {
+    "description": "Wallet balance sync status when balance is ready"
+  },
+  "wallet_liveSyncDelayedMessage": "Live ledger sync is delayed. Showing the last available wallet balance.",
+  "@wallet_liveSyncDelayedMessage": {
+    "description": "Warning shown when the app displays cached wallet balance because live sync is delayed"
+  },
   "wallet_balanceHidden": "Balance hidden",
   "@wallet_balanceHidden": {
     "description": "Label shown when the user hides wallet balances"
@@ -3817,6 +3841,32 @@
   "contacts_invite_to_joonapay": "Invite to Korido",
   "@contacts_invite_to_joonapay": {
     "description": "Non-users section title"
+  },
+  "contacts_send": "Send",
+  "@contacts_send": {
+    "description": "Send money action on a contact card"
+  },
+  "contacts_invite": "Invite",
+  "@contacts_invite": {
+    "description": "Invite action on a contact card"
+  },
+  "contacts_sendMoneyTo": "Send money to {name}",
+  "@contacts_sendMoneyTo": {
+    "description": "Accessibility label for sending money to a contact",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "contacts_inviteToKorido": "Invite {name} to Korido",
+  "@contacts_inviteToKorido": {
+    "description": "Accessibility label for inviting a contact to Korido",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "contacts_empty": "Connect your contacts to find Korido users.",
   "@contacts_empty": {

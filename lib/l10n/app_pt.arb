@@ -354,6 +354,12 @@
   "@wallet_securedWallet": {
     "description": "Wallet security status label"
   },
+  "wallet_liveBalance": "Saldo em tempo real",
+  "wallet_refreshingBalance": "Atualizando saldo",
+  "wallet_syncDelayed": "Sincronização atrasada",
+  "wallet_active": "Carteira ativa",
+  "wallet_balanceReady": "Saldo pronto",
+  "wallet_liveSyncDelayedMessage": "A sincronização do livro razão está atrasada. Mostrando o último saldo disponível.",
   "wallet_balanceHidden": "Saldo oculto",
   "@wallet_balanceHidden": {
     "description": "Label shown when the user hides wallet balances"
@@ -3592,6 +3598,32 @@
   "contacts_invite_to_joonapay": "Invite to Korido",
   "@contacts_invite_to_joonapay": {
     "description": "Non-users section title"
+  },
+  "contacts_send": "Enviar",
+  "@contacts_send": {
+    "description": "Send money action on a contact card"
+  },
+  "contacts_invite": "Convidar",
+  "@contacts_invite": {
+    "description": "Invite action on a contact card"
+  },
+  "contacts_sendMoneyTo": "Enviar dinheiro para {name}",
+  "@contacts_sendMoneyTo": {
+    "description": "Accessibility label for sending money to a contact",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "contacts_inviteToKorido": "Convidar {name} para Korido",
+  "@contacts_inviteToKorido": {
+    "description": "Accessibility label for inviting a contact to Korido",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "contacts_empty": "Connect your contacts to find Korido users.",
   "@contacts_empty": {

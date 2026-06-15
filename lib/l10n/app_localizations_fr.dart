@@ -272,6 +272,25 @@ class AppLocalizationsFr extends AppLocalizations {
   String get wallet_securedWallet => 'Portefeuille sécurisé';
 
   @override
+  String get wallet_liveBalance => 'Solde en direct';
+
+  @override
+  String get wallet_refreshingBalance => 'Actualisation du solde';
+
+  @override
+  String get wallet_syncDelayed => 'Synchronisation retardée';
+
+  @override
+  String get wallet_active => 'Portefeuille actif';
+
+  @override
+  String get wallet_balanceReady => 'Solde prêt';
+
+  @override
+  String get wallet_liveSyncDelayedMessage =>
+      'La synchronisation du registre est retardée. Le dernier solde disponible est affiché.';
+
+  @override
   String get wallet_balanceHidden => 'Solde masqué';
 
   @override
@@ -3128,6 +3147,22 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get contacts_invite_to_joonapay => 'Inviter sur Korido';
+
+  @override
+  String get contacts_send => 'Envoyer';
+
+  @override
+  String get contacts_invite => 'Inviter';
+
+  @override
+  String contacts_sendMoneyTo(String name) {
+    return 'Envoyer de l\'argent à $name';
+  }
+
+  @override
+  String contacts_inviteToKorido(String name) {
+    return 'Inviter $name sur Korido';
+  }
 
   @override
   String get contacts_empty =>

@@ -588,6 +588,42 @@ abstract class AppLocalizations {
   /// **'Secured wallet'**
   String get wallet_securedWallet;
 
+  /// Wallet balance sync status when the ledger is fresh
+  ///
+  /// In en, this message translates to:
+  /// **'Live balance'**
+  String get wallet_liveBalance;
+
+  /// Wallet balance sync status while refreshing
+  ///
+  /// In en, this message translates to:
+  /// **'Refreshing balance'**
+  String get wallet_refreshingBalance;
+
+  /// Wallet balance sync status when fresh ledger sync is delayed
+  ///
+  /// In en, this message translates to:
+  /// **'Sync delayed'**
+  String get wallet_syncDelayed;
+
+  /// Wallet balance sync status when the wallet is active
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet active'**
+  String get wallet_active;
+
+  /// Wallet balance sync status when balance is ready
+  ///
+  /// In en, this message translates to:
+  /// **'Balance ready'**
+  String get wallet_balanceReady;
+
+  /// Warning shown when the app displays cached wallet balance because live sync is delayed
+  ///
+  /// In en, this message translates to:
+  /// **'Live ledger sync is delayed. Showing the last available wallet balance.'**
+  String get wallet_liveSyncDelayedMessage;
+
   /// Label shown when the user hides wallet balances
   ///
   /// In en, this message translates to:
@@ -5783,6 +5819,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Invite to Korido'**
   String get contacts_invite_to_joonapay;
+
+  /// Send money action on a contact card
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get contacts_send;
+
+  /// Invite action on a contact card
+  ///
+  /// In en, this message translates to:
+  /// **'Invite'**
+  String get contacts_invite;
+
+  /// Accessibility label for sending money to a contact
+  ///
+  /// In en, this message translates to:
+  /// **'Send money to {name}'**
+  String contacts_sendMoneyTo(String name);
+
+  /// Accessibility label for inviting a contact to Korido
+  ///
+  /// In en, this message translates to:
+  /// **'Invite {name} to Korido'**
+  String contacts_inviteToKorido(String name);
 
   /// Empty state message
   ///

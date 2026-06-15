@@ -676,11 +676,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                               : walletState.isRefreshing
                               ? Icons.sync_rounded
                               : Icons.verified_rounded,
-                          label: walletState.isRefreshing
-                              ? 'Refreshing balance'
-                              : walletState.isDegraded || walletState.isStale
-                              ? _balanceSyncLabel(walletState)
-                              : _balanceSyncLabel(walletState),
+                          label: _balanceSyncLabel(walletState, l10n),
                           color: walletState.isDegraded || walletState.isStale
                               ? colors.warningText
                               : null,
@@ -689,7 +685,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                     ),
                     if (_shouldShowBalanceWarning(walletState)) ...[
                       const SizedBox(height: AppSpacing.md),
-                      _buildBalanceWarning(walletState, colors),
+                      _buildBalanceWarning(walletState, colors, l10n),
                     ],
                   ],
                 ],
@@ -759,7 +755,11 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         (warning != null && warning.isNotEmpty);
   }
 
-  Widget _buildBalanceWarning(WalletState walletState, ThemeColors colors) {
+  Widget _buildBalanceWarning(
+    WalletState walletState,
+    ThemeColors colors,
+    AppLocalizations l10n,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(
@@ -783,7 +783,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: AppText(
-              _balanceWarningMessage(walletState),
+              _balanceWarningMessage(walletState, l10n),
               variant: AppTextVariant.bodySmall,
               color: colors.warningText,
             ),
@@ -793,45 +793,48 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     );
   }
 
-  String _balanceWarningMessage(WalletState walletState) {
+  String _balanceWarningMessage(
+    WalletState walletState,
+    AppLocalizations l10n,
+  ) {
     final warning = walletState.balanceWarning?.trim();
     if (warning != null && warning.isNotEmpty) {
       return warning;
     }
-    return 'Live ledger sync is delayed. Showing the last available wallet balance.';
+    return l10n.wallet_liveSyncDelayedMessage;
   }
 
-  String _balanceSyncLabel(WalletState walletState) {
+  String _balanceSyncLabel(WalletState walletState, AppLocalizations l10n) {
     if (walletState.isRefreshing) {
-      return 'Refreshing balance';
+      return l10n.wallet_refreshingBalance;
     }
 
     if (walletState.isDegraded || walletState.isStale) {
-      return 'Sync delayed';
+      return l10n.wallet_syncDelayed;
     }
 
     final status = walletState.balanceReadStatus;
     if (status == 'degraded' ||
         status == 'cached_degraded' ||
         status == 'local_mirror') {
-      return 'Sync delayed';
+      return l10n.wallet_syncDelayed;
     }
 
     final warning = walletState.balanceWarning;
     if (warning != null && warning.trim().isNotEmpty) {
-      return 'Sync delayed';
+      return l10n.wallet_syncDelayed;
     }
 
     if (walletState.balanceReadStatus == 'fresh' ||
         walletState.balanceSourceOfTruth == 'blnk') {
-      return 'Live balance';
+      return l10n.wallet_liveBalance;
     }
 
     if (walletState.walletId.isNotEmpty) {
-      return 'Wallet active';
+      return l10n.wallet_active;
     }
 
-    return 'Balance ready';
+    return l10n.wallet_balanceReady;
   }
 
   Widget _buildMobileLayout(

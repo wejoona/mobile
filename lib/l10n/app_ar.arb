@@ -354,6 +354,12 @@
   "@wallet_securedWallet": {
     "description": "Wallet security status label"
   },
+  "wallet_liveBalance": "رصيد مباشر",
+  "wallet_refreshingBalance": "تحديث الرصيد",
+  "wallet_syncDelayed": "تأخر المزامنة",
+  "wallet_active": "المحفظة نشطة",
+  "wallet_balanceReady": "الرصيد جاهز",
+  "wallet_liveSyncDelayedMessage": "تأخرت مزامنة السجل المباشر. يتم عرض آخر رصيد متاح.",
   "wallet_balanceHidden": "الرصيد مخفي",
   "@wallet_balanceHidden": {
     "description": "Label shown when the user hides wallet balances"
