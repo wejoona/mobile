@@ -50,6 +50,7 @@ class _EmailVerificationScreenState
       final status = await ref.read(userServiceProvider).getEmailStatus();
       final verified = status['verified'] == true;
       final pendingVerification = status['pendingVerification'] == true;
+      final expiresIn = _readExpiresIn(status['expiresIn']);
       final email = (status['email'] as String?)?.trim();
       final shouldAutoRequestCode =
           !verified &&
@@ -67,10 +68,9 @@ class _EmailVerificationScreenState
         _isCheckingStatus = false;
         _isSuccess = verified;
         _hasPendingCode = pendingVerification;
-        _resendCountdown = pendingVerification ? 60 : 0;
       });
       if (pendingVerification) {
-        _startResendCountdown();
+        _startResendCountdown(expiresIn);
       } else if (shouldAutoRequestCode) {
         _autoRequestedCode = true;
         unawaited(_resend());
@@ -98,9 +98,12 @@ class _EmailVerificationScreenState
     super.dispose();
   }
 
-  void _startResendCountdown() {
-    _resendCountdown = 60;
+  void _startResendCountdown([int seconds = 60]) {
+    _resendCountdown = seconds.clamp(0, 30 * 60);
     _resendTimer?.cancel();
+    if (_resendCountdown <= 0) {
+      return;
+    }
     _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
         timer.cancel();
@@ -192,7 +195,7 @@ class _EmailVerificationScreenState
           AppLocalizations.of(context)!,
         );
       });
-      _startResendCountdown();
+      _startResendCountdown(result.expiresIn);
     } on Object catch (_) {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
@@ -201,6 +204,19 @@ class _EmailVerificationScreenState
         _resendMessage = l10n.emailVerification_resendFailed;
       });
     }
+  }
+
+  int _readExpiresIn(Object? value) {
+    if (value is int) {
+      return value;
+    }
+    if (value is num) {
+      return value.toInt();
+    }
+    if (value is String) {
+      return int.tryParse(value) ?? 60;
+    }
+    return 60;
   }
 
   void _handleOtpChange(String value, int index) {
