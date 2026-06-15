@@ -183,6 +183,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
       state = state.copyWith(
         isLoading: false,
         verificationStatus: _mapStatus(profile),
+        rejectionReason: data.rejectionReason,
       );
     } catch (e) {
       if (!ref.mounted) return;

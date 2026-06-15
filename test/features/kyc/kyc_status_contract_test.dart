@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
 import 'package:usdc_wallet/utils/kyc_utils.dart';
@@ -39,5 +41,22 @@ void main() {
         );
       }
     });
+
+    test(
+      'status loader preserves backend rejection reason for user display',
+      () {
+        final source = File(
+          'lib/features/kyc/providers/kyc_provider.dart',
+        ).readAsStringSync();
+        final loadStatusBody = RegExp(
+          r'Future<void> loadVerificationStatus\(\) async \{([\s\S]*?)\n  \}',
+        ).firstMatch(source)!.group(1)!;
+
+        expect(
+          loadStatusBody,
+          contains('rejectionReason: data.rejectionReason'),
+        );
+      },
+    );
   });
 }
