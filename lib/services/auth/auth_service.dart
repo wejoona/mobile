@@ -59,11 +59,14 @@ class AuthService {
     String? verificationId,
   }) async {
     try {
-      final response = await _dio.post('/auth/verify-otp', data: {
-        'phone': PhoneNormalizer.toE164(phone),
-        'otp': otp,
-        if (verificationId != null) 'verificationId': verificationId,
-      });
+      final response = await _dio.post(
+        '/auth/verify-otp',
+        data: {
+          'phone': PhoneNormalizer.toE164(phone),
+          'otp': otp,
+          if (verificationId != null) 'verificationId': verificationId,
+        },
+      );
       return AuthResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -72,23 +75,77 @@ class AuthService {
 
   /// POST /auth/logout - Invalidate session on backend
   Future<void> logout({String? accessToken, String? refreshToken}) async {
+    final logger = const AppLogger('Auth');
     try {
       final token =
           refreshToken ?? await _storage.read(key: StorageKeys.refreshToken);
       if (token == null || token.isEmpty) {
         return;
       }
-      await _dio.post(
-        '/auth/logout',
-        data: {'refreshToken': token},
-        options: accessToken == null || accessToken.isEmpty
-            ? null
-            : Options(headers: {'Authorization': 'Bearer $accessToken'}),
-      );
+
+      if (accessToken == null || accessToken.isEmpty) {
+        final refreshed = await _refreshForLogout(token);
+        if (refreshed == null) return;
+        await _postLogout(
+          accessToken: refreshed.accessToken,
+          refreshToken: refreshed.refreshToken ?? token,
+        );
+        return;
+      }
+
+      await _postLogout(accessToken: accessToken, refreshToken: token);
+    } on DioException catch (e) {
+      if (!_isAuthRejected(e)) {
+        logger.error('Backend logout failed', e);
+        return;
+      }
+
+      final token =
+          refreshToken ?? await _storage.read(key: StorageKeys.refreshToken);
+      if (token == null || token.isEmpty) return;
+
+      final refreshed = await _refreshForLogout(token);
+      if (refreshed == null) return;
+
+      try {
+        await _postLogout(
+          accessToken: refreshed.accessToken,
+          refreshToken: refreshed.refreshToken ?? token,
+        );
+      } catch (retryError) {
+        logger.error('Backend logout retry failed', retryError);
+      }
     } catch (e) {
       // Non-critical — we clear local tokens regardless
-      const AppLogger('Auth').error('Backend logout failed', e);
+      logger.error('Backend logout failed', e);
     }
+  }
+
+  Future<void> _postLogout({
+    required String accessToken,
+    required String refreshToken,
+  }) {
+    return _dio.post(
+      '/auth/logout',
+      data: {'refreshToken': refreshToken},
+      options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+    );
+  }
+
+  Future<RefreshResponse?> _refreshForLogout(String refreshToken) async {
+    try {
+      return await this.refreshToken(refreshToken: refreshToken);
+    } catch (e) {
+      const AppLogger(
+        'Auth',
+      ).warn('Could not refresh token before backend logout', e);
+      return null;
+    }
+  }
+
+  bool _isAuthRejected(DioException e) {
+    final statusCode = e.response?.statusCode;
+    return statusCode == 401 || statusCode == 403;
   }
 
   /// POST /auth/refresh - Refresh access token using refresh token

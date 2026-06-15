@@ -36,5 +36,46 @@ void main() {
       expect(dio.requestHistory.single.method, 'POST');
       expect(dio.requestHistory.single.path, '/auth/verify-otp');
     });
+
+    test(
+      'logout refreshes and retries when the access token is stale',
+      () async {
+        final dio = MockDio();
+        final authService = AuthService(dio, MockSecureStorage());
+
+        dio.queueErrorResponse(statusCode: 401);
+        dio.queueResponse({
+          'accessToken': 'fresh-access-token',
+          'refreshToken': 'rotated-refresh-token',
+          'expiresIn': 900,
+        });
+        dio.queueResponse({'success': true});
+
+        await authService.logout(
+          accessToken: 'stale-access-token',
+          refreshToken: 'old-refresh-token',
+        );
+
+        expect(dio.requestHistory.map((request) => request.path), [
+          '/auth/logout',
+          '/auth/refresh',
+          '/auth/logout',
+        ]);
+        expect(
+          dio.requestHistory.first.headers['Authorization'],
+          'Bearer stale-access-token',
+        );
+        expect(dio.requestHistory[1].data, {
+          'refreshToken': 'old-refresh-token',
+        });
+        expect(
+          dio.requestHistory.last.headers['Authorization'],
+          'Bearer fresh-access-token',
+        );
+        expect(dio.requestHistory.last.data, {
+          'refreshToken': 'rotated-refresh-token',
+        });
+      },
+    );
   });
 }
