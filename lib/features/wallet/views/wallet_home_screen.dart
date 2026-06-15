@@ -687,6 +687,10 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                         ),
                       ],
                     ),
+                    if (_shouldShowBalanceWarning(walletState)) ...[
+                      const SizedBox(height: AppSpacing.md),
+                      _buildBalanceWarning(walletState, colors),
+                    ],
                   ],
                 ],
               ),
@@ -747,6 +751,55 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
       ),
     ],
   );
+
+  bool _shouldShowBalanceWarning(WalletState walletState) {
+    final warning = walletState.balanceWarning?.trim();
+    return walletState.isDegraded ||
+        walletState.isStale ||
+        (warning != null && warning.isNotEmpty);
+  }
+
+  Widget _buildBalanceWarning(WalletState walletState, ThemeColors colors) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: Color.alphaBlend(
+          colors.warning.withValues(alpha: colors.isDark ? 0.16 : 0.10),
+          colors.surface,
+        ),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(
+          color: colors.warning.withValues(alpha: colors.isDark ? 0.28 : 0.22),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.info_outline_rounded, color: colors.warningText, size: 18),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: AppText(
+              _balanceWarningMessage(walletState),
+              variant: AppTextVariant.bodySmall,
+              color: colors.warningText,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _balanceWarningMessage(WalletState walletState) {
+    final warning = walletState.balanceWarning?.trim();
+    if (warning != null && warning.isNotEmpty) {
+      return warning;
+    }
+    return 'Live ledger sync is delayed. Showing the last available wallet balance.';
+  }
 
   String _balanceSyncLabel(WalletState walletState) {
     if (walletState.isRefreshing) {
