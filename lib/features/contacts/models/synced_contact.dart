@@ -40,17 +40,33 @@ class SyncedContact {
   }
 
   factory SyncedContact.fromJson(Map<String, dynamic> json) {
+    final userId =
+        json['joonaPayUserId'] as String? ??
+        json['koridoUserId'] as String? ??
+        json['userId'] as String?;
+    final username = json['username'] as String?;
+    final displayName =
+        json['name'] as String? ??
+        json['displayName'] as String? ??
+        [
+          json['firstName'] as String?,
+          json['lastName'] as String?,
+        ].whereType<String>().where((part) => part.trim().isNotEmpty).join(' ');
+    final phone = json['phone'] as String? ?? '';
+
     return SyncedContact(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      phone: json['phone'] as String,
+      id: json['id'] as String? ?? userId ?? username ?? phone,
+      name: displayName.trim().isEmpty
+          ? (username == null || username.isEmpty ? 'Korido user' : username)
+          : displayName,
+      phone: phone,
       maskedPhone: json['maskedPhone'] as String?,
       lookupPhones:
           (json['lookupPhones'] as List?)?.whereType<String>().toList() ??
           const [],
       isKoridoUser: json['isKoridoUser'] as bool? ?? false,
-      joonaPayUserId: json['joonaPayUserId'] as String?,
-      username: json['username'] as String?,
+      joonaPayUserId: userId,
+      username: username,
       avatarUrl: json['avatarUrl'] as String?,
     );
   }
