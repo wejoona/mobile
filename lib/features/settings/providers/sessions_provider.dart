@@ -66,6 +66,10 @@ class SessionsNotifier extends Notifier<SessionsState> {
         requiresUnlock: false,
       );
     } on ApiException catch (e) {
+      if (e.isDeviceBlacklisted) {
+        await _clearLocalSessionAfterSecurityBlock(e);
+        return;
+      }
       if (e.statusCode == 401 && await _refreshAuthForRetry()) {
         try {
           final sessions = await repository.getSessions();
@@ -80,6 +84,10 @@ class SessionsNotifier extends Notifier<SessionsState> {
           );
           return;
         } on ApiException catch (retryError) {
+          if (retryError.isDeviceBlacklisted) {
+            await _clearLocalSessionAfterSecurityBlock(retryError);
+            return;
+          }
           if (await _handleExpiredSession(retryError)) {
             state = state.copyWith(
               isLoading: false,
@@ -130,6 +138,10 @@ class SessionsNotifier extends Notifier<SessionsState> {
       await loadSessions();
       return true;
     } on ApiException catch (e) {
+      if (e.isDeviceBlacklisted) {
+        await _clearLocalSessionAfterSecurityBlock(e);
+        return false;
+      }
       if (await _handleExpiredSession(e)) {
         state = state.copyWith(error: _friendlyError(e), requiresUnlock: true);
         return false;
@@ -154,6 +166,10 @@ class SessionsNotifier extends Notifier<SessionsState> {
       await _clearLocalSessionAfterLogoutAll();
       return true;
     } on ApiException catch (e) {
+      if (e.isDeviceBlacklisted) {
+        await _clearLocalSessionAfterSecurityBlock(e);
+        return true;
+      }
       if (e.statusCode == 401 || e.statusCode == 403) {
         await _clearLocalSessionAfterLogoutAll();
         return true;
@@ -184,7 +200,22 @@ class SessionsNotifier extends Notifier<SessionsState> {
     );
   }
 
+  Future<void> _clearLocalSessionAfterSecurityBlock(ApiException error) async {
+    await ref.read(authProvider.notifier).clearLocalSession();
+    state = state.copyWith(
+      isLoading: false,
+      sessions: const [],
+      currentSessionId: null,
+      clearCurrentSessionId: true,
+      error: error.message,
+      requiresUnlock: false,
+    );
+  }
+
   String _friendlyError(ApiException error) {
+    if (error.isDeviceBlacklisted) {
+      return error.message;
+    }
     if (error.statusCode == 401) {
       return 'Please unlock Korido again to continue.';
     }

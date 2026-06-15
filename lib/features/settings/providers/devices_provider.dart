@@ -18,7 +18,9 @@ final devicesProvider = FutureProvider<List<Device>>((ref) async {
   try {
     return await repository.getDevices();
   } on ApiException catch (e) {
-    if (e.statusCode == 401) {
+    if (e.isDeviceBlacklisted) {
+      await ref.read(authProvider.notifier).clearLocalSession();
+    } else if (e.statusCode == 401) {
       ref.read(authProvider.notifier).setLocked();
     }
     rethrow;
@@ -117,6 +119,9 @@ final devicesStateProvider = Provider<DevicesState>((ref) {
 String? _friendlyDeviceError(Object? error) {
   if (error == null) return null;
   if (error is ApiException) {
+    if (error.isDeviceBlacklisted) {
+      return error.message;
+    }
     if (error.statusCode == 401) return null;
     if (error.statusCode == 403) {
       return 'You do not have permission to manage devices right now.';
