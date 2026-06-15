@@ -187,9 +187,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
         mobileMoneyMethod == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text(
-            'This mobile money number is not supported yet. Use Orange, MTN, or Moov CI.',
-          ),
+          content: Text(_unsupportedMobileMoneyMessage(selectedCountry)),
           backgroundColor: context.colors.error,
         ),
       );
@@ -367,7 +365,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     CountryConfig country, {
     bool watch = true,
   }) {
-    final providerCode = _providerCodeForCiMobileNumber(localDigits);
+    final providerCode = _providerCodeForMobileNumber(localDigits, country);
     if (providerCode == null) return null;
 
     final options = _mobileMoneyOptions(country, watch: watch);
@@ -383,7 +381,13 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     return _methodForProviderCode(providerCode);
   }
 
-  String? _providerCodeForCiMobileNumber(String localDigits) {
+  String? _providerCodeForMobileNumber(
+    String localDigits,
+    CountryConfig country,
+  ) {
+    if (country.code.toUpperCase() != 'CI') {
+      return null;
+    }
     if (localDigits.startsWith('07')) {
       return 'OMCI';
     }
@@ -397,6 +401,15 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
       return 'WAVECI';
     }
     return null;
+  }
+
+  String _unsupportedMobileMoneyMessage(CountryConfig country) {
+    final options = _mobileMoneyOptions(country, watch: false);
+    final availableRails = options.map((option) => option.name).join(', ');
+    if (availableRails.isNotEmpty) {
+      return 'This ${country.name} mobile money number is not supported yet. Available rails: $availableRails.';
+    }
+    return 'Mobile money withdrawals are not available for ${country.name} yet.';
   }
 
   withdraw_api.WithdrawMethod? _methodForProviderCode(String providerCode) {
