@@ -413,10 +413,13 @@ class WalletBalanceResponse {
       final balance = _readAmount(payload, const [
         'availableDecimal',
         'available_decimal',
+        'availableBalanceDecimal',
+        'available_balance_decimal',
         'balanceDecimal',
         'balance_decimal',
         'available',
         'availableBalance',
+        'available_balance',
         'balanceUsdc',
         'balance',
         'total',
@@ -424,16 +427,22 @@ class WalletBalanceResponse {
       final pending = _readAmount(payload, const [
         'pendingDecimal',
         'pending_decimal',
+        'pendingBalanceDecimal',
+        'pending_balance_decimal',
         'pending',
         'pendingBalance',
+        'pending_balance',
       ]);
       final total = _readAmount(payload, const [
         'totalDecimal',
         'total_decimal',
+        'totalBalanceDecimal',
+        'total_balance_decimal',
         'balanceDecimal',
         'balance_decimal',
         'total',
         'totalBalance',
+        'total_balance',
         'balanceUsdc',
         'balance',
       ]);
@@ -536,7 +545,10 @@ double _readAmount(Map<String, dynamic> json, List<String> keys) {
   for (final key in keys) {
     final value = json[key];
     if (value is num) return value.toDouble();
-    if (value is String) return double.tryParse(value) ?? 0;
+    if (value is String) {
+      final parsed = double.tryParse(value.trim());
+      if (parsed != null) return parsed;
+    }
   }
   return 0;
 }
