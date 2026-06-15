@@ -25,6 +25,7 @@
 | Devices | `lib/features/settings/` |
 | Transactions | `lib/features/transactions/` |
 | Notifications mocks/service | `lib/mocks/services/notifications/`, `lib/features/notifications/` |
+| API-backed savings pots | `lib/features/savings_pots/` |
 | Theme tokens | `lib/design/tokens/`, `lib/design/theme/` |
 | Golden tests | `test/golden/` |
 | E2E-style tests | `test/e2e/`, `integration_test/flows/` |
@@ -43,6 +44,8 @@
 - Default dev URL currently points to production API unless overridden by `--dart-define=API_URL=...`.
 - To dogfood local API, always pass `--dart-define=API_URL=http://<host>:3401/api/v1`.
 - `USE_MOCKS=true` should be explicit; do not assume mocked data represents the backend contract.
+- `/savings` and `/savings-pots` are routed to the API-backed Savings Pots feature. Do not revive the old wallet-local `SavingsGoalsView` pattern with hardcoded in-memory goals.
+- Protected media such as user avatars may be returned as absolute URLs, `/user/avatar/...`, `user/avatar/...`, or `/api/...`; the mobile avatar resolver normalizes these forms against the configured API origin.
 
 ## Initial Markets
 

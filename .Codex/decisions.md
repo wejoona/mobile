@@ -22,6 +22,14 @@ Do not reopen these unless new evidence changes them.
 - Initial users are in Abidjan and the USA.
 - Region-specific rails and labels should be data-driven.
 - Contact features should identify Korido users clearly, but similar small high-leverage improvements should be found across the product, not only contacts.
+- Savings goals must stay API-backed through Savings Pots. The old wallet-local `SavingsGoalsView` was removed because it used hardcoded in-memory data and could diverge from money-flow reality.
+- Profile photos are protected media. Mobile must preserve auth headers for protected avatar URLs and resolve relative API paths without inventing public storage URLs.
+
+## Branch Triage
+
+- `github/fix/money-movement-issues` and `github/fix/wallet-account-issues` were rejected as stale/destructive for mobile; they attempted to delete `.Codex`, fonts, Gradle wrapper, generated/localization/test assets, and large chunks of current work. The useful virtual-cards flag already exists on `develop`.
+- Dashboard `github/main` was rejected as stale because it removes current API-backed services/resources and restores local transaction create/edit pages.
+- Backend `github/main` was rejected as stale because it removes service-access, risk, provider extraction, device blacklist, email verification, and related hardening work.
 
 ## Deployment
 
@@ -30,6 +38,7 @@ Do not reopen these unless new evidence changes them.
 - Read CI and GitOps repo before touching deployment behavior.
 - Mobile active development happens on `develop`.
 - Mobile TestFlight candidates are promoted through `staging`, which Codemagic watches.
+- API/dashboard staging Kubernetes candidates should also be promoted through `staging` once their GitOps values/apps exist; `main` remains production.
 - Do not push every fix to `staging`; promote only stable candidates with no known crash/regression.
 - Keep the public app version below `2.0.0` before launch. Prefer keeping `1.0.0` and letting Codemagic advance the TestFlight build number from App Store Connect.
 - Use `mobile/scripts/promote_testflight_candidate.sh --yes` for deliberate candidate pushes after the candidate is stable enough.
