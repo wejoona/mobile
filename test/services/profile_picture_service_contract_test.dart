@@ -71,6 +71,32 @@ void main() {
       expect(result.avatarUrl, '/user/avatar/usr_nested');
       expect(result.avatarThumb, startsWith('data:image/jpeg;base64,'));
     });
+
+    test('unwraps nested profile avatar upload envelopes', () async {
+      final file = await _writeTinyJpeg();
+      final dio = MockDio()
+        ..queueResponse({
+          'data': {
+            'profile': {
+              'avatarUrl': '/user/avatar/usr_profile',
+              'avatarThumb': 'data:image/jpeg;base64,/9j/profile',
+            },
+          },
+        });
+      final service = ProfilePictureService(dio);
+
+      final result = await service.uploadAvatar(
+        file,
+        onProgress: (_) {},
+        faceCheck: AvatarDeviceFaceCheck.fromDeviceAnalysis(
+          isAvailable: true,
+          faceCount: 1,
+        ),
+      );
+
+      expect(result.avatarUrl, '/user/avatar/usr_profile');
+      expect(result.avatarThumb, startsWith('data:image/jpeg;base64,'));
+    });
   });
 }
 

@@ -265,12 +265,15 @@ class AvatarUploadResult {
   const AvatarUploadResult({this.avatarUrl, this.avatarThumb, this.message});
 
   factory AvatarUploadResult.fromJson(Map<String, dynamic> json) {
+    final payload = _readPayload(json);
     return AvatarUploadResult(
-      avatarUrl: (json['avatarUrl'] ?? json['avatar_url']) as String?,
+      avatarUrl: (payload['avatarUrl'] ?? payload['avatar_url']) as String?,
       avatarThumb:
-          (json['avatarThumb'] ?? json['avatar_thumb'] ?? json['avatarBase64'])
+          (payload['avatarThumb'] ??
+                  payload['avatar_thumb'] ??
+                  payload['avatarBase64'])
               as String?,
-      message: json['message'] as String?,
+      message: payload['message'] as String? ?? json['message'] as String?,
     );
   }
 }
@@ -309,20 +312,21 @@ Map<String, dynamic> _readPayload(Object? raw) {
     final map = Map<String, dynamic>.from(raw);
     final data = map['data'];
     if (data is Map) {
-      final dataMap = Map<String, dynamic>.from(data);
-      final user = dataMap['user'];
-      if (user is Map) {
-        return Map<String, dynamic>.from(user);
-      }
-      return dataMap;
+      return _unwrapKnownPayload(Map<String, dynamic>.from(data));
     }
-    final user = map['user'];
-    if (user is Map) {
-      return Map<String, dynamic>.from(user);
-    }
-    return map;
+    return _unwrapKnownPayload(map);
   }
   return const {};
+}
+
+Map<String, dynamic> _unwrapKnownPayload(Map<String, dynamic> map) {
+  for (final key in const ['user', 'profile', 'avatar']) {
+    final nested = map[key];
+    if (nested is Map) {
+      return {...map, ...Map<String, dynamic>.from(nested)};
+    }
+  }
+  return map;
 }
 
 bool? _readBool(Map<String, dynamic> json, List<String> keys) {

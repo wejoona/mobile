@@ -225,18 +225,19 @@ Map<String, dynamic> _readPayload(Object? raw) {
     final map = Map<String, dynamic>.from(raw);
     final data = map['data'];
     if (data is Map) {
-      final dataMap = Map<String, dynamic>.from(data);
-      final user = dataMap['user'];
-      if (user is Map) {
-        return Map<String, dynamic>.from(user);
-      }
-      return dataMap;
+      return _unwrapKnownPayload(Map<String, dynamic>.from(data));
     }
-    final user = map['user'];
-    if (user is Map) {
-      return Map<String, dynamic>.from(user);
-    }
-    return map;
+    return _unwrapKnownPayload(map);
   }
   return const {};
+}
+
+Map<String, dynamic> _unwrapKnownPayload(Map<String, dynamic> map) {
+  for (final key in const ['user', 'profile', 'avatar']) {
+    final nested = map[key];
+    if (nested is Map) {
+      return {...map, ...Map<String, dynamic>.from(nested)};
+    }
+  }
+  return map;
 }

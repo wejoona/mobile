@@ -170,19 +170,22 @@ void main() {
       expect(profile.email, isNull);
     });
 
-    test('user service sends username updates to the profile endpoint', () async {
-      final dio = MockDio()
-        ..queueResponse({
-          'data': {'id': 'usr_username', 'username': 'ben_ouattara'},
-        });
-      final service = UserService(dio);
+    test(
+      'user service sends username updates to the profile endpoint',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'data': {'id': 'usr_username', 'username': 'ben_ouattara'},
+          });
+        final service = UserService(dio);
 
-      final profile = await service.updateProfile(username: 'ben_ouattara');
+        final profile = await service.updateProfile(username: 'ben_ouattara');
 
-      expect(dio.requestHistory.single.path, '/user/profile');
-      expect(dio.requestHistory.single.data, {'username': 'ben_ouattara'});
-      expect(profile.username, 'ben_ouattara');
-    });
+        expect(dio.requestHistory.single.path, '/user/profile');
+        expect(dio.requestHistory.single.data, {'username': 'ben_ouattara'});
+        expect(profile.username, 'ben_ouattara');
+      },
+    );
 
     test(
       'user avatar upload declares the device face-check contract',
@@ -242,6 +245,34 @@ void main() {
       expect(avatar.avatarUrl, '/user/avatar/usr_nested');
       expect(avatar.avatarThumb, startsWith('data:image/jpeg;base64,'));
     });
+
+    test(
+      'user avatar upload unwraps nested avatar response envelopes',
+      () async {
+        final avatarFile = await _writeTinyJpeg();
+        final dio = MockDio()
+          ..queueResponse({
+            'data': {
+              'avatar': {
+                'avatar_url': '/user/avatar/usr_avatar',
+                'avatar_thumb': 'data:image/jpeg;base64,/9j/avatar',
+              },
+            },
+          });
+        final service = UserService(dio);
+
+        final avatar = await service.uploadAvatar(
+          avatarFile.path,
+          faceCheck: AvatarDeviceFaceCheck.fromDeviceAnalysis(
+            isAvailable: true,
+            faceCount: 1,
+          ),
+        );
+
+        expect(avatar.avatarUrl, '/user/avatar/usr_avatar');
+        expect(avatar.avatarThumb, startsWith('data:image/jpeg;base64,'));
+      },
+    );
   });
 
   group('UserState avatar contract', () {
