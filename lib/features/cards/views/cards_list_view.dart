@@ -101,9 +101,7 @@ class CardsListView extends ConsumerWidget {
                       ref.invalidate(cardsEnvelopeProvider);
                     },
                     onBlock: () async {
-                      final actions = ref.read(cardActionsProvider);
-                      await actions.block(card.id);
-                      ref.invalidate(cardsEnvelopeProvider);
+                      await _confirmBlockCard(context, ref, l10n, card.id);
                     },
                     onDetails: () => context.push('/cards/detail/${card.id}'),
                     onSettings: () =>
@@ -152,5 +150,64 @@ class CardsListView extends ConsumerWidget {
 
     if (!context.mounted) return;
     context.showSnack(l10n.cards_notifySuccess, tone: AppSnackTone.success);
+  }
+
+  Future<void> _confirmBlockCard(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    String cardId,
+  ) async {
+    final colors = context.colors;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: colors.container,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.xxl),
+        ),
+        title: AppText(
+          l10n.cards_blockCard,
+          variant: AppTextVariant.titleMedium,
+          color: colors.error,
+        ),
+        content: AppText(
+          l10n.cards_blockCardConfirmation,
+          variant: AppTextVariant.bodyMedium,
+          color: colors.textSecondary,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: AppText(
+              l10n.action_cancel,
+              variant: AppTextVariant.labelLarge,
+              color: colors.textSecondary,
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: AppText(
+              l10n.action_confirm,
+              variant: AppTextVariant.labelLarge,
+              color: colors.error,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    try {
+      await ref.read(cardActionsProvider).cancelCard(cardId);
+      ref.invalidate(cardsEnvelopeProvider);
+      ref.invalidate(cardsProvider);
+      if (!context.mounted) return;
+      context.showSnack(l10n.cards_cardBlocked, tone: AppSnackTone.error);
+    } catch (_) {
+      if (!context.mounted) return;
+      context.showSnack(l10n.cards_blockError, tone: AppSnackTone.error);
+    }
   }
 }
