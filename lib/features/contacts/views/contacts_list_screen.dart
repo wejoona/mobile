@@ -28,6 +28,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   String _searchQuery = '';
   List<SyncedContact> _lookupResults = [];
   bool _isLookupLoading = false;
+  bool _isPermissionActionLoading = false;
   Timer? _lookupDebounce;
 
   @override
@@ -109,7 +110,17 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   }
 
   Future<void> _manualSync() async {
-    await _requestPermissionAndSync(showSettingsDialog: true);
+    if (_isPermissionActionLoading) {
+      return;
+    }
+    setState(() => _isPermissionActionLoading = true);
+    try {
+      await _requestPermissionAndSync(showSettingsDialog: true);
+    } finally {
+      if (mounted) {
+        setState(() => _isPermissionActionLoading = false);
+      }
+    }
   }
 
   Future<void> _requestPermissionAndSync({
@@ -195,6 +206,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                       padding: const EdgeInsets.all(AppSpacing.md),
                       child: _ContactsPermissionCard(
                         requiresSettings: state.permissionRequiresSettings,
+                        isLoading: _isPermissionActionLoading,
                         onAction: _manualSync,
                       ),
                     ),
@@ -302,6 +314,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                                 state.permissionRequired ||
                                 _searchQuery.isEmpty,
                             requiresSettings: state.permissionRequiresSettings,
+                            isLoading: _isPermissionActionLoading,
                             onAction: _manualSync,
                           ),
                       ],
@@ -490,10 +503,12 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
 class _ContactsPermissionCard extends StatelessWidget {
   const _ContactsPermissionCard({
     required this.requiresSettings,
+    required this.isLoading,
     required this.onAction,
   });
 
   final bool requiresSettings;
+  final bool isLoading;
   final Future<void> Function() onAction;
 
   @override
@@ -543,7 +558,8 @@ class _ContactsPermissionCard extends StatelessWidget {
                       ? Icons.settings_outlined
                       : Icons.person_search_rounded,
                   isFullWidth: true,
-                  onPressed: () => unawaited(onAction()),
+                  isLoading: isLoading,
+                  onPressed: isLoading ? null : () => unawaited(onAction()),
                 ),
               ],
             ),
@@ -559,12 +575,14 @@ class _ContactsEmptyState extends StatelessWidget {
     required this.title,
     required this.showAction,
     required this.requiresSettings,
+    required this.isLoading,
     required this.onAction,
   });
 
   final String title;
   final bool showAction;
   final bool requiresSettings;
+  final bool isLoading;
   final Future<void> Function() onAction;
 
   @override
@@ -621,9 +639,8 @@ class _ContactsEmptyState extends StatelessWidget {
                     ? Icons.settings_outlined
                     : Icons.person_search_rounded,
                 isFullWidth: true,
-                onPressed: () {
-                  unawaited(onAction());
-                },
+                isLoading: isLoading,
+                onPressed: isLoading ? null : () => unawaited(onAction()),
               ),
             ],
           ],
