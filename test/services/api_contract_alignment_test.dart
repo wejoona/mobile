@@ -366,23 +366,16 @@ void main() {
       expect(result.instructions, 'Withdrawal submitted');
     });
 
-    test('withdraw fee preview uses backend withdrawal options', () async {
+    test('withdraw fee preview uses backend withdrawal quote', () async {
       final dio = MockDio()
         ..queueResponse({
-          'country': 'CI',
-          'currency': 'USDC',
-          'options': [
-            {
-              'id': 'orange_money_ci',
-              'type': 'mobile_money',
-              'providerCode': 'OMCI',
-              'fee': 2,
-              'feeType': 'percentage',
-              'minFee': 1,
-              'maxFee': 100,
-              'enabled': true,
-            },
-          ],
+          'amount': 2500,
+          'fee': 125,
+          'totalAmount': 2625,
+          'fiatAmount': 15000,
+          'currency': 'XOF',
+          'providerCode': 'OMCI',
+          'commercialFeeSource': 'commercial_terms',
         });
       final container = ProviderContainer(
         overrides: [dioProvider.overrideWithValue(dio)],
@@ -394,10 +387,14 @@ void main() {
       await notifier.setAmount(25);
 
       final request = dio.requestHistory.single;
-      expect(request.method, 'GET');
-      expect(request.path, '/wallet/withdraw/options');
-      expect(request.queryParameters, {'country': 'CI'});
-      expect(container.read(withdrawProvider).fee, 1);
+      expect(request.method, 'POST');
+      expect(request.path, '/withdrawals/quote');
+      expect(request.data, {
+        'amount': 2500,
+        'providerCode': 'OMCI',
+        'currency': 'XOF',
+      });
+      expect(container.read(withdrawProvider).fee, 1.25);
     });
 
     test('wallet actions withdrawal fee uses backend options', () async {

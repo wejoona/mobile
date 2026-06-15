@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 import 'package:usdc_wallet/core/utils/amount_conversion.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
@@ -110,7 +111,7 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
   void setPhoneNumber(String phone) =>
       state = state.copyWith(phoneNumber: phone);
 
-  /// Estimate fees from backend-owned withdrawal options.
+  /// Quote fees from the same backend commercial terms path used for submission.
   Future<void> setAmount(double amount) async {
     state = state.copyWith(amount: amount, fee: 0, error: null);
     final method = state.method;
@@ -198,40 +199,22 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
     required String providerCode,
   }) async {
     final dio = ref.read(dioProvider);
-    final response = await dio.get(
-      '/wallet/withdraw/options',
-      queryParameters: {'country': 'CI'},
+    final response = await dio.post(
+      ApiEndpoints.withdrawQuote,
+      data: {
+        'amount': toCents(amount),
+        'providerCode': providerCode,
+        'currency': 'XOF',
+      },
     );
     final payload = _unwrapPayload(
       Map<String, dynamic>.from(response.data as Map),
     );
-    final options = payload['options'];
-    if (options is! List) {
-      throw StateError('Withdrawal options response did not include options.');
+    final feeCents = _readDouble(payload, const ['fee', 'feeCents']);
+    if (feeCents == null) {
+      throw StateError('Withdrawal quote response did not include a fee.');
     }
-
-    Map<String, dynamic>? option;
-    for (final rawOption in options) {
-      if (rawOption is! Map) continue;
-      final candidate = Map<String, dynamic>.from(rawOption);
-      if (candidate['providerCode']?.toString().toUpperCase() ==
-          providerCode.toUpperCase()) {
-        option = candidate;
-        break;
-      }
-    }
-    if (option == null) {
-      throw StateError('Provider $providerCode is not available.');
-    }
-
-    final feeType = option['feeType']?.toString().toLowerCase();
-    final feeValue = _readDouble(option, const ['fee']) ?? 0;
-    final minFee = _readDouble(option, const ['minFee']) ?? 0;
-    final maxFee = _readDouble(option, const ['maxFee']);
-
-    final rawFee = feeType == 'fixed' ? feeValue : amount * (feeValue / 100);
-    final clampedMin = rawFee < minFee ? minFee : rawFee;
-    return maxFee != null && clampedMin > maxFee ? maxFee : clampedMin;
+    return feeCents / 100;
   }
 }
 

@@ -131,6 +131,13 @@ class WalletMock {
       handler: _handleWithdraw,
     );
 
+    // POST /withdrawals/quote
+    interceptor.register(
+      method: 'POST',
+      path: '/withdrawals/quote',
+      handler: _handleWithdrawQuote,
+    );
+
     // GET /wallet/deposit/channels
     interceptor.register(
       method: 'GET',
@@ -360,6 +367,37 @@ class WalletMock {
     }
 
     return MockResponse.created(withdrawal.toJson());
+  }
+
+  static Future<MockResponse> _handleWithdrawQuote(
+    RequestOptions options,
+  ) async {
+    final userId = AuthMockState.currentUserId;
+    if (userId == null) {
+      return MockResponse.unauthorized();
+    }
+
+    final data = options.data as Map<String, dynamic>?;
+    final amountCents = (data?['amount'] as num?)?.round() ?? 0;
+    final provider = data?['providerCode'] as String? ?? 'OMCI';
+    if (amountCents <= 0) {
+      return MockResponse.badRequest('Invalid amount');
+    }
+
+    final feeCents = (amountCents * 0.01).ceil();
+    return MockResponse.success({
+      'amount': amountCents,
+      'fee': feeCents,
+      'totalAmount': amountCents + feeCents,
+      'fiatAmount': ((amountCents / 100) * 600).round(),
+      'currency': data?['currency'] as String? ?? 'XOF',
+      'providerCode': provider,
+      'exchangeRate': 600,
+      'commercialTermId': 'mock_mobile_money_withdrawal',
+      'commercialFeeSource': 'local_fallback',
+      'commercialRiskTier': 'medium',
+      'commercialFeeBearer': 'sender',
+    });
   }
 
   static Future<MockResponse> _handleGetDepositProviders(
