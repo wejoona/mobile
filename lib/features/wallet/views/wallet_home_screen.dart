@@ -1199,11 +1199,10 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
   }
 
   Future<void> _refreshHomeData() async {
-    unawaited(_refreshTransactionsForHome());
-    await _refreshWalletForHome().timeout(
-      const Duration(seconds: 9),
-      onTimeout: () {},
-    );
+    await Future.wait<void>([
+      _refreshWalletForHome(),
+      _refreshTransactionsForHome(),
+    ]).timeout(const Duration(seconds: 18), onTimeout: () => const <void>[]);
   }
 
   Future<void> _refreshWalletForHome() async {
@@ -1211,7 +1210,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
       await ref
           .read(walletStateMachineProvider.notifier)
           .refresh()
-          .timeout(const Duration(seconds: 13));
+          .timeout(const Duration(seconds: 11));
     } on Object catch (error, stackTrace) {
       _logger.error(
         'Wallet refresh did not complete cleanly',
@@ -1228,7 +1227,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         await ref
             .read(walletStateMachineProvider.notifier)
             .fetch(force: true)
-            .timeout(const Duration(seconds: 15));
+            .timeout(const Duration(seconds: 7));
       } on Object catch (error, stackTrace) {
         _logger.error(
           'Home refresh recovery fetch timed out or failed',
