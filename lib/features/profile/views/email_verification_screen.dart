@@ -34,6 +34,7 @@ class _EmailVerificationScreenState
   bool _hasPendingCode = false;
   bool _isResending = false;
   bool _autoRequestedCode = false;
+  bool _deliveryWarning = false;
   String? _errorMessage;
   String? _resendMessage;
   int _resendCountdown = 0;
@@ -169,6 +170,7 @@ class _EmailVerificationScreenState
     setState(() {
       _isResending = true;
       _resendMessage = null;
+      _deliveryWarning = false;
     });
     try {
       final userService = ref.read(userServiceProvider);
@@ -190,6 +192,7 @@ class _EmailVerificationScreenState
       setState(() {
         _isResending = false;
         _hasPendingCode = true;
+        _deliveryWarning = !result.sent;
         _resendMessage = _emailCodeSentMessage(
           result,
           AppLocalizations.of(context)!,
@@ -201,6 +204,7 @@ class _EmailVerificationScreenState
       final l10n = AppLocalizations.of(context)!;
       setState(() {
         _isResending = false;
+        _deliveryWarning = true;
         _resendMessage = l10n.emailVerification_resendFailed;
       });
     }
@@ -410,20 +414,27 @@ class _EmailVerificationScreenState
 
               if (_resendMessage != null) ...[
                 const SizedBox(height: AppSpacing.md),
-                Center(
-                  child: AppText(
-                    _resendMessage!,
-                    variant: AppTextVariant.bodySmall,
-                    color:
-                        _resendMessage ==
-                                l10n.emailVerification_statusLoadFailed ||
-                            _resendMessage ==
-                                l10n.emailVerification_resendFailed
-                        ? colors.errorText
-                        : colors.textSecondary,
-                    textAlign: TextAlign.center,
+                if (_deliveryWarning)
+                  InfoCallout(
+                    icon: Icons.warning_amber_rounded,
+                    title: _resendMessage!,
+                    tone: InfoCalloutTone.warning,
+                  )
+                else
+                  Center(
+                    child: AppText(
+                      _resendMessage!,
+                      variant: AppTextVariant.bodySmall,
+                      color:
+                          _resendMessage ==
+                                  l10n.emailVerification_statusLoadFailed ||
+                              _resendMessage ==
+                                  l10n.emailVerification_resendFailed
+                          ? colors.errorText
+                          : colors.textSecondary,
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                ),
               ],
 
               const Spacer(),
