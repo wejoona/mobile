@@ -683,7 +683,13 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             clearEmail: _emailController.text.trim().isEmpty,
           );
 
-      await ref.read(profileProvider.notifier).applyProfileSnapshot(profile);
+      await ref
+          .read(profileProvider.notifier)
+          .applyProfileSnapshot(
+            profile,
+            avatarUrl: _avatarUrl,
+            avatarThumb: _avatarThumb,
+          );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
