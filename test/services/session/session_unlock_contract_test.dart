@@ -141,6 +141,19 @@ void main() {
     expect(restoreBody, contains('_checkBiometric()'));
   });
 
+  test('stale scheduled lock navigation is ignored after unlock', () {
+    final source = File(
+      'lib/services/session/session_manager.dart',
+    ).readAsStringSync();
+
+    final showLockBody = _methodBody(source, '_showLockScreen');
+
+    expect(showLockBody, contains('ref.read(sessionServiceProvider)'));
+    expect(showLockBody, contains('ref.read(authProvider)'));
+    expect(showLockBody, contains('!session.isLocked || !auth.isLocked'));
+    expect(showLockBody, contains("'/session-locked'"));
+  });
+
   test('session refresh accepts the backend response envelope', () {
     final source = File(
       'lib/services/session/session_service.dart',
