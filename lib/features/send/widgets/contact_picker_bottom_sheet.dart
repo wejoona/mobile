@@ -29,6 +29,7 @@ class _ContactPickerBottomSheetState
   List<SyncedContact> _lookupResults = [];
   bool _isLoading = true;
   bool _isLookupLoading = false;
+  bool _lookupFailed = false;
   bool _permissionRequired = false;
   bool _requiresSettings = false;
   Timer? _lookupDebounce;
@@ -190,18 +191,22 @@ class _ContactPickerBottomSheetState
         setState(() {
           _lookupResults = [];
           _isLookupLoading = false;
+          _lookupFailed = false;
         });
       }
       return;
     }
 
     if (mounted) {
-      setState(() => _isLookupLoading = true);
+      setState(() {
+        _isLookupLoading = true;
+        _lookupFailed = false;
+      });
     }
 
     try {
       final results = await ref
-          .read(joonaPayContactsServiceProvider)
+          .read(koridoContactsServiceProvider)
           .lookupKoridoUsers(trimmed);
       final localPhones = _contacts.map((contact) => contact.phone).toSet();
       final localUserIds = _contacts
@@ -221,6 +226,7 @@ class _ContactPickerBottomSheetState
         setState(() {
           _lookupResults = filteredResults;
           _isLookupLoading = false;
+          _lookupFailed = false;
         });
       }
     } on Object {
@@ -228,6 +234,7 @@ class _ContactPickerBottomSheetState
         setState(() {
           _lookupResults = [];
           _isLookupLoading = false;
+          _lookupFailed = true;
         });
       }
     }
@@ -302,14 +309,10 @@ class _ContactPickerBottomSheetState
                   )
                 : _permissionRequired
                 ? _buildPermissionRequest(colors)
-                : _filteredContacts.isEmpty && _lookupResults.isEmpty
-                ? Center(
-                    child: AppText(
-                      l10n.send_noContactsFound,
-                      variant: AppTextVariant.bodyMedium,
-                      color: colors.textSecondary,
-                    ),
-                  )
+                : _filteredContacts.isEmpty &&
+                      _lookupResults.isEmpty &&
+                      !_isLookupLoading
+                ? _buildEmptyState(colors)
                 : ListView(
                     padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
                     children: [
@@ -326,6 +329,59 @@ class _ContactPickerBottomSheetState
                   ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(ThemeColors colors) {
+    final query = _searchController.text.trim();
+    final isSearchingKorido = query.length >= 3;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              _lookupFailed
+                  ? Icons.cloud_off_outlined
+                  : Icons.person_search_outlined,
+              color: colors.textTertiary,
+              size: 34,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            AppText(
+              _lookupFailed
+                  ? _localizedText(
+                      en: 'Korido search is unavailable',
+                      fr: 'La recherche Korido est indisponible',
+                    )
+                  : isSearchingKorido
+                  ? _localizedText(
+                      en: 'No Korido account found',
+                      fr: 'Aucun compte Korido trouvé',
+                    )
+                  : AppLocalizations.of(context)!.send_noContactsFound,
+              variant: AppTextVariant.bodyMedium,
+              color: colors.textPrimary,
+              textAlign: TextAlign.center,
+              fontWeight: FontWeight.w600,
+            ),
+            if (_lookupFailed) ...[
+              const SizedBox(height: AppSpacing.xs),
+              AppText(
+                _localizedText(
+                  en: 'Try again in a moment, or enter the recipient manually.',
+                  fr: 'Réessayez dans un instant ou saisissez le destinataire manuellement.',
+                ),
+                variant: AppTextVariant.bodySmall,
+                color: colors.textSecondary,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

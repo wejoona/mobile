@@ -27,6 +27,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   String _searchQuery = '';
   List<SyncedContact> _lookupResults = [];
   bool _isLookupLoading = false;
+  bool _lookupFailed = false;
   bool _isPermissionActionLoading = false;
   Timer? _lookupDebounce;
 
@@ -57,11 +58,15 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
       setState(() {
         _lookupResults = [];
         _isLookupLoading = false;
+        _lookupFailed = false;
       });
       return;
     }
 
-    setState(() => _isLookupLoading = true);
+    setState(() {
+      _isLookupLoading = true;
+      _lookupFailed = false;
+    });
     _lookupDebounce = Timer(
       const Duration(milliseconds: 280),
       () => _lookupKoridoUsers(trimmed),
@@ -96,6 +101,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
           return !duplicatePhone && !duplicateUser;
         }).toList();
         _isLookupLoading = false;
+        _lookupFailed = false;
       });
     } on Object {
       if (!mounted || _searchController.text.trim() != query) {
@@ -104,6 +110,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
       setState(() {
         _lookupResults = [];
         _isLookupLoading = false;
+        _lookupFailed = true;
       });
     }
   }
@@ -288,13 +295,26 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                         ],
 
                         // Empty state
-                        if (filteredContacts.isEmpty && !state.isLoading)
+                        if (filteredContacts.isEmpty &&
+                            !state.isLoading &&
+                            !_isLookupLoading)
                           _ContactsEmptyState(
-                            title: state.permissionRequired
+                            title: _lookupFailed
+                                ? _localizedText(
+                                    en: 'Korido search is unavailable',
+                                    fr: 'La recherche Korido est indisponible',
+                                  )
+                                : state.permissionRequired
                                 ? l10n.contacts_permission_title
                                 : _searchQuery.isNotEmpty
                                 ? l10n.contacts_no_results
                                 : l10n.contacts_empty,
+                            description: _lookupFailed
+                                ? _localizedText(
+                                    en: 'Your contacts are still here. Try again in a moment.',
+                                    fr: 'Vos contacts sont toujours là. Réessayez dans un instant.',
+                                  )
+                                : null,
                             showAction:
                                 state.permissionRequired ||
                                 _searchQuery.isEmpty,
@@ -558,6 +578,7 @@ class _ContactsPermissionCard extends StatelessWidget {
 class _ContactsEmptyState extends StatelessWidget {
   const _ContactsEmptyState({
     required this.title,
+    this.description,
     required this.showAction,
     required this.requiresSettings,
     required this.isLoading,
@@ -565,6 +586,7 @@ class _ContactsEmptyState extends StatelessWidget {
   });
 
   final String title;
+  final String? description;
   final bool showAction;
   final bool requiresSettings;
   final bool isLoading;
@@ -609,7 +631,7 @@ class _ContactsEmptyState extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.sm),
             AppText(
-              l10n.contacts_permission_benefit2_desc,
+              description ?? l10n.contacts_permission_benefit2_desc,
               variant: AppTextVariant.bodyMedium,
               color: colors.textSecondary,
               textAlign: TextAlign.center,

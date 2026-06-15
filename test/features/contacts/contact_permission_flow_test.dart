@@ -56,9 +56,12 @@ void main() {
       ).firstMatch(source)!.group(1)!;
 
       expect(searchBody, contains('_lookupKoridoUsers(trimmed)'));
+      expect(searchBody, contains('_lookupFailed = false'));
       expect(lookupBody, contains('lookupKoridoUsers(query)'));
       expect(lookupBody, contains('localPhones'));
       expect(lookupBody, contains('localUserIds'));
+      expect(lookupBody, contains('_lookupFailed = true'));
+      expect(source, contains('!_isLookupLoading'));
     });
   });
 }
