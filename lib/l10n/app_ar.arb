@@ -1756,6 +1756,15 @@
       }
     }
   },
+  "deposit_rateUsdUsdc": "1 USD = 1 USDC",
+  "deposit_rateUsdToCurrency": "1 USD = {amount} {currency}",
+  "deposit_limitRange": "الحد الأدنى: {min} • الحد الأقصى: {max}",
+  "deposit_minimumAmount": "الحد الأدنى {amount}",
+  "deposit_maximumAmount": "الحد الأقصى {amount}",
+  "deposit_timeJustNow": "الآن",
+  "deposit_timeMinutesAgo": "منذ {count} د",
+  "deposit_timeHoursAgo": "منذ {count} س",
+  "deposit_timeDaysAgo": "منذ {count} ي",
   "deposit_youWillReceive": "ستستلم",
   "@deposit_youWillReceive": {
     "description": "Amount you will receive label"

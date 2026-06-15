@@ -487,6 +487,15 @@
       }
     }
   },
+  "deposit_rateUsdUsdc": "1 USD = 1 USDC",
+  "deposit_rateUsdToCurrency": "1 USD = {amount} {currency}",
+  "deposit_limitRange": "Min : {min} • Max : {max}",
+  "deposit_minimumAmount": "Minimum {amount}",
+  "deposit_maximumAmount": "Maximum {amount}",
+  "deposit_timeJustNow": "à l'instant",
+  "deposit_timeMinutesAgo": "il y a {count} min",
+  "deposit_timeHoursAgo": "il y a {count} h",
+  "deposit_timeDaysAgo": "il y a {count} j",
   "deposit_youWillReceive": "Vous recevrez",
   "deposit_youWillPay": "Vous paierez",
   "deposit_limits": "Limites de dépôt",

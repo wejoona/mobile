@@ -1549,6 +1549,47 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String get deposit_rateUsdUsdc => '1 USD = 1 USDC';
+
+  @override
+  String deposit_rateUsdToCurrency(String amount, String currency) {
+    return '1 USD = $amount $currency';
+  }
+
+  @override
+  String deposit_limitRange(String min, String max) {
+    return 'Mín.: $min • Máx.: $max';
+  }
+
+  @override
+  String deposit_minimumAmount(String amount) {
+    return 'Mínimo $amount';
+  }
+
+  @override
+  String deposit_maximumAmount(String amount) {
+    return 'Máximo $amount';
+  }
+
+  @override
+  String get deposit_timeJustNow => 'agora mesmo';
+
+  @override
+  String deposit_timeMinutesAgo(int count) {
+    return 'há $count min';
+  }
+
+  @override
+  String deposit_timeHoursAgo(int count) {
+    return 'há $count h';
+  }
+
+  @override
+  String deposit_timeDaysAgo(int count) {
+    return 'há $count d';
+  }
+
+  @override
   String get deposit_youWillReceive => 'You will receber';
 
   @override

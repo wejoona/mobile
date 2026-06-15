@@ -174,7 +174,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: AppText(
-                '1 USD = 1 USDC',
+                l10n.deposit_rateUsdUsdc,
                 variant: AppTextVariant.bodyMedium,
                 color: colors.textPrimary,
               ),
@@ -195,13 +195,16 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppText(
-                  '1 USD = ${rate.rate.toStringAsFixed(2)} XOF',
+                  l10n.deposit_rateUsdToCurrency(
+                    rate.rate.toStringAsFixed(2),
+                    rate.fromCurrency,
+                  ),
                   variant: AppTextVariant.bodyMedium,
                   color: colors.textPrimary,
                 ),
                 AppText(
                   l10n.deposit_rateUpdated(
-                    _formatTimestamp(rate.timestamp),
+                    _formatTimestamp(rate.timestamp, l10n),
                     rate.timestamp,
                   ),
                   variant: AppTextVariant.bodySmall,
@@ -368,7 +371,10 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
                   color: colors.textSecondary,
                 ),
                 AppText(
-                  'Min: ${_formatAmount(limits.$1, _currency)} • Max: ${_formatAmount(limits.$2, _currency)}',
+                  l10n.deposit_limitRange(
+                    _formatAmount(limits.$1, _currency),
+                    _formatAmount(limits.$2, _currency),
+                  ),
                   variant: AppTextVariant.bodySmall,
                   color: colors.textTertiary,
                 ),
@@ -437,9 +443,13 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
     if (_amountController.text.isEmpty) {
       return null;
     } else if (amount < limits.$1) {
-      return 'Minimum ${_formatAmount(limits.$1, _currency)}';
+      return AppLocalizations.of(
+        context,
+      )!.deposit_minimumAmount(_formatAmount(limits.$1, _currency));
     } else if (amount > limits.$2) {
-      return 'Maximum ${_formatAmount(limits.$2, _currency)}';
+      return AppLocalizations.of(
+        context,
+      )!.deposit_maximumAmount(_formatAmount(limits.$2, _currency));
     }
 
     return null;
@@ -537,13 +547,13 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
     return '${amount.toStringAsFixed(0)} XOF';
   }
 
-  String _formatTimestamp(DateTime timestamp) {
+  String _formatTimestamp(DateTime timestamp, AppLocalizations l10n) {
     final now = DateTime.now();
     final diff = now.difference(timestamp);
-    if (diff.inMinutes < 1) return 'just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    return '${diff.inDays}d ago';
+    if (diff.inMinutes < 1) return l10n.deposit_timeJustNow;
+    if (diff.inMinutes < 60) return l10n.deposit_timeMinutesAgo(diff.inMinutes);
+    if (diff.inHours < 24) return l10n.deposit_timeHoursAgo(diff.inHours);
+    return l10n.deposit_timeDaysAgo(diff.inDays);
   }
 }
 

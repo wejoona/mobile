@@ -2952,6 +2952,60 @@ abstract class AppLocalizations {
   /// **'Updated {time}'**
   String deposit_rateUpdated(String time, DateTime hora);
 
+  /// Exchange rate label for USD deposits
+  ///
+  /// In en, this message translates to:
+  /// **'1 USD = 1 USDC'**
+  String get deposit_rateUsdUsdc;
+
+  /// Exchange rate label from USD to a local currency
+  ///
+  /// In en, this message translates to:
+  /// **'1 USD = {amount} {currency}'**
+  String deposit_rateUsdToCurrency(String amount, String currency);
+
+  /// Deposit minimum and maximum range
+  ///
+  /// In en, this message translates to:
+  /// **'Min: {min} • Max: {max}'**
+  String deposit_limitRange(String min, String max);
+
+  /// Validation error for an amount below the deposit minimum
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum {amount}'**
+  String deposit_minimumAmount(String amount);
+
+  /// Validation error for an amount above the deposit maximum
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum {amount}'**
+  String deposit_maximumAmount(String amount);
+
+  /// Relative timestamp for an exchange rate updated less than one minute ago
+  ///
+  /// In en, this message translates to:
+  /// **'just now'**
+  String get deposit_timeJustNow;
+
+  /// Relative timestamp for an exchange rate updated minutes ago
+  ///
+  /// In en, this message translates to:
+  /// **'{count}m ago'**
+  String deposit_timeMinutesAgo(int count);
+
+  /// Relative timestamp for an exchange rate updated hours ago
+  ///
+  /// In en, this message translates to:
+  /// **'{count}h ago'**
+  String deposit_timeHoursAgo(int count);
+
+  /// Relative timestamp for an exchange rate updated days ago
+  ///
+  /// In en, this message translates to:
+  /// **'{count}d ago'**
+  String deposit_timeDaysAgo(int count);
+
   /// Amount you will receive label
   ///
   /// In en, this message translates to:

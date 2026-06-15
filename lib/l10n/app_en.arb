@@ -1986,6 +1986,83 @@
       }
     }
   },
+  "deposit_rateUsdUsdc": "1 USD = 1 USDC",
+  "@deposit_rateUsdUsdc": {
+    "description": "Exchange rate label for USD deposits"
+  },
+  "deposit_rateUsdToCurrency": "1 USD = {amount} {currency}",
+  "@deposit_rateUsdToCurrency": {
+    "description": "Exchange rate label from USD to a local currency",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "deposit_limitRange": "Min: {min} • Max: {max}",
+  "@deposit_limitRange": {
+    "description": "Deposit minimum and maximum range",
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "deposit_minimumAmount": "Minimum {amount}",
+  "@deposit_minimumAmount": {
+    "description": "Validation error for an amount below the deposit minimum",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "deposit_maximumAmount": "Maximum {amount}",
+  "@deposit_maximumAmount": {
+    "description": "Validation error for an amount above the deposit maximum",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "deposit_timeJustNow": "just now",
+  "@deposit_timeJustNow": {
+    "description": "Relative timestamp for an exchange rate updated less than one minute ago"
+  },
+  "deposit_timeMinutesAgo": "{count}m ago",
+  "@deposit_timeMinutesAgo": {
+    "description": "Relative timestamp for an exchange rate updated minutes ago",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deposit_timeHoursAgo": "{count}h ago",
+  "@deposit_timeHoursAgo": {
+    "description": "Relative timestamp for an exchange rate updated hours ago",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deposit_timeDaysAgo": "{count}d ago",
+  "@deposit_timeDaysAgo": {
+    "description": "Relative timestamp for an exchange rate updated days ago",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "deposit_youWillReceive": "You will receive",
   "@deposit_youWillReceive": {
     "description": "Amount you will receive label"
