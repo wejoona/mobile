@@ -130,20 +130,10 @@ final exchangeRateProvider = FutureProvider.autoDispose<ExchangeRate>((
   }
 
   final depositService = ref.watch(depositServiceProvider);
-  try {
-    return await depositService.getExchangeRate(
-      from: effectiveCountry.primaryCurrency,
-      to: 'USD',
-    );
-  } catch (_) {
-    // Fallback to approximate BCEAO peg rate
-    return ExchangeRate(
-      fromCurrency: 'XOF',
-      toCurrency: 'USD',
-      rate: 655.957,
-      timestamp: DateTime.now(),
-    );
-  }
+  return depositService.getExchangeRate(
+    from: effectiveCountry.primaryCurrency,
+    to: 'USD',
+  );
 });
 
 /// Spending trend provider (insights) derived from real transaction history.

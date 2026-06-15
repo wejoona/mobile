@@ -97,7 +97,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
                           transactionLimits,
                         ),
                         loading: () => _buildLoadingCard(colors, l10n),
-                        error: (err, _) => _buildErrorCard(colors, l10n),
+                        error: (err, _) => _buildRateErrorCard(colors, l10n),
                       ),
 
                       const SizedBox(height: AppSpacing.xl),
@@ -392,15 +392,27 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
     );
   }
 
-  Widget _buildErrorCard(ThemeColors colors, AppLocalizations l10n) {
+  Widget _buildRateErrorCard(ThemeColors colors, AppLocalizations l10n) {
     return AppCard(
       variant: AppCardVariant.elevated,
-      child: Center(
-        child: AppText(
-          l10n.common_error,
-          variant: AppTextVariant.bodyMedium,
-          color: context.colors.errorText,
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.sync_problem, color: colors.errorText, size: 28),
+          const SizedBox(height: AppSpacing.md),
+          AppText(
+            l10n.common_errorTryAgain,
+            variant: AppTextVariant.bodyMedium,
+            color: colors.textPrimary,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          AppButton(
+            label: l10n.action_retry,
+            onPressed: () => ref.invalidate(exchangeRateProvider),
+            size: AppButtonSize.small,
+          ),
+        ],
       ),
     );
   }

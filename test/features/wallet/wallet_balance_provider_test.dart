@@ -148,5 +148,40 @@ void main() {
 
       expect(rate.rate, closeTo(615.3846, 0.0001));
     });
+
+    test('does not fabricate a rate when the backend fails', () async {
+      final dio = MockDio()
+        ..queueErrorResponse(statusCode: 503, message: 'Rate unavailable');
+
+      final container = ProviderContainer(
+        overrides: [dioProvider.overrideWithValue(dio)],
+      );
+      addTearDown(container.dispose);
+
+      container.read(exchangeRateProvider);
+      await pumpEventQueue();
+
+      expect(container.read(exchangeRateProvider).hasError, isTrue);
+    });
+
+    test(
+      'does not fabricate a rate when the response has no valid rate',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({'timestamp': '2026-06-11T08:00:00.000Z'});
+
+        final container = ProviderContainer(
+          overrides: [dioProvider.overrideWithValue(dio)],
+        );
+        addTearDown(container.dispose);
+
+        container.read(exchangeRateProvider);
+        await pumpEventQueue();
+
+        final state = container.read(exchangeRateProvider);
+        expect(state.hasError, isTrue);
+        expect(state.error, isA<FormatException>());
+      },
+    );
   });
 }

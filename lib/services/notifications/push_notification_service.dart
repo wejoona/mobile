@@ -129,10 +129,10 @@ class PushNotificationService {
 
   /// Register FCM token with backend
   /// Call this after user authentication
-  Future<void> registerWithBackend() async {
+  Future<bool> registerWithBackend() async {
     if (_currentToken == null) {
       _logger.warn('No FCM token available to register');
-      return;
+      return false;
     }
 
     try {
@@ -146,9 +146,10 @@ class PushNotificationService {
       );
 
       _logger.info('FCM token registered with backend');
+      return true;
     } on DioException catch (e) {
       _logger.error('Failed to register FCM token', e);
-      // Don't throw - registration failure shouldn't break the app
+      return false;
     }
   }
 

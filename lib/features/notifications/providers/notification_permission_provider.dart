@@ -56,17 +56,21 @@ class NotificationPermissionNotifier
       final isEnabled = await pushService.isEnabled;
 
       if (isEnabled) {
-        // Register token with backend
-        await pushService.registerWithBackend();
+        final registered = await pushService.registerWithBackend();
+        if (!registered) {
+          state = state.copyWith(
+            isEnabled: false,
+            isLoading: false,
+            error: 'notifications_backend_registration_failed',
+          );
+          return false;
+        }
       }
 
       state = state.copyWith(isEnabled: isEnabled, isLoading: false);
       return isEnabled;
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
       return false;
     }
   }
@@ -79,9 +83,10 @@ class NotificationPermissionNotifier
 
 /// Notification Permission Provider
 final notificationPermissionProvider =
-    NotifierProvider<NotificationPermissionNotifier, NotificationPermissionState>(
-  NotificationPermissionNotifier.new,
-);
+    NotifierProvider<
+      NotificationPermissionNotifier,
+      NotificationPermissionState
+    >(NotificationPermissionNotifier.new);
 
 /// Simple provider to check if notifications are enabled
 final isNotificationEnabledProvider = FutureProvider<bool>((ref) async {
