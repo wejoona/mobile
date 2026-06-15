@@ -52,6 +52,9 @@ class CertificatePinning {
     'api.joonapay.com': [
       // Leaf DER SHA-256, verified against live certificate on 2026-06-14.
       'gvcwFV4jHJrKyc2rrHFNlZbenxWnWywAezu5tpkv7is=',
+      // Current wildcard/apex leaf DER SHA-256 served for api.joonapay.com.
+      // Keep the previous API pin above as a rollover pin.
+      'BWCq7vFEHnLEBB9FD9tOUTlIeFRPNHIJL7vPHgNjodc=',
     ],
     'joonapay.com': [
       // Leaf DER SHA-256, verified against live certificate on 2026-06-14.

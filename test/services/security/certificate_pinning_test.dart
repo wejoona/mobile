@@ -49,7 +49,7 @@ void main() {
       );
       expect(
         CertificatePinning.trustedFingerprintsForHost('api.joonapay.com'),
-        isNot(contains(apexLeafDer)),
+        contains(apexLeafDer),
       );
       expect(
         CertificatePinning.trustedFingerprintsForHost('joonapay.com'),
