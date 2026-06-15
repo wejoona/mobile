@@ -24,14 +24,13 @@ class WalletService {
         ),
       );
       if (response.statusCode == 404) {
-        throw ApiException(
-          message: _messageFromPayload(response.data, 'Wallet not found'),
-          statusCode: 404,
-          data: response.data,
-        );
+        return createWallet();
       }
       return WalletBalanceResponse.fromJson(response.data);
     } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        return createWallet();
+      }
       throw ApiException.fromDioError(e);
     }
   }
@@ -50,19 +49,6 @@ class WalletService {
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
-  }
-
-  String _messageFromPayload(Object? payload, String fallback) {
-    if (payload is Map && payload['message'] != null) {
-      return payload['message'].toString();
-    }
-    if (payload is Map) {
-      final error = payload['error'];
-      if (error is Map && error['message'] != null) {
-        return error['message'].toString();
-      }
-    }
-    return fallback;
   }
 
   /// GET /wallet/deposit/channels
