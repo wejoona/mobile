@@ -19,14 +19,36 @@ void main() {
       final insights = SpendingInsights.fromJson({
         'totalTransactions': 7,
         'totalDeposited': 1250,
+        'totalDepositedDecimal': '1250.000000',
         'totalWithdrawn': 125,
+        'totalWithdrawnDecimal': '125.000000',
         'totalTransferred': 300,
+        'totalTransferredDecimal': '300.000000',
       });
 
       expect(insights.totalReceived, 1250);
       expect(insights.totalSpent, 425);
       expect(insights.netFlow, 825);
       expect(insights.transactionCount, 7);
+    });
+
+    test('spending insights parse wrapped backend decimal stats response', () {
+      final insights = SpendingInsights.fromJson({
+        'data': {
+          'totalTransactions': '4',
+          'totalDeposited': 999999999,
+          'totalDepositedDecimal': '42.500000',
+          'totalWithdrawn': 999999999,
+          'totalWithdrawnDecimal': '5.250000',
+          'totalTransferred': 999999999,
+          'totalTransferredDecimal': '10.750000',
+        },
+      });
+
+      expect(insights.totalReceived, 42.5);
+      expect(insights.totalSpent, 16);
+      expect(insights.netFlow, 26.5);
+      expect(insights.transactionCount, 4);
     });
 
     test('customer UI is not wired to dormant insights or expenses APIs', () {

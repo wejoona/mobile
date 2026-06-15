@@ -24,7 +24,7 @@ final spendingInsightsProvider = FutureProvider<SpendingInsights>((ref) async {
       'period': period.name,
     },
   );
-  return SpendingInsights.fromJson(response.data as Map<String, dynamic>);
+  return SpendingInsights.fromJson(_payloadMap(response.data));
 });
 
 /// Spending insights model.
@@ -44,21 +44,22 @@ class SpendingInsights {
   });
 
   factory SpendingInsights.fromJson(Map<String, dynamic> json) {
-    final withdrawn = (json['totalWithdrawn'] as num?)?.toDouble() ?? 0;
-    final transferred = (json['totalTransferred'] as num?)?.toDouble() ?? 0;
-    final received = (json['totalDeposited'] as num?)?.toDouble() ?? 0;
+    final payload = _payloadMap(json);
+    final withdrawn = _amount(payload, 'totalWithdrawn');
+    final transferred = _amount(payload, 'totalTransferred');
+    final received = _amount(payload, 'totalDeposited');
     final spent = withdrawn + transferred;
 
     return SpendingInsights(
       totalSpent: spent,
       totalReceived: received,
-      netFlow: (json['netFlow'] as num?)?.toDouble() ?? received - spent,
+      netFlow: _amount(payload, 'netFlow', fallback: received - spent),
       transactionCount:
-          (json['totalTransactions'] as num?)?.toInt() ??
-          (json['totalCount'] as num?)?.toInt() ??
+          _intValue(payload['totalTransactions']) ??
+          _intValue(payload['totalCount']) ??
           0,
       categoryBreakdown:
-          (json['categories'] as List?)
+          (payload['categories'] as List?)
               ?.map((e) => SpendingSummary.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
@@ -81,3 +82,51 @@ enum InsightsPeriod {
 final insightsPeriodProvider = StateProvider<InsightsPeriod>(
   (ref) => InsightsPeriod.month,
 );
+
+Map<String, dynamic> _payloadMap(Object? raw) {
+  if (raw is Map<String, dynamic>) {
+    final data = raw['data'];
+    if (data is Map<String, dynamic>) {
+      return data;
+    }
+    if (data is Map) {
+      return Map<String, dynamic>.from(data);
+    }
+    return raw;
+  }
+  if (raw is Map) {
+    return _payloadMap(Map<String, dynamic>.from(raw));
+  }
+  return const {};
+}
+
+double _amount(Map<String, dynamic> json, String key, {double fallback = 0}) {
+  final decimal = json['${key}Decimal'];
+  if (decimal is num) {
+    return decimal.toDouble();
+  }
+  if (decimal is String) {
+    return double.tryParse(decimal) ?? fallback;
+  }
+  final value = json[key];
+  if (value is num) {
+    return value.toDouble();
+  }
+  if (value is String) {
+    return double.tryParse(value) ?? fallback;
+  }
+  return fallback;
+}
+
+int? _intValue(Object? value) {
+  if (value is int) {
+    return value;
+  }
+  if (value is num) {
+    return value.toInt();
+  }
+  if (value is String) {
+    return int.tryParse(value);
+  }
+  return null;
+}
