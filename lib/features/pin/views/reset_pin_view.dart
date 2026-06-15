@@ -17,6 +17,7 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Reset PIN View
 /// Multi-step flow to reset PIN via OTP
@@ -706,6 +707,22 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       }
     } on Object {
       return false;
+    }
+
+    try {
+      ref.read(authProvider.notifier).unlock();
+    } on Object {
+      // Auth may already be active after account recovery.
+    }
+    try {
+      ref.read(sessionServiceProvider.notifier).unlockSession();
+    } on Object {
+      // Session may already be active after account recovery.
+    }
+    try {
+      ref.read(appFsmProvider.notifier).unlockSession();
+    } on Object {
+      // FSM may already have transitioned after account recovery.
     }
 
     final authState = ref.read(authProvider);
