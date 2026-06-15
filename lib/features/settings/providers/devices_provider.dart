@@ -21,7 +21,7 @@ final devicesProvider = FutureProvider<List<Device>>((ref) async {
     if (e.isDeviceBlacklisted) {
       await ref.read(authProvider.notifier).clearLocalSession();
     } else if (e.statusCode == 401) {
-      ref.read(authProvider.notifier).setLocked();
+      await ref.read(authProvider.notifier).setLocked();
     }
     rethrow;
   }

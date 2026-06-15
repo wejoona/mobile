@@ -229,7 +229,7 @@ class SessionsNotifier extends Notifier<SessionsState> {
     if (error.statusCode != 401) {
       return false;
     }
-    ref.read(authProvider.notifier).setLocked();
+    await ref.read(authProvider.notifier).setLocked();
     return true;
   }
 

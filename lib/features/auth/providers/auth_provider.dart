@@ -220,10 +220,20 @@ class AuthNotifier extends Notifier<AuthState> {
   bool _isCurrentSessionMutation(int expectedVersion) =>
       _sessionMutationVersion == expectedVersion;
 
-  /// Lock the session (requires PIN/biometric to unlock)
-  void setLocked() {
-    if (state.status == AuthStatus.authenticated) {
-      state = state.copyWith(status: AuthStatus.locked);
+  /// Lock the session (requires PIN/biometric to unlock).
+  ///
+  /// Foreground security screens can receive a 401 while the auth provider is
+  /// still restoring. In that case, prefer the lock screen over a raw API error
+  /// when local session material exists.
+  Future<void> setLocked() async {
+    if (state.status == AuthStatus.authenticated ||
+        state.status == AuthStatus.loading ||
+        state.status == AuthStatus.initial) {
+      final accessToken = await _storage.read(key: StorageKeys.accessToken);
+      final refreshToken = await _storage.read(key: StorageKeys.refreshToken);
+      if (accessToken != null || refreshToken != null) {
+        state = state.copyWith(status: AuthStatus.locked);
+      }
     }
   }
 

@@ -184,7 +184,7 @@ class SessionService extends Notifier<SessionState> {
     state = state.copyWith(status: SessionStatus.locked);
     // Sync with AuthProvider so router shows lock screen
     try {
-      ref.read(authProvider.notifier).setLocked();
+      unawaited(ref.read(authProvider.notifier).setLocked());
     } catch (_) {}
   }
 
