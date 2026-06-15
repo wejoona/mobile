@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -576,6 +578,41 @@ void main() {
       final state = container.read(authProvider);
       expect(state.status, equals(AuthStatus.unauthenticated));
       expect(state.user, isNull);
+    });
+
+    test('should ignore stale startup refresh after logout', () async {
+      // Arrange
+      await mockStorage.write(key: StorageKeys.accessToken, value: 'old.token');
+      await mockStorage.write(
+        key: StorageKeys.refreshToken,
+        value: 'old.refresh',
+      );
+
+      final refreshCompleter = Completer<RefreshResponse>();
+      when(
+        () => mockAuthService.refreshToken(refreshToken: 'old.refresh'),
+      ).thenAnswer((_) => refreshCompleter.future);
+
+      final notifier = container.read(authProvider.notifier);
+
+      // Act: start restore, then log out before refresh returns.
+      final restore = notifier.checkAuth();
+      await Future<void>.delayed(Duration.zero);
+      await notifier.logout();
+      refreshCompleter.complete(
+        RefreshResponse(
+          accessToken: 'new.token',
+          refreshToken: 'new.refresh',
+          expiresIn: 900,
+        ),
+      );
+      await restore;
+
+      // Assert: stale restore must not resurrect a locked/authenticated session.
+      final state = container.read(authProvider);
+      expect(state.status, equals(AuthStatus.unauthenticated));
+      expect(mockStorage.storage[StorageKeys.accessToken], isNull);
+      expect(mockStorage.storage[StorageKeys.refreshToken], isNull);
     });
 
     test(

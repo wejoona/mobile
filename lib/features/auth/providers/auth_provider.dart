@@ -63,6 +63,8 @@ class AuthState {
 
 /// Auth Notifier
 class AuthNotifier extends Notifier<AuthState> {
+  int _sessionMutationVersion = 0;
+
   @override
   AuthState build() {
     ref.listen<int>(authSessionInvalidatedProvider, (previous, next) {
@@ -86,6 +88,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
   /// Check if user is already authenticated
   Future<void> checkAuth({bool startupOnly = false}) async {
+    final restoreVersion = _sessionMutationVersion;
     if (!ref.mounted) return;
     if (startupOnly && state.status != AuthStatus.initial) {
       return;
@@ -105,6 +108,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
       final token = await _storage.read(key: StorageKeys.accessToken);
       if (!ref.mounted) return;
+      if (!_isCurrentSessionMutation(restoreVersion)) return;
 
       if (!ref.mounted) {
         return;
@@ -117,9 +121,15 @@ class AuthNotifier extends Notifier<AuthState> {
 
       if (token != null) {
         final refreshToken = await _storage.read(key: StorageKeys.refreshToken);
+        if (!ref.mounted) return;
+        if (!_isCurrentSessionMutation(restoreVersion)) return;
         if (refreshToken != null && refreshToken.isNotEmpty) {
-          final canRestore = await _refreshStoredSession(refreshToken);
+          final canRestore = await _refreshStoredSession(
+            refreshToken,
+            restoreVersion: restoreVersion,
+          );
           if (!ref.mounted) return;
+          if (!_isCurrentSessionMutation(restoreVersion)) return;
           if (!canRestore) {
             return;
           }
@@ -128,6 +138,7 @@ class AuthNotifier extends Notifier<AuthState> {
         if (debugToken.isNotEmpty && EnvironmentConfig.debugSkipPin) {
           final userId = await _storage.read(key: 'user_id');
           if (!ref.mounted) return;
+          if (!_isCurrentSessionMutation(restoreVersion)) return;
           ref
               .read(appFsmProvider.notifier)
               .restoreSession(
@@ -154,6 +165,7 @@ class AuthNotifier extends Notifier<AuthState> {
         // Sync FSM: restore auth state and trigger data fetches in background
         final userId = await _storage.read(key: 'user_id');
         if (!ref.mounted) return;
+        if (!_isCurrentSessionMutation(restoreVersion)) return;
         ref
             .read(appFsmProvider.notifier)
             .restoreSession(
@@ -173,11 +185,16 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  Future<bool> _refreshStoredSession(String refreshToken) async {
+  Future<bool> _refreshStoredSession(
+    String refreshToken, {
+    required int restoreVersion,
+  }) async {
     try {
       final response = await _authService.refreshToken(
         refreshToken: refreshToken,
       );
+      if (!ref.mounted) return false;
+      if (!_isCurrentSessionMutation(restoreVersion)) return false;
       await _storage.write(
         key: StorageKeys.accessToken,
         value: response.accessToken,
@@ -199,6 +216,9 @@ class AuthNotifier extends Notifier<AuthState> {
       return true;
     }
   }
+
+  bool _isCurrentSessionMutation(int expectedVersion) =>
+      _sessionMutationVersion == expectedVersion;
 
   /// Lock the session (requires PIN/biometric to unlock)
   void setLocked() {
@@ -753,6 +773,8 @@ class AuthNotifier extends Notifier<AuthState> {
 
   /// Clear local auth/session state without calling the backend.
   Future<void> clearLocalSession() async {
+    _sessionMutationVersion++;
+
     // Stop real-time sync
     ref.read(realtimeServiceProvider).stop();
 
