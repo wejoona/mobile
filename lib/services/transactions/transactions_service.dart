@@ -41,9 +41,7 @@ class TransactionsService {
           sendTimeout: const Duration(seconds: 10),
         ),
       );
-      return TransactionPage.fromJson(
-        Map<String, dynamic>.from(response.data as Map),
-      );
+      return TransactionPage.fromJson(_asStringMap(response.data));
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -53,7 +51,7 @@ class TransactionsService {
   Future<Transaction> getTransaction(String id) async {
     try {
       final response = await _dio.get('/wallet/transactions/$id');
-      return Transaction.fromJson(_asStringMap(response.data));
+      return Transaction.fromJson(_responseObject(response.data));
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -65,7 +63,7 @@ class TransactionsService {
       final response = await _dio.get(
         '/wallet/transactions/deposit/$depositId/status',
       );
-      return DepositStatusResponse.fromJson(_asStringMap(response.data));
+      return DepositStatusResponse.fromJson(_responseObject(response.data));
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -110,4 +108,11 @@ Map<String, dynamic> _asStringMap(Object? value) {
   if (value is Map<String, dynamic>) return value;
   if (value is Map) return Map<String, dynamic>.from(value);
   throw const FormatException('Expected JSON object');
+}
+
+Map<String, dynamic> _responseObject(Object? value) {
+  final map = _asStringMap(value);
+  final data = map['data'];
+  if (data is Map) return Map<String, dynamic>.from(data);
+  return map;
 }
