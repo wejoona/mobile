@@ -272,11 +272,6 @@ class ContactsService {
       return false;
     }
 
-    if (await FlutterContacts.requestPermission(readonly: true)) {
-      _contactsGrantedByFlutterPlugin = true;
-      return true;
-    }
-
     final requested = await Permission.contacts.request();
     if (_canReadContacts(requested)) {
       _contactsGrantedByFlutterPlugin = true;
