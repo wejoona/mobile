@@ -37,7 +37,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
       if (!mounted) {
         return;
       }
-      unawaited(ref.read(contactsProvider.notifier).syncContacts());
+      unawaited(_requestPermissionAndSync(showSettingsDialog: false));
     });
   }
 
