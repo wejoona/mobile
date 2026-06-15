@@ -106,6 +106,25 @@ void main() {
       expect(avatar.avatarThumb, startsWith('data:image/jpeg;base64,'));
     });
 
+    test('email verification resend accepts backend aliases', () {
+      final result = EmailVerificationResendResult.fromJson({
+        'data': {
+          'sent': 'false',
+          'email': 'ben@example.com',
+          'pending_verification': 'true',
+          'expires_in': '300',
+          'message': 'Verification code generated',
+          'debug_code': '123456',
+        },
+      });
+
+      expect(result.sent, isFalse);
+      expect(result.email, 'ben@example.com');
+      expect(result.pendingVerification, isTrue);
+      expect(result.expiresIn, 300);
+      expect(result.debugCode, '123456');
+    });
+
     test('normalizes backend KYC approval statuses used by profile gating', () {
       final approvedProfile = UserProfile.fromJson({
         'id': 'usr_approved',

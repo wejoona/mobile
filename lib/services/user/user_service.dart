@@ -296,13 +296,19 @@ class EmailVerificationResendResult {
   });
 
   factory EmailVerificationResendResult.fromJson(Map<String, dynamic> json) {
+    final payload = _readPayload(json);
     return EmailVerificationResendResult(
-      sent: json['sent'] as bool? ?? true,
-      email: json['email'] as String?,
-      pendingVerification: json['pendingVerification'] as bool? ?? true,
-      expiresIn: json['expiresIn'] as int? ?? 1800,
-      message: json['message'] as String?,
-      debugCode: json['debugCode'] as String?,
+      sent: _readBool(payload, const ['sent']) ?? true,
+      email: payload['email'] as String?,
+      pendingVerification:
+          _readBool(payload, const [
+            'pendingVerification',
+            'pending_verification',
+          ]) ??
+          true,
+      expiresIn: _readInt(payload, const ['expiresIn', 'expires_in']) ?? 1800,
+      message: payload['message'] as String?,
+      debugCode: (payload['debugCode'] ?? payload['debug_code']) as String?,
     );
   }
 }
@@ -338,6 +344,16 @@ bool? _readBool(Map<String, dynamic> json, List<String> keys) {
       if (normalized == 'true') return true;
       if (normalized == 'false') return false;
     }
+  }
+  return null;
+}
+
+int? _readInt(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value.trim());
   }
   return null;
 }
