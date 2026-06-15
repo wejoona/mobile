@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -431,32 +433,18 @@ class _NotificationSettingsViewState
 
     setState(() => _isSaving = true);
     final authState = ref.read(authProvider);
-    final user = authState.user;
 
     try {
       final success = await ref
           .read(notificationPreferencesProvider.notifier)
           .updatePreferences(_localPrefs!);
-      if (success && _localPrefs!.emailMarketing) {
-        await ref
-            .read(featureSubscriptionServiceProvider)
-            .subscribe(
-              FeatureSubscriptionRequest(
-                featureKey: 'product_newsletter',
-                source: 'notification_settings',
-                phone: user?.phone ?? authState.phone,
-                email: user?.email,
-                featureName: 'Korido newsletter',
-                requestedFeature: 'product_newsletter',
-                countryCode: user?.countryCode,
-                locale: user?.preferredLocale,
-                metadata: const {
-                  'surface': 'notification_settings',
-                  'channel': 'email',
-                  'preference': 'emailMarketing',
-                },
-              ),
-            );
+      if (success) {
+        unawaited(
+          _syncNewsletterInterest(
+            authState: authState,
+            emailMarketing: _localPrefs!.emailMarketing,
+          ),
+        );
       }
 
       if (mounted) {
@@ -496,6 +484,40 @@ class _NotificationSettingsViewState
           ),
         );
       }
+    }
+  }
+
+  Future<void> _syncNewsletterInterest({
+    required AuthState authState,
+    required bool emailMarketing,
+  }) async {
+    final user = authState.user;
+    try {
+      await ref
+          .read(featureSubscriptionServiceProvider)
+          .subscribe(
+            FeatureSubscriptionRequest(
+              featureKey: 'product_newsletter',
+              source: 'notification_settings',
+              status: emailMarketing ? 'subscribed' : 'unsubscribed',
+              phone: user?.phone ?? authState.phone,
+              email: user?.email,
+              featureName: 'Korido newsletter',
+              requestedFeature: 'product_newsletter',
+              countryCode: user?.countryCode,
+              locale: user?.preferredLocale,
+              metadata: {
+                'surface': 'notification_settings',
+                'channel': 'email',
+                'preference': 'emailMarketing',
+                'enabled': emailMarketing,
+              },
+            ),
+          );
+    } on Object {
+      // Newsletter interest is a secondary backoffice signal. The user's
+      // notification preferences were already saved, so do not roll back the
+      // screen or show a false save failure if this side effect is unavailable.
     }
   }
 

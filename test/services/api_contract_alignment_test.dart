@@ -903,6 +903,27 @@ void main() {
       },
     );
 
+    test('notification newsletter interest is best-effort after save', () {
+      final source = File(
+        'lib/features/settings/views/notification_settings_view.dart',
+      ).readAsStringSync();
+
+      expect(source, contains('updatePreferences(_localPrefs!)'));
+      expect(source, contains('unawaited('));
+      expect(source, contains('_syncNewsletterInterest('));
+      expect(
+        source,
+        contains("status: emailMarketing ? 'subscribed' : 'unsubscribed'"),
+      );
+      expect(source, contains("'enabled': emailMarketing"));
+      expect(
+        source,
+        contains('do not roll back'),
+        reason:
+            'newsletter waitlist sync must not make saved notification settings look failed',
+      );
+    });
+
     test('feature subscriptions include feature and source context', () async {
       final dio = MockDio()
         ..queueResponse({
