@@ -431,6 +431,54 @@ void main() {
       expect(fee, 5);
     });
 
+    test(
+      'withdrawal options provider parses backend-owned mobile rails',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'country': 'CI',
+            'currency': 'USDC',
+            'options': [
+              {
+                'id': 'wave_ci',
+                'name': 'Wave CI',
+                'type': 'mobile_money',
+                'providerCode': 'WAVECI',
+                'country': 'CI',
+                'currency': 'USDC',
+                'payoutCurrency': 'XOF',
+                'minAmount': 1,
+                'maxAmount': 5000,
+                'fee': 2,
+                'feeType': 'percentage',
+                'minFee': 1,
+                'maxFee': 100,
+                'estimatedArrival': '5-15 minutes',
+                'enabled': true,
+              },
+            ],
+          });
+        final container = ProviderContainer(
+          overrides: [dioProvider.overrideWithValue(dio)],
+        );
+        addTearDown(container.dispose);
+
+        final options = await container.read(
+          withdrawalOptionsProvider('CI').future,
+        );
+
+        final request = dio.requestHistory.single;
+        expect(request.method, 'GET');
+        expect(request.path, '/wallet/withdraw/options');
+        expect(request.queryParameters, {'country': 'CI'});
+        expect(options, hasLength(1));
+        expect(options.single.name, 'Wave CI');
+        expect(options.single.providerCode, 'WAVECI');
+        expect(options.single.isMobileMoney, isTrue);
+        expect(options.single.payoutCurrency, 'XOF');
+      },
+    );
+
     test('wallet crypto withdraw uses guarded backend route', () async {
       final dio = MockDio()
         ..queueResponse({

@@ -118,11 +118,15 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     if (amount == null || amount <= 0) return;
     final selectedCountry = _effectiveCountry(ref, watch: false);
     if (_selectedMethod != WithdrawMethod.mobileMoney ||
-        selectedCountry.code != 'CI') {
+        !_hasMobileMoneyOptions(selectedCountry, watch: false)) {
       return;
     }
     final localDigits = _localPhoneDigits(selectedCountry);
-    final mobileMoneyMethod = _methodForCiMobileNumber(localDigits);
+    final mobileMoneyMethod = _methodForMobileNumber(
+      localDigits,
+      selectedCountry,
+      watch: false,
+    );
     if (mobileMoneyMethod == null) return;
     final notifier = ref.read(withdraw_api.withdrawProvider.notifier)
       ..selectMethod(mobileMoneyMethod);
@@ -138,9 +142,10 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     switch (_selectedMethod!) {
       case WithdrawMethod.mobileMoney:
         final country = _effectiveCountry(ref);
-        if (country.code != 'CI') return true;
+        if (!_hasMobileMoneyOptions(country)) return true;
         final localDigits = _localPhoneDigits(country);
-        return country.code == 'CI' && country.isValidLength(localDigits);
+        return country.isValidLength(localDigits) &&
+            _methodForMobileNumber(localDigits, country) != null;
       case WithdrawMethod.bankTransfer:
         return _accountNumberController.text.isNotEmpty &&
             _bankNameController.text.isNotEmpty;
@@ -163,7 +168,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
       return;
     }
     if (_selectedMethod == WithdrawMethod.mobileMoney &&
-        selectedCountry.code != 'CI') {
+        !_hasMobileMoneyOptions(selectedCountry, watch: false)) {
       await _subscribeToWithdrawalAvailability(
         featureKey: _withdrawalFeatureKey(selectedCountry, _selectedMethod!),
         requestedFeature: 'mobile_money',
@@ -176,7 +181,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
         ? _localPhoneDigits(selectedCountry)
         : '';
     final mobileMoneyMethod = _selectedMethod == WithdrawMethod.mobileMoney
-        ? _methodForCiMobileNumber(localDigits)
+        ? _methodForMobileNumber(localDigits, selectedCountry, watch: false)
         : null;
     if (_selectedMethod == WithdrawMethod.mobileMoney &&
         mobileMoneyMethod == null) {
@@ -357,18 +362,53 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
         : digitsOnly;
   }
 
-  withdraw_api.WithdrawMethod? _methodForCiMobileNumber(String localDigits) {
+  withdraw_api.WithdrawMethod? _methodForMobileNumber(
+    String localDigits,
+    CountryConfig country, {
+    bool watch = true,
+  }) {
+    final providerCode = _providerCodeForCiMobileNumber(localDigits);
+    if (providerCode == null) return null;
+
+    final options = _mobileMoneyOptions(country, watch: watch);
+    if (options.isNotEmpty &&
+        !options.any(
+          (option) =>
+              option.enabled &&
+              option.providerCode?.toUpperCase() == providerCode,
+        )) {
+      return null;
+    }
+
+    return _methodForProviderCode(providerCode);
+  }
+
+  String? _providerCodeForCiMobileNumber(String localDigits) {
     if (localDigits.startsWith('07')) {
-      return withdraw_api.WithdrawMethod.orangeMoney;
+      return 'OMCI';
     }
     if (localDigits.startsWith('05')) {
-      return withdraw_api.WithdrawMethod.mtnMomo;
+      return 'MTNCI';
     }
     if (localDigits.startsWith('01')) {
-      return withdraw_api.WithdrawMethod.moovMoney;
+      return 'MOOVCI';
     }
     if (localDigits.startsWith('27')) {
-      return withdraw_api.WithdrawMethod.wave;
+      return 'WAVECI';
+    }
+    return null;
+  }
+
+  withdraw_api.WithdrawMethod? _methodForProviderCode(String providerCode) {
+    switch (providerCode.toUpperCase()) {
+      case 'OMCI':
+        return withdraw_api.WithdrawMethod.orangeMoney;
+      case 'MTNCI':
+        return withdraw_api.WithdrawMethod.mtnMomo;
+      case 'MOOVCI':
+        return withdraw_api.WithdrawMethod.moovMoney;
+      case 'WAVECI':
+        return withdraw_api.WithdrawMethod.wave;
     }
     return null;
   }
@@ -378,7 +418,26 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     if (method == null) return false;
     if (method == WithdrawMethod.crypto) return false;
     if (method != WithdrawMethod.mobileMoney) return true;
-    return _effectiveCountry(ref).code != 'CI';
+    return !_hasMobileMoneyOptions(_effectiveCountry(ref), watch: false);
+  }
+
+  List<withdraw_api.WithdrawalOption> _mobileMoneyOptions(
+    CountryConfig country, {
+    bool watch = true,
+  }) {
+    final asyncOptions = watch
+        ? ref.watch(withdraw_api.withdrawalOptionsProvider(country.code))
+        : ref.read(withdraw_api.withdrawalOptionsProvider(country.code));
+    return asyncOptions.maybeWhen(
+      data: (options) => options
+          .where((option) => option.isMobileMoney && option.enabled)
+          .toList(growable: false),
+      orElse: () => const [],
+    );
+  }
+
+  bool _hasMobileMoneyOptions(CountryConfig country, {bool watch = true}) {
+    return _mobileMoneyOptions(country, watch: watch).isNotEmpty;
   }
 
   Future<void> _subscribeToWithdrawalAvailability({
@@ -693,7 +752,15 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
 
   Widget _buildMobileMoneyFields(ThemeColors colors, AppLocalizations l10n) {
     final selectedCountry = _effectiveCountry(ref);
-    final isMobileMoneyAvailable = selectedCountry.code == 'CI';
+    final optionsState = ref.watch(
+      withdraw_api.withdrawalOptionsProvider(selectedCountry.code),
+    );
+    final isLoadingOptions = optionsState.isLoading;
+    final mobileMoneyOptions = _mobileMoneyOptions(selectedCountry);
+    final isMobileMoneyAvailable = mobileMoneyOptions.isNotEmpty;
+    final optionNames = mobileMoneyOptions
+        .map((option) => option.name)
+        .join(', ');
 
     return AppCard(
       variant: AppCardVariant.elevated,
@@ -740,7 +807,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
                   variant: AppInputVariant.phone,
                   hint: selectedCountry.phoneFormat ?? '07 00 00 00 00',
                   keyboardType: TextInputType.phone,
-                  enabled: isMobileMoneyAvailable,
+                  enabled: isMobileMoneyAvailable && !isLoadingOptions,
                   onChanged: (_) {
                     setState(() {});
                     _refreshWithdrawalQuotePreview();
@@ -749,10 +816,24 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
               ),
             ],
           ),
-          if (!isMobileMoneyAvailable) ...[
+          if (isLoadingOptions) ...[
             const SizedBox(height: AppSpacing.md),
             AppText(
-              "Mobile money withdrawals are currently available for Côte d'Ivoire accounts.",
+              'Checking available withdrawal rails...',
+              variant: AppTextVariant.bodySmall,
+              color: colors.textSecondary,
+            ),
+          ] else if (!isMobileMoneyAvailable) ...[
+            const SizedBox(height: AppSpacing.md),
+            AppText(
+              'Mobile money withdrawals are not available for ${selectedCountry.name} yet.',
+              variant: AppTextVariant.bodySmall,
+              color: colors.textSecondary,
+            ),
+          ] else if (optionNames.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.md),
+            AppText(
+              'Available rails: $optionNames',
               variant: AppTextVariant.bodySmall,
               color: colors.textSecondary,
             ),

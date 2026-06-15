@@ -21,6 +21,72 @@ enum WithdrawMethod {
   const WithdrawMethod(this.label, this.prefix, this.providerCode);
 }
 
+/// Backend-owned withdrawal rail returned by `/wallet/withdraw/options`.
+class WithdrawalOption {
+  const WithdrawalOption({
+    required this.id,
+    required this.name,
+    required this.type,
+    required this.enabled,
+    this.providerCode,
+    this.country,
+    this.currency,
+    this.payoutCurrency,
+    this.minAmount,
+    this.maxAmount,
+    this.fee,
+    this.feeType,
+    this.minFee,
+    this.maxFee,
+    this.estimatedArrival,
+  });
+
+  final String id;
+  final String name;
+  final String type;
+  final bool enabled;
+  final String? providerCode;
+  final String? country;
+  final String? currency;
+  final String? payoutCurrency;
+  final double? minAmount;
+  final double? maxAmount;
+  final double? fee;
+  final String? feeType;
+  final double? minFee;
+  final double? maxFee;
+  final String? estimatedArrival;
+
+  bool get isMobileMoney =>
+      type.toLowerCase() == 'mobile_money' && providerCode != null;
+
+  factory WithdrawalOption.fromJson(Map<String, dynamic> json) {
+    return WithdrawalOption(
+      id: _readString(json, const ['id']) ?? '',
+      name: _readString(json, const ['name']) ?? 'Withdrawal rail',
+      type: _readString(json, const ['type']) ?? '',
+      providerCode: _readString(json, const ['providerCode', 'provider_code']),
+      country: _readString(json, const ['country']),
+      currency: _readString(json, const ['currency']),
+      payoutCurrency: _readString(json, const [
+        'payoutCurrency',
+        'payout_currency',
+      ]),
+      minAmount: _readDouble(json, const ['minAmount', 'min_amount']),
+      maxAmount: _readDouble(json, const ['maxAmount', 'max_amount']),
+      fee: _readDouble(json, const ['fee']),
+      feeType: _readString(json, const ['feeType', 'fee_type']),
+      minFee: _readDouble(json, const ['minFee', 'min_fee']),
+      maxFee: _readDouble(json, const ['maxFee', 'max_fee']),
+      estimatedArrival: _readString(json, const [
+        'estimatedArrival',
+        'estimated_arrival',
+      ]),
+      enabled: _readBool(json, const ['enabled', 'available']) ?? true,
+    );
+  }
+}
+
 /// Withdrawal state.
 class WithdrawState {
   final bool isLoading;
@@ -222,6 +288,31 @@ final withdrawProvider = NotifierProvider<WithdrawNotifier, WithdrawState>(
   WithdrawNotifier.new,
 );
 
+final withdrawalOptionsProvider =
+    FutureProvider.family<List<WithdrawalOption>, String>((ref, country) async {
+      final dio = ref.read(dioProvider);
+      final response = await dio.get(
+        '/wallet/withdraw/options',
+        queryParameters: {'country': country},
+      );
+      final payload = response.data is Map
+          ? Map<String, dynamic>.from(response.data as Map)
+          : <String, dynamic>{};
+      final options = _readList(_unwrapPayload(payload), const [
+        'options',
+        'withdrawalOptions',
+        'rails',
+      ]);
+      return options
+          .whereType<Map>()
+          .map(
+            (item) =>
+                WithdrawalOption.fromJson(Map<String, dynamic>.from(item)),
+          )
+          .where((option) => option.id.isNotEmpty)
+          .toList(growable: false);
+    });
+
 Map<String, dynamic> _unwrapPayload(Map<String, dynamic> json) {
   final data = json['data'];
   if (data is Map<String, dynamic>) {
@@ -243,6 +334,23 @@ String? _readString(Map<String, dynamic> json, List<String> keys) {
   return null;
 }
 
+bool? _readBool(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is bool) return value;
+    if (value is String) {
+      final normalized = value.trim().toLowerCase();
+      if (normalized == 'true' || normalized == '1' || normalized == 'yes') {
+        return true;
+      }
+      if (normalized == 'false' || normalized == '0' || normalized == 'no') {
+        return false;
+      }
+    }
+  }
+  return null;
+}
+
 double? _readDouble(Map<String, dynamic> json, List<String> keys) {
   for (final key in keys) {
     final value = json[key];
@@ -253,4 +361,12 @@ double? _readDouble(Map<String, dynamic> json, List<String> keys) {
     }
   }
   return null;
+}
+
+List<dynamic> _readList(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is List) return value;
+  }
+  return const [];
 }
