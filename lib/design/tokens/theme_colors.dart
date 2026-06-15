@@ -65,12 +65,12 @@ class ThemeColors {
   Color get textDisabled =>
       isDark ? AppColors.textDisabled : AppColorsLight.textDisabled;
 
-  /// Inverse text used by legacy brand surfaces. Kept dark for gold contrast.
+  /// Inverse text used by legacy brand surfaces.
   Color get textInverse => AppColors.textInverse;
 
   /// Text color for gold/champagne fills.
   Color get onGold =>
-      isDark ? AppColors.textInverse : AppColorsLight.textInverse;
+      isDark ? AppColors.textInverse : AppColorsLight.textOnGold;
 
   /// Text color for deep ink/obsidian fills.
   Color get onDark =>
