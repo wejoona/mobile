@@ -717,7 +717,7 @@ class KoridoContactsService {
         if (username != null) 'username': username,
       },
     );
-    return domain.Contact.fromJson(response.data as Map<String, dynamic>);
+    return domain.Contact.fromJson(_responseObject(response.data));
   }
 
   /// Update contact
@@ -733,13 +733,13 @@ class KoridoContactsService {
         if (isFavorite != null) 'isFavorite': isFavorite,
       },
     );
-    return domain.Contact.fromJson(response.data as Map<String, dynamic>);
+    return domain.Contact.fromJson(_responseObject(response.data));
   }
 
   /// Toggle favorite status
   Future<domain.Contact> toggleFavorite(String contactId) async {
     final response = await _dio.put('/contacts/$contactId/favorite');
-    return domain.Contact.fromJson(response.data as Map<String, dynamic>);
+    return domain.Contact.fromJson(_responseObject(response.data));
   }
 
   /// Delete contact
@@ -754,6 +754,15 @@ bool _isMaskedPhone(String value) {
   return normalized.contains('*') ||
       normalized.contains('•') ||
       normalized.contains('x');
+}
+
+Map<String, dynamic> _responseObject(Object? payload) {
+  final map = _asMap(payload);
+  final data = map['data'];
+  if (data is Map) {
+    return Map<String, dynamic>.from(data);
+  }
+  return map;
 }
 
 /// Korido Contacts Service Provider

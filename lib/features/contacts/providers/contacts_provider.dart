@@ -18,9 +18,8 @@ final appContactsProvider = FutureProvider<List<Contact>>((ref) async {
   ref.onDispose(() => timer.cancel());
 
   final response = await dio.get('/contacts');
-  final data = response.data as Map<String, dynamic>;
-  final items = (data['contacts'] ?? data['data']) as List? ?? [];
-  return items.map((e) => Contact.fromJson(e as Map<String, dynamic>)).toList();
+  final items = _extractContactMaps(response.data);
+  return items.map(Contact.fromJson).toList();
 });
 
 /// Favorite contacts.
@@ -232,18 +231,7 @@ class ContactsNotifier extends Notifier<ContactsState> {
   }
 
   List<Map<String, dynamic>> _extractContactList(Object? data) {
-    final raw = switch (data) {
-      {'contacts': final List contacts} => contacts,
-      {'data': final List contacts} => contacts,
-      {'items': final List contacts} => contacts,
-      final List contacts => contacts,
-      _ => const <Object?>[],
-    };
-
-    return raw
-        .whereType<Map>()
-        .map((contact) => Map<String, dynamic>.from(contact))
-        .toList();
+    return _extractContactMaps(data);
   }
 
   void _sortContacts(List<SyncedContact> items) {
@@ -289,3 +277,35 @@ class ContactsNotifier extends Notifier<ContactsState> {
 final contactsProvider = NotifierProvider<ContactsNotifier, ContactsState>(
   ContactsNotifier.new,
 );
+
+List<Map<String, dynamic>> _extractContactMaps(Object? data) {
+  Object? read(Object? source, String key) {
+    if (source is Map) return source[key];
+    return null;
+  }
+
+  if (data is List) {
+    return data.whereType<Map>().map(Map<String, dynamic>.from).toList();
+  }
+
+  for (final key in const ['contacts', 'items', 'results']) {
+    final raw = read(data, key);
+    if (raw is List) {
+      return raw.whereType<Map>().map(Map<String, dynamic>.from).toList();
+    }
+  }
+
+  final nested = read(data, 'data');
+  if (nested is List) {
+    return nested.whereType<Map>().map(Map<String, dynamic>.from).toList();
+  }
+
+  for (final key in const ['contacts', 'items', 'results']) {
+    final raw = read(nested, key);
+    if (raw is List) {
+      return raw.whereType<Map>().map(Map<String, dynamic>.from).toList();
+    }
+  }
+
+  return const [];
+}
