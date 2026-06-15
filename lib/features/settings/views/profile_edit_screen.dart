@@ -62,19 +62,12 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   @override
   void initState() {
     super.initState();
-    // Pre-fill with current user data
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final userState = ref.read(userStateMachineProvider);
-      setState(() {
-        _usernameController.text = userState.username ?? '';
-        _firstNameController.text = userState.firstName ?? '';
-        _lastNameController.text = userState.lastName ?? '';
-        _emailController.text = userState.email ?? '';
-        _avatarUrl = userState.avatarUrl;
-        _avatarThumb = userState.avatarThumb;
-      });
+      _hydrateFormFromUserState(userState);
       unawaited(_recoverLostProfileImage());
+      unawaited(_refreshProfileSnapshot());
     });
   }
 
@@ -340,6 +333,27 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       _isLoading = message != null;
       _profilePhotoStatus = message;
     });
+  }
+
+  void _hydrateFormFromUserState(UserState userState) {
+    if (!mounted) return;
+    setState(() {
+      _usernameController.text = userState.username ?? '';
+      _firstNameController.text = userState.firstName ?? '';
+      _lastNameController.text = userState.lastName ?? '';
+      _emailController.text = userState.email ?? '';
+      _avatarUrl = userState.avatarUrl;
+      _avatarThumb = userState.avatarThumb;
+    });
+  }
+
+  Future<void> _refreshProfileSnapshot() async {
+    await ref.read(profileProvider.notifier).loadProfile();
+    if (!mounted || _selectedImage != null || _profilePhotoStatus != null) {
+      return;
+    }
+
+    _hydrateFormFromUserState(ref.read(userStateMachineProvider));
   }
 
   void _showProfilePhotoSnack(String message, {required bool isError}) {

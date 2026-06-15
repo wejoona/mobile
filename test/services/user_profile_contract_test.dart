@@ -414,9 +414,14 @@ void main() {
 
       expect(initStateBody, contains('addPostFrameCallback'));
       expect(initStateBody, contains('if (!mounted) return'));
-      expect(initStateBody, contains('setState'));
-      expect(initStateBody, contains('_avatarUrl = userState.avatarUrl'));
-      expect(initStateBody, contains('_avatarThumb = userState.avatarThumb'));
+      expect(initStateBody, contains('_hydrateFormFromUserState(userState)'));
+      expect(initStateBody, contains('_refreshProfileSnapshot()'));
+      expect(source, contains('Future<void> _refreshProfileSnapshot()'));
+      expect(source, contains('loadProfile()'));
+      expect(source, contains('_selectedImage != null'));
+      expect(source, contains('_profilePhotoStatus != null'));
+      expect(source, contains('_avatarUrl = userState.avatarUrl'));
+      expect(source, contains('_avatarThumb = userState.avatarThumb'));
       expect(source, contains('_profileSaveErrorMessage'));
       expect(source, contains('error is ApiException'));
     });
