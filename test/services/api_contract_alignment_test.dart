@@ -2326,19 +2326,28 @@ void main() {
         getDeviceContactsBody,
         isNot(contains('Permission.contacts.request')),
       );
-      expect(syncContactsBody, contains('Permission.contacts.status'));
+      expect(
+        syncContactsBody,
+        contains('contactsService.hasContactsPermission'),
+      );
       expect(syncContactsBody, contains('defaultCountryPrefix'));
       expect(syncContactsBody, contains('syncPhoneHashes'));
       expect(syncContactsBody, isNot(contains('await requestPermission')));
       expect(syncContactsBody, isNot(contains('Permission.contacts.request')));
+      expect(syncContactsBody, isNot(contains('Permission.contacts.status')));
       expect(
         requestPermissionBody,
         contains('contactsService.requestContactsPermission'),
       );
       expect(
         requestPermissionBody,
+        contains('contactsPermissionRequiresSettings'),
+      );
+      expect(
+        requestPermissionBody,
         isNot(contains('Permission.contacts.request')),
       );
+      expect(contactSyncProviderSource, isNot(contains('permission_handler')));
 
       final contactActionsSource = File(
         'lib/features/contacts/providers/contacts_provider.dart',

@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:usdc_wallet/config/countries.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
@@ -71,8 +70,7 @@ class ContactSyncNotifier extends Notifier<ContactSyncState> {
         return true;
       }
 
-      final status = await Permission.contacts.status;
-      if (status.isPermanentlyDenied || status.isRestricted) {
+      if (await contactsService.contactsPermissionRequiresSettings()) {
         state = state.copyWith(
           status: ContactSyncStatus.permissionDenied,
           error: 'Permission permanently denied. Please enable in Settings.',
@@ -101,8 +99,8 @@ class ContactSyncNotifier extends Notifier<ContactSyncState> {
 
     // Passive sync must not trigger the iOS Contacts prompt. Permission should
     // only be requested from an explicit user action.
-    final permissionStatus = await Permission.contacts.status;
-    if (!permissionStatus.isGranted && !permissionStatus.isLimited) {
+    final contactsService = ref.read(contactsServiceProvider);
+    if (!await contactsService.hasContactsPermission()) {
       state = state.copyWith(status: ContactSyncStatus.permissionDenied);
       return;
     }
@@ -111,7 +109,6 @@ class ContactSyncNotifier extends Notifier<ContactSyncState> {
     try {
       // Step 1: Read device contacts
       _logger.info('Reading device contacts...');
-      final contactsService = ref.read(contactsServiceProvider);
       final contacts = await contactsService.getDeviceContacts();
 
       // Step 2: Hash normalized phone numbers before sending them to the API.
@@ -184,7 +181,7 @@ class ContactSyncNotifier extends Notifier<ContactSyncState> {
 
   /// Open app settings for permission
   Future<void> openSettings() async {
-    await openAppSettings();
+    await ref.read(contactsServiceProvider).openContactsSettings();
   }
 }
 
