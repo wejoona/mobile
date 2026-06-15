@@ -24,6 +24,7 @@ class UserService {
 
   /// PUT /user/profile
   Future<UserProfile> updateProfile({
+    String? username,
     String? firstName,
     String? lastName,
     String? email,
@@ -33,6 +34,7 @@ class UserService {
       final response = await _dio.put(
         '/user/profile',
         data: {
+          if (username != null) 'username': username,
           if (firstName != null) 'firstName': firstName,
           if (lastName != null) 'lastName': lastName,
           if (email != null) 'email': email,

@@ -159,6 +159,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
         .updateProfile(
           firstName: profile.firstName,
           lastName: profile.lastName,
+          username: profile.username,
           email: profile.email,
           emailVerified: profile.emailVerified,
           clearEmail: profile.email == null || profile.email!.isEmpty,

@@ -124,6 +124,7 @@ class UserState {
   final AuthStatus status;
   final String? userId;
   final String? phone;
+  final String? username;
   final String? firstName;
   final String? lastName;
   final String? email;
@@ -141,6 +142,7 @@ class UserState {
     this.status = AuthStatus.initial,
     this.userId,
     this.phone,
+    this.username,
     this.firstName,
     this.lastName,
     this.email,
@@ -157,8 +159,13 @@ class UserState {
 
   bool get isAuthenticated => status == AuthStatus.authenticated;
   bool get isLoading => status == AuthStatus.loading;
-  String get displayName =>
-      firstName != null ? '$firstName ${lastName ?? ''}' : phone ?? 'User';
+  String get displayName {
+    if (_isNonEmpty(firstName) || _isNonEmpty(lastName)) {
+      return '${firstName ?? ''} ${lastName ?? ''}'.trim();
+    }
+    if (_isNonEmpty(username)) return '@$username';
+    return phone ?? 'User';
+  }
 
   /// Best available avatar for in-app rendering.
   ///
@@ -185,6 +192,7 @@ class UserState {
     AuthStatus? status,
     String? userId,
     String? phone,
+    String? username,
     String? firstName,
     String? lastName,
     String? email,
@@ -205,6 +213,7 @@ class UserState {
       status: status ?? this.status,
       userId: userId ?? this.userId,
       phone: phone ?? this.phone,
+      username: username ?? this.username,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
       email: clearEmail ? null : email ?? this.email,

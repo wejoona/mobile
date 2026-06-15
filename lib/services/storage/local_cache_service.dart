@@ -134,6 +134,7 @@ class LocalCacheService {
   Future<void> cacheUserProfile({
     required String userId,
     String? phone,
+    String? username,
     String? firstName,
     String? lastName,
     String? email,
@@ -148,6 +149,7 @@ class LocalCacheService {
       final cached = CachedUserProfile(
         userId: userId,
         phone: phone,
+        username: username,
         firstName: firstName,
         lastName: lastName,
         email: email,

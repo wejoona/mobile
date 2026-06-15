@@ -28,6 +28,7 @@ class ProfileEditScreen extends ConsumerStatefulWidget {
 
 class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _usernameController = TextEditingController();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -66,6 +67,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       if (!mounted) return;
       final userState = ref.read(userStateMachineProvider);
       setState(() {
+        _usernameController.text = userState.username ?? '';
         _firstNameController.text = userState.firstName ?? '';
         _lastNameController.text = userState.lastName ?? '';
         _emailController.text = userState.email ?? '';
@@ -78,6 +80,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
   @override
   void dispose() {
+    _usernameController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
@@ -113,6 +116,27 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               _buildAvatarSection(userState),
 
               const SizedBox(height: AppSpacing.xxxl),
+
+              // Username
+              AppInput(
+                label: _usernameLabel(context),
+                controller: _usernameController,
+                hint: '@ben_ouattara',
+                keyboardType: TextInputType.text,
+                validator: (value) {
+                  final normalized = _normalizeUsername(value);
+                  if (normalized == null) return null;
+                  if (normalized.length < 3 || normalized.length > 20) {
+                    return _usernameLengthError(context);
+                  }
+                  if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(normalized)) {
+                    return _usernameFormatError(context);
+                  }
+                  return null;
+                },
+              ),
+
+              const SizedBox(height: AppSpacing.lg),
 
               // First Name
               AppInput(
@@ -616,6 +640,31 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     return phone;
   }
 
+  String? _normalizeUsername(String? value) {
+    final normalized = value?.trim().replaceFirst(RegExp(r'^@+'), '');
+    if (normalized == null || normalized.isEmpty) return null;
+    return normalized.toLowerCase();
+  }
+
+  String _usernameLabel(BuildContext context) {
+    final locale = Localizations.localeOf(context).languageCode;
+    return locale == 'fr' ? "Nom d'utilisateur" : 'Username';
+  }
+
+  String _usernameLengthError(BuildContext context) {
+    final locale = Localizations.localeOf(context).languageCode;
+    return locale == 'fr'
+        ? 'Le nom d’utilisateur doit contenir 3 à 20 caractères.'
+        : 'Username must be 3 to 20 characters.';
+  }
+
+  String _usernameFormatError(BuildContext context) {
+    final locale = Localizations.localeOf(context).languageCode;
+    return locale == 'fr'
+        ? 'Utilisez uniquement lettres, chiffres et underscore.'
+        : 'Use only letters, numbers, and underscores.';
+  }
+
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -625,6 +674,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       final profile = await ref
           .read(userServiceProvider)
           .updateProfile(
+            username: _normalizeUsername(_usernameController.text),
             firstName: _firstNameController.text.trim(),
             lastName: _lastNameController.text.trim(),
             email: _emailController.text.trim().isEmpty

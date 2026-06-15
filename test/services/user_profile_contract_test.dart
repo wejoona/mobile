@@ -40,6 +40,7 @@ void main() {
 
       expect(profile.id, 'usr_001');
       expect(profile.phoneVerified, isTrue);
+      expect(profile.username, 'ben');
       expect(profile.avatarUrl, '/user/avatar/usr_001');
       expect(profile.avatarThumb, startsWith('data:image/jpeg;base64,'));
       expect(profile.preferredLocale, 'fr');
@@ -169,6 +170,20 @@ void main() {
       expect(profile.email, isNull);
     });
 
+    test('user service sends username updates to the profile endpoint', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'data': {'id': 'usr_username', 'username': 'ben_ouattara'},
+        });
+      final service = UserService(dio);
+
+      final profile = await service.updateProfile(username: 'ben_ouattara');
+
+      expect(dio.requestHistory.single.path, '/user/profile');
+      expect(dio.requestHistory.single.data, {'username': 'ben_ouattara'});
+      expect(profile.username, 'ben_ouattara');
+    });
+
     test(
       'user avatar upload declares the device face-check contract',
       () async {
@@ -247,10 +262,19 @@ void main() {
     });
 
     test('can explicitly clear stale profile email', () {
-      const state = UserState(email: 'old@korido.co', emailVerified: true);
+      const state = UserState(
+        username: 'old_name',
+        email: 'old@korido.co',
+        emailVerified: true,
+      );
 
-      final cleared = state.copyWith(clearEmail: true, emailVerified: false);
+      final cleared = state.copyWith(
+        username: 'new_name',
+        clearEmail: true,
+        emailVerified: false,
+      );
 
+      expect(cleared.username, 'new_name');
       expect(cleared.email, isNull);
       expect(cleared.emailVerified, isFalse);
     });

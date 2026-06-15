@@ -122,6 +122,7 @@ class SyncService {
     _cache.cacheUserProfile(
       userId: state.userId!,
       phone: state.phone,
+      username: state.username,
       firstName: state.firstName,
       lastName: state.lastName,
       email: state.email,
