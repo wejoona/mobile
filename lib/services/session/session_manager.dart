@@ -14,6 +14,8 @@ import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/utils/context_extensions.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
+enum _SessionWarningAction { extend, logout }
+
 /// Widget that manages session lifecycle and shows timeout warnings
 class SessionManager extends ConsumerStatefulWidget {
   final Widget child;
@@ -26,7 +28,7 @@ class SessionManager extends ConsumerStatefulWidget {
 
 class _SessionManagerState extends ConsumerState<SessionManager>
     with WidgetsBindingObserver {
-  bool _isResolvingSessionWarning = false;
+  _SessionWarningAction? _sessionWarningAction;
 
   @override
   void initState() {
@@ -82,10 +84,10 @@ class _SessionManagerState extends ConsumerState<SessionManager>
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionServiceProvider);
     final authState = ref.watch(authProvider);
-    if (!sessionState.isExpiring && _isResolvingSessionWarning) {
+    if (!sessionState.isExpiring && _sessionWarningAction != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && !ref.read(sessionServiceProvider).isExpiring) {
-          setState(() => _isResolvingSessionWarning = false);
+          setState(() => _sessionWarningAction = null);
         }
       });
     }
@@ -128,13 +130,17 @@ class _SessionManagerState extends ConsumerState<SessionManager>
                 _shouldShowExpiringOverlay(context))
               _SessionExpiringOverlay(
                 remainingSeconds: sessionState.remainingSeconds ?? 0,
-                isResolving: _isResolvingSessionWarning,
+                resolvingAction: _sessionWarningAction,
                 onExtend: () {
-                  setState(() => _isResolvingSessionWarning = true);
+                  setState(
+                    () => _sessionWarningAction = _SessionWarningAction.extend,
+                  );
                   unawaited(_extendFromSessionWarning());
                 },
                 onLogout: () {
-                  setState(() => _isResolvingSessionWarning = true);
+                  setState(
+                    () => _sessionWarningAction = _SessionWarningAction.logout,
+                  );
                   unawaited(_logoutFromSessionWarning());
                 },
               ),
@@ -173,7 +179,7 @@ class _SessionManagerState extends ConsumerState<SessionManager>
       ).warn('Could not extend session warning', e);
     } finally {
       if (mounted) {
-        setState(() => _isResolvingSessionWarning = false);
+        setState(() => _sessionWarningAction = null);
       }
     }
   }
@@ -284,13 +290,13 @@ class _SessionManagerState extends ConsumerState<SessionManager>
 /// Overlay shown when session is about to expire
 class _SessionExpiringOverlay extends StatelessWidget {
   final int remainingSeconds;
-  final bool isResolving;
+  final _SessionWarningAction? resolvingAction;
   final VoidCallback onExtend;
   final VoidCallback onLogout;
 
   const _SessionExpiringOverlay({
     required this.remainingSeconds,
-    required this.isResolving,
+    required this.resolvingAction,
     required this.onExtend,
     required this.onLogout,
   });
@@ -302,6 +308,7 @@ class _SessionExpiringOverlay extends StatelessWidget {
     final isUrgent = remainingSeconds <= 10;
     final timerColor = isUrgent ? colors.error : colors.gold;
     final timerBackground = isUrgent ? colors.errorBg : colors.goldSubtle;
+    final isResolving = resolvingAction != null;
     final borderColor = isUrgent
         ? colors.error.withValues(alpha: colors.isDark ? 0.42 : 0.28)
         : colors.borderGold;
@@ -396,6 +403,8 @@ class _SessionExpiringOverlay extends StatelessWidget {
                       icon: Icons.verified_user_rounded,
                       onPressed: isResolving ? null : onExtend,
                       variant: AppButtonVariant.primary,
+                      isLoading:
+                          resolvingAction == _SessionWarningAction.extend,
                       isFullWidth: true,
                     ),
                     const SizedBox(height: AppSpacing.sm),
@@ -404,7 +413,8 @@ class _SessionExpiringOverlay extends StatelessWidget {
                       icon: Icons.logout_rounded,
                       onPressed: isResolving ? null : onLogout,
                       variant: AppButtonVariant.secondary,
-                      isLoading: isResolving,
+                      isLoading:
+                          resolvingAction == _SessionWarningAction.logout,
                       isFullWidth: true,
                     ),
                   ],
