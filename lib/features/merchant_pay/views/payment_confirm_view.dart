@@ -284,7 +284,7 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
                       const SizedBox(width: AppSpacing.sm),
                       Icon(
                         Icons.verified,
-                        color: Colors.blue.shade600,
+                        color: context.colors.gold,
                         size: 18,
                       ),
                     ],

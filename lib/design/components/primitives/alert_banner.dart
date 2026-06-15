@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 
 /// Alias for AlertBannerType used in some views.
 typedef AlertVariant = AlertBannerType;
@@ -82,30 +83,30 @@ class AlertBanner extends StatelessWidget {
     switch (type) {
       case AlertBannerType.info:
         return _BannerColors(
-          background: Colors.blue.shade50,
-          foreground: Colors.blue.shade700,
-          border: Colors.blue.shade200,
+          background: context.colors.goldSubtle,
+          foreground: context.colors.gold,
+          border: context.colors.borderGold,
           icon: Icons.info_outline_rounded,
         );
       case AlertBannerType.warning:
         return _BannerColors(
-          background: Colors.orange.shade50,
-          foreground: Colors.orange.shade700,
-          border: Colors.orange.shade200,
+          background: context.colors.warningBg,
+          foreground: context.colors.warningText,
+          border: context.colors.warning.withValues(alpha: 0.24),
           icon: Icons.warning_amber_rounded,
         );
       case AlertBannerType.error:
         return _BannerColors(
-          background: Colors.red.shade50,
-          foreground: Colors.red.shade700,
-          border: Colors.red.shade200,
+          background: context.colors.errorBg,
+          foreground: context.colors.errorText,
+          border: context.colors.error.withValues(alpha: 0.24),
           icon: Icons.error_outline_rounded,
         );
       case AlertBannerType.success:
         return _BannerColors(
-          background: Colors.green.shade50,
-          foreground: Colors.green.shade700,
-          border: Colors.green.shade200,
+          background: context.colors.successBg,
+          foreground: context.colors.successText,
+          border: context.colors.success.withValues(alpha: 0.24),
           icon: Icons.check_circle_outline_rounded,
         );
     }
