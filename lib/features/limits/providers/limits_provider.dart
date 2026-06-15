@@ -26,6 +26,16 @@ final limitCheckProvider = Provider.family<String?, double>((ref, amount) {
   return limits?.limitHitBy(amount);
 });
 
+/// Operation-aware check for a specific amount.
+final operationLimitCheckProvider =
+    Provider.family<
+      String?,
+      ({TransactionLimitOperation operation, double amount})
+    >((ref, input) {
+      final limits = ref.watch(transactionLimitsProvider).value;
+      return limits?.limitHitByFor(input.operation, input.amount);
+    });
+
 /// Limits state for UI consumption.
 class LimitsState {
   final TransactionLimits? limits;

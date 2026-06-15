@@ -232,6 +232,46 @@ class TransactionLimits {
   bool get isMonthlyAtLimit => monthlyPercentage >= 1.0;
   bool get hasNextTier => nextTierName != null;
   bool get hasActiveOverride => overrideActive;
+
+  double dailyLimitFor(TransactionLimitOperation operation) {
+    return switch (operation) {
+      TransactionLimitOperation.send => dailyLimit,
+      TransactionLimitOperation.deposit =>
+        dailyDepositLimit > 0 ? dailyDepositLimit : dailyLimit,
+      TransactionLimitOperation.withdraw =>
+        dailyWithdrawLimit > 0 ? dailyWithdrawLimit : dailyLimit,
+    };
+  }
+
+  double dailyUsedFor(TransactionLimitOperation operation) {
+    return switch (operation) {
+      TransactionLimitOperation.send => dailyUsed,
+      TransactionLimitOperation.deposit => dailyDepositUsed,
+      TransactionLimitOperation.withdraw => dailyWithdrawUsed,
+    };
+  }
+
+  double dailyRemainingFor(TransactionLimitOperation operation) {
+    return switch (operation) {
+      TransactionLimitOperation.send => dailyRemaining,
+      TransactionLimitOperation.deposit => dailyDepositRemaining,
+      TransactionLimitOperation.withdraw => dailyWithdrawRemaining,
+    };
+  }
+
+  double dailyPercentageFor(TransactionLimitOperation operation) {
+    final limit = dailyLimitFor(operation);
+    return limit > 0 ? (dailyUsedFor(operation) / limit).clamp(0.0, 1.0) : 0.0;
+  }
+
+  bool isDailyNearLimitFor(TransactionLimitOperation operation) {
+    return dailyPercentageFor(operation) >= 0.8;
+  }
+
+  bool isDailyAtLimitFor(TransactionLimitOperation operation) {
+    return dailyPercentageFor(operation) >= 1.0;
+  }
+
   double get effectiveMax {
     return effectiveMaxFor(TransactionLimitOperation.send);
   }
@@ -242,10 +282,13 @@ class TransactionLimits {
       TransactionLimitOperation.deposit => dailyDepositRemaining,
       TransactionLimitOperation.withdraw => dailyWithdrawRemaining,
     };
+    final operationLimit = operation == TransactionLimitOperation.withdraw
+        ? withdrawalLimit
+        : singleTransactionLimit;
     final candidates = [
       dailyForOperation,
       monthlyRemaining,
-      singleTransactionLimit,
+      operationLimit,
     ].where((value) => value > 0).toList();
     if (candidates.isEmpty) {
       return 0;
@@ -254,10 +297,18 @@ class TransactionLimits {
   }
 
   String? limitHitBy(double amount) {
-    if (amount > singleTransactionLimit && singleTransactionLimit > 0) {
+    return limitHitByFor(TransactionLimitOperation.send, amount);
+  }
+
+  String? limitHitByFor(TransactionLimitOperation operation, double amount) {
+    final operationLimit = operation == TransactionLimitOperation.withdraw
+        ? withdrawalLimit
+        : singleTransactionLimit;
+    if (amount > operationLimit && operationLimit > 0) {
       return 'single_transaction';
     }
-    if (dailyLimit > 0 && amount > dailyRemaining) {
+    final dailyLimit = dailyLimitFor(operation);
+    if (dailyLimit > 0 && amount > dailyRemainingFor(operation)) {
       return 'daily';
     }
     if (monthlyLimit > 0 && amount > monthlyRemaining) {

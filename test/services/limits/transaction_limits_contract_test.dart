@@ -43,6 +43,32 @@ void main() {
       expect(limits.overrideExpiresAt, DateTime.utc(2026, 7));
     });
 
+    test('checks operation-specific daily caps', () {
+      final limits = TransactionLimits.fromJson({
+        'daily': {
+          'send': {'limit': 5000, 'used': 100, 'remaining': 4900},
+          'withdraw': {'limit': 1000, 'used': 900, 'remaining': 100},
+          'deposit': {'limit': 2500, 'used': 2300, 'remaining': 200},
+        },
+        'monthly': {
+          'total': {'limit': 50000, 'used': 1000, 'remaining': 49000},
+        },
+        'perTransaction': {'send': 2000, 'withdraw': 500},
+      });
+
+      expect(limits.limitHitByFor(TransactionLimitOperation.send, 150), isNull);
+      expect(
+        limits.limitHitByFor(TransactionLimitOperation.deposit, 250),
+        'daily',
+      );
+      expect(
+        limits.limitHitByFor(TransactionLimitOperation.withdraw, 600),
+        'single_transaction',
+      );
+      expect(limits.effectiveMaxFor(TransactionLimitOperation.deposit), 200);
+      expect(limits.effectiveMaxFor(TransactionLimitOperation.withdraw), 100);
+    });
+
     test('keeps flat /wallet/limits and mock payload compatibility', () {
       final limits = TransactionLimits.fromJson({
         'dailyLimit': 1000,
