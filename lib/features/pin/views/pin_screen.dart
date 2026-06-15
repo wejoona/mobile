@@ -60,16 +60,18 @@ class _PinScreenState extends ConsumerState<PinScreen>
   BiometricType _biometricType = BiometricType.none;
   bool _isVerifying = false;
   bool _showUnlockTransition = false;
+  int _biometricAttempt = 0;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _checkBiometric();
+    unawaited(_checkBiometric());
   }
 
   @override
   void dispose() {
+    _biometricAttempt++;
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -80,7 +82,8 @@ class _PinScreenState extends ConsumerState<PinScreen>
     // biometric availability. Re-check on resume so the unlock button
     // reappears without forcing the user to close and reopen the app.
     if (state == AppLifecycleState.resumed && !_showUnlockTransition) {
-      _checkBiometric();
+      unawaited(_checkBiometric());
+      _recoverInterruptedBiometric();
     }
   }
 
@@ -222,11 +225,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
     unawaited(
       Future.delayed(const Duration(seconds: 5), () {
         if (!mounted || !_showUnlockTransition) return;
-        setState(() {
-          _showUnlockTransition = false;
-          _isVerifying = false;
-        });
-        unawaited(_checkBiometric());
+        _returnToPinEntry(
+          message: 'Unlock is taking longer than expected. Please try again.',
+        );
       }),
     );
   }
@@ -241,15 +242,36 @@ class _PinScreenState extends ConsumerState<PinScreen>
     });
   }
 
-  void _returnToPinEntry() {
+  void _returnToPinEntry({String? message}) {
     setState(() {
       _showUnlockTransition = false;
       _isVerifying = false;
       _pin = '';
       _hasError = false;
-      _errorMessage = null;
+      _errorMessage = message;
     });
     unawaited(_checkBiometric());
+  }
+
+  void _recoverInterruptedBiometric() {
+    final attempt = _biometricAttempt;
+    unawaited(
+      Future.delayed(const Duration(seconds: 2), () {
+        if (!mounted ||
+            !_isVerifying ||
+            _showUnlockTransition ||
+            attempt != _biometricAttempt) {
+          return;
+        }
+        setState(() {
+          _isVerifying = false;
+          _pin = '';
+          _hasError = false;
+          _errorMessage = 'Biometric unlock was interrupted. Please try again.';
+        });
+        unawaited(_checkBiometric());
+      }),
+    );
   }
 
   Future<void> _verifyPin() async {
@@ -287,16 +309,37 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
   Future<void> _handleBiometric() async {
     if (_isVerifying) return;
+    final attempt = ++_biometricAttempt;
     setState(() {
       _isVerifying = true;
       _errorMessage = null;
     });
+    unawaited(
+      Future.delayed(const Duration(seconds: 12), () {
+        if (!mounted ||
+            !_isVerifying ||
+            _showUnlockTransition ||
+            attempt != _biometricAttempt) {
+          return;
+        }
+        setState(() {
+          _isVerifying = false;
+          _pin = '';
+          _hasError = false;
+          _errorMessage = 'Biometric unlock timed out. Please try again.';
+        });
+        unawaited(_checkBiometric());
+      }),
+    );
 
     final bio = ref.read(biometricServiceProvider);
     try {
       final result = await bio.authenticate(
         localizedReason: AppLocalizations.of(context)!.biometric_reason,
       );
+      if (attempt != _biometricAttempt) {
+        return;
+      }
       if (result.success && mounted) {
         _onSuccess();
         return;
