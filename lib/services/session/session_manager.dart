@@ -81,6 +81,7 @@ class _SessionManagerState extends ConsumerState<SessionManager>
   @override
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionServiceProvider);
+    final authState = ref.watch(authProvider);
     if (!sessionState.isExpiring && _isResolvingSessionWarning) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && !ref.read(sessionServiceProvider).isExpiring) {
@@ -122,7 +123,9 @@ class _SessionManagerState extends ConsumerState<SessionManager>
             widget.child,
 
             // Session expiring warning overlay (only on authenticated screens, not PIN/login)
-            if (sessionState.isExpiring && _shouldShowExpiringOverlay(context))
+            if (authState.isAuthenticated &&
+                sessionState.isExpiring &&
+                _shouldShowExpiringOverlay(context))
               _SessionExpiringOverlay(
                 remainingSeconds: sessionState.remainingSeconds ?? 0,
                 isResolving: _isResolvingSessionWarning,

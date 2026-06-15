@@ -19,6 +19,8 @@ void main() {
     _expectLocalFirstLogout(expireSessionBody);
 
     expect(source, contains('isResolving: _isResolvingSessionWarning'));
+    expect(source, contains('final authState = ref.watch(authProvider)'));
+    expect(source, contains('authState.isAuthenticated &&'));
     expect(source, isNot(contains('!_isResolvingSessionWarning &&')));
     expect(source, contains('isLoading: isResolving'));
     expect(source, contains('onPressed: isResolving ? null : onLogout'));
