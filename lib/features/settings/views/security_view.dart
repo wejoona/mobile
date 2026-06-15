@@ -667,12 +667,12 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
       orElse: () => false,
     );
 
-    int score = 40; // Base score for having account
-    if (biometricsOn) score += 20;
-    score += 10; // Transaction PIN is mandatory for money movement.
+    int score = 55; // Account, device, session, and backend risk controls.
+    score += 25; // Transaction PIN is mandatory for money movement.
     final prefsState = ref.watch(notificationPreferencesProvider);
     final prefs = prefsState.preferences;
-    if (prefs?.smsSecurity == true || prefs?.pushSecurity == true) score += 5;
+    if (biometricsOn) score += 10;
+    if (prefs?.smsSecurity == true || prefs?.pushSecurity == true) score += 10;
     return score.clamp(0, 100);
   }
 
@@ -691,7 +691,13 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
     );
 
     if (!biometricsOn) return l10n.security_tipEnableBiometrics;
-    return l10n.security_tipEnableNotifications;
+    final prefsState = ref.watch(notificationPreferencesProvider);
+    final prefs = prefsState.preferences;
+    final securityAlertsOn =
+        prefs?.smsSecurity == true || prefs?.pushSecurity == true;
+
+    if (!securityAlertsOn) return l10n.security_tipEnableNotifications;
+    return l10n.security_twoFactorComingSoonSubtitle;
   }
 
   void _confirmLogoutAll() {
