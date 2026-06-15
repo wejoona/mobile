@@ -1,10 +1,13 @@
-import 'package:usdc_wallet/design/components/primitives/section_header.dart';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/design/components/primitives/section_header.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/utils/share_utils.dart';
 
 /// Run 378: Data export view for GDPR compliance and user data portability
 class ExportDataView extends ConsumerStatefulWidget {
@@ -15,11 +18,9 @@ class ExportDataView extends ConsumerStatefulWidget {
 }
 
 class _ExportDataViewState extends ConsumerState<ExportDataView> {
-  bool _includeTransactions = true;
-  bool _includeProfile = true;
-  bool _includeContacts = false;
-  String _format = 'pdf';
   bool _isExporting = false;
+  String? _exportedJson;
+  DateTime? _exportedAt;
 
   @override
   Widget build(BuildContext context) {
@@ -36,86 +37,70 @@ class _ExportDataViewState extends ConsumerState<ExportDataView> {
         padding: const EdgeInsets.all(AppSpacing.lg),
         children: [
           const AlertBanner(
-            message: 'Vos donnees seront exportees dans un fichier securise.',
+            message:
+                'Korido exporte actuellement les donnees de votre compte au format JSON securise.',
             type: AlertVariant.info,
           ),
           const SizedBox(height: AppSpacing.xxl),
           const SectionHeader(title: 'Donnees a inclure'),
           const SizedBox(height: AppSpacing.sm),
-          _ExportOption(
-            title: 'Historique des transactions',
-            subtitle: 'Tous vos transferts, depots et retraits',
-            value: _includeTransactions,
-            onChanged: (v) => setState(() => _includeTransactions = v),
-          ),
-          _ExportOption(
-            title: 'Informations du profil',
-            subtitle: 'Nom, telephone, email',
-            value: _includeProfile,
-            onChanged: (v) => setState(() => _includeProfile = v),
-          ),
-          _ExportOption(
-            title: 'Contacts Korido',
-            subtitle: 'Liste de vos beneficiaires',
-            value: _includeContacts,
-            onChanged: (v) => setState(() => _includeContacts = v),
-          ),
+          const _IncludedSectionCard(),
           const SizedBox(height: AppSpacing.xxl),
           const SectionHeader(title: 'Format'),
           const SizedBox(height: AppSpacing.sm),
-          Row(
-            children: [
-              _FormatChip(
-                label: 'PDF',
-                selected: _format == 'pdf',
-                onTap: () => setState(() => _format = 'pdf'),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              _FormatChip(
-                label: 'CSV',
-                selected: _format == 'csv',
-                onTap: () => setState(() => _format = 'csv'),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              _FormatChip(
-                label: 'JSON',
-                selected: _format == 'json',
-                onTap: () => setState(() => _format = 'json'),
-              ),
-            ],
-          ),
+          const _JsonFormatCard(),
           const SizedBox(height: AppSpacing.xxxl),
           AppButton(
             label: _isExporting ? 'Exportation...' : 'Exporter',
             variant: AppButtonVariant.primary,
             isLoading: _isExporting,
             onPressed: _isExporting ? null : _export,
+            isFullWidth: true,
           ),
+          if (_exportedJson != null) ...[
+            const SizedBox(height: AppSpacing.xxl),
+            _ExportResultCard(
+              exportedAt: _exportedAt,
+              exportedJson: _exportedJson!,
+              onCopy: _copyExport,
+              onShare: _shareExport,
+            ),
+          ],
         ],
       ),
     );
   }
 
   Future<void> _export() async {
-    if (!_includeTransactions && !_includeProfile && !_includeContacts) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez sélectionner au moins un type de données')),
-      );
-      return;
-    }
     setState(() => _isExporting = true);
     try {
       final dio = ref.read(dioProvider);
-      await dio.get('/user/data-export', queryParameters: {
-        'includeTransactions': _includeTransactions,
-        'includeProfile': _includeProfile,
-        'includeContacts': _includeContacts,
-        'format': _format,
-      });
+      final response = await dio.get(
+        '/user/data-export',
+        queryParameters: {
+          'includeProfile': true,
+          'includeTransactions': false,
+          'includeContacts': false,
+          'format': 'json',
+        },
+      );
+      final prettyJson = const JsonEncoder.withIndent(
+        '  ',
+      ).convert(response.data);
+      final responseData = response.data;
+      final exportedAt = DateTime.tryParse(
+        responseData is Map ? responseData['exportedAt']?.toString() ?? '' : '',
+      );
       if (mounted) {
+        setState(() {
+          _exportedJson = prettyJson;
+          _exportedAt = exportedAt;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Export demandé. Vous recevrez un email avec vos données.'),
+            content: const Text(
+              'Export pret. Vous pouvez le copier ou le partager.',
+            ),
             backgroundColor: context.colors.success,
           ),
         );
@@ -130,88 +115,196 @@ class _ExportDataViewState extends ConsumerState<ExportDataView> {
         );
       }
     } finally {
-      if (mounted) setState(() => _isExporting = false);
+      if (mounted) {
+        setState(() => _isExporting = false);
+      }
     }
+  }
+
+  Future<void> _copyExport() async {
+    final export = _exportedJson;
+    if (export == null) {
+      return;
+    }
+    await Clipboard.setData(ClipboardData(text: export));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Export copie dans le presse-papiers.'),
+        backgroundColor: context.colors.success,
+      ),
+    );
+  }
+
+  Future<void> _shareExport() async {
+    final export = _exportedJson;
+    if (export == null) {
+      return;
+    }
+    await ShareUtils.shareText(export, subject: 'Export Korido');
   }
 }
 
-class _ExportOption extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  const _ExportOption({
-    required this.title,
-    required this.subtitle,
-    required this.value,
-    required this.onChanged,
-  });
-
+class _IncludedSectionCard extends StatelessWidget {
+  const _IncludedSectionCard();
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: AppCard(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppText(title, style: AppTextStyle.labelMedium),
-                    const SizedBox(height: AppSpacing.xxs),
-                    AppText(
-                      subtitle,
-                      style: AppTextStyle.bodySmall,
-                      color: context.colors.textTertiary,
-                    ),
-                  ],
-                ),
+    return AppCard(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: context.colors.goldSubtle,
+                borderRadius: BorderRadius.circular(AppRadius.md),
               ),
-              AppToggle(value: value, onChanged: onChanged),
-            ],
-          ),
+              child: Icon(
+                Icons.account_circle_outlined,
+                color: context.colors.gold,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const AppText(
+                    'Compte et profil',
+                    style: AppTextStyle.labelMedium,
+                  ),
+                  const SizedBox(height: AppSpacing.xxs),
+                  AppText(
+                    'Nom, telephone, email, pays, statut du compte et statut KYC.',
+                    style: AppTextStyle.bodySmall,
+                    color: context.colors.textTertiary,
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.check_circle_rounded, color: context.colors.success),
+          ],
         ),
       ),
     );
   }
 }
 
-class _FormatChip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
+class _JsonFormatCard extends StatelessWidget {
+  const _JsonFormatCard();
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Row(
+          children: [
+            Icon(Icons.data_object_rounded, color: context.colors.gold),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const AppText('JSON', style: AppTextStyle.labelMedium),
+                  const SizedBox(height: AppSpacing.xxs),
+                  AppText(
+                    'Export immediat lisible par Korido et vos outils de support.',
+                    style: AppTextStyle.bodySmall,
+                    color: context.colors.textTertiary,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-  const _FormatChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
+class _ExportResultCard extends StatelessWidget {
+  const _ExportResultCard({
+    required this.exportedJson,
+    required this.onCopy,
+    required this.onShare,
+    this.exportedAt,
   });
+
+  final DateTime? exportedAt;
+  final String exportedJson;
+  final VoidCallback onCopy;
+  final VoidCallback onShare;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.xl,
-          vertical: AppSpacing.md,
-        ),
-        decoration: BoxDecoration(
-          color: selected ? context.colors.gold.withValues(alpha: 0.12) : context.colors.elevated,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: selected ? context.colors.gold : Colors.transparent,
-          ),
-        ),
-        child: AppText(
-          label,
-          style: AppTextStyle.labelMedium,
-          color: selected ? context.colors.gold : context.colors.textSecondary,
+    final exportedAtLabel = exportedAt == null
+        ? 'Maintenant'
+        : '${exportedAt!.day.toString().padLeft(2, '0')}/'
+              '${exportedAt!.month.toString().padLeft(2, '0')}/'
+              '${exportedAt!.year} '
+              '${exportedAt!.hour.toString().padLeft(2, '0')}:'
+              '${exportedAt!.minute.toString().padLeft(2, '0')}';
+
+    return AppCard(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const AppText('Export pret', style: AppTextStyle.headingSmall),
+            const SizedBox(height: AppSpacing.xs),
+            AppText(
+              'Genere le $exportedAtLabel',
+              style: AppTextStyle.bodySmall,
+              color: context.colors.textTertiary,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Container(
+              constraints: const BoxConstraints(maxHeight: 180),
+              width: double.infinity,
+              padding: const EdgeInsets.all(AppSpacing.md),
+              decoration: BoxDecoration(
+                color: context.colors.elevated,
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                border: Border.all(color: context.colors.borderSubtle),
+              ),
+              child: SingleChildScrollView(
+                child: SelectableText(
+                  exportedJson,
+                  style: TextStyle(
+                    color: context.colors.textSecondary,
+                    fontSize: 12,
+                    height: 1.35,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Row(
+              children: [
+                Expanded(
+                  child: AppButton(
+                    label: 'Copier',
+                    variant: AppButtonVariant.secondary,
+                    icon: Icons.copy_rounded,
+                    onPressed: onCopy,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: AppButton(
+                    label: 'Partager',
+                    variant: AppButtonVariant.primary,
+                    icon: Icons.ios_share_rounded,
+                    onPressed: onShare,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
