@@ -262,7 +262,30 @@ class OfflineNotifier extends Notifier<OfflineState> {
   Future<void> retryFailedTransfer(String transferId) async {
     if (_queue == null || !state.isOnline) return;
 
-    await _queue!.updateTransferStatus(transferId, TransferStatus.pending);
+    PendingTransfer? transfer;
+    for (final item in _queue!.getQueue()) {
+      if (item.id == transferId) {
+        transfer = item;
+        break;
+      }
+    }
+    if (transfer == null) return;
+
+    if (!transfer.canReplayWithAuthorization) {
+      await _queue!.updateTransferStatus(
+        transferId,
+        TransferStatus.needsAuthorization,
+        clearErrorMessage: true,
+      );
+      state = state.copyWith(pendingTransferCount: _queue!.getPendingCount());
+      return;
+    }
+
+    await _queue!.updateTransferStatus(
+      transferId,
+      TransferStatus.pending,
+      clearErrorMessage: true,
+    );
     state = state.copyWith(pendingTransferCount: _queue!.getPendingCount());
 
     await _processPendingTransfers();

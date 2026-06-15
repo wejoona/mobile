@@ -32,6 +32,12 @@ class PendingTransfer {
     this.idempotencyKey,
   });
 
+  bool get canReplayWithAuthorization =>
+      pinToken != null &&
+      pinToken!.isNotEmpty &&
+      idempotencyKey != null &&
+      idempotencyKey!.isNotEmpty;
+
   Map<String, dynamic> toJson() => {
     'id': id,
     'recipientPhone': recipientPhone,
@@ -70,6 +76,7 @@ class PendingTransfer {
     DateTime? timestamp,
     TransferStatus? status,
     String? errorMessage,
+    bool clearErrorMessage = false,
     String? pinToken,
     String? idempotencyKey,
   }) {
@@ -81,7 +88,9 @@ class PendingTransfer {
       description: description ?? this.description,
       timestamp: timestamp ?? this.timestamp,
       status: status ?? this.status,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: clearErrorMessage
+          ? null
+          : errorMessage ?? this.errorMessage,
       pinToken: pinToken ?? this.pinToken,
       idempotencyKey: idempotencyKey ?? this.idempotencyKey,
     );
@@ -179,6 +188,7 @@ class PendingTransferQueue {
     String transferId,
     TransferStatus status, {
     String? errorMessage,
+    bool clearErrorMessage = false,
   }) async {
     final queue = getQueue();
     final index = queue.indexWhere((t) => t.id == transferId);
@@ -187,6 +197,7 @@ class PendingTransferQueue {
       queue[index] = queue[index].copyWith(
         status: status,
         errorMessage: errorMessage,
+        clearErrorMessage: clearErrorMessage,
       );
       await _saveQueue(queue);
     }
@@ -228,9 +239,7 @@ class PendingTransferQueue {
       const Duration(minutes: 2),
     );
     return getQueue().where((t) {
-      final hasReplayAuthorization =
-          t.pinToken != null && t.idempotencyKey != null;
-      if (!hasReplayAuthorization) return false;
+      if (!t.canReplayWithAuthorization) return false;
       return t.status == TransferStatus.pending ||
           t.status == TransferStatus.processing &&
               t.timestamp.isBefore(staleProcessingCutoff);

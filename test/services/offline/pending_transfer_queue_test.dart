@@ -93,5 +93,28 @@ void main() {
         expect(queue.getTransfersToProcess(), isEmpty);
       },
     );
+
+    test('can move failed draft back to fresh authorization state', () async {
+      await queue.enqueue(
+        transfer(
+          status: TransferStatus.failed,
+          pinToken: null,
+          idempotencyKey: null,
+        ),
+      );
+      await queue.markFailed('transfer-1', 'Network timeout');
+
+      await queue.updateTransferStatus(
+        'transfer-1',
+        TransferStatus.needsAuthorization,
+        clearErrorMessage: true,
+      );
+
+      final saved = queue.getQueue().single;
+      expect(saved.status, TransferStatus.needsAuthorization);
+      expect(saved.errorMessage, isNull);
+      expect(saved.canReplayWithAuthorization, isFalse);
+      expect(queue.getTransfersToProcess(), isEmpty);
+    });
   });
 }
