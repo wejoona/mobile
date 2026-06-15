@@ -56,7 +56,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
   int _remainingAttempts = PinService.maxAttempts;
   bool _isLocked = false;
   int _lockSeconds = 0;
-  bool _biometricAvailable = false;
+  bool _biometricEnabled = false;
   BiometricType _biometricType = BiometricType.none;
   bool _isVerifying = false;
   bool _showUnlockTransition = false;
@@ -89,18 +89,22 @@ class _PinScreenState extends ConsumerState<PinScreen>
     final pinService = ref.read(pinServiceProvider);
     final hasPin = await pinService.hasPin();
     if (!hasPin) {
-      if (mounted) setState(() => _biometricAvailable = false);
+      if (mounted) {
+        setState(() {
+          _biometricEnabled = false;
+        });
+      }
       return;
     }
 
     final bio = ref.read(biometricServiceProvider);
-    final available = await bio.isAvailable();
     final enabled = await bio.isBiometricEnabled();
+    final available = await bio.isAvailable();
     final type = await bio.getAvailableType();
     if (mounted) {
       setState(() {
-        _biometricAvailable = available && enabled;
-        _biometricType = type;
+        _biometricEnabled = enabled;
+        _biometricType = available ? type : BiometricType.none;
       });
     }
   }
@@ -299,12 +303,19 @@ class _PinScreenState extends ConsumerState<PinScreen>
       }
 
       if (mounted) {
-        setState(() => _isVerifying = false);
+        setState(() {
+          _isVerifying = false;
+          _errorMessage = result.errorMessage;
+        });
         await _checkBiometric();
       }
     } catch (_) {
       if (mounted) {
-        setState(() => _isVerifying = false);
+        setState(() {
+          _isVerifying = false;
+          _errorMessage =
+              'Biometric unlock is unavailable. Please use your PIN.';
+        });
         await _checkBiometric();
       }
     }
@@ -544,7 +555,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
     return KoridoMark(size: size);
   }
 
-  bool get _shouldShowBiometricUnlock => _biometricAvailable && !_isVerifying;
+  bool get _shouldShowBiometricUnlock => _biometricEnabled && !_isVerifying;
 
   String _biometricButtonLabel(AppLocalizations l10n) {
     switch (_biometricType) {
