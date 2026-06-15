@@ -14274,6 +14274,24 @@ abstract class AppLocalizations {
   /// **'Send code'**
   String get emailVerification_sendCode;
 
+  /// No description provided for @emailVerification_missingEmailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an email first'**
+  String get emailVerification_missingEmailTitle;
+
+  /// No description provided for @emailVerification_missingEmailMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Korido needs an email address on your profile before it can send a verification code.'**
+  String get emailVerification_missingEmailMessage;
+
+  /// No description provided for @emailVerification_addEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Add email'**
+  String get emailVerification_addEmail;
+
   /// No description provided for @emailVerification_successTitle.
   ///
   /// In en, this message translates to:

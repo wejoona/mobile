@@ -293,6 +293,10 @@ class _EmailVerificationScreenState
       return _buildSuccessView(colors);
     }
 
+    if (!_isCheckingStatus && email.trim().isEmpty) {
+      return _buildMissingEmailView(colors, l10n);
+    }
+
     return Scaffold(
       backgroundColor: colors.canvas,
       appBar: AppBar(
@@ -527,6 +531,71 @@ class _EmailVerificationScreenState
               textAlign: TextAlign.center,
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMissingEmailView(ThemeColors colors, AppLocalizations l10n) {
+    return Scaffold(
+      backgroundColor: colors.canvas,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: colors.textPrimary),
+          onPressed: () => context.pop(),
+        ),
+        title: AppText(
+          l10n.emailVerification_title,
+          variant: AppTextVariant.titleLarge,
+          color: colors.textPrimary,
+        ),
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Spacer(),
+              Center(
+                child: Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: colors.goldSubtle,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.alternate_email_rounded,
+                    color: colors.gold,
+                    size: 34,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              AppText(
+                l10n.emailVerification_missingEmailTitle,
+                variant: AppTextVariant.headlineSmall,
+                color: colors.textPrimary,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              AppText(
+                l10n.emailVerification_missingEmailMessage,
+                variant: AppTextVariant.bodyMedium,
+                color: colors.textSecondary,
+                textAlign: TextAlign.center,
+              ),
+              const Spacer(),
+              AppButton(
+                label: l10n.emailVerification_addEmail,
+                icon: Icons.edit_rounded,
+                onPressed: () => context.go('/settings/profile/edit'),
+                isFullWidth: true,
+              ),
+            ],
+          ),
         ),
       ),
     );

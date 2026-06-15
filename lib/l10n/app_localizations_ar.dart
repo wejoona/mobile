@@ -7746,6 +7746,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get emailVerification_sendCode => 'Send code';
 
   @override
+  String get emailVerification_missingEmailTitle => 'Add an email first';
+
+  @override
+  String get emailVerification_missingEmailMessage =>
+      'Korido needs an email address on your profile before it can send a verification code.';
+
+  @override
+  String get emailVerification_addEmail => 'Add email';
+
+  @override
   String get emailVerification_successTitle => 'Email verified';
 
   @override

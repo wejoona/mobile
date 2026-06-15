@@ -7907,6 +7907,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get emailVerification_sendCode => 'Envoyer le code';
 
   @override
+  String get emailVerification_missingEmailTitle => 'Ajoutez d\'abord un email';
+
+  @override
+  String get emailVerification_missingEmailMessage =>
+      'Korido a besoin d\'une adresse email dans votre profil avant d\'envoyer un code de vérification.';
+
+  @override
+  String get emailVerification_addEmail => 'Ajouter un email';
+
+  @override
   String get emailVerification_successTitle => 'Email vérifié';
 
   @override
