@@ -1,5 +1,11 @@
+enum TransactionLimitOperation { send, deposit, withdraw }
+
 class TransactionLimits {
   final double dailyLimit;
+  final double dailyDepositLimit;
+  final double dailyDepositUsed;
+  final double dailyWithdrawLimit;
+  final double dailyWithdrawUsed;
   final double weeklyLimit;
   final double monthlyLimit;
   final double singleTransactionLimit;
@@ -25,6 +31,10 @@ class TransactionLimits {
 
   const TransactionLimits({
     required this.dailyLimit,
+    this.dailyDepositLimit = 0,
+    this.dailyDepositUsed = 0,
+    this.dailyWithdrawLimit = 0,
+    this.dailyWithdrawUsed = 0,
     this.weeklyLimit = 0,
     required this.monthlyLimit,
     required this.singleTransactionLimit,
@@ -52,6 +62,8 @@ class TransactionLimits {
   factory TransactionLimits.fromJson(Map<String, dynamic> json) {
     final daily = _mapOf(json['daily']);
     final dailySend = _mapOf(daily['send']);
+    final dailyDeposit = _mapOf(daily['deposit']);
+    final dailyWithdraw = _mapOf(daily['withdraw']);
     final monthly = _mapOf(json['monthly']);
     final monthlyTotal = _mapOf(monthly['total']);
     final perTransaction = _mapOf(json['perTransaction']);
@@ -65,6 +77,22 @@ class TransactionLimits {
     return TransactionLimits(
       dailyLimit:
           _numberOf(json['dailyLimit']) ?? _numberOf(dailySend['limit']) ?? 0.0,
+      dailyDepositLimit:
+          _numberOf(dailyDeposit['limit']) ??
+          _numberOf(json['dailyLimit']) ??
+          0.0,
+      dailyDepositUsed:
+          _numberOf(json['dailyDepositUsed']) ??
+          _numberOf(dailyDeposit['used']) ??
+          0.0,
+      dailyWithdrawLimit:
+          _numberOf(dailyWithdraw['limit']) ??
+          _numberOf(json['dailyLimit']) ??
+          0.0,
+      dailyWithdrawUsed:
+          _numberOf(json['dailyWithdrawUsed']) ??
+          _numberOf(dailyWithdraw['used']) ??
+          0.0,
       weeklyLimit: _numberOf(json['weeklyLimit']) ?? 0.0,
       monthlyLimit:
           _numberOf(json['monthlyLimit']) ??
@@ -103,6 +131,10 @@ class TransactionLimits {
 
   Map<String, dynamic> toJson() => {
     'dailyLimit': dailyLimit,
+    'dailyDepositLimit': dailyDepositLimit,
+    'dailyDepositUsed': dailyDepositUsed,
+    'dailyWithdrawLimit': dailyWithdrawLimit,
+    'dailyWithdrawUsed': dailyWithdrawUsed,
     'monthlyLimit': monthlyLimit,
     'singleTransactionLimit': singleTransactionLimit,
     'withdrawalLimit': withdrawalLimit,
@@ -125,6 +157,10 @@ class TransactionLimits {
 
   TransactionLimits copyWith({
     double? dailyLimit,
+    double? dailyDepositLimit,
+    double? dailyDepositUsed,
+    double? dailyWithdrawLimit,
+    double? dailyWithdrawUsed,
     double? monthlyLimit,
     double? singleTransactionLimit,
     double? withdrawalLimit,
@@ -146,6 +182,10 @@ class TransactionLimits {
   }) {
     return TransactionLimits(
       dailyLimit: dailyLimit ?? this.dailyLimit,
+      dailyDepositLimit: dailyDepositLimit ?? this.dailyDepositLimit,
+      dailyDepositUsed: dailyDepositUsed ?? this.dailyDepositUsed,
+      dailyWithdrawLimit: dailyWithdrawLimit ?? this.dailyWithdrawLimit,
+      dailyWithdrawUsed: dailyWithdrawUsed ?? this.dailyWithdrawUsed,
       monthlyLimit: monthlyLimit ?? this.monthlyLimit,
       singleTransactionLimit:
           singleTransactionLimit ?? this.singleTransactionLimit,
@@ -170,6 +210,16 @@ class TransactionLimits {
 
   // Helper getters
   double get dailyRemaining => (dailyLimit - dailyUsed).clamp(0.0, dailyLimit);
+  double get dailyDepositRemaining {
+    final limit = dailyDepositLimit > 0 ? dailyDepositLimit : dailyLimit;
+    return (limit - dailyDepositUsed).clamp(0.0, limit);
+  }
+
+  double get dailyWithdrawRemaining {
+    final limit = dailyWithdrawLimit > 0 ? dailyWithdrawLimit : dailyLimit;
+    return (limit - dailyWithdrawUsed).clamp(0.0, limit);
+  }
+
   double get monthlyRemaining =>
       (monthlyLimit - monthlyUsed).clamp(0.0, monthlyLimit);
   double get dailyPercentage =>
@@ -183,8 +233,17 @@ class TransactionLimits {
   bool get hasNextTier => nextTierName != null;
   bool get hasActiveOverride => overrideActive;
   double get effectiveMax {
+    return effectiveMaxFor(TransactionLimitOperation.send);
+  }
+
+  double effectiveMaxFor(TransactionLimitOperation operation) {
+    final dailyForOperation = switch (operation) {
+      TransactionLimitOperation.send => dailyRemaining,
+      TransactionLimitOperation.deposit => dailyDepositRemaining,
+      TransactionLimitOperation.withdraw => dailyWithdrawRemaining,
+    };
     final candidates = [
-      dailyRemaining,
+      dailyForOperation,
       monthlyRemaining,
       singleTransactionLimit,
     ].where((value) => value > 0).toList();

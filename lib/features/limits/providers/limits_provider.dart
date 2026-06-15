@@ -4,7 +4,9 @@ import 'package:usdc_wallet/domain/entities/limit.dart';
 import 'package:usdc_wallet/services/limits/limits_service.dart';
 
 /// User transaction limits provider — wired to LimitsService.
-final transactionLimitsProvider = FutureProvider<TransactionLimits>((ref) async {
+final transactionLimitsProvider = FutureProvider<TransactionLimits>((
+  ref,
+) async {
   final service = ref.watch(limitsServiceProvider);
   final link = ref.keepAlive();
   final timer = Timer(const Duration(minutes: 5), () => link.close());
@@ -32,12 +34,16 @@ class LimitsState {
 
   const LimitsState({this.limits, this.isLoading = false, this.error});
 
-  LimitsState copyWith({TransactionLimits? limits, bool? isLoading, String? error}) =>
-    LimitsState(
-      limits: limits ?? this.limits,
-      isLoading: isLoading ?? this.isLoading,
-      error: error,
-    );
+  LimitsState copyWith({
+    TransactionLimits? limits,
+    bool? isLoading,
+    String? error,
+    bool clearError = false,
+  }) => LimitsState(
+    limits: limits ?? this.limits,
+    isLoading: isLoading ?? this.isLoading,
+    error: clearError ? null : error,
+  );
 }
 
 /// Limits notifier.
@@ -46,11 +52,15 @@ class LimitsNotifier extends Notifier<LimitsState> {
   LimitsState build() => const LimitsState();
 
   Future<void> fetchLimits() async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final service = ref.read(limitsServiceProvider);
       final limits = await service.getLimits();
-      state = state.copyWith(limits: limits, isLoading: false);
+      state = state.copyWith(
+        limits: limits,
+        isLoading: false,
+        clearError: true,
+      );
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
@@ -58,4 +68,6 @@ class LimitsNotifier extends Notifier<LimitsState> {
 }
 
 /// Main limits provider with notifier for imperative control.
-final limitsProvider = NotifierProvider<LimitsNotifier, LimitsState>(LimitsNotifier.new);
+final limitsProvider = NotifierProvider<LimitsNotifier, LimitsState>(
+  LimitsNotifier.new,
+);
