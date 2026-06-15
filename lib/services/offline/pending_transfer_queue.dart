@@ -5,8 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// Pending Transfer Model
 class PendingTransfer {
   final String id;
+  final String? recipientId;
   final String recipientPhone;
   final String? recipientName;
+  final String? recipientUsername;
   final double amount;
   final String? description;
   final DateTime timestamp;
@@ -21,8 +23,10 @@ class PendingTransfer {
 
   const PendingTransfer({
     required this.id,
+    this.recipientId,
     required this.recipientPhone,
     this.recipientName,
+    this.recipientUsername,
     required this.amount,
     this.description,
     required this.timestamp,
@@ -38,10 +42,29 @@ class PendingTransfer {
       idempotencyKey != null &&
       idempotencyKey!.isNotEmpty;
 
+  bool get hasRecipientIdentifier =>
+      recipientId?.trim().isNotEmpty == true ||
+      recipientPhone.trim().isNotEmpty ||
+      recipientUsername?.trim().isNotEmpty == true;
+
+  String get displayRecipientIdentifier {
+    final phone = recipientPhone.trim();
+    if (phone.isNotEmpty) return phone;
+
+    final username = recipientUsername?.trim();
+    if (username != null && username.isNotEmpty) {
+      return username.startsWith('@') ? username : '@$username';
+    }
+
+    return recipientId ?? '';
+  }
+
   Map<String, dynamic> toJson() => {
     'id': id,
+    'recipientId': recipientId,
     'recipientPhone': recipientPhone,
     'recipientName': recipientName,
+    'recipientUsername': recipientUsername,
     'amount': amount,
     'description': description,
     'timestamp': timestamp.toIso8601String(),
@@ -52,8 +75,10 @@ class PendingTransfer {
   factory PendingTransfer.fromJson(Map<String, dynamic> json) {
     return PendingTransfer(
       id: json['id'] as String,
-      recipientPhone: json['recipientPhone'] as String,
+      recipientId: json['recipientId'] as String?,
+      recipientPhone: json['recipientPhone'] as String? ?? '',
       recipientName: json['recipientName'] as String?,
+      recipientUsername: json['recipientUsername'] as String?,
       amount: (json['amount'] as num).toDouble(),
       description: json['description'] as String?,
       timestamp: DateTime.parse(json['timestamp'] as String),
@@ -69,8 +94,10 @@ class PendingTransfer {
 
   PendingTransfer copyWith({
     String? id,
+    String? recipientId,
     String? recipientPhone,
     String? recipientName,
+    String? recipientUsername,
     double? amount,
     String? description,
     DateTime? timestamp,
@@ -82,8 +109,10 @@ class PendingTransfer {
   }) {
     return PendingTransfer(
       id: id ?? this.id,
+      recipientId: recipientId ?? this.recipientId,
       recipientPhone: recipientPhone ?? this.recipientPhone,
       recipientName: recipientName ?? this.recipientName,
+      recipientUsername: recipientUsername ?? this.recipientUsername,
       amount: amount ?? this.amount,
       description: description ?? this.description,
       timestamp: timestamp ?? this.timestamp,

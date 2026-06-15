@@ -161,9 +161,11 @@ class PendingTransfersScreen extends ConsumerWidget {
           Row(
             children: [
               UserAvatar(
-                firstName: (transfer.recipientName ?? transfer.recipientPhone)
-                    .split(' ')
-                    .first,
+                firstName:
+                    (transfer.recipientName ??
+                            transfer.displayRecipientIdentifier)
+                        .split(' ')
+                        .first,
                 lastName:
                     transfer.recipientName != null &&
                         transfer.recipientName!.split(' ').length > 1
@@ -183,7 +185,7 @@ class PendingTransfersScreen extends ConsumerWidget {
                     ),
                     if (transfer.recipientName != null)
                       AppText(
-                        transfer.recipientPhone,
+                        transfer.displayRecipientIdentifier,
                         variant: AppTextVariant.bodySmall,
                         color: colors.textSecondary,
                       ),
@@ -384,8 +386,10 @@ class PendingTransfersScreen extends ConsumerWidget {
         .read(sendMoneyProvider.notifier)
         .resumePendingTransfer(
           transferId: transfer.id,
+          recipientId: transfer.recipientId,
           recipientPhone: transfer.recipientPhone,
           recipientName: transfer.recipientName,
+          recipientUsername: transfer.recipientUsername,
           amount: transfer.amount,
           note: transfer.description,
         );

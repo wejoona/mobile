@@ -124,17 +124,31 @@ class OfflineNotifier extends Notifier<OfflineState> {
 
   /// Add transfer to pending queue
   Future<String> queueTransfer({
-    required String recipientPhone,
+    String? recipientId,
+    String? recipientPhone,
     String? recipientName,
+    String? recipientUsername,
     required double amount,
     String? description,
   }) async {
     _queue ??= await ref.read(pendingTransferQueueFutureProvider.future);
 
+    final normalizedRecipientId = recipientId?.trim();
+    final normalizedRecipientPhone = recipientPhone?.trim() ?? '';
+    final normalizedRecipientUsername = recipientUsername?.trim();
+    if ((normalizedRecipientId == null || normalizedRecipientId.isEmpty) &&
+        normalizedRecipientPhone.isEmpty &&
+        (normalizedRecipientUsername == null ||
+            normalizedRecipientUsername.isEmpty)) {
+      throw ArgumentError('Recipient ID, phone, or username is required');
+    }
+
     final transfer = PendingTransfer(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      recipientPhone: recipientPhone,
+      recipientId: normalizedRecipientId,
+      recipientPhone: normalizedRecipientPhone,
       recipientName: recipientName,
+      recipientUsername: normalizedRecipientUsername,
       amount: amount,
       description: description,
       timestamp: DateTime.now(),
@@ -195,7 +209,11 @@ class OfflineNotifier extends Notifier<OfflineState> {
         // Execute transfer via SDK
         final sdk = ref.read(sdkProvider);
         await sdk.transfers.createInternalTransfer(
-          recipientPhone: transfer.recipientPhone,
+          recipientId: transfer.recipientId,
+          recipientPhone: transfer.recipientPhone.trim().isEmpty
+              ? null
+              : transfer.recipientPhone,
+          recipientUsername: transfer.recipientUsername,
           amount: transfer.amount,
           note: transfer.description,
           pinToken: transfer.pinToken!,

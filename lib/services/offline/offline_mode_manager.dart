@@ -154,15 +154,29 @@ class OfflineModeManager {
 
   /// Queue a transfer (for offline mode)
   Future<String> queueTransfer({
-    required String recipientPhone,
+    String? recipientId,
+    String? recipientPhone,
     String? recipientName,
+    String? recipientUsername,
     required double amount,
     String? description,
   }) async {
+    final normalizedRecipientId = recipientId?.trim();
+    final normalizedRecipientPhone = recipientPhone?.trim() ?? '';
+    final normalizedRecipientUsername = recipientUsername?.trim();
+    if ((normalizedRecipientId == null || normalizedRecipientId.isEmpty) &&
+        normalizedRecipientPhone.isEmpty &&
+        (normalizedRecipientUsername == null ||
+            normalizedRecipientUsername.isEmpty)) {
+      throw ArgumentError('Recipient ID, phone, or username is required');
+    }
+
     final transfer = PendingTransfer(
       id: const Uuid().v4(),
-      recipientPhone: recipientPhone,
+      recipientId: normalizedRecipientId,
+      recipientPhone: normalizedRecipientPhone,
       recipientName: recipientName,
+      recipientUsername: normalizedRecipientUsername,
       amount: amount,
       description: description,
       timestamp: DateTime.now(),
@@ -270,11 +284,7 @@ class CachedData<T> {
   final bool isCached;
   final DateTime? lastSync;
 
-  const CachedData({
-    required this.data,
-    required this.isCached,
-    this.lastSync,
-  });
+  const CachedData({required this.data, required this.isCached, this.lastSync});
 
   bool get isStale {
     if (lastSync == null) return true;
@@ -318,8 +328,9 @@ final offlineModeManagerProvider = Provider<OfflineModeManager>((ref) {
 });
 
 /// Provider with dependencies
-final offlineModeManagerFutureProvider =
-    FutureProvider<OfflineModeManager>((ref) async {
+final offlineModeManagerFutureProvider = FutureProvider<OfflineModeManager>((
+  ref,
+) async {
   final cache = await ref.watch(offlineCacheServiceFutureProvider.future);
   final queue = await ref.watch(pendingTransferQueueFutureProvider.future);
   return OfflineModeManager(cache, queue, ref);

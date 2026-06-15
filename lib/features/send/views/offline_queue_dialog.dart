@@ -14,12 +14,16 @@ class OfflineQueueDialog extends ConsumerWidget {
     super.key,
     required this.recipientName,
     required this.recipientPhone,
+    this.recipientId,
+    this.recipientUsername,
     required this.amount,
     this.description,
   });
 
   final String? recipientName;
   final String recipientPhone;
+  final String? recipientId;
+  final String? recipientUsername;
   final double amount;
   final String? description;
 
@@ -70,7 +74,7 @@ class OfflineQueueDialog extends ConsumerWidget {
               children: [
                 _buildRow(
                   l10n.send_recipient,
-                  recipientName ?? recipientPhone,
+                  recipientName ?? _recipientIdentifier,
                   colors,
                 ),
                 const SizedBox(height: AppSpacing.sm),
@@ -111,6 +115,18 @@ class OfflineQueueDialog extends ConsumerWidget {
     );
   }
 
+  String get _recipientIdentifier {
+    final phone = recipientPhone.trim();
+    if (phone.isNotEmpty) return phone;
+
+    final username = recipientUsername?.trim();
+    if (username != null && username.isNotEmpty) {
+      return username.startsWith('@') ? username : '@$username';
+    }
+
+    return recipientId ?? '';
+  }
+
   Widget _buildRow(
     String label,
     String value,
@@ -143,14 +159,18 @@ class OfflineQueueDialog extends ConsumerWidget {
     WidgetRef ref, {
     required String? recipientName,
     required String recipientPhone,
+    String? recipientId,
+    String? recipientUsername,
     required double amount,
     String? description,
   }) async {
     // Queue the transfer
     final offlineNotifier = ref.read(offlineProvider.notifier);
     await offlineNotifier.queueTransfer(
+      recipientId: recipientId,
       recipientPhone: recipientPhone,
       recipientName: recipientName,
+      recipientUsername: recipientUsername,
       amount: amount,
       description: description,
     );
@@ -163,6 +183,8 @@ class OfflineQueueDialog extends ConsumerWidget {
         builder: (ctx) => OfflineQueueDialog(
           recipientName: recipientName,
           recipientPhone: recipientPhone,
+          recipientId: recipientId,
+          recipientUsername: recipientUsername,
           amount: amount,
           description: description,
         ),

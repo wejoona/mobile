@@ -265,15 +265,19 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
   /// Restore a queued offline transfer as a draft that requires fresh PIN auth.
   Future<void> resumePendingTransfer({
     required String transferId,
+    String? recipientId,
     required String recipientPhone,
     required double amount,
     String? recipientName,
+    String? recipientUsername,
     String? note,
   }) async {
     state = SendMoneyState(
       recipient: RecipientInfo(
         phoneNumber: recipientPhone,
         name: recipientName,
+        userId: recipientId,
+        username: recipientUsername,
         isKoridoUser: true,
       ),
       amount: amount,
