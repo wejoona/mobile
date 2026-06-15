@@ -396,26 +396,22 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
             referenceCurrency,
           );
 
+    final balanceHasActivity =
+        primaryBalance > 0 || pendingBalance > 0 || totalBalance > 0;
     final surfaceStart = colors.isDark
         ? Color.alphaBlend(colors.gold.withValues(alpha: 0.07), colors.surface)
         : Color.alphaBlend(
             colors.gold.withValues(alpha: 0.055),
             colors.surface,
           );
-    final surfaceEnd = colors.isDark
-        ? colors.container
-        : Color.alphaBlend(
-            colors.gold.withValues(alpha: 0.08),
-            colors.container,
-          );
+    final surfaceColor = Color.alphaBlend(
+      colors.gold.withValues(alpha: colors.isDark ? 0.035 : 0.025),
+      surfaceStart,
+    );
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [surfaceStart, surfaceEnd],
-        ),
+        color: surfaceColor,
         borderRadius: BorderRadius.circular(AppRadius.xxl),
         border: Border.all(
           color: colors.gold.withValues(alpha: colors.isDark ? 0.24 : 0.28),
@@ -461,7 +457,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                 AppSpacing.xxl,
                 AppSpacing.xl,
                 AppSpacing.xxl,
-                AppSpacing.xxl,
+                AppSpacing.xl,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -610,8 +606,10 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                  if (!showInitialBalanceLoading && !_isBalanceHidden) ...[
-                    const SizedBox(height: AppSpacing.xl),
+                  if (!showInitialBalanceLoading &&
+                      !_isBalanceHidden &&
+                      balanceHasActivity) ...[
+                    const SizedBox(height: AppSpacing.lg),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         vertical: AppSpacing.md,
@@ -659,7 +657,11 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                     ),
                   ],
                   if (!showInitialBalanceLoading) ...[
-                    const SizedBox(height: AppSpacing.md),
+                    SizedBox(
+                      height: balanceHasActivity
+                          ? AppSpacing.md
+                          : AppSpacing.lg,
+                    ),
                     Wrap(
                       spacing: AppSpacing.md,
                       runSpacing: AppSpacing.xs,
@@ -1202,12 +1204,10 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
   }
 
   Future<void> _refreshHomeData() async {
-    await _refreshWalletForHome().timeout(
-      const Duration(seconds: 12),
-      onTimeout: () {},
-    );
-
-    unawaited(_refreshTransactionsForHome());
+    await Future.wait([
+      _refreshWalletForHome(),
+      _refreshTransactionsForHome(),
+    ]).timeout(const Duration(seconds: 14), onTimeout: () => const []);
   }
 
   Future<void> _refreshWalletForHome() async {
