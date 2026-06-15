@@ -6,6 +6,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:dio/dio.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/notifications/notifications_service.dart';
+import 'package:usdc_wallet/services/security/device_fingerprint_service.dart';
 
 final _logger = AppLogger('PushNotifications');
 
@@ -38,7 +40,10 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 /// 2. Call registerWithBackend() after user authentication
 /// 3. Call unregisterFromBackend() on logout
 class PushNotificationService {
-  final Dio _dio;
+  PushNotificationService(this._notificationsService, this._fingerprintService);
+
+  final NotificationsService _notificationsService;
+  final DeviceFingerprintService _fingerprintService;
 
   StreamSubscription<RemoteMessage>? _foregroundSubscription;
   StreamSubscription<String>? _tokenRefreshSubscription;
@@ -54,8 +59,6 @@ class PushNotificationService {
 
   /// Callback for navigation based on notification data
   Function(Map<String, dynamic> data)? onNavigate;
-
-  PushNotificationService(this._dio);
 
   FirebaseMessaging get _messaging => FirebaseMessaging.instance;
 
@@ -136,13 +139,14 @@ class PushNotificationService {
     }
 
     try {
-      await _dio.post(
-        '/notifications/device-token',
-        data: {
-          'token': _currentToken,
-          'platform': Platform.isIOS ? 'ios' : 'android',
-          'osVersion': Platform.operatingSystemVersion,
-        },
+      final fingerprint = await _safeFingerprint();
+      await _notificationsService.registerFcmToken(
+        token: _currentToken!,
+        platform: Platform.isIOS ? 'ios' : 'android',
+        deviceId: fingerprint?.deviceId,
+        deviceName: _displayDeviceName(fingerprint),
+        appVersion: fingerprint?.appVersion,
+        osVersion: fingerprint?.osVersion ?? Platform.operatingSystemVersion,
       );
 
       _logger.info('FCM token registered with backend');
@@ -159,9 +163,7 @@ class PushNotificationService {
     if (_currentToken == null) return;
 
     try {
-      await _dio.delete(
-        '/notifications/device-token/${Uri.encodeComponent(_currentToken!)}',
-      );
+      await _notificationsService.removeFcmToken(_currentToken!);
 
       _logger.info('FCM token unregistered from backend');
     } on DioException catch (e) {
@@ -259,6 +261,32 @@ class PushNotificationService {
     _logger.info('Unsubscribed from topic', topic);
   }
 
+  Future<DeviceFingerprint?> _safeFingerprint() async {
+    try {
+      return await _fingerprintService.collect();
+    } catch (error) {
+      _logger.warn(
+        'Device fingerprint unavailable for push registration',
+        error,
+      );
+      return null;
+    }
+  }
+
+  String? _displayDeviceName(DeviceFingerprint? fingerprint) {
+    if (fingerprint == null) return null;
+
+    final parts = [fingerprint.brand, fingerprint.model]
+        .whereType<String>()
+        .map((part) => part.trim())
+        .where((part) {
+          return part.isNotEmpty;
+        })
+        .toList();
+
+    return parts.isEmpty ? null : parts.join(' ');
+  }
+
   /// Dispose resources
   void dispose() {
     _foregroundSubscription?.cancel();
@@ -270,8 +298,13 @@ class PushNotificationService {
 final pushNotificationServiceProvider = Provider<PushNotificationService>((
   ref,
 ) {
-  final dio = ref.watch(dioProvider);
-  return PushNotificationService(dio);
+  // Keep watching the Dio-backed API client so provider invalidation follows
+  // auth/network lifecycle changes even though calls are routed via the facade.
+  ref.watch(dioProvider);
+  return PushNotificationService(
+    ref.watch(notificationsServiceProvider),
+    ref.watch(deviceFingerprintServiceProvider),
+  );
 });
 
 /// Provider for initializing push notifications

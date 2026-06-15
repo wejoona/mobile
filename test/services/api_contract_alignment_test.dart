@@ -840,6 +840,20 @@ void main() {
       });
     });
 
+    test('runtime push lifecycle uses canonical SDK push routes', () {
+      final source = File(
+        'lib/services/notifications/push_notification_service.dart',
+      ).readAsStringSync();
+
+      expect(source, contains('registerFcmToken('));
+      expect(source, contains('removeFcmToken('));
+      expect(source, isNot(contains("'/notifications/device-token'")));
+      expect(
+        source,
+        isNot(contains("'/notifications/device-token/\${Uri.encodeComponent")),
+      );
+    });
+
     test(
       'notification facade preferences use user preferences route',
       () async {
