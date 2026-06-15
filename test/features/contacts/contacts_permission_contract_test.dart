@@ -16,6 +16,15 @@ void main() {
     final recipientSource = File(
       'lib/features/send/views/recipient_screen.dart',
     ).readAsStringSync();
+    final entrySource = File(
+      'lib/features/contacts/views/contacts_entry_screen.dart',
+    ).readAsStringSync();
+    final permissionScreenSource = File(
+      'lib/features/contacts/views/contacts_permission_screen.dart',
+    ).readAsStringSync();
+    final listSource = File(
+      'lib/features/contacts/views/contacts_list_screen.dart',
+    ).readAsStringSync();
 
     final syncContactsBody = _methodBody(providerSource, 'syncContacts');
     final requestPermissionBody = _methodBody(
@@ -56,6 +65,13 @@ void main() {
     expect(pickerSource, contains('contactsService.hasContactsPermission'));
     expect(pickerSource, isNot(contains('permission_handler')));
     expect(pickerSource, contains('_readSyncedDeviceContacts'));
+    expect(entrySource, contains('contactsServiceProvider'));
+    expect(entrySource, contains('hasContactsPermission'));
+    expect(entrySource, isNot(contains('permission_handler')));
+    expect(permissionScreenSource, contains('openContactsSettings'));
+    expect(permissionScreenSource, isNot(contains('permission_handler')));
+    expect(listSource, contains('openContactsSettings'));
+    expect(listSource, isNot(contains('permission_handler')));
 
     final recipientContactBody = _methodBody(
       recipientSource,

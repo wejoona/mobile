@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
@@ -465,7 +464,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
       ),
     );
     if (shouldOpen ?? false) {
-      await openAppSettings();
+      await ref.read(contactsServiceProvider).openContactsSettings();
     }
   }
 

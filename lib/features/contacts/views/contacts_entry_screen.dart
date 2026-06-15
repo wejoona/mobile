@@ -1,20 +1,22 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/contacts/contacts_service.dart';
 
-class ContactsEntryScreen extends StatefulWidget {
+class ContactsEntryScreen extends ConsumerStatefulWidget {
   const ContactsEntryScreen({super.key});
 
   @override
-  State<ContactsEntryScreen> createState() => _ContactsEntryScreenState();
+  ConsumerState<ContactsEntryScreen> createState() =>
+      _ContactsEntryScreenState();
 }
 
-class _ContactsEntryScreenState extends State<ContactsEntryScreen> {
+class _ContactsEntryScreenState extends ConsumerState<ContactsEntryScreen> {
   @override
   void initState() {
     super.initState();
@@ -22,12 +24,14 @@ class _ContactsEntryScreenState extends State<ContactsEntryScreen> {
   }
 
   Future<void> _routeByPermission() async {
-    final status = await Permission.contacts.status;
+    final hasPermission = await ref
+        .read(contactsServiceProvider)
+        .hasContactsPermission();
     if (!mounted) {
       return;
     }
 
-    final destination = status.isGranted || status.isLimited
+    final destination = hasPermission
         ? '/contacts/list'
         : '/contacts/permission';
     context.go(destination);
