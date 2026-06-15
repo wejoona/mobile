@@ -7954,5 +7954,13 @@
   "subBusiness_transferReviewTitle": "Transfer summary",
   "subBusiness_transferSubmit": "Send transfer",
   "subBusiness_transferSuccessTitle": "Transfer complete",
-  "subBusiness_transferSuccessMessage": "Funds were moved between sub-business wallets."
+  "subBusiness_transferSuccessMessage": "Funds were moved between sub-business wallets.",
+  "delete_confirmInstruction": "Digite {phrase} para desativar esta conta e sair de todos os dispositivos registrados.",
+  "@delete_confirmInstruction": {
+    "placeholders": {
+      "phrase": {
+        "type": "String"
+      }
+    }
+  }
 }

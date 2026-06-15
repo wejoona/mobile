@@ -3218,5 +3218,13 @@
   "subBusiness_transferReviewTitle": "Résumé du transfert",
   "subBusiness_transferSubmit": "Envoyer le transfert",
   "subBusiness_transferSuccessTitle": "Transfert terminé",
-  "subBusiness_transferSuccessMessage": "Les fonds ont été déplacés entre les portefeuilles des sous-entreprises."
+  "subBusiness_transferSuccessMessage": "Les fonds ont été déplacés entre les portefeuilles des sous-entreprises.",
+  "delete_confirmInstruction": "Saisissez {phrase} pour désactiver ce compte et déconnecter chaque appareil enregistré.",
+  "@delete_confirmInstruction": {
+    "placeholders": {
+      "phrase": {
+        "type": "String"
+      }
+    }
+  }
 }

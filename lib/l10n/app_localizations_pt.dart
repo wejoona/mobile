@@ -7814,4 +7814,9 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get subBusiness_transferSuccessMessage =>
       'Funds were moved between sub-business wallets.';
+
+  @override
+  String delete_confirmInstruction(String phrase) {
+    return 'Digite $phrase para desativar esta conta e sair de todos os dispositivos registrados.';
+  }
 }

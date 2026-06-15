@@ -7948,4 +7948,9 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get subBusiness_transferSuccessMessage =>
       'Les fonds ont été déplacés entre les portefeuilles des sous-entreprises.';
+
+  @override
+  String delete_confirmInstruction(String phrase) {
+    return 'Saisissez $phrase pour désactiver ce compte et déconnecter chaque appareil enregistré.';
+  }
 }

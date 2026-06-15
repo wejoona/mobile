@@ -14351,6 +14351,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Funds were moved between sub-business wallets.'**
   String get subBusiness_transferSuccessMessage;
+
+  /// No description provided for @delete_confirmInstruction.
+  ///
+  /// In en, this message translates to:
+  /// **'Type {phrase} to deactivate this account and sign out every registered device.'**
+  String delete_confirmInstruction(String phrase);
 }
 
 class _AppLocalizationsDelegate

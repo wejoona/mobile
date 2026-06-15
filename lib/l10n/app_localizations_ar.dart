@@ -7787,4 +7787,9 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get subBusiness_transferSuccessMessage =>
       'Funds were moved between sub-business wallets.';
+
+  @override
+  String delete_confirmInstruction(String phrase) {
+    return 'Type $phrase to deactivate this account and sign out every registered device.';
+  }
 }

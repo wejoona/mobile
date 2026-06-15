@@ -184,7 +184,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               icon: Icons.delete_forever,
               title: l10n.security_deleteAccount,
               subtitle: l10n.security_deleteAccountSubtitle,
-              onTap: () => _confirmDeleteAccount(),
+              onTap: () => context.push('/settings/delete-account'),
               isDanger: true,
             ),
           ],
@@ -917,49 +917,6 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
           ],
         ),
       ),
-    );
-  }
-
-  void _confirmDeleteAccount() {
-    final l10n = AppLocalizations.of(context)!;
-    // ignore: unused_local_variable
-    final __colors = context.colors;
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        final dialogColors = dialogContext.colors;
-        return AlertDialog(
-          backgroundColor: dialogColors.container,
-          title: AppText(
-            l10n.security_deleteAccountTitle,
-            variant: AppTextVariant.titleMedium,
-            color: context.colors.error,
-          ),
-          content: AppText(
-            l10n.security_deleteAccountMessage,
-            variant: AppTextVariant.bodyMedium,
-            color: dialogColors.textSecondary,
-          ),
-          actions: [
-            AppButton(
-              label: l10n.action_cancel,
-              onPressed: () => Navigator.pop(dialogContext),
-              variant: AppButtonVariant.ghost,
-              size: AppButtonSize.small,
-            ),
-            AppButton(
-              label: l10n.security_delete,
-              onPressed: () {
-                Navigator.pop(dialogContext);
-                // Would show another confirmation
-              },
-              variant: AppButtonVariant.danger,
-              size: AppButtonSize.small,
-            ),
-          ],
-        );
-      },
     );
   }
 }

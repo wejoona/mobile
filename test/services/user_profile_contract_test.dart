@@ -250,6 +250,20 @@ void main() {
     );
 
     test(
+      'user service deactivates the account through the backend endpoint',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({'message': 'Account deactivated'});
+        final service = UserService(dio);
+
+        await service.deactivateAccount();
+
+        expect(dio.requestHistory.single.method, 'POST');
+        expect(dio.requestHistory.single.path, '/user/deactivate');
+      },
+    );
+
+    test(
       'user avatar upload declares the device face-check contract',
       () async {
         final avatarFile = await _writeTinyJpeg();

@@ -119,6 +119,15 @@ class UserService {
       throw ApiException.fromDioError(e);
     }
   }
+
+  /// POST /user/deactivate - User-initiated account deactivation.
+  Future<void> deactivateAccount() async {
+    try {
+      await _dio.post('/user/deactivate');
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
 }
 
 /// User Profile DTO
