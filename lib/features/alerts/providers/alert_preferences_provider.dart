@@ -56,18 +56,12 @@ class AlertPreferencesNotifier extends Notifier<AlertPreferencesState> {
     try {
       final response = await _dio.get('/alerts/preferences');
       final preferences = AlertPreferences.fromJson(
-        response.data as Map<String, dynamic>,
+        _responseMap(response.data),
       );
 
-      state = state.copyWith(
-        preferences: preferences,
-        isLoading: false,
-      );
+      state = state.copyWith(preferences: preferences, isLoading: false);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: _getErrorMessage(e),
-      );
+      state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
     }
   }
 
@@ -75,9 +69,9 @@ class AlertPreferencesNotifier extends Notifier<AlertPreferencesState> {
   Future<void> loadAvailableTypes() async {
     try {
       final response = await _dio.get('/alerts/preferences/alert-types');
-      final types = (response.data as List)
-          .map((t) => AlertTypeInfo.fromJson(t as Map<String, dynamic>))
-          .toList();
+      final types = _responseList(
+        response.data,
+      ).map((t) => AlertTypeInfo.fromJson(t as Map<String, dynamic>)).toList();
 
       state = state.copyWith(availableTypes: types);
     } catch (e) {
@@ -90,21 +84,18 @@ class AlertPreferencesNotifier extends Notifier<AlertPreferencesState> {
     state = state.copyWith(isSaving: true, error: null);
 
     try {
-      final response = await _dio.put('/alerts/preferences', data: updates.toJson());
+      final response = await _dio.put(
+        '/alerts/preferences',
+        data: updates.toJson(),
+      );
       final preferences = AlertPreferences.fromJson(
-        response.data as Map<String, dynamic>,
+        _responseMap(response.data),
       );
 
-      state = state.copyWith(
-        preferences: preferences,
-        isSaving: false,
-      );
+      state = state.copyWith(preferences: preferences, isSaving: false);
       return true;
     } catch (e) {
-      state = state.copyWith(
-        isSaving: false,
-        error: _getErrorMessage(e),
-      );
+      state = state.copyWith(isSaving: false, error: _getErrorMessage(e));
       return false;
     }
   }
@@ -137,19 +128,13 @@ class AlertPreferencesNotifier extends Notifier<AlertPreferencesState> {
         data: {'value': value},
       );
       final preferences = AlertPreferences.fromJson(
-        response.data as Map<String, dynamic>,
+        _responseMap(response.data),
       );
 
-      state = state.copyWith(
-        preferences: preferences,
-        isSaving: false,
-      );
+      state = state.copyWith(preferences: preferences, isSaving: false);
       return true;
     } catch (e) {
-      state = state.copyWith(
-        isSaving: false,
-        error: _getErrorMessage(e),
-      );
+      state = state.copyWith(isSaving: false, error: _getErrorMessage(e));
       return false;
     }
   }
@@ -164,19 +149,13 @@ class AlertPreferencesNotifier extends Notifier<AlertPreferencesState> {
         data: {'value': value},
       );
       final preferences = AlertPreferences.fromJson(
-        response.data as Map<String, dynamic>,
+        _responseMap(response.data),
       );
 
-      state = state.copyWith(
-        preferences: preferences,
-        isSaving: false,
-      );
+      state = state.copyWith(preferences: preferences, isSaving: false);
       return true;
     } catch (e) {
-      state = state.copyWith(
-        isSaving: false,
-        error: _getErrorMessage(e),
-      );
+      state = state.copyWith(isSaving: false, error: _getErrorMessage(e));
       return false;
     }
   }
@@ -188,25 +167,16 @@ class AlertPreferencesNotifier extends Notifier<AlertPreferencesState> {
     try {
       final response = await _dio.put(
         '/alerts/preferences/alert-type',
-        data: {
-          'alertType': type.value,
-          'enabled': enabled,
-        },
+        data: {'alertType': type.value, 'enabled': enabled},
       );
       final preferences = AlertPreferences.fromJson(
-        response.data as Map<String, dynamic>,
+        _responseMap(response.data),
       );
 
-      state = state.copyWith(
-        preferences: preferences,
-        isSaving: false,
-      );
+      state = state.copyWith(preferences: preferences, isSaving: false);
       return true;
     } catch (e) {
-      state = state.copyWith(
-        isSaving: false,
-        error: _getErrorMessage(e),
-      );
+      state = state.copyWith(isSaving: false, error: _getErrorMessage(e));
       return false;
     }
   }
@@ -221,19 +191,13 @@ class AlertPreferencesNotifier extends Notifier<AlertPreferencesState> {
         data: {'enabled': enabled},
       );
       final preferences = AlertPreferences.fromJson(
-        response.data as Map<String, dynamic>,
+        _responseMap(response.data),
       );
 
-      state = state.copyWith(
-        preferences: preferences,
-        isSaving: false,
-      );
+      state = state.copyWith(preferences: preferences, isSaving: false);
       return true;
     } catch (e) {
-      state = state.copyWith(
-        isSaving: false,
-        error: _getErrorMessage(e),
-      );
+      state = state.copyWith(isSaving: false, error: _getErrorMessage(e));
       return false;
     }
   }
@@ -258,19 +222,13 @@ class AlertPreferencesNotifier extends Notifier<AlertPreferencesState> {
         },
       );
       final preferences = AlertPreferences.fromJson(
-        response.data as Map<String, dynamic>,
+        _responseMap(response.data),
       );
 
-      state = state.copyWith(
-        preferences: preferences,
-        isSaving: false,
-      );
+      state = state.copyWith(preferences: preferences, isSaving: false);
       return true;
     } catch (e) {
-      state = state.copyWith(
-        isSaving: false,
-        error: _getErrorMessage(e),
-      );
+      state = state.copyWith(isSaving: false, error: _getErrorMessage(e));
       return false;
     }
   }
@@ -282,19 +240,13 @@ class AlertPreferencesNotifier extends Notifier<AlertPreferencesState> {
     try {
       final response = await _dio.post('/alerts/preferences/reset');
       final preferences = AlertPreferences.fromJson(
-        response.data as Map<String, dynamic>,
+        _responseMap(response.data),
       );
 
-      state = state.copyWith(
-        preferences: preferences,
-        isSaving: false,
-      );
+      state = state.copyWith(preferences: preferences, isSaving: false);
       return true;
     } catch (e) {
-      state = state.copyWith(
-        isSaving: false,
-        error: _getErrorMessage(e),
-      );
+      state = state.copyWith(isSaving: false, error: _getErrorMessage(e));
       return false;
     }
   }
@@ -317,11 +269,46 @@ class AlertPreferencesNotifier extends Notifier<AlertPreferencesState> {
 /// Alert preferences provider
 final alertPreferencesProvider =
     NotifierProvider<AlertPreferencesNotifier, AlertPreferencesState>(
-  AlertPreferencesNotifier.new,
-);
+      AlertPreferencesNotifier.new,
+    );
 
 /// Is alert type enabled provider
-final isAlertTypeEnabledProvider = Provider.family<bool, AlertType>((ref, type) {
+final isAlertTypeEnabledProvider = Provider.family<bool, AlertType>((
+  ref,
+  type,
+) {
   final prefs = ref.watch(alertPreferencesProvider).preferences;
   return prefs?.isAlertTypeEnabled(type) ?? false;
 });
+
+Map<String, dynamic> _responseMap(Object? raw) {
+  if (raw is Map) {
+    final map = Map<String, dynamic>.from(raw);
+    final data = map['data'];
+    if (data is Map) {
+      return Map<String, dynamic>.from(data);
+    }
+    return map;
+  }
+  return const <String, dynamic>{};
+}
+
+List<dynamic> _responseList(Object? raw) {
+  if (raw is List) {
+    return raw;
+  }
+  if (raw is Map) {
+    final map = Map<String, dynamic>.from(raw);
+    final data = map['data'];
+    if (data is List) {
+      return data;
+    }
+    for (final key in const ['items', 'results', 'alertTypes']) {
+      final value = map[key];
+      if (value is List) {
+        return value;
+      }
+    }
+  }
+  return const [];
+}
