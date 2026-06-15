@@ -90,10 +90,22 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
         error: (e, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.screenPadding),
-            child: EmptyState(
-              icon: Icons.notifications_off_outlined,
-              title: l10n.notifications_loadError,
-              subtitle: e.toString(),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                EmptyState(
+                  icon: Icons.notifications_off_outlined,
+                  title: l10n.notifications_loadError,
+                  subtitle: e.toString(),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                AppButton(
+                  label: l10n.action_retry,
+                  icon: Icons.refresh_rounded,
+                  onPressed: _refreshNotifications,
+                  variant: AppButtonVariant.secondary,
+                ),
+              ],
             ),
           ),
         ),

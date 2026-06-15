@@ -45,7 +45,7 @@ class FilteredPaginatedTransactionsNotifier
   final Ref _ref;
 
   Future<void> refresh() async {
-    state = state.copyWith(isLoading: true, page: 1);
+    state = state.copyWith(isLoading: true, page: 1, clearError: true);
     try {
       final filter = _ref.read(transactionFilterProvider);
       final service = _ref.read(transactionsServiceProvider);
@@ -76,7 +76,7 @@ class FilteredPaginatedTransactionsNotifier
       return;
     }
     final nextPage = state.page + 1;
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final filter = _ref.read(transactionFilterProvider);
       final service = _ref.read(transactionsServiceProvider);
@@ -93,6 +93,7 @@ class FilteredPaginatedTransactionsNotifier
         transactions: [...state.transactions, ...page.transactions],
         hasMore: page.hasMore,
         page: nextPage,
+        clearError: true,
       );
     } catch (e) {
       if (!mounted) {

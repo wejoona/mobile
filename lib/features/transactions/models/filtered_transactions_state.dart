@@ -21,9 +21,10 @@ class FilteredPaginatedTransactionsState {
     List<Transaction>? transactions,
     bool? hasMore,
     int? page,
+    bool clearError = false,
   }) => FilteredPaginatedTransactionsState(
     isLoading: isLoading ?? this.isLoading,
-    error: error ?? this.error,
+    error: clearError ? null : (error ?? this.error),
     transactions: transactions ?? this.transactions,
     hasMore: hasMore ?? this.hasMore,
     page: page ?? this.page,

@@ -27,11 +27,14 @@ class SessionsState {
     List<Session>? sessions,
     String? currentSessionId,
     bool? requiresUnlock,
+    bool clearCurrentSessionId = false,
   }) => SessionsState(
     isLoading: isLoading ?? this.isLoading,
     error: error,
     sessions: sessions ?? this.sessions,
-    currentSessionId: currentSessionId ?? this.currentSessionId,
+    currentSessionId: clearCurrentSessionId
+        ? null
+        : (currentSessionId ?? this.currentSessionId),
     requiresUnlock: requiresUnlock ?? this.requiresUnlock,
   );
 }
@@ -59,6 +62,7 @@ class SessionsNotifier extends Notifier<SessionsState> {
         isLoading: false,
         sessions: sessions,
         currentSessionId: currentSession?.id,
+        clearCurrentSessionId: currentSession == null,
         requiresUnlock: false,
       );
     } on ApiException catch (e) {
@@ -70,6 +74,7 @@ class SessionsNotifier extends Notifier<SessionsState> {
             isLoading: false,
             sessions: sessions,
             currentSessionId: currentSession?.id,
+            clearCurrentSessionId: currentSession == null,
             error: null,
             requiresUnlock: false,
           );
@@ -173,6 +178,7 @@ class SessionsNotifier extends Notifier<SessionsState> {
     state = state.copyWith(
       sessions: const [],
       currentSessionId: null,
+      clearCurrentSessionId: true,
       error: null,
       requiresUnlock: false,
     );
@@ -221,6 +227,7 @@ class SessionsNotifier extends Notifier<SessionsState> {
           ? 'Please unlock Korido again to continue.'
           : 'Please sign in again to manage active sessions.',
       requiresUnlock: authState.isLocked,
+      clearCurrentSessionId: true,
     );
     return false;
   }
