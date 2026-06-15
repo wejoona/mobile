@@ -517,10 +517,21 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     _setProfilePhotoBusy('Preparing photo...');
     final compressed = await pictureService.compressImage(picked);
     _setProfilePhotoBusy('Checking face on this device...');
-    final faceDetection = await ref
+    var faceDetection = await ref
         .read(imageAnalysisServiceProvider)
         .detectFaces(compressed);
     if (!mounted) return;
+
+    if (!faceDetection.isAvailable) {
+      _setProfilePhotoBusy('Retrying face check on a lighter photo...');
+      final faceCheckImage = await pictureService.prepareForFaceDetection(
+        compressed,
+      );
+      faceDetection = await ref
+          .read(imageAnalysisServiceProvider)
+          .detectFaces(faceCheckImage);
+      if (!mounted) return;
+    }
 
     if (!faceDetection.isAvailable || !faceDetection.hasExactlyOneFace) {
       setState(() => _selectedImage = null);

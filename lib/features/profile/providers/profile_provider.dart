@@ -108,10 +108,15 @@ class ProfileNotifier extends Notifier<ProfileState> {
     String? avatarThumb,
     bool avatarChanged = false,
   }) async {
+    final currentUserState = ref.read(userStateMachineProvider);
+    final effectiveAvatarUrl =
+        avatarUrl ?? profile.avatarUrl ?? currentUserState.avatarUrl;
+    final effectiveAvatarThumb =
+        avatarThumb ?? profile.avatarThumb ?? currentUserState.avatarThumb;
     final mergedProfile = UserProfile.fromJson({
       ...profile.toJson(),
-      'avatarUrl': avatarUrl ?? profile.avatarUrl,
-      'avatarThumb': avatarThumb ?? profile.avatarThumb,
+      'avatarUrl': effectiveAvatarUrl,
+      'avatarThumb': effectiveAvatarThumb,
     });
 
     await _syncUserState(mergedProfile);
