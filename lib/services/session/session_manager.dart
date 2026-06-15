@@ -130,8 +130,8 @@ class _SessionManagerState extends ConsumerState<SessionManager>
                 remainingSeconds: sessionState.remainingSeconds ?? 0,
                 isResolving: _isResolvingSessionWarning,
                 onExtend: () {
-                  setState(() => _isResolvingSessionWarning = false);
-                  ref.read(sessionServiceProvider.notifier).extendSession();
+                  setState(() => _isResolvingSessionWarning = true);
+                  unawaited(_extendFromSessionWarning());
                 },
                 onLogout: () {
                   setState(() => _isResolvingSessionWarning = true);
@@ -161,6 +161,20 @@ class _SessionManagerState extends ConsumerState<SessionManager>
       return !suppressedRoutes.any((r) => location.startsWith(r));
     } catch (_) {
       return true; // Show by default if route check fails
+    }
+  }
+
+  Future<void> _extendFromSessionWarning() async {
+    try {
+      ref.read(sessionServiceProvider.notifier).extendSession();
+    } on Object catch (e) {
+      const AppLogger(
+        'SessionManager',
+      ).warn('Could not extend session warning', e);
+    } finally {
+      if (mounted) {
+        setState(() => _isResolvingSessionWarning = false);
+      }
     }
   }
 
