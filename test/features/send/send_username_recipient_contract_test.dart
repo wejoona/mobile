@@ -8,6 +8,24 @@ import 'package:usdc_wallet/services/transfers/transfers_service.dart';
 import '../../helpers/test_utils.dart';
 
 void main() {
+  test(
+    'transfer request serializes phone recipient using backend toPhone key',
+    () {
+      const request = TransferRequest(
+        recipientPhone: '+2250748805663',
+        amount: 12.5,
+        note: 'Dinner',
+      );
+
+      expect(request.toJson(), {
+        'toPhone': '+2250748805663',
+        'amount': 12.5,
+        'note': 'Dinner',
+      });
+      expect(request.toJson().containsKey('recipientPhone'), isFalse);
+    },
+  );
+
   test('Korido lookup keeps username when phone is masked', () async {
     final dio = MockDio();
     dio.queueResponse({

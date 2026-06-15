@@ -20,7 +20,7 @@ class TransferRequest {
     if (recipientId != null && recipientId!.isNotEmpty)
       'recipientId': recipientId,
     if (recipientPhone != null && recipientPhone!.isNotEmpty)
-      'recipientPhone': recipientPhone,
+      'toPhone': recipientPhone,
     if (recipientUsername != null && recipientUsername!.isNotEmpty)
       'recipientUsername': recipientUsername,
     'amount': amount,
