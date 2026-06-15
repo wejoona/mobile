@@ -66,13 +66,13 @@ void main() {
     final logoutAllDevices = _methodBody(source, 'logoutAllDevices');
 
     expect(loadSessions, contains('_ensureAuthenticatedForSessionRead'));
-    expect(loadSessions, isNot(contains('clearLocalSession')));
+    expect(loadSessions, isNot(contains('_clearLocalSessionAfterLogoutAll')));
     expect(loadSessions, contains('error: _friendlyError(e)'));
     expect(loadSessions, contains('error: _friendlyError(retryError)'));
     expect(loadSessions, contains('requiresUnlock: true'));
-    expect(revokeSession, isNot(contains('clearLocalSession')));
+    expect(revokeSession, isNot(contains('_clearLocalSessionAfterLogoutAll')));
     expect(revokeSession, contains('requiresUnlock: true'));
-    expect(logoutAllDevices, contains('clearLocalSession'));
+    expect(logoutAllDevices, contains('_clearLocalSessionAfterLogoutAll'));
   });
 
   test('devices 401 preserves unlock state instead of showing empty list', () {
@@ -85,6 +85,16 @@ void main() {
     expect(source, contains('requiresUnlock'));
     expect(source, contains('authState.isLocked'));
     expect(source, contains('error.statusCode == 401'));
+  });
+
+  test('security settings account actions navigate to real screens', () {
+    final source = File(
+      'lib/features/settings/views/security_settings_view.dart',
+    ).readAsStringSync();
+
+    expect(source, isNot(contains('onTap: () {}')));
+    expect(source, contains("context.push('/settings/pin')"));
+    expect(source, contains("context.push('/settings/devices')"));
   });
 
   test('DevicesRepository parses bare backend array', () async {
