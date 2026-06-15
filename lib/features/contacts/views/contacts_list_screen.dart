@@ -38,6 +38,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
       if (!mounted) {
         return;
       }
+      unawaited(_routeToPermissionPromptIfNeeded());
       unawaited(ref.read(contactsProvider.notifier).syncContacts());
     });
   }
@@ -126,6 +127,20 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
       if (mounted) {
         setState(() => _isPermissionActionLoading = false);
       }
+    }
+  }
+
+  Future<void> _routeToPermissionPromptIfNeeded() async {
+    final contactsService = ref.read(contactsServiceProvider);
+    final hasPermission = await contactsService.hasContactsPermission();
+    if (hasPermission || !mounted) {
+      return;
+    }
+
+    final requiresSettings = await contactsService
+        .contactsPermissionRequiresSettings();
+    if (!requiresSettings && mounted) {
+      context.go('/contacts/permission');
     }
   }
 

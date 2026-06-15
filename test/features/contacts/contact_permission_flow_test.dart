@@ -17,6 +17,9 @@ void main() {
       final manualSyncBody = RegExp(
         r'Future<void> _manualSync\(\) async \{([\s\S]*?)\n  Future<void> _requestPermissionAndSync',
       ).firstMatch(source)!.group(1)!;
+      final routePermissionBody = RegExp(
+        r'Future<void> _routeToPermissionPromptIfNeeded\(\) async \{([\s\S]*?)\n  Future<void> _requestPermissionAndSync',
+      ).firstMatch(source)!.group(1)!;
       final requestAndSyncBody = RegExp(
         r'Future<void> _requestPermissionAndSync\(\{([\s\S]*?)\n  @override',
       ).firstMatch(source)!.group(1)!;
@@ -30,6 +33,17 @@ void main() {
         initBody,
         isNot(contains('_requestPermissionAndSync(showSettingsDialog: false)')),
       );
+      expect(initBody, contains('_routeToPermissionPromptIfNeeded()'));
+      expect(routePermissionBody, contains('hasContactsPermission()'));
+      expect(
+        routePermissionBody,
+        contains('contactsPermissionRequiresSettings()'),
+      );
+      expect(
+        routePermissionBody,
+        contains("context.go('/contacts/permission')"),
+      );
+      expect(routePermissionBody, isNot(contains('requestContactsPermission')));
       expect(
         manualSyncBody,
         contains('_requestPermissionAndSync(showSettingsDialog: true)'),
