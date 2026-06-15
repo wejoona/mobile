@@ -66,5 +66,28 @@ void main() {
         isEmpty,
       );
     });
+
+    test(
+      'exposes canonical host-scoped pins for secondary network clients',
+      () {
+        final pinsByHost = CertificatePinning.trustedFingerprintsByHost();
+
+        expect(
+          pinsByHost.keys,
+          containsAll(['api.joonapay.com', 'joonapay.com']),
+        );
+        expect(
+          pinsByHost['api.joonapay.com'],
+          containsAll([
+            'gvcwFV4jHJrKyc2rrHFNlZbenxWnWywAezu5tpkv7is=',
+            'BWCq7vFEHnLEBB9FD9tOUTlIeFRPNHIJL7vPHgNjodc=',
+          ]),
+        );
+        expect(
+          pinsByHost['joonapay.com'],
+          contains('BWCq7vFEHnLEBB9FD9tOUTlIeFRPNHIJL7vPHgNjodc='),
+        );
+      },
+    );
   });
 }

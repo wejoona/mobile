@@ -216,6 +216,13 @@ class CertificatePinning {
   static bool hostRequiresPinning(String host) =>
       _trustedFingerprintsByHost.containsKey(host);
 
+  static Map<String, List<String>> trustedFingerprintsByHost() =>
+      Map<String, List<String>>.unmodifiable(
+        _trustedFingerprintsByHost.map(
+          (host, pins) => MapEntry(host, List<String>.unmodifiable(pins)),
+        ),
+      );
+
   @visibleForTesting
   static List<String> trustedFingerprintsForHost(String host) =>
       List.unmodifiable(_trustedFingerprintsByHost[host] ?? const []);
