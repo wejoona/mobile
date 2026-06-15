@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/state/wallet_state_machine.dart';
 
 /// Wallet balance state.
 class WalletBalance {
@@ -56,15 +57,27 @@ final walletBalanceProvider = FutureProvider<WalletBalance>((ref) async {
   ref.onDispose(() => timer.cancel());
 
   try {
-    final response = await dio.get(
-      '/wallet',
-      options: Options(
-        validateStatus: (status) =>
-            status != null && (status < 400 || status == 404),
-      ),
-    );
+    final response = await dio
+        .get(
+          '/wallet',
+          options: Options(
+            receiveTimeout: const Duration(seconds: 10),
+            sendTimeout: const Duration(seconds: 10),
+            validateStatus: (status) =>
+                status != null && (status < 400 || status == 404),
+          ),
+        )
+        .timeout(const Duration(seconds: 12));
     if (response.statusCode == 404) {
-      final created = await dio.post('/wallet/create');
+      final created = await dio
+          .post(
+            '/wallet/create',
+            options: Options(
+              receiveTimeout: const Duration(seconds: 15),
+              sendTimeout: const Duration(seconds: 10),
+            ),
+          )
+          .timeout(const Duration(seconds: 18));
       return _walletBalanceFromPayload(created.data);
     }
     return _walletBalanceFromPayload(response.data);
@@ -73,7 +86,15 @@ final walletBalanceProvider = FutureProvider<WalletBalance>((ref) async {
       rethrow;
     }
 
-    final response = await dio.post('/wallet/create');
+    final response = await dio
+        .post(
+          '/wallet/create',
+          options: Options(
+            receiveTimeout: const Duration(seconds: 15),
+            sendTimeout: const Duration(seconds: 10),
+          ),
+        )
+        .timeout(const Duration(seconds: 18));
     return _walletBalanceFromPayload(response.data);
   }
 });
@@ -175,6 +196,11 @@ double? _amountFromString(Object? value) {
 
 /// Available balance shortcut.
 final availableBalanceProvider = Provider<double>((ref) {
+  final walletState = ref.watch(walletStateMachineProvider);
+  if (walletState.hasBalanceData) {
+    return walletState.availableBalance;
+  }
+
   return ref.watch(walletBalanceProvider).value?.available ?? 0;
 });
 

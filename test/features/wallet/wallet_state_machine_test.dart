@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/state/app_state.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_base.dart';
@@ -24,6 +25,32 @@ void main() {
 
       expect(state.availableBalance, 42.25);
     });
+
+    test(
+      'availableBalanceProvider uses the same wallet state as home',
+      () async {
+        final dio = MockDio();
+        final container = ProviderContainer(
+          overrides: [
+            dioProvider.overrideWithValue(dio),
+            appFsmProvider.overrideWith(_NoopAppFsmNotifier.new),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        container
+            .read(walletStateMachineProvider.notifier)
+            .state = const WalletState(
+          status: WalletStatus.loaded,
+          walletId: 'wallet-home',
+          usdcBalance: 42.25,
+          pendingBalance: 1.5,
+        );
+
+        expect(container.read(availableBalanceProvider), 42.25);
+        expect(dio.requestHistory, isEmpty);
+      },
+    );
 
     test(
       'creates a wallet automatically when fresh users have no wallet',
