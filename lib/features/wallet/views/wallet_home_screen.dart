@@ -1204,11 +1204,16 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
   }
 
   Future<void> _refreshHomeData() async {
-    await _refreshWalletForHome().timeout(
-      const Duration(seconds: 12),
-      onTimeout: () {},
+    await Future.wait<void>([
+      _refreshWalletForHome(),
+      _refreshTransactionsForHome(),
+    ], eagerError: false).timeout(
+      const Duration(seconds: 14),
+      onTimeout: () {
+        _logger.warn('Home refresh timed out before every source completed');
+        return const <void>[];
+      },
     );
-    unawaited(_refreshTransactionsForHome());
   }
 
   Future<void> _refreshWalletForHome() async {
