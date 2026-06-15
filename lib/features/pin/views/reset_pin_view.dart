@@ -274,10 +274,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
 
     try {
       final dio = ref.read(dioProvider);
-      // The user is authenticated, get their phone from profile
-      final profileResponse = await dio.get('/user/profile');
-      final profileData = profileResponse.data as Map<String, dynamic>;
-      final phone = profileData['phone'] as String?;
+      final phone = await _resolveRecoveryPhone();
 
       if (phone == null) {
         if (mounted) {
@@ -313,6 +310,38 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         });
       }
     }
+  }
+
+  Future<String?> _resolveRecoveryPhone() async {
+    final authState = ref.read(authProvider);
+    final inMemoryPhone = authState.user?.phone ?? authState.phone;
+    if (inMemoryPhone != null && inMemoryPhone.isNotEmpty) {
+      return inMemoryPhone;
+    }
+
+    final storage = ref.read(secureStorageProvider);
+    final storedPhone = await storage.read(key: 'user_phone');
+    if (storedPhone != null && storedPhone.isNotEmpty) {
+      return storedPhone;
+    }
+
+    final token = await storage.read(key: StorageKeys.accessToken);
+    if (token == null || token.isEmpty) {
+      return null;
+    }
+
+    final profileResponse = await ref.read(dioProvider).get('/user/profile');
+    final rawProfileData = profileResponse.data;
+    final profileData = rawProfileData is Map<String, dynamic>
+        ? (rawProfileData['data'] is Map<String, dynamic>
+              ? rawProfileData['data'] as Map<String, dynamic>
+              : rawProfileData)
+        : const <String, dynamic>{};
+    final profilePhone = profileData['phone'] as String?;
+    if (profilePhone == null || profilePhone.isEmpty) {
+      return null;
+    }
+    return profilePhone;
   }
 
   /// Verify OTP entered by user

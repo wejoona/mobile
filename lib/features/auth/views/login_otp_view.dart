@@ -174,7 +174,7 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
   }
 
   Future<void> _holdOtpCue(DateTime submittedAt) async {
-    const minimumCueDuration = Duration(milliseconds: 1200);
+    const minimumCueDuration = Duration(milliseconds: 1600);
     final elapsed = DateTime.now().difference(submittedAt);
     if (elapsed < minimumCueDuration) {
       await Future<void>.delayed(minimumCueDuration - elapsed);

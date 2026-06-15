@@ -398,7 +398,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
     if (submittedAt == null) {
       return;
     }
-    const minimumCueDuration = Duration(milliseconds: 1200);
+    const minimumCueDuration = Duration(milliseconds: 1600);
     final elapsed = DateTime.now().difference(submittedAt);
     if (elapsed < minimumCueDuration) {
       await Future<void>.delayed(minimumCueDuration - elapsed);

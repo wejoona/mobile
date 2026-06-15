@@ -113,7 +113,7 @@ class OtpVerificationOverlay extends StatelessWidget {
         duration: const Duration(milliseconds: 180),
         curve: Curves.easeOutCubic,
         child: ColoredBox(
-          color: colors.scrim,
+          color: colors.scrim.withValues(alpha: colors.isDark ? 0.78 : 0.62),
           child: Center(
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.screenPadding),
