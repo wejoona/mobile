@@ -17,7 +17,6 @@ export 'package:usdc_wallet/features/wallet/views/deposit_view.dart';
 export 'package:usdc_wallet/features/wallet/views/receive_view.dart';
 export 'package:usdc_wallet/features/wallet/views/request_money_view.dart';
 export 'package:usdc_wallet/features/wallet/views/saved_recipients_view.dart';
-export 'package:usdc_wallet/features/wallet/views/savings_goals_view.dart';
 export 'package:usdc_wallet/features/wallet/views/scan_view.dart';
 export 'package:usdc_wallet/features/wallet/views/scheduled_transfers_view.dart';
 export 'package:usdc_wallet/features/wallet/views/split_bill_view.dart';
