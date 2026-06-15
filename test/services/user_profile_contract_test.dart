@@ -461,6 +461,16 @@ void main() {
       expect(profileEditSource, contains('_selectedImage = null'));
     });
 
+    test('avatar widget resolves protected API avatar routes robustly', () {
+      final avatarSource = File(
+        'lib/design/components/primitives/user_avatar.dart',
+      ).readAsStringSync();
+
+      expect(avatarSource, contains("url.startsWith('/api/')"));
+      expect(avatarSource, contains("resolvedPath.contains('/user/avatar/')"));
+      expect(avatarSource, contains("return '\${ApiConfig.baseUrl}/\$url';"));
+    });
+
     test('profile completion applies backend profile snapshot', () {
       final profileCompleteSource = File(
         'lib/features/onboarding/views/profile_complete_view.dart',

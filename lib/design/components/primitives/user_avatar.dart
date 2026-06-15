@@ -174,12 +174,24 @@ class UserAvatar extends StatelessWidget {
   /// Resolve URL: if it's a relative path like /user/avatar/xxx, prepend base URL
   String _resolveUrl(String url) {
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    // Relative API path — prepend base URL from ApiConfig
-    return '${ApiConfig.baseUrl}$url';
+    final base = Uri.parse(ApiConfig.baseUrl);
+    final origin = '${base.scheme}://${base.authority}';
+
+    if (url.startsWith('/api/')) {
+      return '$origin$url';
+    }
+
+    if (url.startsWith('/')) {
+      return '${ApiConfig.baseUrl}$url';
+    }
+
+    return '${ApiConfig.baseUrl}/$url';
   }
 
   bool _needsAuthHeaders(String url) {
-    return url.startsWith('/user/avatar/');
+    final resolvedPath = Uri.tryParse(_resolveUrl(url))?.path ?? url;
+    return resolvedPath.endsWith('/user/avatar') ||
+        resolvedPath.contains('/user/avatar/');
   }
 
   bool _isBase64Image(String value) {

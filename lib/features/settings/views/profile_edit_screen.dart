@@ -523,6 +523,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     if (!mounted) return;
 
     if (!faceDetection.isAvailable || !faceDetection.hasExactlyOneFace) {
+      setState(() => _selectedImage = null);
       _showProfilePhotoSnack(
         _profilePhotoFaceMessage(faceDetection),
         isError: true,
