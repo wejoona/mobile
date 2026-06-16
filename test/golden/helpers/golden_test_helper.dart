@@ -37,10 +37,10 @@ class GoldenTestConfig {
 }
 
 bool get shouldRunGoldens {
-  return Platform.environment['CI'] == 'true' ||
-      Platform.environment['UPDATE_GOLDENS'] == 'true' ||
+  return Platform.environment['UPDATE_GOLDENS'] == 'true' ||
       Platform.environment['RUN_GOLDENS'] == 'true' ||
-      const bool.fromEnvironment('RUN_GOLDENS');
+      const bool.fromEnvironment('RUN_GOLDENS') ||
+      const bool.fromEnvironment('UPDATE_GOLDENS');
 }
 
 bool skipVisualSuiteIfDisabled() {

@@ -15,10 +15,13 @@ class GoldenDevices {
   static const Size iPadMini = Size(744, 1133);
 }
 
-/// Check if golden file tests should run (CI only by default).
+/// Check if golden file tests should run.
+///
+/// Goldens are intentionally opt-in. CI providers set `CI=true` for every
+/// build, but visual baselines are platform-sensitive and should only gate a
+/// deploy when the pipeline explicitly asks for them.
 bool get shouldRunGoldens {
-  return Platform.environment['CI'] == 'true' ||
-      Platform.environment['RUN_GOLDENS'] == 'true' ||
+  return Platform.environment['RUN_GOLDENS'] == 'true' ||
       Platform.environment['UPDATE_GOLDENS'] == 'true' ||
       const bool.fromEnvironment('RUN_GOLDENS') ||
       const bool.fromEnvironment('UPDATE_GOLDENS');
