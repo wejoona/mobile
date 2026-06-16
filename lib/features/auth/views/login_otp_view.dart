@@ -61,7 +61,10 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
                           title: l10n.login_verifyCode,
                           subtitle: l10n.login_codeSentTo(
                             state.countryCode ?? '+225',
-                            _formatPhoneForDisplay(state.phoneNumber ?? ''),
+                            _formatPhoneForDisplay(
+                              state.phoneNumber ?? '',
+                              countryCode: state.countryCode,
+                            ),
                           ),
                         ),
                         const SizedBox(height: AppSpacing.xxxl),
@@ -189,9 +192,17 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
     await ref.read(loginProvider.notifier).resendOtp();
   }
 
-  String _formatPhoneForDisplay(String phone) {
-    if (phone.length < 4) return phone;
-    return '${phone.substring(0, 2)} XX XX XX XX';
+  String _formatPhoneForDisplay(String phone, {String? countryCode}) {
+    var localPhone = phone.trim();
+    final dialCode = countryCode?.trim();
+    if (dialCode != null &&
+        dialCode.isNotEmpty &&
+        localPhone.startsWith(dialCode)) {
+      localPhone = localPhone.substring(dialCode.length);
+    }
+    localPhone = localPhone.replaceAll(RegExp(r'\D'), '');
+    if (localPhone.length < 4) return localPhone;
+    return '${localPhone.substring(0, 2)} XX XX XX XX';
   }
 
   String _localizedOtpCopy(

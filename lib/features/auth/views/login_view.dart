@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,8 +8,10 @@ import 'package:usdc_wallet/config/countries.dart';
 import 'package:usdc_wallet/config/environment_config.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/auth/models/login_state.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
+import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
@@ -140,12 +144,10 @@ class _LoginViewState extends ConsumerState<LoginView>
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final authState = ref.watch(authProvider);
+    final loginState = ref.watch(loginProvider);
 
     ref.listen<AuthState>(authProvider, (prev, next) {
-      if (next.status == AuthStatus.otpSent) {
-        context.go('/otp');
-      } else if (next.error != null) {
+      if (next.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.error!),
@@ -158,6 +160,25 @@ class _LoginViewState extends ConsumerState<LoginView>
           ),
         );
         ref.read(authProvider.notifier).clearError();
+      }
+    });
+    ref.listen<LoginState>(loginProvider, (prev, next) {
+      if (next.currentStep == LoginStep.otp &&
+          prev?.currentStep != LoginStep.otp) {
+        context.go('/login/otp');
+      } else if (next.error != null && next.error != prev?.error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.error!),
+            backgroundColor: colors.error,
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(AppSpacing.lg),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+          ),
+        );
+        ref.read(loginProvider.notifier).clearError();
       }
     });
 
@@ -177,7 +198,7 @@ class _LoginViewState extends ConsumerState<LoginView>
           opacity: _fadeAnimation,
           child: _mode == _LoginMode.biometric
               ? _buildBiometricScreen(colors)
-              : _buildPhoneScreen(colors, authState),
+              : _buildPhoneScreen(colors, loginState),
         ),
       ),
     );
@@ -297,7 +318,7 @@ class _LoginViewState extends ConsumerState<LoginView>
   // PHONE LOGIN SCREEN
   // ──────────────────────────────────────────
 
-  Widget _buildPhoneScreen(ThemeColors colors, AuthState authState) {
+  Widget _buildPhoneScreen(ThemeColors colors, LoginState loginState) {
     final l10n = AppLocalizations.of(context)!;
 
     return LayoutBuilder(
@@ -344,13 +365,13 @@ class _LoginViewState extends ConsumerState<LoginView>
                     variant: AppButtonVariant.primary,
                     size: AppButtonSize.large,
                     isFullWidth: true,
-                    isLoading: authState.isLoading,
+                    isLoading: loginState.isLoading,
                   ),
                   if (EnvironmentConfig.showDevOtpShortcut) ...[
                     const SizedBox(height: AppSpacing.sm),
                     AppButton(
                       label: 'Use dev phone',
-                      onPressed: authState.isLoading ? null : _useDevPhone,
+                      onPressed: loginState.isLoading ? null : _useDevPhone,
                       variant: AppButtonVariant.ghost,
                       isFullWidth: true,
                     ),
@@ -610,14 +631,17 @@ class _LoginViewState extends ConsumerState<LoginView>
     return _selectedCountry.isValidLength(phone);
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (!_isPhoneValid()) return;
     final phone = normalizePhoneE164(
       dialCode: _selectedCountry.fullPrefix,
       localNumber: _phoneController.text,
     );
     ref.read(selectedCountryProvider.notifier).select(_selectedCountry);
-    ref.read(authProvider.notifier).login(phone);
+    ref
+        .read(loginProvider.notifier)
+        .updatePhoneNumber(phone, _selectedCountry.fullPrefix);
+    await ref.read(loginProvider.notifier).submitPhoneNumber();
   }
 
   void _useDevPhone() {
@@ -627,7 +651,7 @@ class _LoginViewState extends ConsumerState<LoginView>
           SupportedCountries.defaultCountry;
       _phoneController.text = '0748805663';
     });
-    _submit();
+    unawaited(_submit());
   }
 }
 

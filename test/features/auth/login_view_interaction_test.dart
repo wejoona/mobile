@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
@@ -54,6 +56,26 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(LoginView), findsNothing);
+  });
+
+  test('returning-user login uses the PIN-aware login OTP flow', () {
+    final source = File(
+      'lib/features/auth/views/login_view.dart',
+    ).readAsStringSync();
+
+    expect(source, contains('loginProvider'));
+    expect(source, contains("context.go('/login/otp')"));
+    expect(
+      source,
+      isNot(contains("context.go('/otp')")),
+      reason:
+          'returning-user login must use the login OTP/PIN handoff, not the legacy OTP route',
+    );
+    expect(
+      source,
+      isNot(contains('acceptedTerms')),
+      reason: 'terms acceptance belongs to register/onboarding, never login',
+    );
   });
 }
 
