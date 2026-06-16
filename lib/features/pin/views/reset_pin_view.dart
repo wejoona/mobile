@@ -41,6 +41,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   StepUpDecision? _riskDecision;
   String? _stepUpChallengeToken;
   String? _manualReviewTicketId;
+  String? _manualReviewStatus;
 
   @override
   void dispose() {
@@ -201,7 +202,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         if (_manualReviewTicketId != null) ...[
           const SizedBox(height: AppSpacing.md),
           AppText(
-            'Reference ${_manualReviewTicketId!}',
+            'Reference ${_manualReviewTicketId!}${_manualReviewStatus == null ? '' : ' - ${_manualReviewStatus!.replaceAll('_', ' ')}'}',
             variant: AppTextVariant.bodySmall,
             color: context.colors.textTertiary,
             textAlign: TextAlign.center,
@@ -347,6 +348,17 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           setState(() {
             _isLoading = false;
             _errorMessage = l10n.error_phoneRequired;
+          });
+        }
+        return;
+      }
+
+      final hasActiveReview = await _loadActiveAccountRecoveryReview();
+      if (hasActiveReview) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _step = 6;
           });
         }
         return;
@@ -612,6 +624,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       if (!mounted) return;
       setState(() {
         _manualReviewTicketId = data['id']?.toString();
+        _manualReviewStatus = data['status']?.toString();
         _isLoading = false;
         _step = 6;
       });
@@ -628,6 +641,35 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         _errorMessage =
             'We could not create the manual review request. Please try again.';
       });
+    }
+  }
+
+  Future<bool> _loadActiveAccountRecoveryReview() async {
+    try {
+      final response = await ref
+          .read(dioProvider)
+          .get(
+            '/support/tickets/active',
+            queryParameters: {'category': 'account_recovery'},
+          );
+      final body = response.data;
+      final tickets = body is List
+          ? body
+          : body is Map && body['data'] is List
+          ? body['data'] as List
+          : const [];
+      if (tickets.isEmpty) {
+        return false;
+      }
+
+      final first = tickets.first;
+      if (first is Map) {
+        _manualReviewTicketId = first['id']?.toString();
+        _manualReviewStatus = first['status']?.toString();
+      }
+      return true;
+    } on Object {
+      return false;
     }
   }
 
