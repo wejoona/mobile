@@ -9,6 +9,7 @@ import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/router/navigation_extensions.dart';
 
 class SplashView extends ConsumerStatefulWidget {
   const SplashView({super.key});
@@ -137,7 +138,7 @@ class _SplashViewState extends ConsumerState<SplashView>
     }
     _hasNavigated = true;
     if (authState.isAuthenticated) {
-      context.go('/home');
+      context.enterAuthenticatedApp();
     } else if (authState.isLocked) {
       context.go('/session-locked');
     } else {

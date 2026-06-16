@@ -8,6 +8,7 @@ import 'package:usdc_wallet/state/fsm/session_fsm.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/state/index.dart';
 
@@ -74,13 +75,12 @@ class _BiometricPromptViewState extends ConsumerState<BiometricPromptView> {
   }
 
   void _completeUnlock() {
-    final router = GoRouter.of(context);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       ref.read(authProvider.notifier).unlock();
       ref.read(sessionServiceProvider.notifier).unlockSession();
       ref.read(appFsmProvider.notifier).unlockSession();
-      router.go('/home');
+      context.enterAuthenticatedApp();
     });
   }
 

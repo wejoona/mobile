@@ -14,6 +14,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/auth/widgets/otp_progress_cue.dart';
+import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 
@@ -390,7 +391,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
     if (!hasPin) {
       context.go('/pin/setup');
     } else {
-      context.go('/home');
+      context.enterAuthenticatedApp();
     }
   }
 

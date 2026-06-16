@@ -13,6 +13,7 @@ import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
 import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
@@ -666,7 +667,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           backgroundColor: context.colors.success,
         ),
       );
-      context.go('/home');
+      context.enterAuthenticatedApp();
     } on DioException catch (e) {
       if (mounted) {
         final message = ApiException.fromDioError(e).message;

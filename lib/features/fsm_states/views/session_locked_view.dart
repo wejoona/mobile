@@ -9,6 +9,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
@@ -74,7 +75,6 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView>
     }
     setState(() => _isUnlocking = true);
 
-    final router = GoRouter.of(context);
     final completion = Completer<void>();
     Future<void>.delayed(const Duration(seconds: 5), () {
       if (!mounted || !_isUnlocking) {
@@ -95,7 +95,7 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView>
         ref.read(authProvider.notifier).unlock();
         ref.read(sessionServiceProvider.notifier).unlockSession();
         ref.read(appFsmProvider.notifier).unlockSession();
-        router.go('/home');
+        context.enterAuthenticatedApp();
       } on Object {
         if (mounted) {
           _restoreUnlockControls();

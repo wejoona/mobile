@@ -10,6 +10,7 @@ import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
+import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
@@ -126,7 +127,6 @@ class _PinScreenState extends ConsumerState<PinScreen>
       case PinContext.login:
         // Show brief transition, then unlock + navigate to home together.
         if (mounted) {
-          final router = GoRouter.of(context);
           _transitionThen(() async {
             final unlocked = await _applyUnlock();
             if (!unlocked) {
@@ -135,14 +135,18 @@ class _PinScreenState extends ConsumerState<PinScreen>
               }
               return;
             }
-            router.go(widget.successRoute ?? '/home');
+            if (!mounted) {
+              return;
+            }
+            context.enterAuthenticatedApp(
+              route: widget.successRoute ?? '/home',
+            );
           });
         }
 
       case PinContext.sessionLock:
         // Show brief transition, then unlock + navigate together.
         if (mounted) {
-          final router = GoRouter.of(context);
           _transitionThen(() async {
             final unlocked = _applySessionUnlock();
             if (!unlocked) {
@@ -164,7 +168,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
                 } on Object {}
               }),
             );
-            router.go(widget.successRoute ?? '/home');
+            context.enterAuthenticatedApp(
+              route: widget.successRoute ?? '/home',
+            );
           });
         }
 
@@ -410,14 +416,13 @@ class _PinScreenState extends ConsumerState<PinScreen>
     }
 
     _queuedUnlockedRedirect = true;
-    final router = GoRouter.of(context);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       if (widget.pinContext == PinContext.login && !authState.isAuthenticated) {
-        router.go('/login');
+        context.go('/login');
         return;
       }
-      router.go(widget.successRoute ?? '/home');
+      context.enterAuthenticatedApp(route: widget.successRoute ?? '/home');
     });
   }
 
@@ -463,6 +468,10 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
+
+    if (_queuedUnlockedRedirect) {
+      return Scaffold(backgroundColor: colors.canvas);
+    }
 
     if (_isLocked) return _buildLockedView(l10n, colors);
 

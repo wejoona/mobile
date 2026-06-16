@@ -24,4 +24,26 @@ extension SafeNavigation on BuildContext {
       go(fallbackRoute);
     }
   }
+
+  /// Enters the authenticated app and clears any imperative auth pages left
+  /// behind by OTP/PIN/biometric flows, so iOS edge-swipe cannot reveal login.
+  void enterAuthenticatedApp({String route = '/home'}) {
+    final router = GoRouter.of(this);
+    final navigator = Navigator.maybeOf(this);
+    router.go(route);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (navigator == null || !navigator.mounted) {
+        return;
+      }
+
+      var popBudget = 8;
+      while (navigator.canPop() && popBudget > 0) {
+        navigator.pop();
+        popBudget--;
+      }
+
+      router.go(route);
+    });
+  }
 }

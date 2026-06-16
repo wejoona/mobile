@@ -10,6 +10,7 @@ import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
@@ -104,7 +105,7 @@ class _LoginViewState extends ConsumerState<LoginView>
             .read(authProvider.notifier)
             .loginWithBiometric(refreshToken);
         if (success && mounted) {
-          context.go('/home');
+          context.enterAuthenticatedApp();
           return;
         }
         if (mounted) {

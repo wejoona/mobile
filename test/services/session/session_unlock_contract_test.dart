@@ -21,6 +21,9 @@ void main() {
       '_completeUnlock',
     );
     final sessionLockedUnlockBody = _methodBody(sessionLockedSource, '_unlock');
+    final navigationExtensionSource = File(
+      'lib/router/navigation_extensions.dart',
+    ).readAsStringSync();
 
     for (final body in [
       pinUnlockBody,
@@ -45,10 +48,7 @@ void main() {
       reason:
           'PIN unlock should not race session state changes against routing',
     );
-    expect(
-      pinSuccessBody,
-      contains("router.go(widget.successRoute ?? '/home')"),
-    );
+    expect(pinSuccessBody, contains('context.enterAuthenticatedApp('));
     expect(
       biometricUnlockBody,
       contains('appFsmProvider.notifier).unlockSession()'),
@@ -56,14 +56,24 @@ void main() {
           'biometric unlock must clear the FSM lock state before routing home',
     );
     expect(biometricUnlockBody, contains('addPostFrameCallback'));
-    expect(biometricUnlockBody, contains("router.go('/home')"));
+    expect(biometricUnlockBody, contains('context.enterAuthenticatedApp()'));
     expect(
       sessionLockedUnlockBody,
       contains('appFsmProvider.notifier).unlockSession()'),
       reason:
           'session lock unlock must clear the FSM lock state before routing home',
     );
-    expect(sessionLockedUnlockBody, contains("router.go('/home')"));
+    expect(
+      sessionLockedUnlockBody,
+      contains('context.enterAuthenticatedApp()'),
+    );
+    expect(navigationExtensionSource, contains('enterAuthenticatedApp'));
+    expect(
+      navigationExtensionSource,
+      contains('final navigator = Navigator.maybeOf(this)'),
+    );
+    expect(navigationExtensionSource, contains('!navigator.mounted'));
+    expect(navigationExtensionSource, contains('while (navigator.canPop()'));
   });
 
   test('PIN lock screen keeps biometric and manual PIN fallback available', () {
@@ -200,6 +210,12 @@ void main() {
 
     expect(shellSource, contains('PopScope'));
     expect(shellSource, contains('canPop: false'));
+    expect(
+      File('lib/router/navigation_extensions.dart').readAsStringSync(),
+      contains('enterAuthenticatedApp'),
+      reason:
+          'auth success routes must clear stale OTP/PIN pages before showing home',
+    );
     expect(
       shellRoutesSource,
       contains('pageBuilder: (context, state, child) => NoTransitionPage'),
