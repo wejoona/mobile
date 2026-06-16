@@ -365,9 +365,25 @@ class _EmailVerificationScreenState
                   ),
                 )
               else if (_hasPendingCode)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: List.generate(6, (i) => _buildOtpBox(i, colors)),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: List.generate(
+                        6,
+                        (i) => _buildOtpBox(i, colors),
+                      ),
+                    ),
+                    if (_isLoading) ...[
+                      const SizedBox(height: AppSpacing.lg),
+                      InfoCallout(
+                        icon: Icons.sync_rounded,
+                        title: l10n.login_verifying,
+                        tone: InfoCalloutTone.info,
+                      ),
+                    ],
+                  ],
                 )
               else
                 Container(
@@ -468,7 +484,7 @@ class _EmailVerificationScreenState
 
               const Spacer(),
 
-              if (_isLoading)
+              if (_isLoading && !_hasPendingCode)
                 Center(
                   child: CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation(colors.gold),
