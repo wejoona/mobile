@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/environment_config.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
-import 'package:usdc_wallet/router/route_guards.dart';
+import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
 import 'package:usdc_wallet/services/feature_flags/feature_flags_extensions.dart';
 import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
@@ -54,6 +54,7 @@ String? appRedirect(BuildContext context, GoRouterState state) {
   final userState = container.read(userStateMachineProvider);
   final flags = container.read(featureFlagsProvider);
   final sessionState = container.read(sessionServiceProvider);
+  final loginState = container.read(loginProvider);
   final appFsmState = container.read(appFsmProvider);
   final kycState = container.read(kyc_machine.kycStateMachineProvider);
 
@@ -99,6 +100,16 @@ String? appRedirect(BuildContext context, GoRouterState state) {
       !isLockedState &&
       _isAuthenticatedDeadEndRoute(location)) {
     return '/home';
+  }
+
+  final invalidPinLoginRedirect = _invalidPinLoginRedirect(
+    location: location,
+    isAuthenticated: isAuthenticated,
+    isLockedState: isLockedState,
+    pendingPinSessionToken: loginState.sessionToken,
+  );
+  if (invalidPinLoginRedirect != null) {
+    return invalidPinLoginRedirect;
   }
 
   final fsmRedirect = _fsmRedirect(
@@ -314,9 +325,38 @@ String? _featureFlagRedirect(String location, Map<String, bool> flags) {
 }
 
 bool _isPublicRoute(String location) =>
-    isPublicPath(location) ||
+    _isExplicitPublicRoute(location) ||
     location.startsWith('/pin/reset') ||
     location.startsWith('/session-locked');
+
+bool _isExplicitPublicRoute(String location) =>
+    location == '/' ||
+    location == '/login' ||
+    location == '/login/otp' ||
+    location == '/otp' ||
+    location == '/onboarding' ||
+    location == '/onboarding/phone' ||
+    location == '/onboarding/otp' ||
+    location.startsWith('/pay/');
+
+String? _invalidPinLoginRedirect({
+  required String location,
+  required bool isAuthenticated,
+  required bool isLockedState,
+  required String? pendingPinSessionToken,
+}) {
+  if (location != '/login/pin' || isLockedState) {
+    return null;
+  }
+
+  if (isAuthenticated) {
+    return '/home';
+  }
+
+  final hasPendingPinSession =
+      pendingPinSessionToken != null && pendingPinSessionToken.isNotEmpty;
+  return hasPendingPinSession ? null : '/login';
+}
 
 bool _isOnboardingRoute(String location) =>
     location.startsWith('/onboarding') ||

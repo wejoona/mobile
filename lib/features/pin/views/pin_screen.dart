@@ -391,9 +391,13 @@ class _PinScreenState extends ConsumerState<PinScreen>
     }
 
     final authState = ref.read(authProvider);
+    final loginState = ref.read(loginProvider);
     final sessionState = ref.read(sessionServiceProvider);
     final shouldDismiss = switch (widget.pinContext) {
-      PinContext.login => authState.isAuthenticated,
+      PinContext.login =>
+        authState.isAuthenticated ||
+            (loginState.sessionToken == null ||
+                loginState.sessionToken!.isEmpty),
       PinContext.sessionLock =>
         authState.isAuthenticated &&
             !authState.isLocked &&
@@ -409,6 +413,10 @@ class _PinScreenState extends ConsumerState<PinScreen>
     final router = GoRouter.of(context);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      if (widget.pinContext == PinContext.login && !authState.isAuthenticated) {
+        router.go('/login');
+        return;
+      }
       router.go(widget.successRoute ?? '/home');
     });
   }

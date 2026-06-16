@@ -12,7 +12,10 @@ import 'package:usdc_wallet/router/widgets/navigation_shell.dart';
 List<RouteBase> primaryShellRoutes() => [
   // Main App Routes (with bottom nav - no animation for tab switching)
   ShellRoute(
-    builder: (context, state, child) => AuthGatedShell(child: child),
+    pageBuilder: (context, state, child) => NoTransitionPage(
+      key: state.pageKey,
+      child: AuthGatedShell(child: child),
+    ),
     routes: [
       GoRoute(
         path: '/home',

@@ -191,13 +191,26 @@ void main() {
     final shellSource = File(
       'lib/router/widgets/navigation_shell.dart',
     ).readAsStringSync();
+    final shellRoutesSource = File(
+      'lib/router/routes/primary_shell_routes.dart',
+    ).readAsStringSync();
     final redirectorSource = File(
       'lib/router/app_redirector.dart',
     ).readAsStringSync();
 
     expect(shellSource, contains('PopScope'));
     expect(shellSource, contains('canPop: false'));
+    expect(
+      shellRoutesSource,
+      contains('pageBuilder: (context, state, child) => NoTransitionPage'),
+      reason:
+          'authenticated tab shell must own the route page so iOS back-swipe cannot reveal login',
+    );
     expect(redirectorSource, contains('_isAuthenticatedDeadEndRoute'));
+    expect(redirectorSource, contains('_invalidPinLoginRedirect'));
+    expect(redirectorSource, contains('location != \'/login/pin\''));
+    expect(redirectorSource, contains('pendingPinSessionToken'));
+    expect(redirectorSource, isNot(contains('isPublicPath(location)')));
     expect(redirectorSource, contains("location == '/onboarding/phone'"));
     expect(redirectorSource, contains("return '/home'"));
   });
