@@ -40,7 +40,7 @@ void main() {
     );
     expect(request.path, '/notifications');
     expect(request.queryParameters['limit'], 100);
-    expect(request.queryParameters['offset'], 0);
+    expect(request.queryParameters['page'], 1);
     expect(notifications, hasLength(1));
     expect(notifications.single.type, NotificationType.security);
     expect(notifications.single.isRead, isFalse);
@@ -254,42 +254,40 @@ void main() {
             'isUnread': true,
           },
         ],
-        'total': 1,
-        'unreadCount': 1,
-        'limit': 50,
-        'offset': 0,
+        'meta': {'total': 1, 'page': 1, 'limit': 50},
       });
     final service = NotificationsService(dio);
 
     final notifications = await service.getNotifications();
 
     expect(dio.requestHistory.single.path, '/notifications');
-    expect(dio.requestHistory.single.queryParameters, {
-      'limit': 50,
-      'offset': 0,
-    });
+    expect(dio.requestHistory.single.queryParameters, {'page': 1, 'limit': 50});
     expect(notifications, hasLength(1));
     expect(notifications.single.navigationRoute, '/transactions/txn_live_1');
   });
 
-  test('FCM token removal uses the mobile SDK route body', () async {
+  test('FCM token removal uses the live device-token route', () async {
     final dio = MockDio()..queueResponse(null, statusCode: 204);
     final service = NotificationsService(dio);
 
     await service.removeFcmToken('abc/def:ghi');
 
     expect(dio.requestHistory.single.method, 'DELETE');
-    expect(dio.requestHistory.single.path, '/notifications/push/token');
-    expect(dio.requestHistory.single.data, {'token': 'abc/def:ghi'});
+    expect(
+      dio.requestHistory.single.path,
+      '/notifications/device-token/abc%2Fdef%3Aghi',
+    );
   });
 
-  test('bulk push token cleanup uses live backend route', () async {
-    final dio = MockDio()..queueResponse(null, statusCode: 204);
+  test('bulk push token cleanup is not exposed by the live API', () async {
+    final dio = MockDio();
     final service = NotificationsService(dio);
 
-    await service.removeAllFcmTokens();
+    await expectLater(
+      service.removeAllFcmTokens(),
+      throwsA(isA<UnsupportedError>()),
+    );
 
-    expect(dio.requestHistory.single.method, 'DELETE');
-    expect(dio.requestHistory.single.path, '/notifications/push/tokens');
+    expect(dio.requestHistory, isEmpty);
   });
 }

@@ -11,11 +11,9 @@ class NotificationsApi {
   Future<Response> list({int? page, int? limit, int? offset}) => _dio.get(
     '/notifications',
     queryParameters: {
+      if (_resolvedPage(page: page, limit: limit, offset: offset) != null)
+        'page': _resolvedPage(page: page, limit: limit, offset: offset),
       if (limit != null) 'limit': limit,
-      if (offset != null)
-        'offset': offset
-      else if (page != null && limit != null)
-        'offset': (page - 1) * limit,
     },
   );
 
@@ -37,15 +35,45 @@ class NotificationsApi {
   Future<Response> unregisterDeviceToken(String token) =>
       _dio.delete('/notifications/device-token/${Uri.encodeComponent(token)}');
 
-  /// POST /notifications/push/token
+  /// Legacy facade for FCM/APNs token registration.
   Future<Response> registerPushToken(Map<String, dynamic> data) =>
-      _dio.post('/notifications/push/token', data: data);
+      registerDeviceToken({
+        'token': data['token'],
+        'platform': _notificationPlatform(data['platform']),
+      });
 
-  /// DELETE /notifications/push/token
-  Future<Response> removePushToken(Map<String, dynamic> data) =>
-      _dio.delete('/notifications/push/token', data: data);
+  /// Legacy facade for FCM/APNs token removal.
+  Future<Response> removePushToken(Map<String, dynamic> data) {
+    final token = data['token'];
+    if (token is! String || token.isEmpty) {
+      throw ArgumentError.value(data, 'data', 'token is required');
+    }
+    return unregisterDeviceToken(token);
+  }
 
-  /// DELETE /notifications/push/tokens
-  Future<Response> removeAllPushTokens() =>
-      _dio.delete('/notifications/push/tokens');
+  /// Bulk token removal is intentionally unsupported by the live API.
+  Future<Response> removeAllPushTokens() {
+    throw UnsupportedError(
+      'Bulk push-token removal is not supported by the Korido API. '
+      'Remove the active device token individually.',
+    );
+  }
+}
+
+int? _resolvedPage({int? page, int? limit, int? offset}) {
+  if (page != null) {
+    return page;
+  }
+  if (offset != null && limit != null && limit > 0) {
+    return (offset ~/ limit) + 1;
+  }
+  return null;
+}
+
+String _notificationPlatform(Object? platform) {
+  final normalized = platform?.toString().trim().toLowerCase();
+  if (normalized == 'ios' || normalized == 'android' || normalized == 'web') {
+    return normalized!;
+  }
+  return 'ios';
 }

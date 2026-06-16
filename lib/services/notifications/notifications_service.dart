@@ -17,7 +17,7 @@ class NotificationsService {
     try {
       final response = await _dio.get(
         '/notifications',
-        queryParameters: {'limit': pageSize, 'offset': (page - 1) * pageSize},
+        queryParameters: {'page': page, 'limit': pageSize},
       );
       final data = _notificationItems(response.data);
 
@@ -70,7 +70,7 @@ class NotificationsService {
     }
   }
 
-  /// POST /notifications/push/token - FCM/APNs token registration.
+  /// POST /notifications/device-token - FCM/APNs token registration.
   Future<void> registerFcmToken({
     required String token,
     required String platform,
@@ -81,39 +81,25 @@ class NotificationsService {
   }) async {
     try {
       await _dio.post(
-        '/notifications/push/token',
-        data: {
-          'token': token,
-          'platform': platform,
-          if (deviceId != null && deviceId.isNotEmpty) 'deviceId': deviceId,
-          if (deviceName != null && deviceName.isNotEmpty)
-            'deviceName': deviceName,
-          if (appVersion != null && appVersion.isNotEmpty)
-            'appVersion': appVersion,
-          if (osVersion != null && osVersion.isNotEmpty) 'osVersion': osVersion,
-        },
+        '/notifications/device-token',
+        data: {'token': token, 'platform': _notificationPlatform(platform)},
       );
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
   }
 
-  /// DELETE /notifications/push/token - Remove FCM/APNs token
+  /// DELETE /notifications/device-token/:token - Remove FCM/APNs token
   Future<void> removeFcmToken(String token) async {
-    try {
-      await _dio.delete('/notifications/push/token', data: {'token': token});
-    } on DioException catch (e) {
-      throw ApiException.fromDioError(e);
-    }
+    await removeDeviceToken(token);
   }
 
-  /// DELETE /notifications/push/tokens - Remove all FCM/APNs tokens for user
+  /// Bulk token removal is intentionally unsupported by the live API.
   Future<void> removeAllFcmTokens() async {
-    try {
-      await _dio.delete('/notifications/push/tokens');
-    } on DioException catch (e) {
-      throw ApiException.fromDioError(e);
-    }
+    throw UnsupportedError(
+      'Bulk push-token removal is not supported by the Korido API. '
+      'Remove the active device token individually.',
+    );
   }
 
   /// DELETE /notifications/device-token/:token
@@ -212,4 +198,12 @@ int? _intValue(Map<String, dynamic> map, List<String> keys) {
     }
   }
   return null;
+}
+
+String _notificationPlatform(String platform) {
+  final normalized = platform.trim().toLowerCase();
+  if (normalized == 'ios' || normalized == 'android' || normalized == 'web') {
+    return normalized;
+  }
+  return 'ios';
 }
