@@ -126,6 +126,8 @@ Use only `/kyc/liveness/*` for product liveness. The legacy backend `/liveness/*
 
 The API responds with `providerCapabilities`, `clientCapabilities`, `negotiatedCapabilities`, `requiredCaptureMode`, `acceptedCaptureModes`, `requiredEvidence`, and `evidencePolicy`. The current mobile liveness widget supports photo challenge capture only; if the API negotiates `video`, route the flow to manual review instead of attempting an unsupported capture.
 
+Each challenge may include `recommendedCaptureMode`, `requiresMotionEvidence`, `manualReviewRecommended`, and `manualReviewReason`. Pose challenges such as smile, turn-left, turn-right, look-up, and blink can be completed as photo challenges. Motion challenges such as nod need video or a provider-backed motion signal; photo-only clients must route these to manual review instead of pretending a still image proves motion.
+
 `POST /kyc/liveness/challenge` is multipart and currently accepts photo evidence only:
 
 - fields: `sessionToken`, `challengeId`, `captureMode=photo`, `mediaType=photo`, optional `mimeType`

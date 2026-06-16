@@ -155,6 +155,18 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
           );
           return;
         }
+        final unsupportedChallenge = _firstUnsupportedChallenge(
+          session.challenges,
+        );
+        if (unsupportedChallenge != null) {
+          _fail(
+            'This liveness check requires ${unsupportedChallenge.recommendedCaptureMode.value} evidence for ${unsupportedChallenge.type.value}, but this device flow currently supports photo capture only.',
+            manualReviewReason:
+                unsupportedChallenge.manualReviewReason ??
+                'liveness_motion_capture_unsupported',
+          );
+          return;
+        }
 
         setState(() {
           _sessionToken = session.sessionToken;
@@ -195,6 +207,15 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
 
       final livenessService = ref.read(livenessServiceProvider);
       final challenge = _challenges[_currentChallengeIndex];
+      if (_requiresUnsupportedCapture(challenge)) {
+        _fail(
+          'This challenge requires ${challenge.recommendedCaptureMode.value} evidence, but this device flow currently supports photo capture only.',
+          manualReviewReason:
+              challenge.manualReviewReason ??
+              'liveness_motion_capture_unsupported',
+        );
+        return;
+      }
       final captureMode =
           challenge.acceptedCaptureModes.contains(LivenessCaptureMode.photo)
           ? LivenessCaptureMode.photo
@@ -263,6 +284,26 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
         manualReviewReason: 'liveness_challenge_unavailable',
       );
     }
+  }
+
+  bool _requiresUnsupportedCapture(LivenessChallenge challenge) {
+    if (challenge.requiredCaptureMode == LivenessCaptureMode.video) {
+      return true;
+    }
+    return challenge.manualReviewRecommended &&
+        challenge.recommendedCaptureMode == LivenessCaptureMode.video &&
+        !challenge.acceptedCaptureModes.contains(LivenessCaptureMode.video);
+  }
+
+  LivenessChallenge? _firstUnsupportedChallenge(
+    List<LivenessChallenge> challenges,
+  ) {
+    for (final challenge in challenges) {
+      if (_requiresUnsupportedCapture(challenge)) {
+        return challenge;
+      }
+    }
+    return null;
   }
 
   void _fail(String message, {String? manualReviewReason}) {

@@ -284,14 +284,22 @@ class LivenessChallenge {
   final LivenessChallengeType type;
   final String instruction;
   final LivenessCaptureMode requiredCaptureMode;
+  final LivenessCaptureMode recommendedCaptureMode;
   final List<LivenessCaptureMode> acceptedCaptureModes;
+  final bool requiresMotionEvidence;
+  final bool manualReviewRecommended;
+  final String? manualReviewReason;
 
   const LivenessChallenge({
     required this.challengeId,
     required this.type,
     required this.instruction,
     this.requiredCaptureMode = LivenessCaptureMode.photo,
+    this.recommendedCaptureMode = LivenessCaptureMode.photo,
     this.acceptedCaptureModes = const [LivenessCaptureMode.photo],
+    this.requiresMotionEvidence = false,
+    this.manualReviewRecommended = false,
+    this.manualReviewReason,
   });
 
   factory LivenessChallenge.fromJson(Map<String, dynamic> json) {
@@ -302,11 +310,18 @@ class LivenessChallenge {
       requiredCaptureMode: LivenessCaptureModeExt.fromString(
         json['requiredCaptureMode'] as String?,
       ),
+      recommendedCaptureMode: LivenessCaptureModeExt.fromString(
+        json['recommendedCaptureMode'] as String?,
+      ),
       acceptedCaptureModes:
           (json['acceptedCaptureModes'] as List<dynamic>?)
               ?.map((mode) => LivenessCaptureModeExt.fromString('$mode'))
               .toList() ??
           const [LivenessCaptureMode.photo],
+      requiresMotionEvidence: json['requiresMotionEvidence'] as bool? ?? false,
+      manualReviewRecommended:
+          json['manualReviewRecommended'] as bool? ?? false,
+      manualReviewReason: json['manualReviewReason'] as String?,
     );
   }
 }
