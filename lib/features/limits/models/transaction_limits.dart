@@ -1,5 +1,55 @@
 enum TransactionLimitOperation { send, deposit, withdraw }
 
+class MoneyFlowPermissions {
+  final bool canSend;
+  final bool canDeposit;
+  final bool canWithdraw;
+  final bool canReceive;
+  final String? blockReason;
+  final bool reviewRequired;
+
+  const MoneyFlowPermissions({
+    this.canSend = true,
+    this.canDeposit = true,
+    this.canWithdraw = true,
+    this.canReceive = true,
+    this.blockReason,
+    this.reviewRequired = false,
+  });
+
+  factory MoneyFlowPermissions.fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return const MoneyFlowPermissions();
+    }
+
+    return MoneyFlowPermissions(
+      canSend: json['canSend'] as bool? ?? true,
+      canDeposit: json['canDeposit'] as bool? ?? true,
+      canWithdraw: json['canWithdraw'] as bool? ?? true,
+      canReceive: json['canReceive'] as bool? ?? true,
+      blockReason: json['blockReason'] as String?,
+      reviewRequired: json['reviewRequired'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'canSend': canSend,
+    'canDeposit': canDeposit,
+    'canWithdraw': canWithdraw,
+    'canReceive': canReceive,
+    'blockReason': blockReason,
+    'reviewRequired': reviewRequired,
+  };
+
+  bool can(TransactionLimitOperation operation) {
+    return switch (operation) {
+      TransactionLimitOperation.send => canSend,
+      TransactionLimitOperation.deposit => canDeposit,
+      TransactionLimitOperation.withdraw => canWithdraw,
+    };
+  }
+}
+
 class TransactionLimits {
   final double dailyLimit;
   final double dailyDepositLimit;
@@ -28,6 +78,7 @@ class TransactionLimits {
   final bool overrideActive;
   final String? overrideReason;
   final DateTime? overrideExpiresAt;
+  final MoneyFlowPermissions permissions;
 
   const TransactionLimits({
     required this.dailyLimit,
@@ -57,6 +108,7 @@ class TransactionLimits {
     this.overrideActive = false,
     this.overrideReason,
     this.overrideExpiresAt,
+    this.permissions = const MoneyFlowPermissions(),
   });
 
   factory TransactionLimits.fromJson(Map<String, dynamic> json) {
@@ -126,6 +178,9 @@ class TransactionLimits {
       overrideActive: json['overrideActive'] as bool? ?? false,
       overrideReason: json['overrideReason'] as String?,
       overrideExpiresAt: _dateOf(json['overrideExpiresAt']),
+      permissions: MoneyFlowPermissions.fromJson(
+        _nullableMapOf(json['permissions']),
+      ),
     );
   }
 
@@ -153,6 +208,7 @@ class TransactionLimits {
     'overrideActive': overrideActive,
     'overrideReason': overrideReason,
     'overrideExpiresAt': overrideExpiresAt?.toIso8601String(),
+    'permissions': permissions.toJson(),
   };
 
   TransactionLimits copyWith({
@@ -179,6 +235,7 @@ class TransactionLimits {
     bool? overrideActive,
     String? overrideReason,
     DateTime? overrideExpiresAt,
+    MoneyFlowPermissions? permissions,
   }) {
     return TransactionLimits(
       dailyLimit: dailyLimit ?? this.dailyLimit,
@@ -205,6 +262,7 @@ class TransactionLimits {
       overrideActive: overrideActive ?? this.overrideActive,
       overrideReason: overrideReason ?? this.overrideReason,
       overrideExpiresAt: overrideExpiresAt ?? this.overrideExpiresAt,
+      permissions: permissions ?? this.permissions,
     );
   }
 
@@ -277,6 +335,10 @@ class TransactionLimits {
   }
 
   double effectiveMaxFor(TransactionLimitOperation operation) {
+    if (!permissions.can(operation)) {
+      return 0;
+    }
+
     final dailyForOperation = switch (operation) {
       TransactionLimitOperation.send => dailyRemaining,
       TransactionLimitOperation.deposit => dailyDepositRemaining,
@@ -301,6 +363,12 @@ class TransactionLimits {
   }
 
   String? limitHitByFor(TransactionLimitOperation operation, double amount) {
+    if (!permissions.can(operation)) {
+      return permissions.reviewRequired
+          ? 'manual_review_required'
+          : 'kyc_required';
+    }
+
     final operationLimit = operation == TransactionLimitOperation.withdraw
         ? withdrawalLimit
         : singleTransactionLimit;
@@ -326,6 +394,16 @@ Map<String, dynamic> _mapOf(Object? value) {
     return Map<String, dynamic>.from(value);
   }
   return const {};
+}
+
+Map<String, dynamic>? _nullableMapOf(Object? value) {
+  if (value is Map<String, dynamic>) {
+    return value;
+  }
+  if (value is Map) {
+    return Map<String, dynamic>.from(value);
+  }
+  return null;
 }
 
 double? _numberOf(Object? value) {

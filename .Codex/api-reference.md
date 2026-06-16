@@ -90,6 +90,21 @@ Avatar URL handling: the API may return absolute URLs, `/user/avatar/...`, `user
 
 KYC state should drive the mobile FSM: unverified users can start KYC, pending/manual-review users should see review state, rejected users should see retry/remediation, and approved/verified/auto-approved users should unlock higher-risk flows according to backend limits and risk decisions.
 
+`GET /user/limits` and `GET /wallet/limits` include a `permissions` object:
+
+```json
+{
+  "canSend": true,
+  "canDeposit": true,
+  "canWithdraw": true,
+  "canReceive": true,
+  "blockReason": null,
+  "reviewRequired": false
+}
+```
+
+Mobile money-flow screens must check these booleans before presenting transfer, deposit, or withdrawal actions. When `reviewRequired=true`, show the backend `blockReason` and route the user to the manual-review/SLA state instead of retrying liveness or showing a generic limit error.
+
 Use only `/kyc/liveness/*` for product liveness. The legacy backend `/liveness/*` mock controller is not part of the mobile/API contract and must not be used for KYC, account recovery, or money-flow step-up.
 
 ### Liveness Capability Contract

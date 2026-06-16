@@ -32,6 +32,12 @@ class LimitUsageCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.md),
             _LimitOverrideBanner(limits: limits),
           ],
+          if (!limits.permissions.canSend ||
+              !limits.permissions.canDeposit ||
+              !limits.permissions.canWithdraw) ...[
+            const SizedBox(height: AppSpacing.md),
+            _MoneyFlowBlockedBanner(limits: limits),
+          ],
           const SizedBox(height: AppSpacing.lg),
           _LimitRow(
             label: l10n.limits_dailyLimits,
@@ -69,6 +75,63 @@ class LimitUsageCard extends StatelessWidget {
                 color: colors.textPrimary,
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MoneyFlowBlockedBanner extends StatelessWidget {
+  const _MoneyFlowBlockedBanner({required this.limits});
+
+  final TransactionLimits limits;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final language = Localizations.localeOf(context).languageCode;
+    final reason = limits.permissions.blockReason?.trim();
+    final title = limits.permissions.reviewRequired
+        ? (language == 'fr'
+              ? 'Verification en revue'
+              : 'Verification under review')
+        : (language == 'fr' ? 'Verification requise' : 'Verification required');
+    final body = reason != null && reason.isNotEmpty
+        ? reason
+        : (language == 'fr'
+              ? 'Certaines operations sont suspendues jusqu a la validation de votre compte.'
+              : 'Some money movement is paused until your account is cleared.');
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: colors.warning.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: colors.warning.withValues(alpha: 0.30)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.lock_clock_rounded, color: colors.warning, size: 20),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  title,
+                  variant: AppTextVariant.labelMedium,
+                  color: colors.textPrimary,
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                AppText(
+                  body,
+                  variant: AppTextVariant.bodySmall,
+                  color: colors.textSecondary,
+                ),
+              ],
+            ),
           ),
         ],
       ),
