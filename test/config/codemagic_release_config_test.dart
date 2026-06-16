@@ -36,13 +36,16 @@ void main() {
       expect(codemagic, contains('ENV=staging'));
       expect(
         codemagic,
-        contains('API_URL=https://staging-api.joonapay.com/api/v1'),
+        contains('API_URL=https://staging-korido-api.joonapay.com/api/v1'),
       );
     });
 
     test('production dart define file selects live production mode', () {
       expect(prodEnv, contains('"ENV": "production"'));
-      expect(prodEnv, contains('"API_URL": "https://api.joonapay.com/api/v1"'));
+      expect(
+        prodEnv,
+        contains('"API_URL": "https://korido-api.joonapay.com/api/v1"'),
+      );
       expect(prodEnv, isNot(contains('127.0.0.1')));
       expect(prodEnv, isNot(contains('USE_MOCKS')));
     });
@@ -51,9 +54,10 @@ void main() {
       expect(stagingEnv, contains('"ENV": "staging"'));
       expect(
         stagingEnv,
-        contains('"API_URL": "https://staging-api.joonapay.com/api/v1"'),
+        contains('"API_URL": "https://staging-korido-api.joonapay.com/api/v1"'),
       );
       expect(stagingEnv, isNot(contains('api-staging')));
+      expect(stagingEnv, isNot(contains('staging-api')));
       expect(stagingEnv, isNot(contains('127.0.0.1')));
       expect(stagingEnv, isNot(contains('USE_MOCKS')));
     });

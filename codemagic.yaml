@@ -101,7 +101,7 @@ workflows:
           } >> "$CM_BUILD_DIR/android/local.properties"
 
           ENV_DEFINE=$(printf 'ENV=staging' | base64 | tr -d '\n')
-          API_DEFINE=$(printf 'API_URL=https://staging-api.joonapay.com/api/v1' | base64 | tr -d '\n')
+          API_DEFINE=$(printf 'API_URL=https://staging-korido-api.joonapay.com/api/v1' | base64 | tr -d '\n')
           DART_DEFINES="$ENV_DEFINE,$API_DEFINE"
 
           cd "$CM_BUILD_DIR/android"

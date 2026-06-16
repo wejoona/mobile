@@ -7,7 +7,7 @@
 
     DEPLOYMENT: Before production release:
     1. Generate certificate pins using:
-       openssl s_client -servername api.joonapay.com -connect api.joonapay.com:443 </dev/null 2>/dev/null | \
+       openssl s_client -servername korido-api.joonapay.com -connect korido-api.joonapay.com:443 </dev/null 2>/dev/null | \
          openssl x509 -pubkey -noout | \
          openssl pkey -pubin -outform der | \
          openssl dgst -sha256 -binary | \
@@ -25,10 +25,10 @@
 
     <!-- Production API domain with certificate pinning -->
     <domain-config cleartextTrafficPermitted="false">
-        <domain includeSubdomains="true">api.joonapay.com</domain>
+        <domain includeSubdomains="true">korido-api.joonapay.com</domain>
         <domain includeSubdomains="true">joonapay.com</domain>
         <pin-set expiration="2026-08-04">
-            <!-- Leaf SPKI SHA-256 for api.joonapay.com, generated 2026-06-03. -->
+            <!-- Leaf SPKI SHA-256 for Korido API, generated 2026-06-03. -->
             <pin digest="SHA-256">DcXImxqsw11wXDKaem3Be3mcFibKSosQGkPpNOw9Zuw=</pin>
             <!-- Leaf SPKI SHA-256 for joonapay.com, generated 2026-06-03. -->
             <pin digest="SHA-256">vz/Oj4HDd7i5iGnOiGk+BAZa/i62MKNdA74TWH/6pew=</pin>

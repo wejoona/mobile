@@ -33,7 +33,7 @@ class GoldenTestConfig {
   static const String goldenBasePath = 'goldens';
 
   /// Real backend URL
-  static const String backendUrl = 'https://api.joonapay.com/api/v1';
+  static const String backendUrl = 'https://korido-api.joonapay.com/api/v1';
 }
 
 bool get shouldRunGoldens {

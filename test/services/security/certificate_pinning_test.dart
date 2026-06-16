@@ -11,16 +11,18 @@ void main() {
 
     test('matches configured production hosts only', () {
       expect(
-        CertificatePinning.hostRequiresPinning('api.joonapay.com'),
+        CertificatePinning.hostRequiresPinning('korido-api.joonapay.com'),
         isTrue,
       );
       expect(CertificatePinning.hostRequiresPinning('joonapay.com'), isTrue);
       expect(
-        CertificatePinning.hostRequiresPinning('mobile.api.joonapay.com'),
+        CertificatePinning.hostRequiresPinning('api.joonapay.com'),
         isFalse,
       );
       expect(
-        CertificatePinning.hostRequiresPinning('staging-api.joonapay.com'),
+        CertificatePinning.hostRequiresPinning(
+          'staging-korido-api.joonapay.com',
+        ),
         isFalse,
       );
       expect(
@@ -45,10 +47,18 @@ void main() {
 
       expect(
         CertificatePinning.trustedFingerprintsForHost('api.joonapay.com'),
+        isEmpty,
+      );
+      expect(
+        CertificatePinning.trustedFingerprintsForHost(
+          'korido-api.joonapay.com',
+        ),
         contains(apiLeafDer),
       );
       expect(
-        CertificatePinning.trustedFingerprintsForHost('api.joonapay.com'),
+        CertificatePinning.trustedFingerprintsForHost(
+          'korido-api.joonapay.com',
+        ),
         contains(apexLeafDer),
       );
       expect(
@@ -61,7 +71,7 @@ void main() {
       );
       expect(
         CertificatePinning.trustedFingerprintsForHost(
-          'staging-api.joonapay.com',
+          'staging-korido-api.joonapay.com',
         ),
         isEmpty,
       );
@@ -74,10 +84,10 @@ void main() {
 
         expect(
           pinsByHost.keys,
-          containsAll(['api.joonapay.com', 'joonapay.com']),
+          containsAll(['korido-api.joonapay.com', 'joonapay.com']),
         );
         expect(
-          pinsByHost['api.joonapay.com'],
+          pinsByHost['korido-api.joonapay.com'],
           containsAll([
             'gvcwFV4jHJrKyc2rrHFNlZbenxWnWywAezu5tpkv7is=',
             'BWCq7vFEHnLEBB9FD9tOUTlIeFRPNHIJL7vPHgNjodc=',
