@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
+import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 
 /// Minimal "What's your name?" screen shown after first login
@@ -53,7 +53,7 @@ class _ProfileCompleteViewState extends ConsumerState<ProfileCompleteView> {
       HapticFeedback.mediumImpact();
 
       if (mounted) {
-        context.go('/home');
+        context.enterAuthenticatedApp();
       }
     } catch (e) {
       setState(() {

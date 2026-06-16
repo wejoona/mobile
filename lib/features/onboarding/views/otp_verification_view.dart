@@ -10,6 +10,7 @@ import 'package:usdc_wallet/features/auth/widgets/otp_progress_cue.dart';
 import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.dart';
 import 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/router/navigation_extensions.dart';
 
 /// OTP verification screen
 class OtpVerificationView extends ConsumerStatefulWidget {
@@ -205,7 +206,7 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
 
     if (hasName && hasPin) {
       await ref.read(onboardingProvider.notifier).completeOnboarding();
-      if (mounted) context.go('/home');
+      if (mounted) context.enterAuthenticatedApp();
       return;
     }
 

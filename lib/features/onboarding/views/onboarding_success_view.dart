@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/router/navigation_extensions.dart';
 
 /// Onboarding success screen
 class OnboardingSuccessView extends ConsumerWidget {
@@ -62,9 +62,7 @@ class OnboardingSuccessView extends ConsumerWidget {
               SizedBox(height: AppSpacing.md),
               // Subtitle with name
               AppText(
-                l10n.onboarding_success_subtitle(
-                  state.firstName ?? 'User',
-                ),
+                l10n.onboarding_success_subtitle(state.firstName ?? 'User'),
                 style: AppTypography.bodyLarge.copyWith(
                   color: context.colors.textSecondary,
                 ),
@@ -119,6 +117,6 @@ class OnboardingSuccessView extends ConsumerWidget {
 
   void _handleContinue(BuildContext context, WidgetRef ref) {
     ref.read(onboardingProvider.notifier).completeOnboarding();
-    context.go('/home');
+    context.enterAuthenticatedApp();
   }
 }

@@ -72,8 +72,14 @@ void main() {
       navigationExtensionSource,
       contains('final navigator = Navigator.maybeOf(this)'),
     );
-    expect(navigationExtensionSource, contains('!navigator.mounted'));
     expect(navigationExtensionSource, contains('while (navigator.canPop()'));
+    expect(navigationExtensionSource, contains('router.go(route);'));
+    expect(
+      navigationExtensionSource.indexOf('while (navigator.canPop()'),
+      lessThan(navigationExtensionSource.indexOf('router.go(route);')),
+      reason:
+          'auth stack cleanup must happen before routing home so PIN/login cannot remain underneath Home',
+    );
   });
 
   test('PIN lock screen keeps biometric and manual PIN fallback available', () {
@@ -207,6 +213,9 @@ void main() {
     final redirectorSource = File(
       'lib/router/app_redirector.dart',
     ).readAsStringSync();
+    final legacyLoginPinSource = File(
+      'lib/features/auth/views/login_pin_view.dart',
+    ).readAsStringSync();
 
     expect(shellSource, contains('PopScope'));
     expect(shellSource, contains('canPop: false'));
@@ -229,6 +238,13 @@ void main() {
     expect(redirectorSource, isNot(contains('isPublicPath(location)')));
     expect(redirectorSource, contains("location == '/onboarding/phone'"));
     expect(redirectorSource, contains("return '/home'"));
+    expect(legacyLoginPinSource, contains('context.enterAuthenticatedApp()'));
+    expect(
+      legacyLoginPinSource,
+      isNot(contains("context.go('/home')")),
+      reason:
+          'legacy PIN login must not leave login/PIN routes under the home page',
+    );
   });
 
   test('session refresh accepts the backend response envelope', () {

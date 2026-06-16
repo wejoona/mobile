@@ -30,19 +30,17 @@ extension SafeNavigation on BuildContext {
   void enterAuthenticatedApp({String route = '/home'}) {
     final router = GoRouter.of(this);
     final navigator = Navigator.maybeOf(this);
-    router.go(route);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (navigator == null || !navigator.mounted) {
-        return;
-      }
-
+    if (navigator != null && navigator.mounted) {
       var popBudget = 8;
       while (navigator.canPop() && popBudget > 0) {
         navigator.pop();
         popBudget--;
       }
+    }
 
+    router.go(route);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       router.go(route);
     });
   }

@@ -5,6 +5,7 @@ import 'package:confetti/confetti.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/features/onboarding/providers/onboarding_progress_provider.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
@@ -14,7 +15,8 @@ class WelcomePostLoginView extends ConsumerStatefulWidget {
   const WelcomePostLoginView({super.key});
 
   @override
-  ConsumerState<WelcomePostLoginView> createState() => _WelcomePostLoginViewState();
+  ConsumerState<WelcomePostLoginView> createState() =>
+      _WelcomePostLoginViewState();
 }
 
 class _WelcomePostLoginViewState extends ConsumerState<WelcomePostLoginView>
@@ -27,7 +29,9 @@ class _WelcomePostLoginViewState extends ConsumerState<WelcomePostLoginView>
   @override
   void initState() {
     super.initState();
-    _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+    _confettiController = ConfettiController(
+      duration: const Duration(seconds: 3),
+    );
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
@@ -158,7 +162,7 @@ class _WelcomePostLoginViewState extends ConsumerState<WelcomePostLoginView>
 
                     AppButton(
                       label: l10n.welcome_exploreDashboard,
-                      onPressed: () => context.go('/home'),
+                      onPressed: () => context.enterAuthenticatedApp(),
                       variant: AppButtonVariant.secondary,
                       size: AppButtonSize.large,
                       isFullWidth: true,

@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
@@ -46,14 +47,21 @@ class _LoginPinViewState extends ConsumerState<LoginPinView> {
 
   void _unlockAndNavigate() {
     // Unlock auth + session so router allows /home
-    try { ref.read(authProvider.notifier).unlock(); } catch (_) {}
-    try { ref.read(sessionServiceProvider.notifier).unlockSession(); } catch (_) {}
-    if (mounted) context.go('/home');
+    try {
+      ref.read(authProvider.notifier).unlock();
+    } catch (_) {}
+    try {
+      ref.read(sessionServiceProvider.notifier).unlockSession();
+    } catch (_) {}
+    if (mounted) context.enterAuthenticatedApp();
   }
 
   Future<void> _verifyPin() async {
     if (_isVerifying) return;
-    setState(() { _isVerifying = true; _errorMessage = null; });
+    setState(() {
+      _isVerifying = true;
+      _errorMessage = null;
+    });
 
     final pinService = ref.read(pinServiceProvider);
     final result = await pinService.verifyPinLocally(_pin);
@@ -72,7 +80,11 @@ class _LoginPinViewState extends ConsumerState<LoginPinView> {
         _errorMessage = result.message;
       });
       Future.delayed(const Duration(milliseconds: 800), () {
-        if (mounted) setState(() { _pin = ''; _hasError = false; });
+        if (mounted)
+          setState(() {
+            _pin = '';
+            _hasError = false;
+          });
       });
     }
   }
@@ -118,13 +130,18 @@ class _LoginPinViewState extends ConsumerState<LoginPinView> {
                       children: [
                         const Spacer(flex: 1),
                         Container(
-                          width: 80, height: 80,
+                          width: 80,
+                          height: 80,
                           decoration: BoxDecoration(
                             color: colors.container,
                             shape: BoxShape.circle,
                             border: Border.all(color: colors.border),
                           ),
-                          child: Icon(Icons.lock_outline, color: colors.gold, size: 40),
+                          child: Icon(
+                            Icons.lock_outline,
+                            color: colors.gold,
+                            size: 40,
+                          ),
                         ),
                         const SizedBox(height: AppSpacing.xxl),
                         AppText(
@@ -135,7 +152,11 @@ class _LoginPinViewState extends ConsumerState<LoginPinView> {
                         ),
                         const SizedBox(height: AppSpacing.xxxl),
 
-                        PinDots(length: 6, filled: _pin.length, error: _hasError),
+                        PinDots(
+                          length: 6,
+                          filled: _pin.length,
+                          error: _hasError,
+                        ),
 
                         const SizedBox(height: AppSpacing.md),
 
@@ -162,22 +183,35 @@ class _LoginPinViewState extends ConsumerState<LoginPinView> {
                         PinPad(
                           onDigitPressed: (digit) {
                             if (_pin.length >= 6) return;
-                            setState(() { _pin += digit.toString(); _hasError = false; _errorMessage = null; });
+                            setState(() {
+                              _pin += digit.toString();
+                              _hasError = false;
+                              _errorMessage = null;
+                            });
                             if (_pin.length == 6) _verifyPin();
                           },
                           onDeletePressed: () {
                             if (_pin.isNotEmpty) {
-                              setState(() { _pin = _pin.substring(0, _pin.length - 1); _hasError = false; });
+                              setState(() {
+                                _pin = _pin.substring(0, _pin.length - 1);
+                                _hasError = false;
+                              });
                             }
                           },
                           showBiometric: _biometricAvailable,
-                          onBiometricPressed: _biometricAvailable ? _handleBiometric : null,
+                          onBiometricPressed: _biometricAvailable
+                              ? _handleBiometric
+                              : null,
                         ),
 
                         const SizedBox(height: AppSpacing.xxl),
                         TextButton(
                           onPressed: () => context.push('/pin/reset'),
-                          child: AppText(l10n.login_forgotPin, variant: AppTextVariant.bodyMedium, color: colors.gold),
+                          child: AppText(
+                            l10n.login_forgotPin,
+                            variant: AppTextVariant.bodyMedium,
+                            color: colors.gold,
+                          ),
                         ),
                         const SizedBox(height: AppSpacing.lg),
                       ],
@@ -203,15 +237,22 @@ class _LoginPinViewState extends ConsumerState<LoginPinView> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 80, height: 80,
+                  width: 80,
+                  height: 80,
                   decoration: BoxDecoration(
-                    color: colors.container, shape: BoxShape.circle,
+                    color: colors.container,
+                    shape: BoxShape.circle,
                     border: Border.all(color: colors.border),
                   ),
                   child: Icon(Icons.lock_clock, color: colors.error, size: 40),
                 ),
                 const SizedBox(height: AppSpacing.xl),
-                AppText(l10n.login_accountLocked, variant: AppTextVariant.headlineMedium, color: colors.textPrimary, textAlign: TextAlign.center),
+                AppText(
+                  l10n.login_accountLocked,
+                  variant: AppTextVariant.headlineMedium,
+                  color: colors.textPrimary,
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: AppSpacing.md),
                 AppText(
                   '${l10n.login_lockedMessage}\n${_lockSeconds > 0 ? '${(_lockSeconds / 60).ceil()} min' : ''}',
@@ -220,7 +261,12 @@ class _LoginPinViewState extends ConsumerState<LoginPinView> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppSpacing.xxl),
-                AppButton(label: l10n.common_ok, onPressed: () => context.go('/login'), variant: AppButtonVariant.primary, isFullWidth: true),
+                AppButton(
+                  label: l10n.common_ok,
+                  onPressed: () => context.go('/login'),
+                  variant: AppButtonVariant.primary,
+                  isFullWidth: true,
+                ),
               ],
             ),
           ),
