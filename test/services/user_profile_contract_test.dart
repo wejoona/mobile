@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -309,14 +310,12 @@ void main() {
         final formData = dio.requestHistory.single.data as FormData;
         expect(dio.requestHistory.single.path, '/user/avatar');
         expect(formData.files.single.key, 'avatar');
-        expect(
-          formData.fields.any(
-            (entry) =>
-                entry.key == avatarDeviceFaceCheckField &&
-                entry.value == avatarDeviceFaceCheckToken,
-          ),
-          isTrue,
-        );
+        final evidence = _decodeFaceCheckEvidence(formData);
+        expect(evidence, containsPair('version', avatarDeviceFaceCheckVersion));
+        expect(evidence, containsPair('result', avatarDeviceFaceCheckToken));
+        expect(evidence, containsPair('isAvailable', true));
+        expect(evidence, containsPair('faceCount', 1));
+        expect(evidence['checkedAt'], isA<String>());
         expect(avatar.avatarUrl, '/user/avatar/usr_face_checked');
       },
     );
@@ -604,7 +603,7 @@ void main() {
           isAvailable: true,
           faceCount: 1,
         ).token,
-        avatarDeviceFaceCheckToken,
+        contains('"result":"$avatarDeviceFaceCheckToken"'),
       );
     });
 
@@ -629,6 +628,13 @@ void main() {
       expect(userStateSource, contains('avatarThumb: cached.avatarThumb'));
     });
   });
+}
+
+Map<String, dynamic> _decodeFaceCheckEvidence(FormData formData) {
+  final field = formData.fields.singleWhere(
+    (entry) => entry.key == avatarDeviceFaceCheckField,
+  );
+  return jsonDecode(field.value) as Map<String, dynamic>;
 }
 
 Future<File> _writeTinyJpeg() async {

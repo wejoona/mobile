@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -33,14 +34,12 @@ void main() {
       expect(dio.requestHistory.single.path, '/user/avatar');
       final formData = dio.requestHistory.single.data as FormData;
       expect(formData.files.single.key, 'avatar');
-      expect(
-        formData.fields.any(
-          (entry) =>
-              entry.key == avatarDeviceFaceCheckField &&
-              entry.value == avatarDeviceFaceCheckToken,
-        ),
-        isTrue,
-      );
+      final evidence = _decodeFaceCheckEvidence(formData);
+      expect(evidence, containsPair('version', avatarDeviceFaceCheckVersion));
+      expect(evidence, containsPair('result', avatarDeviceFaceCheckToken));
+      expect(evidence, containsPair('isAvailable', true));
+      expect(evidence, containsPair('faceCount', 1));
+      expect(evidence['checkedAt'], isA<String>());
       expect(result.avatarUrl, '/user/avatar/usr_profile_picture');
       expect(result.avatarThumb, startsWith('data:image/jpeg;base64,'));
       expect(result.message, 'Avatar uploaded successfully');
@@ -98,6 +97,13 @@ void main() {
       expect(result.avatarThumb, startsWith('data:image/jpeg;base64,'));
     });
   });
+}
+
+Map<String, dynamic> _decodeFaceCheckEvidence(FormData formData) {
+  final field = formData.fields.singleWhere(
+    (entry) => entry.key == avatarDeviceFaceCheckField,
+  );
+  return jsonDecode(field.value) as Map<String, dynamic>;
 }
 
 Future<File> _writeTinyJpeg() async {
