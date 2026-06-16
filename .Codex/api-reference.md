@@ -118,6 +118,8 @@ Successful challenge/reference-selfie responses include review-safe `evidence` m
 
 Provider unavailability returns a retryable `KYC_PROVIDER_UNAVAILABLE` response with `supportReviewRequired=true`; mobile account recovery and KYC should route the user to manual review with an SLA instead of looping on liveness.
 
+Account recovery manual review uses `POST /support/tickets` with `category=account_recovery`. The API dedupes active account-recovery tickets for the user and appends new outage/risk signals to the same ticket. Ticket responses may include `reviewSla` with `label`, `firstResponseDueAt`, and `resolutionDueAt`; prefer those values over hardcoded SLA copy.
+
 ## Contacts
 
 | Action | Method | Path |

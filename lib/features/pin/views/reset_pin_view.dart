@@ -42,6 +42,8 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   String? _stepUpChallengeToken;
   String? _manualReviewTicketId;
   String? _manualReviewStatus;
+  String? _manualReviewSlaLabel;
+  String? _manualReviewResolutionDueAt;
 
   @override
   void dispose() {
@@ -196,9 +198,19 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         InfoCallout(
           icon: Icons.schedule_rounded,
           title:
+              _manualReviewSlaLabel ??
               'Expected first response: within 30 minutes for locked account recovery.',
           tone: InfoCalloutTone.info,
         ),
+        if (_manualReviewResolutionDueAt != null) ...[
+          const SizedBox(height: AppSpacing.sm),
+          AppText(
+            'Target resolution: ${_manualReviewResolutionDueAt!}',
+            variant: AppTextVariant.bodySmall,
+            color: context.colors.textTertiary,
+            textAlign: TextAlign.center,
+          ),
+        ],
         if (_manualReviewTicketId != null) ...[
           const SizedBox(height: AppSpacing.md),
           AppText(
@@ -623,8 +635,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
 
       if (!mounted) return;
       setState(() {
-        _manualReviewTicketId = data['id']?.toString();
-        _manualReviewStatus = data['status']?.toString();
+        _applyManualReviewTicket(data);
         _isLoading = false;
         _step = 6;
       });
@@ -664,13 +675,39 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
 
       final first = tickets.first;
       if (first is Map) {
-        _manualReviewTicketId = first['id']?.toString();
-        _manualReviewStatus = first['status']?.toString();
+        _applyManualReviewTicket(Map<String, dynamic>.from(first));
       }
       return true;
     } on Object {
       return false;
     }
+  }
+
+  void _applyManualReviewTicket(Map<String, dynamic> data) {
+    _manualReviewTicketId = data['id']?.toString();
+    _manualReviewStatus = data['status']?.toString();
+
+    final reviewSla = data['reviewSla'];
+    if (reviewSla is Map) {
+      _manualReviewSlaLabel = reviewSla['label']?.toString();
+      _manualReviewResolutionDueAt = _formatReviewDueAt(
+        reviewSla['resolutionDueAt']?.toString(),
+      );
+    }
+  }
+
+  String? _formatReviewDueAt(String? raw) {
+    if (raw == null || raw.isEmpty) {
+      return null;
+    }
+    final parsed = DateTime.tryParse(raw);
+    if (parsed == null) {
+      return raw;
+    }
+    final local = parsed.toLocal();
+    final hour = local.hour.toString().padLeft(2, '0');
+    final minute = local.minute.toString().padLeft(2, '0');
+    return '${local.year}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')} $hour:$minute';
   }
 
   void _handleNewPinNumber(int digit) {
