@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:dio/dio.dart';
 import 'package:usdc_wallet/utils/logger.dart';
+import 'package:usdc_wallet/features/settings/repositories/devices_repository.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/notifications/notifications_service.dart';
 import 'package:usdc_wallet/services/security/device_fingerprint_service.dart';
@@ -40,10 +41,15 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 /// 2. Call registerWithBackend() after user authentication
 /// 3. Call unregisterFromBackend() on logout
 class PushNotificationService {
-  PushNotificationService(this._notificationsService, this._fingerprintService);
+  PushNotificationService(
+    this._notificationsService,
+    this._fingerprintService,
+    this._devicesRepository,
+  );
 
   final NotificationsService _notificationsService;
   final DeviceFingerprintService _fingerprintService;
+  final DevicesRepository _devicesRepository;
 
   StreamSubscription<RemoteMessage>? _foregroundSubscription;
   StreamSubscription<String>? _tokenRefreshSubscription;
@@ -148,6 +154,7 @@ class PushNotificationService {
         appVersion: fingerprint?.appVersion,
         osVersion: fingerprint?.osVersion ?? Platform.operatingSystemVersion,
       );
+      await _syncDevicePushToken(fingerprint, _currentToken!);
 
       _logger.info('FCM token registered with backend');
       return true;
@@ -287,6 +294,25 @@ class PushNotificationService {
     return parts.isEmpty ? null : parts.join(' ');
   }
 
+  Future<void> _syncDevicePushToken(
+    DeviceFingerprint? fingerprint,
+    String token,
+  ) async {
+    final deviceId = fingerprint?.deviceId;
+    if (deviceId == null || deviceId.trim().isEmpty) {
+      return;
+    }
+
+    try {
+      await _devicesRepository.updateFcmToken(
+        deviceIdentifier: deviceId,
+        fcmToken: token,
+      );
+    } on DioException catch (error) {
+      _logger.warn('Device FCM token sync failed', error);
+    }
+  }
+
   /// Dispose resources
   void dispose() {
     _foregroundSubscription?.cancel();
@@ -304,6 +330,7 @@ final pushNotificationServiceProvider = Provider<PushNotificationService>((
   return PushNotificationService(
     ref.watch(notificationsServiceProvider),
     ref.watch(deviceFingerprintServiceProvider),
+    ref.watch(devicesRepositoryProvider),
   );
 });
 

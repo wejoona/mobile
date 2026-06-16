@@ -76,6 +76,17 @@ class DevicesRepository {
     await _dio.post('/devices/$deviceId/untrust');
   }
 
+  /// Update the push token bound to a registered device.
+  Future<void> updateFcmToken({
+    required String deviceIdentifier,
+    required String fcmToken,
+  }) async {
+    await _dio.post(
+      '/devices/fcm-token',
+      data: {'deviceIdentifier': deviceIdentifier, 'fcmToken': fcmToken},
+    );
+  }
+
   /// Rename a device
   Future<void> renameDevice(String deviceId, String name) async {
     await _dio.post('/devices/$deviceId/rename', data: {'name': name});

@@ -1819,6 +1819,7 @@ void main() {
         ..queueResponse({'success': true})
         ..queueResponse({'success': true})
         ..queueResponse({'success': true})
+        ..queueResponse({'success': true})
         ..queueResponse({'success': true});
       final repository = DevicesRepository(dio);
 
@@ -1837,6 +1838,10 @@ void main() {
       );
       await repository.trustDevice('device_1');
       await repository.untrustDevice('device_1');
+      await repository.updateFcmToken(
+        deviceIdentifier: 'ios-vendor-id',
+        fcmToken: 'fcm-token-2',
+      );
       await repository.renameDevice('device_1', 'Travel iPhone');
       await repository.revokeDevice('device_1');
 
@@ -1859,10 +1864,16 @@ void main() {
       expect(dio.requestHistory[2].method, 'POST');
       expect(dio.requestHistory[2].path, '/devices/device_1/untrust');
       expect(dio.requestHistory[3].method, 'POST');
-      expect(dio.requestHistory[3].path, '/devices/device_1/rename');
-      expect(dio.requestHistory[3].data, {'name': 'Travel iPhone'});
-      expect(dio.requestHistory[4].method, 'DELETE');
-      expect(dio.requestHistory[4].path, '/devices/device_1');
+      expect(dio.requestHistory[3].path, '/devices/fcm-token');
+      expect(dio.requestHistory[3].data, {
+        'deviceIdentifier': 'ios-vendor-id',
+        'fcmToken': 'fcm-token-2',
+      });
+      expect(dio.requestHistory[4].method, 'POST');
+      expect(dio.requestHistory[4].path, '/devices/device_1/rename');
+      expect(dio.requestHistory[4].data, {'name': 'Travel iPhone'});
+      expect(dio.requestHistory[5].method, 'DELETE');
+      expect(dio.requestHistory[5].path, '/devices/device_1');
     });
 
     test(
