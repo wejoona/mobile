@@ -135,6 +135,8 @@ Each challenge may include `recommendedCaptureMode`, `requiresMotionEvidence`, `
 
 Successful challenge/reference-selfie responses include review-safe `evidence` metadata with `kind`, `challengeId`, `captureMode`, `mediaType`, `mimeType`, `byteSize`, `provider`, `storage`, redacted `sessionTokenRef`, `submittedAt`, and `reviewUsage`. Do not expose raw biometric media in mobile state; raw files stay with the provider/session storage unless a dedicated evidence storage flow is added.
 
+When the final liveness challenge completes, the response should include `livenessCheckId` and `livenessProofId`. Mobile should pass `livenessProofId` to `/step-up/validate`; if missing, fall back to the session token only for simulator or older API compatibility.
+
 Provider unavailability returns a retryable `KYC_PROVIDER_UNAVAILABLE` response with `supportReviewRequired=true`; mobile account recovery and KYC should route the user to manual review with an SLA instead of looping on liveness.
 
 Account recovery manual review uses `POST /support/tickets` with `category=account_recovery`. The API dedupes active account-recovery tickets for the user and appends new outage/risk signals to the same ticket. Ticket responses may include `reviewSla` with `label`, `firstResponseDueAt`, and `resolutionDueAt`; prefer those values over hardcoded SLA copy.

@@ -395,6 +395,8 @@ class LivenessSession {
 /// Result of submitting a single challenge photo
 class ChallengeSubmitResult {
   final String sessionToken;
+  final String? livenessCheckId;
+  final String? livenessProofId;
   final String status;
   final int challengesCompleted;
   final int challengesTotal;
@@ -405,6 +407,8 @@ class ChallengeSubmitResult {
 
   const ChallengeSubmitResult({
     required this.sessionToken,
+    this.livenessCheckId,
+    this.livenessProofId,
     required this.status,
     required this.challengesCompleted,
     required this.challengesTotal,
@@ -419,6 +423,10 @@ class ChallengeSubmitResult {
   factory ChallengeSubmitResult.fromJson(Map<String, dynamic> json) {
     return ChallengeSubmitResult(
       sessionToken: json['sessionToken'] as String,
+      livenessCheckId: json['livenessCheckId'] as String?,
+      livenessProofId:
+          json['livenessProofId'] as String? ??
+          json['livenessCheckId'] as String?,
       status: json['status'] as String,
       challengesCompleted: json['challengesCompleted'] as int,
       challengesTotal: json['challengesTotal'] as int,
@@ -487,6 +495,7 @@ LivenessDecision evaluateLivenessScore(double confidence) {
 /// Liveness result (for widget callback)
 class LivenessResult {
   final String sessionId;
+  final String? livenessProofId;
   final bool isLive;
   final double confidence;
   final double? faceMatchScore;
@@ -496,6 +505,7 @@ class LivenessResult {
 
   const LivenessResult({
     required this.sessionId,
+    this.livenessProofId,
     required this.isLive,
     required this.confidence,
     this.faceMatchScore,
@@ -503,6 +513,8 @@ class LivenessResult {
     this.failureReason,
     this.evidence = const [],
   });
+
+  String get stepUpProofId => livenessProofId ?? sessionId;
 
   /// Get the decision based on confidence score
   LivenessDecision get decision => evaluateLivenessScore(confidence);

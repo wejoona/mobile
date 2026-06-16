@@ -263,6 +263,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
           widget.onComplete?.call(
             LivenessResult(
               sessionId: result.sessionToken,
+              livenessProofId: result.livenessProofId,
               isLive: true,
               confidence: result.result!.confidence / 100.0,
               faceMatchScore: result.result!.faceMatchScore / 100.0,

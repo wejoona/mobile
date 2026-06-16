@@ -585,7 +585,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           .read(riskBasedSecurityServiceProvider)
           .validateStepUp(
             challengeToken: challengeToken,
-            livenessSessionId: result.sessionId,
+            livenessSessionId: result.stepUpProofId,
           );
     } on ManualReviewRequiredException {
       await _routePinResetToManualReview(
