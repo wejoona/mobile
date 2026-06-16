@@ -68,5 +68,13 @@ class _ProtectedRootTab extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => PopScope(canPop: false, child: child);
+  Widget build(BuildContext context) => PopScope(
+    canPop: false,
+    onPopInvokedWithResult: (didPop, _) {
+      if (!didPop) {
+        context.go('/home');
+      }
+    },
+    child: child,
+  );
 }

@@ -61,6 +61,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
   bool _isVerifying = false;
   bool _showUnlockTransition = false;
   bool _hasCompletedSuccess = false;
+  bool _queuedUnlockedRedirect = false;
   int _biometricAttempt = 0;
 
   @override
@@ -250,6 +251,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
   void _showUnlockFailure() {
     setState(() {
       _hasCompletedSuccess = false;
+      _queuedUnlockedRedirect = false;
       _showUnlockTransition = false;
       _isVerifying = false;
       _pin = '';
@@ -261,6 +263,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
   void _returnToPinEntry({String? message}) {
     setState(() {
       _hasCompletedSuccess = false;
+      _queuedUnlockedRedirect = false;
       _showUnlockTransition = false;
       _isVerifying = false;
       _pin = '';
@@ -381,6 +384,35 @@ class _PinScreenState extends ConsumerState<PinScreen>
     }
   }
 
+  void _dismissIfAlreadyUnlocked() {
+    if (_queuedUnlockedRedirect ||
+        widget.pinContext == PinContext.confirmAction) {
+      return;
+    }
+
+    final authState = ref.read(authProvider);
+    final sessionState = ref.read(sessionServiceProvider);
+    final shouldDismiss = switch (widget.pinContext) {
+      PinContext.login => authState.isAuthenticated,
+      PinContext.sessionLock =>
+        authState.isAuthenticated &&
+            !authState.isLocked &&
+            !sessionState.isLocked,
+      PinContext.confirmAction => false,
+    };
+
+    if (!shouldDismiss) {
+      return;
+    }
+
+    _queuedUnlockedRedirect = true;
+    final router = GoRouter.of(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      router.go(widget.successRoute ?? '/home');
+    });
+  }
+
   String get _title {
     if (widget.title != null) return widget.title!;
     final l10n = AppLocalizations.of(context)!;
@@ -416,6 +448,11 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
   @override
   Widget build(BuildContext context) {
+    ref
+      ..listen(authProvider, (_, _) => _dismissIfAlreadyUnlocked())
+      ..listen(sessionServiceProvider, (_, _) => _dismissIfAlreadyUnlocked());
+    _dismissIfAlreadyUnlocked();
+
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
 
