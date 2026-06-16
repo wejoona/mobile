@@ -32,6 +32,7 @@ class _ContactPickerBottomSheetState
   bool _lookupFailed = false;
   bool _permissionRequired = false;
   bool _requiresSettings = false;
+  bool _isPermissionActionLoading = false;
   Timer? _lookupDebounce;
 
   @override
@@ -119,35 +120,65 @@ class _ContactPickerBottomSheetState
   }
 
   Future<void> _requestContactsPermission() async {
-    setState(() => _isLoading = true);
+    if (_isPermissionActionLoading) {
+      return;
+    }
+    setState(() => _isPermissionActionLoading = true);
     final contactsService = ref.read(contactsServiceProvider);
-    if (await contactsService.contactsPermissionRequiresSettings()) {
+    final l10n = AppLocalizations.of(context)!;
+
+    try {
+      if (await contactsService.contactsPermissionRequiresSettings()) {
+        if (mounted) {
+          setState(() {
+            _permissionRequired = true;
+            _requiresSettings = true;
+          });
+        }
+        await contactsService.openContactsSettings();
+        return;
+      }
+
+      final granted = await contactsService.requestContactsPermission();
+      if (!mounted) {
+        return;
+      }
+      if (granted) {
+        await _loadContacts();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                _localizedText(
+                  en: 'Contacts are ready',
+                  fr: 'Vos contacts sont prêts',
+                ),
+              ),
+            ),
+          );
+        }
+        return;
+      }
+
+      final requiresSettings = await contactsService
+          .contactsPermissionRequiresSettings();
       if (mounted) {
         setState(() {
           _permissionRequired = true;
-          _requiresSettings = true;
+          _requiresSettings = requiresSettings;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.contacts_permission_denied_message)),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
           _isLoading = false;
+          _isPermissionActionLoading = false;
         });
       }
-      await contactsService.openContactsSettings();
-      return;
     }
-
-    final granted = await contactsService.requestContactsPermission();
-    if (!mounted) {
-      return;
-    }
-    if (granted) {
-      await _loadContacts();
-      return;
-    }
-    final requiresSettings = await contactsService
-        .contactsPermissionRequiresSettings();
-    setState(() {
-      _permissionRequired = true;
-      _requiresSettings = requiresSettings;
-      _isLoading = false;
-    });
   }
 
   void _sortContacts(List<SyncedContact> contacts) {
@@ -435,7 +466,10 @@ class _ContactPickerBottomSheetState
                     ? Icons.settings_outlined
                     : Icons.person_search_rounded,
                 isFullWidth: true,
-                onPressed: () => unawaited(_requestContactsPermission()),
+                isLoading: _isPermissionActionLoading,
+                onPressed: _isPermissionActionLoading
+                    ? null
+                    : () => unawaited(_requestContactsPermission()),
               ),
             ],
           ),

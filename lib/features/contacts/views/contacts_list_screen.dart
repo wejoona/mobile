@@ -150,14 +150,35 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
     final l10n = AppLocalizations.of(context)!;
     final notifier = ref.read(contactsProvider.notifier);
     final granted = await notifier.requestPermission();
-    if (granted || !showSettingsDialog || !mounted) {
+    if (granted) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _localizedText(
+                en: 'Contacts are ready',
+                fr: 'Vos contacts sont prêts',
+              ),
+            ),
+          ),
+        );
+      }
+      return;
+    }
+
+    if (!showSettingsDialog || !mounted) {
       return;
     }
 
     final state = ref.read(contactsProvider);
     if (state.permissionRequiresSettings) {
       await _showContactsSettingsDialog(l10n);
+      return;
     }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.contacts_permission_denied_message)),
+    );
   }
 
   @override
