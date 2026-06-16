@@ -82,6 +82,45 @@ void main() {
       expect(limits.effectiveMaxFor(TransactionLimitOperation.withdraw), 100);
     });
 
+    test('preserves backend money-flow blocks from alias payloads', () {
+      final limits = TransactionLimits.fromJson({
+        'dailyLimit': 1000,
+        'dailyUsed': 0,
+        'monthlyLimit': 10000,
+        'monthlyUsed': 0,
+        'singleTransactionLimit': 500,
+        'withdrawalLimit': 500,
+        'permissions': {
+          'can_send': 'false',
+          'can_deposit': 0,
+          'can_withdraw': false,
+          'can_receive': 'true',
+          'block_reason': 'Manual review required',
+          'review_required': 'true',
+        },
+      });
+
+      expect(limits.permissions.canSend, isFalse);
+      expect(limits.permissions.canDeposit, isFalse);
+      expect(limits.permissions.canWithdraw, isFalse);
+      expect(limits.permissions.canReceive, isTrue);
+      expect(limits.permissions.blockReason, 'Manual review required');
+      expect(limits.permissions.reviewRequired, isTrue);
+      expect(limits.effectiveMaxFor(TransactionLimitOperation.send), 0);
+      expect(
+        limits.limitHitByFor(TransactionLimitOperation.send, 10),
+        'manual_review_required',
+      );
+      expect(
+        limits.limitHitByFor(TransactionLimitOperation.deposit, 10),
+        'manual_review_required',
+      );
+      expect(
+        limits.limitHitByFor(TransactionLimitOperation.withdraw, 10),
+        'manual_review_required',
+      );
+    });
+
     test('keeps flat /wallet/limits and mock payload compatibility', () {
       final limits = TransactionLimits.fromJson({
         'dailyLimit': 1000,

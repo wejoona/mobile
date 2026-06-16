@@ -23,12 +23,16 @@ class MoneyFlowPermissions {
     }
 
     return MoneyFlowPermissions(
-      canSend: json['canSend'] as bool? ?? true,
-      canDeposit: json['canDeposit'] as bool? ?? true,
-      canWithdraw: json['canWithdraw'] as bool? ?? true,
-      canReceive: json['canReceive'] as bool? ?? true,
-      blockReason: json['blockReason'] as String?,
-      reviewRequired: json['reviewRequired'] as bool? ?? false,
+      canSend: _boolOf(json, const ['canSend', 'can_send']) ?? true,
+      canDeposit: _boolOf(json, const ['canDeposit', 'can_deposit']) ?? true,
+      canWithdraw: _boolOf(json, const ['canWithdraw', 'can_withdraw']) ?? true,
+      canReceive: _boolOf(json, const ['canReceive', 'can_receive']) ?? true,
+      blockReason: _stringOf(json, const [
+        'blockReason',
+        'block_reason',
+      ])?.trim(),
+      reviewRequired:
+          _boolOf(json, const ['reviewRequired', 'review_required']) ?? false,
     );
   }
 
@@ -175,9 +179,15 @@ class TransactionLimits {
       resetTime: _dateOf(json['resetTime']),
       hoursUntilReset: json['hoursUntilReset'] as int?,
       minutesUntilReset: json['minutesUntilReset'] as int?,
-      overrideActive: json['overrideActive'] as bool? ?? false,
-      overrideReason: json['overrideReason'] as String?,
-      overrideExpiresAt: _dateOf(json['overrideExpiresAt']),
+      overrideActive:
+          _boolOf(json, const ['overrideActive', 'override_active']) ?? false,
+      overrideReason: _stringOf(json, const [
+        'overrideReason',
+        'override_reason',
+      ]),
+      overrideExpiresAt: _dateOf(
+        json['overrideExpiresAt'] ?? json['override_expires_at'],
+      ),
       permissions: MoneyFlowPermissions.fromJson(
         _nullableMapOf(json['permissions']),
       ),
@@ -412,6 +422,38 @@ double? _numberOf(Object? value) {
   }
   if (value is String) {
     return double.tryParse(value);
+  }
+  return null;
+}
+
+bool? _boolOf(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is bool) {
+      return value;
+    }
+    if (value is num) {
+      return value != 0;
+    }
+    if (value is String) {
+      final normalized = value.trim().toLowerCase();
+      if (normalized == 'true' || normalized == '1' || normalized == 'yes') {
+        return true;
+      }
+      if (normalized == 'false' || normalized == '0' || normalized == 'no') {
+        return false;
+      }
+    }
+  }
+  return null;
+}
+
+String? _stringOf(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is String && value.isNotEmpty) {
+      return value;
+    }
   }
   return null;
 }
