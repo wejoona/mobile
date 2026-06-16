@@ -208,6 +208,8 @@ Savings Pots also expose `GET /savings-pots/active`, `GET /savings-pots/:id/tran
 | Verify step-up OTP | POST | `/step-up/verify-otp` | OTP challenge. |
 | Step-up config | GET | `/step-up/config` | Policy/config surface. |
 
+`POST /step-up/validate` with `livenessSessionId` must reference a real VerifyHQ/Korido liveness proof that is `PASSED`, belongs to the current user, and satisfies live/anti-spoof/face-match thresholds. Older mobile builds may send the liveness `sessionToken`; the API resolves recent user checks for compatibility. If VerifyHQ is unavailable and the response includes `supportReviewRequired=true`, PIN reset and KYC flows must route to manual review with SLA copy instead of showing a generic validation error.
+
 High-risk PIN reset, new-device, profile-photo, KYC, and money movement flows should request step-up/liveness only when risk warrants it; do not make low-end devices run expensive face/liveness checks unless the backend risk decision requires it.
 
 ## Admin And Backoffice Surfaces

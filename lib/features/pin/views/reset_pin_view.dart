@@ -579,12 +579,20 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       return;
     }
 
-    final valid = await ref
-        .read(riskBasedSecurityServiceProvider)
-        .validateStepUp(
-          challengeToken: challengeToken,
-          livenessSessionId: result.sessionId,
-        );
+    late final bool valid;
+    try {
+      valid = await ref
+          .read(riskBasedSecurityServiceProvider)
+          .validateStepUp(
+            challengeToken: challengeToken,
+            livenessSessionId: result.sessionId,
+          );
+    } on ManualReviewRequiredException {
+      await _routePinResetToManualReview(
+        'liveness_step_up_provider_unavailable',
+      );
+      return;
+    }
     if (!mounted) return;
     if (!valid) {
       setState(() {

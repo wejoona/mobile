@@ -308,12 +308,37 @@ class RiskBasedSecurityService {
           ? Map<String, dynamic>.from(body['data'] as Map)
           : const <String, dynamic>{};
       return body['success'] == true && data['valid'] == true;
+    } on DioException catch (e) {
+      final apiError = ApiException.fromDioError(e);
+      if (_requiresSupportReview(e.response?.data)) {
+        throw ManualReviewRequiredException(apiError.message);
+      }
+      AppLogger(
+        'Step-up validation failed',
+      ).error('Step-up validation failed', e);
+      return false;
     } catch (e) {
       AppLogger(
         'Step-up validation failed',
       ).error('Step-up validation failed', e);
       return false;
     }
+  }
+
+  bool _requiresSupportReview(Object? data) {
+    if (data is! Map) {
+      return false;
+    }
+    if (data['supportReviewRequired'] == true) {
+      return true;
+    }
+    final error = data['error'];
+    if (error is Map) {
+      return error['supportReviewRequired'] == true ||
+          (error['context'] is Map &&
+              (error['context'] as Map)['supportReviewRequired'] == true);
+    }
+    return false;
   }
 
   /// Get default operation decision when backend is unavailable
