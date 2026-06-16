@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/router/app_router.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/state/app_state.dart' hide AuthStatus;
 import 'package:usdc_wallet/state/fsm/app_fsm.dart' as app_fsm;
 import 'package:usdc_wallet/state/fsm/fsm_base.dart';
@@ -10,6 +11,8 @@ import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
+
+import '../helpers/test_utils.dart';
 
 class _TestAuthNotifier extends AuthNotifier {
   @override
@@ -50,6 +53,7 @@ void main() {
         kycStateMachineProvider.overrideWith(_TestKycStateMachine.new),
         userStateMachineProvider.overrideWith(_TestUserStateMachine.new),
         walletStateMachineProvider.overrideWith(_TestWalletStateMachine.new),
+        secureStorageProvider.overrideWithValue(MockSecureStorage()),
       ],
     );
   }

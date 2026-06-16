@@ -46,14 +46,11 @@ class BiometricService {
   BiometricService([
     LocalAuthentication? localAuth,
     FlutterSecureStorage? storage,
-  ])  : _localAuth = localAuth ?? LocalAuthentication(),
-        _storage = storage ?? const FlutterSecureStorage();
+  ]) : _localAuth = localAuth ?? LocalAuthentication(),
+       _storage = storage ?? const FlutterSecureStorage();
 
   /// Check if device supports biometric authentication
   Future<bool> isAvailable() async {
-    var canCheckBiometrics = false;
-    var isDeviceSupported = false;
-
     try {
       if (await _localAuth.canCheckBiometrics) return true;
       return await _localAuth.isDeviceSupported();
@@ -197,7 +194,6 @@ class BiometricService {
       return false;
     }
   }
-
 
   Future<BiometricType> getPrimaryBiometricType() async => getAvailableType();
 

@@ -49,10 +49,7 @@ class AnalyticsService {
     _track(AnalyticsEvent(name: 'login', properties: {'method': method}));
   }
 
-  Future<void> logLoginSuccess({
-    required String method,
-    String? userId,
-  }) async {
+  Future<void> logLoginSuccess({required String method, String? userId}) async {
     trackLogin(method: method);
     if (userId != null) await setUserId(userId);
   }
@@ -61,10 +58,10 @@ class AnalyticsService {
     required String method,
     required String reason,
   }) async {
-    trackAction('login_failed', properties: {
-      'method': method,
-      'reason_hash': reason.hashCode.toString(),
-    });
+    trackAction(
+      'login_failed',
+      properties: {'method': method, 'reason_hash': reason.hashCode.toString()},
+    );
   }
 
   void trackRegistration({required String country}) {
@@ -384,8 +381,6 @@ class AnalyticsService {
     if (amount < 1000) return '500_1000';
     return 'over_1000';
   }
-
-  String _safeHash(String value) => value.hashCode.toString();
 }
 
 class AnalyticsEvent {

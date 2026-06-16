@@ -310,8 +310,9 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
           .read(bulkPaymentActionsProvider)
           .downloadFailedPayments(batch.id);
 
-      if (csvContent == null || !mounted)
-        return; // ignore: unnecessary_null_comparison
+      if (!mounted) {
+        return;
+      }
 
       // Save to temporary file
       final directory = await getTemporaryDirectory();
