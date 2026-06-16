@@ -14375,6 +14375,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Type {phrase} to deactivate this account and sign out every registered device.'**
   String delete_confirmInstruction(String phrase);
+
+  /// Shown when a backend permission blocks a money action because manual account review is pending
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is under review. We will let you know when this action is available.'**
+  String get moneyFlow_reviewRequiredMessage;
+
+  /// Shown when a backend permission blocks a money action until KYC is completed
+  ///
+  /// In en, this message translates to:
+  /// **'Complete identity verification to use this action.'**
+  String get moneyFlow_verificationRequiredMessage;
 }
 
 class _AppLocalizationsDelegate

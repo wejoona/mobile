@@ -12,6 +12,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/primitives/offline_banner.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/utils/responsive_layout.dart';
+import 'package:usdc_wallet/domain/entities/limit.dart';
 import 'package:usdc_wallet/domain/entities/transaction.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
@@ -23,6 +24,7 @@ import 'package:usdc_wallet/features/wallet/widgets/wallet_home_status_widgets.d
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/currency/currency_provider.dart';
 import 'package:usdc_wallet/state/index.dart';
+import 'package:usdc_wallet/utils/context_extensions.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Enhanced Wallet Home Screen
@@ -863,7 +865,10 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
           child: CachedDataChip(lastUpdated: walletState.lastUpdated!),
         ),
       const SizedBox(height: AppSpacing.xxl),
-      StaggeredEntrance(index: 2, child: _buildQuickActions(l10n)),
+      StaggeredEntrance(
+        index: 2,
+        child: _buildQuickActions(context, ref, l10n),
+      ),
       const SizedBox(height: AppSpacing.xxl),
       StaggeredEntrance(
         index: 3,
@@ -903,7 +908,9 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
           const SizedBox(width: AppSpacing.xl),
           Expanded(
             flex: 2,
-            child: Column(children: [_buildQuickActionsGrid(l10n)]),
+            child: Column(
+              children: [_buildQuickActionsGrid(context, ref, l10n)],
+            ),
           ),
         ],
       ),
@@ -945,7 +952,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
               children: [
                 _buildBalanceCard(context, ref, walletState, l10n, colors),
                 const SizedBox(height: AppSpacing.lg),
-                _buildQuickActions(l10n),
+                _buildQuickActions(context, ref, l10n),
                 const SizedBox(height: AppSpacing.lg),
                 _buildKycBanner(context, ref, l10n, colors),
                 _buildLimitsWarningBanner(context, ref, l10n),
@@ -965,17 +972,34 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     ],
   );
 
-  Widget _buildQuickActions(AppLocalizations l10n) =>
-      WalletQuickActionsRow(actions: _quickActions(l10n));
+  Widget _buildQuickActions(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) => WalletQuickActionsRow(actions: _quickActions(context, ref, l10n));
 
-  Widget _buildQuickActionsGrid(AppLocalizations l10n) =>
-      WalletQuickActionsGrid(actions: _quickActions(l10n));
+  Widget _buildQuickActionsGrid(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) => WalletQuickActionsGrid(actions: _quickActions(context, ref, l10n));
 
-  List<WalletQuickActionData> _quickActions(AppLocalizations l10n) => [
+  List<WalletQuickActionData> _quickActions(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) => [
     WalletQuickActionData(
       icon: Icons.send_rounded,
       label: l10n.home_quickAction_send,
       route: '/send',
+      onTap: () => _openMoneyFlow(
+        context,
+        ref,
+        l10n,
+        operation: TransactionLimitOperation.send,
+        route: '/send',
+      ),
     ),
     WalletQuickActionData(
       icon: Icons.qr_code_2_rounded,
@@ -986,6 +1010,13 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
       icon: Icons.add_circle_outline_rounded,
       label: l10n.home_quickAction_deposit,
       route: '/deposit',
+      onTap: () => _openMoneyFlow(
+        context,
+        ref,
+        l10n,
+        operation: TransactionLimitOperation.deposit,
+        route: '/deposit',
+      ),
     ),
     WalletQuickActionData(
       icon: Icons.history_rounded,
@@ -993,6 +1024,43 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
       route: '/transactions',
     ),
   ];
+
+  void _openMoneyFlow(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n, {
+    required TransactionLimitOperation operation,
+    required String route,
+  }) {
+    final limits = ref.read(limitsProvider).limits;
+    final permissions = limits?.permissions;
+
+    if (permissions == null || permissions.can(operation)) {
+      unawaited(context.push(route));
+      return;
+    }
+
+    final reason = permissions.blockReason?.trim();
+    final message = reason != null && reason.isNotEmpty
+        ? reason
+        : permissions.reviewRequired
+        ? l10n.moneyFlow_reviewRequiredMessage
+        : l10n.moneyFlow_verificationRequiredMessage;
+
+    context.showSnack(
+      message,
+      tone: permissions.reviewRequired
+          ? AppSnackTone.info
+          : AppSnackTone.warning,
+      duration: const Duration(seconds: 4),
+      action: permissions.reviewRequired
+          ? null
+          : SnackBarAction(
+              label: l10n.auth_verify,
+              onPressed: () => unawaited(context.push('/kyc')),
+            ),
+    );
+  }
 
   Widget _buildKycBanner(
     BuildContext context,

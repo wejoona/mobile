@@ -7963,4 +7963,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String delete_confirmInstruction(String phrase) {
     return 'Saisissez $phrase pour désactiver ce compte et déconnecter chaque appareil enregistré.';
   }
+
+  @override
+  String get moneyFlow_reviewRequiredMessage =>
+      'Votre compte est en cours de vérification. Nous vous préviendrons quand cette action sera disponible.';
+
+  @override
+  String get moneyFlow_verificationRequiredMessage =>
+      'Terminez la vérification d\'identité pour utiliser cette action.';
 }

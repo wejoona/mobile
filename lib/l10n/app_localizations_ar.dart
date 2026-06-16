@@ -7802,4 +7802,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String delete_confirmInstruction(String phrase) {
     return 'Type $phrase to deactivate this account and sign out every registered device.';
   }
+
+  @override
+  String get moneyFlow_reviewRequiredMessage =>
+      'حسابك قيد المراجعة. سنخبرك عندما تصبح هذه العملية متاحة.';
+
+  @override
+  String get moneyFlow_verificationRequiredMessage =>
+      'أكمل التحقق من الهوية لاستخدام هذه العملية.';
 }

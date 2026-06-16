@@ -12,11 +12,13 @@ class WalletQuickActionData {
     required this.icon,
     required this.label,
     required this.route,
+    this.onTap,
   });
 
   final IconData icon;
   final String label;
   final String route;
+  final VoidCallback? onTap;
 }
 
 class WalletQuickActionsRow extends StatelessWidget {
@@ -99,6 +101,11 @@ class _WalletQuickActionButton extends StatelessWidget {
       borderRadius: AppRadius.lg,
       onTap: () {
         unawaited(HapticFeedback.lightImpact());
+        final onTap = _action.onTap;
+        if (onTap != null) {
+          onTap();
+          return;
+        }
         unawaited(context.push(_action.route));
       },
       padding: const EdgeInsets.symmetric(

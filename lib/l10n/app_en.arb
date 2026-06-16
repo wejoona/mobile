@@ -9011,5 +9011,13 @@
         "type": "String"
       }
     }
+  },
+  "moneyFlow_reviewRequiredMessage": "Your account is under review. We will let you know when this action is available.",
+  "@moneyFlow_reviewRequiredMessage": {
+    "description": "Shown when a backend permission blocks a money action because manual account review is pending"
+  },
+  "moneyFlow_verificationRequiredMessage": "Complete identity verification to use this action.",
+  "@moneyFlow_verificationRequiredMessage": {
+    "description": "Shown when a backend permission blocks a money action until KYC is completed"
   }
 }

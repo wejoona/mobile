@@ -2640,5 +2640,7 @@
         "type": "String"
       }
     }
-  }
+  },
+  "moneyFlow_reviewRequiredMessage": "حسابك قيد المراجعة. سنخبرك عندما تصبح هذه العملية متاحة.",
+  "moneyFlow_verificationRequiredMessage": "أكمل التحقق من الهوية لاستخدام هذه العملية."
 }

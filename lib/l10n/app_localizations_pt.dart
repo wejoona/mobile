@@ -7829,4 +7829,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String delete_confirmInstruction(String phrase) {
     return 'Digite $phrase para desativar esta conta e sair de todos os dispositivos registrados.';
   }
+
+  @override
+  String get moneyFlow_reviewRequiredMessage =>
+      'Sua conta está em análise. Avisaremos quando esta ação estiver disponível.';
+
+  @override
+  String get moneyFlow_verificationRequiredMessage =>
+      'Conclua a verificação de identidade para usar esta ação.';
 }
