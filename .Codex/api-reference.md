@@ -90,6 +90,25 @@ Avatar URL handling: the API may return absolute URLs, `/user/avatar/...`, `user
 
 KYC state should drive the mobile FSM: unverified users can start KYC, pending/manual-review users should see review state, rejected users should see retry/remediation, and approved/verified/auto-approved users should unlock higher-risk flows according to backend limits and risk decisions.
 
+### Liveness Capability Contract
+
+`POST /kyc/liveness/session` accepts:
+
+```json
+{
+  "capabilities": {
+    "supportedCaptureModes": ["photo"],
+    "preferredCaptureMode": "photo",
+    "supportedMimeTypes": ["image/jpeg"],
+    "maxVideoDurationSeconds": null,
+    "supportsOnDeviceFaceDetection": false,
+    "supportsReferenceSelfie": true
+  }
+}
+```
+
+The API responds with `providerCapabilities`, `clientCapabilities`, `negotiatedCapabilities`, `requiredCaptureMode`, `acceptedCaptureModes`, `requiredEvidence`, and `evidencePolicy`. The current mobile liveness widget supports photo challenge capture only; if the API negotiates `video`, route the flow to manual review instead of attempting an unsupported capture.
+
 ## Contacts
 
 | Action | Method | Path |

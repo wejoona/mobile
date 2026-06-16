@@ -52,6 +52,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
 
   String? _sessionToken;
   List<LivenessChallenge> _challenges = [];
+  LivenessEvidencePolicy _evidencePolicy = const LivenessEvidencePolicy();
   int _currentChallengeIndex = 0;
   String? _errorMessage;
 
@@ -145,9 +146,19 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
       );
 
       if (mounted) {
+        if (session.evidencePolicy.requiredCaptureMode !=
+            LivenessCaptureMode.photo) {
+          _fail(
+            'This liveness check requires ${session.evidencePolicy.requiredCaptureMode.value} evidence, but this device flow currently supports photo capture only.',
+            manualReviewReason: 'liveness_capture_mode_unsupported',
+          );
+          return;
+        }
+
         setState(() {
           _sessionToken = session.sessionToken;
           _challenges = session.challenges;
+          _evidencePolicy = session.evidencePolicy;
           _currentChallengeIndex = 0;
           _state = _LivenessState.ready;
         });
@@ -183,11 +194,25 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
 
       final livenessService = ref.read(livenessServiceProvider);
       final challenge = _challenges[_currentChallengeIndex];
+      final captureMode =
+          challenge.acceptedCaptureModes.contains(LivenessCaptureMode.photo)
+          ? LivenessCaptureMode.photo
+          : _evidencePolicy.requiredCaptureMode;
+
+      if (captureMode != LivenessCaptureMode.photo) {
+        _fail(
+          'This challenge requires ${captureMode.value} evidence, but this device flow currently supports photo capture only.',
+          manualReviewReason: 'liveness_capture_mode_unsupported',
+        );
+        return;
+      }
 
       final result = await livenessService.submitChallenge(
         sessionToken: _sessionToken!,
         challengeId: challenge.challengeId,
         photoPath: photo.path,
+        captureMode: captureMode,
+        mimeType: 'image/jpeg',
       );
 
       // Clean up temp photo
@@ -255,6 +280,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
       _errorMessage = null;
       _sessionToken = null;
       _challenges = [];
+      _evidencePolicy = const LivenessEvidencePolicy();
       _currentChallengeIndex = 0;
     });
     _start();

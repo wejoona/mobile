@@ -526,11 +526,21 @@ class LivenessSessionResponse {
   final String sessionToken;
   final String? challengeType;
   final Map<String, dynamic>? challengeData;
+  final List<Map<String, dynamic>> challenges;
+  final String requiredCaptureMode;
+  final List<String> acceptedCaptureModes;
+  final List<String> requiredEvidence;
+  final Map<String, dynamic>? evidencePolicy;
 
   const LivenessSessionResponse({
     required this.sessionToken,
     this.challengeType,
     this.challengeData,
+    this.challenges = const [],
+    this.requiredCaptureMode = 'photo',
+    this.acceptedCaptureModes = const ['photo'],
+    this.requiredEvidence = const ['reference_selfie', 'challenge_photo'],
+    this.evidencePolicy,
   });
 
   factory LivenessSessionResponse.fromJson(Map<String, dynamic> json) {
@@ -538,6 +548,26 @@ class LivenessSessionResponse {
       sessionToken: json['sessionToken'] as String,
       challengeType: json['challengeType'] as String?,
       challengeData: json['challengeData'] as Map<String, dynamic>?,
+      challenges:
+          (json['challenges'] as List<dynamic>?)
+              ?.whereType<Map>()
+              .map((challenge) => Map<String, dynamic>.from(challenge))
+              .toList() ??
+          const [],
+      requiredCaptureMode: json['requiredCaptureMode'] as String? ?? 'photo',
+      acceptedCaptureModes:
+          (json['acceptedCaptureModes'] as List<dynamic>?)
+              ?.map((mode) => '$mode')
+              .toList() ??
+          const ['photo'],
+      requiredEvidence:
+          (json['requiredEvidence'] as List<dynamic>?)
+              ?.map((evidence) => '$evidence')
+              .toList() ??
+          const ['reference_selfie', 'challenge_photo'],
+      evidencePolicy: json['evidencePolicy'] is Map
+          ? Map<String, dynamic>.from(json['evidencePolicy'] as Map)
+          : null,
     );
   }
 }

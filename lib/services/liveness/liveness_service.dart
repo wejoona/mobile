@@ -60,6 +60,130 @@ class LivenessClientCapabilities {
   }
 }
 
+class LivenessSessionCapabilities {
+  final List<LivenessCaptureMode> supportedCaptureModes;
+  final LivenessCaptureMode preferredCaptureMode;
+  final List<String> supportedMimeTypes;
+  final int? maxVideoDurationSeconds;
+  final bool supportsOnDeviceFaceDetection;
+  final bool supportsReferenceSelfie;
+  final List<String> supportedChallengeTypes;
+  final bool requiresReferenceSelfie;
+
+  const LivenessSessionCapabilities({
+    this.supportedCaptureModes = const [LivenessCaptureMode.photo],
+    this.preferredCaptureMode = LivenessCaptureMode.photo,
+    this.supportedMimeTypes = const ['image/jpeg'],
+    this.maxVideoDurationSeconds,
+    this.supportsOnDeviceFaceDetection = false,
+    this.supportsReferenceSelfie = true,
+    this.supportedChallengeTypes = const [],
+    this.requiresReferenceSelfie = true,
+  });
+
+  factory LivenessSessionCapabilities.fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return const LivenessSessionCapabilities();
+    }
+
+    return LivenessSessionCapabilities(
+      supportedCaptureModes:
+          (json['supportedCaptureModes'] as List<dynamic>?)
+              ?.map((mode) => LivenessCaptureModeExt.fromString('$mode'))
+              .toList() ??
+          const [LivenessCaptureMode.photo],
+      preferredCaptureMode: LivenessCaptureModeExt.fromString(
+        json['preferredCaptureMode'] as String?,
+      ),
+      supportedMimeTypes:
+          (json['supportedMimeTypes'] as List<dynamic>?)
+              ?.map((mimeType) => '$mimeType')
+              .toList() ??
+          const ['image/jpeg'],
+      maxVideoDurationSeconds: (json['maxVideoDurationSeconds'] as num?)
+          ?.toInt(),
+      supportsOnDeviceFaceDetection:
+          json['supportsOnDeviceFaceDetection'] as bool? ?? false,
+      supportsReferenceSelfie:
+          json['supportsReferenceSelfie'] as bool? ??
+          !(json['requiresReferenceSelfie'] == false),
+      supportedChallengeTypes:
+          (json['supportedChallengeTypes'] as List<dynamic>?)
+              ?.map((type) => '$type')
+              .toList() ??
+          const [],
+      requiresReferenceSelfie: json['requiresReferenceSelfie'] as bool? ?? true,
+    );
+  }
+}
+
+class LivenessEvidencePolicy {
+  final LivenessCaptureMode requiredCaptureMode;
+  final List<LivenessCaptureMode> acceptedCaptureModes;
+  final List<String> supportedMimeTypes;
+  final List<String> requiredEvidence;
+  final List<String> faceMatchSources;
+  final bool manualReviewOnProviderUnavailable;
+  final bool requiresReferenceSelfie;
+  final bool requiresOnDeviceFaceDetection;
+
+  const LivenessEvidencePolicy({
+    this.requiredCaptureMode = LivenessCaptureMode.photo,
+    this.acceptedCaptureModes = const [LivenessCaptureMode.photo],
+    this.supportedMimeTypes = const ['image/jpeg'],
+    this.requiredEvidence = const ['challenge_photo', 'reference_selfie'],
+    this.faceMatchSources = const [],
+    this.manualReviewOnProviderUnavailable = true,
+    this.requiresReferenceSelfie = true,
+    this.requiresOnDeviceFaceDetection = false,
+  });
+
+  factory LivenessEvidencePolicy.fromJson(
+    Map<String, dynamic>? json, {
+    required LivenessCaptureMode fallbackRequiredCaptureMode,
+    required List<LivenessCaptureMode> fallbackAcceptedCaptureModes,
+    required List<String> fallbackRequiredEvidence,
+  }) {
+    if (json == null) {
+      return LivenessEvidencePolicy(
+        requiredCaptureMode: fallbackRequiredCaptureMode,
+        acceptedCaptureModes: fallbackAcceptedCaptureModes,
+        requiredEvidence: fallbackRequiredEvidence,
+      );
+    }
+
+    final captureModes = json['captureModes'] is Map
+        ? Map<String, dynamic>.from(json['captureModes'] as Map)
+        : const <String, dynamic>{};
+    return LivenessEvidencePolicy(
+      requiredCaptureMode: LivenessCaptureModeExt.fromString(
+        captureModes['required'] as String?,
+      ),
+      acceptedCaptureModes:
+          (captureModes['accepted'] as List<dynamic>?)
+              ?.map((mode) => LivenessCaptureModeExt.fromString('$mode'))
+              .toList() ??
+          fallbackAcceptedCaptureModes,
+      supportedMimeTypes:
+          (json['supportedMimeTypes'] as List<dynamic>?)
+              ?.map((mimeType) => '$mimeType')
+              .toList() ??
+          const ['image/jpeg'],
+      requiredEvidence: fallbackRequiredEvidence,
+      faceMatchSources:
+          (json['faceMatchSources'] as List<dynamic>?)
+              ?.map((source) => '$source')
+              .toList() ??
+          const [],
+      manualReviewOnProviderUnavailable:
+          json['manualReviewOnProviderUnavailable'] as bool? ?? true,
+      requiresReferenceSelfie: json['requiresReferenceSelfie'] as bool? ?? true,
+      requiresOnDeviceFaceDetection:
+          json['requiresOnDeviceFaceDetection'] as bool? ?? false,
+    );
+  }
+}
+
 extension LivenessChallengeTypeExt on LivenessChallengeType {
   String get value {
     switch (this) {
@@ -138,6 +262,10 @@ class LivenessSession {
   final LivenessCaptureMode requiredCaptureMode;
   final List<LivenessCaptureMode> acceptedCaptureModes;
   final List<String> requiredEvidence;
+  final LivenessSessionCapabilities providerCapabilities;
+  final LivenessSessionCapabilities clientCapabilities;
+  final LivenessSessionCapabilities negotiatedCapabilities;
+  final LivenessEvidencePolicy evidencePolicy;
 
   const LivenessSession({
     required this.sessionToken,
@@ -145,28 +273,50 @@ class LivenessSession {
     this.requiredCaptureMode = LivenessCaptureMode.photo,
     this.acceptedCaptureModes = const [LivenessCaptureMode.photo],
     this.requiredEvidence = const ['challenge_photo', 'reference_selfie'],
+    this.providerCapabilities = const LivenessSessionCapabilities(),
+    this.clientCapabilities = const LivenessSessionCapabilities(),
+    this.negotiatedCapabilities = const LivenessSessionCapabilities(),
+    this.evidencePolicy = const LivenessEvidencePolicy(),
   });
 
   factory LivenessSession.fromJson(Map<String, dynamic> json) {
     final challengesData = json['challenges'] as List<dynamic>? ?? [];
+    final requiredCaptureMode = LivenessCaptureModeExt.fromString(
+      json['requiredCaptureMode'] as String?,
+    );
+    final acceptedCaptureModes =
+        (json['acceptedCaptureModes'] as List<dynamic>?)
+            ?.map((mode) => LivenessCaptureModeExt.fromString('$mode'))
+            .toList() ??
+        const [LivenessCaptureMode.photo];
+    final requiredEvidence =
+        (json['requiredEvidence'] as List<dynamic>?)
+            ?.map((evidence) => '$evidence')
+            .toList() ??
+        const ['challenge_photo', 'reference_selfie'];
     return LivenessSession(
       sessionToken: json['sessionToken'] as String,
       challenges: challengesData
           .map((e) => LivenessChallenge.fromJson(e as Map<String, dynamic>))
           .toList(),
-      requiredCaptureMode: LivenessCaptureModeExt.fromString(
-        json['requiredCaptureMode'] as String?,
+      requiredCaptureMode: requiredCaptureMode,
+      acceptedCaptureModes: acceptedCaptureModes,
+      requiredEvidence: requiredEvidence,
+      providerCapabilities: LivenessSessionCapabilities.fromJson(
+        json['providerCapabilities'] as Map<String, dynamic>?,
       ),
-      acceptedCaptureModes:
-          (json['acceptedCaptureModes'] as List<dynamic>?)
-              ?.map((mode) => LivenessCaptureModeExt.fromString('$mode'))
-              .toList() ??
-          const [LivenessCaptureMode.photo],
-      requiredEvidence:
-          (json['requiredEvidence'] as List<dynamic>?)
-              ?.map((evidence) => '$evidence')
-              .toList() ??
-          const ['challenge_photo', 'reference_selfie'],
+      clientCapabilities: LivenessSessionCapabilities.fromJson(
+        json['clientCapabilities'] as Map<String, dynamic>?,
+      ),
+      negotiatedCapabilities: LivenessSessionCapabilities.fromJson(
+        json['negotiatedCapabilities'] as Map<String, dynamic>?,
+      ),
+      evidencePolicy: LivenessEvidencePolicy.fromJson(
+        json['evidencePolicy'] as Map<String, dynamic>?,
+        fallbackRequiredCaptureMode: requiredCaptureMode,
+        fallbackAcceptedCaptureModes: acceptedCaptureModes,
+        fallbackRequiredEvidence: requiredEvidence,
+      ),
     );
   }
 }

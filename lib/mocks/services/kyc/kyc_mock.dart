@@ -170,13 +170,68 @@ class KycMock {
     return MockResponse.success({
       'sessionToken': 'mock_liveness_${DateTime.now().millisecondsSinceEpoch}',
       'challenges': [
-        {'id': 'blink', 'type': 'BLINK', 'instruction': 'Blink twice'},
+        {
+          'id': 'blink',
+          'type': 'BLINK',
+          'instruction': 'Blink twice',
+          'requiredCaptureMode': 'photo',
+          'acceptedCaptureModes': ['photo'],
+          'requiredEvidence': ['reference_selfie', 'challenge_photo'],
+        },
         {
           'id': 'turn_left',
           'type': 'TURN_LEFT',
           'instruction': 'Turn your head left',
+          'requiredCaptureMode': 'photo',
+          'acceptedCaptureModes': ['photo'],
+          'requiredEvidence': ['reference_selfie', 'challenge_photo'],
         },
       ],
+      'providerCapabilities': {
+        'supportedCaptureModes': ['photo'],
+        'preferredCaptureMode': 'photo',
+        'supportedMimeTypes': ['image/jpeg'],
+        'supportedChallengeTypes': ['BLINK', 'SMILE', 'TURN_HEAD', 'NOD'],
+        'requiresReferenceSelfie': true,
+        'supportsOnDeviceFaceDetection': false,
+      },
+      'clientCapabilities': {
+        'supportedCaptureModes': ['photo'],
+        'preferredCaptureMode': 'photo',
+        'supportedMimeTypes': ['image/jpeg'],
+        'supportsOnDeviceFaceDetection': false,
+        'supportsReferenceSelfie': true,
+      },
+      'negotiatedCapabilities': {
+        'supportedCaptureModes': ['photo'],
+        'preferredCaptureMode': 'photo',
+        'supportedMimeTypes': ['image/jpeg'],
+        'supportsOnDeviceFaceDetection': false,
+        'supportsReferenceSelfie': true,
+      },
+      'requiredCaptureMode': 'photo',
+      'acceptedCaptureModes': ['photo'],
+      'requiredEvidence': ['reference_selfie', 'challenge_photo'],
+      'evidencePolicy': {
+        'captureModes': {
+          'providerSupported': ['photo'],
+          'clientSupported': ['photo'],
+          'accepted': ['photo'],
+          'required': 'photo',
+        },
+        'supportedChallengeTypes': ['BLINK', 'SMILE', 'TURN_HEAD', 'NOD'],
+        'supportedMimeTypes': ['image/jpeg'],
+        'maxVideoDurationSeconds': null,
+        'requiresReferenceSelfie': true,
+        'requiresOnDeviceFaceDetection': false,
+        'faceMatchSources': [
+          'id_document_face',
+          'current_profile_photo',
+          'reference_selfie',
+          'liveness_challenge_media',
+        ],
+        'manualReviewOnProviderUnavailable': true,
+      },
     });
   }
 
