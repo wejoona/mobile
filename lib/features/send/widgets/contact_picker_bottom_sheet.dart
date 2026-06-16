@@ -275,6 +275,9 @@ class _ContactPickerBottomSheetState
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
+    final query = _searchController.text.trim();
+    final canShowLookupWithoutContacts =
+        _permissionRequired && query.length >= 3;
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.8,
@@ -316,19 +319,16 @@ class _ContactPickerBottomSheetState
           ),
           SizedBox(height: AppSpacing.md),
 
-          // Search bar
-          if (!_permissionRequired) ...[
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-              child: AppInput(
-                controller: _searchController,
-                hint: l10n.send_searchContacts,
-                prefixIcon: Icons.search,
-                onChanged: _filterContacts,
-              ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            child: AppInput(
+              controller: _searchController,
+              hint: l10n.send_searchContacts,
+              prefixIcon: Icons.search,
+              onChanged: _filterContacts,
             ),
-            SizedBox(height: AppSpacing.md),
-          ],
+          ),
+          SizedBox(height: AppSpacing.md),
 
           // Contacts list
           Expanded(
@@ -338,7 +338,7 @@ class _ContactPickerBottomSheetState
                       valueColor: AlwaysStoppedAnimation<Color>(colors.gold),
                     ),
                   )
-                : _permissionRequired
+                : _permissionRequired && !canShowLookupWithoutContacts
                 ? _buildPermissionRequest(colors)
                 : _filteredContacts.isEmpty &&
                       _lookupResults.isEmpty &&
@@ -347,10 +347,13 @@ class _ContactPickerBottomSheetState
                 : ListView(
                     padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
                     children: [
-                      if (_searchController.text.trim().length >= 3)
-                        _buildLookupSection(colors),
+                      if (query.length >= 3) _buildLookupSection(colors),
+                      if (_permissionRequired) ...[
+                        SizedBox(height: AppSpacing.md),
+                        _buildPermissionRequestCard(colors),
+                      ],
                       if (_filteredContacts.isNotEmpty) ...[
-                        if (_searchController.text.trim().length >= 3)
+                        if (query.length >= 3)
                           _buildSectionLabel(l10n.contacts_allContacts, colors),
                         ..._filteredContacts.map(
                           (contact) => _buildContactItem(contact, colors),
@@ -418,63 +421,61 @@ class _ContactPickerBottomSheetState
   }
 
   Widget _buildPermissionRequest(ThemeColors colors) {
-    final l10n = AppLocalizations.of(context)!;
-
     return ListView(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      children: [
-        AppCard(
-          variant: AppCardVariant.goldAccent,
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: colors.goldSubtle,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: colors.borderGold),
-                ),
-                child: Icon(
-                  Icons.contacts_outlined,
-                  color: colors.gold,
-                  size: 30,
-                ),
-              ),
-              SizedBox(height: AppSpacing.lg),
-              AppText(
-                l10n.contacts_permission_title,
-                variant: AppTextVariant.titleMedium,
-                color: colors.textPrimary,
-                textAlign: TextAlign.center,
-                fontWeight: FontWeight.w700,
-              ),
-              SizedBox(height: AppSpacing.sm),
-              AppText(
-                l10n.contacts_permission_benefit2_desc,
-                variant: AppTextVariant.bodyMedium,
-                color: colors.textSecondary,
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: AppSpacing.xl),
-              AppButton(
-                label: _requiresSettings
-                    ? l10n.action_open_settings
-                    : l10n.contacts_permission_allow,
-                icon: _requiresSettings
-                    ? Icons.settings_outlined
-                    : Icons.person_search_rounded,
-                isFullWidth: true,
-                isLoading: _isPermissionActionLoading,
-                onPressed: _isPermissionActionLoading
-                    ? null
-                    : () => unawaited(_requestContactsPermission()),
-              ),
-            ],
+      children: [_buildPermissionRequestCard(colors)],
+    );
+  }
+
+  Widget _buildPermissionRequestCard(ThemeColors colors) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return AppCard(
+      variant: AppCardVariant.goldAccent,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: colors.goldSubtle,
+              shape: BoxShape.circle,
+              border: Border.all(color: colors.borderGold),
+            ),
+            child: Icon(Icons.contacts_outlined, color: colors.gold, size: 30),
           ),
-        ),
-      ],
+          SizedBox(height: AppSpacing.lg),
+          AppText(
+            l10n.contacts_permission_title,
+            variant: AppTextVariant.titleMedium,
+            color: colors.textPrimary,
+            textAlign: TextAlign.center,
+            fontWeight: FontWeight.w700,
+          ),
+          SizedBox(height: AppSpacing.sm),
+          AppText(
+            l10n.contacts_permission_benefit2_desc,
+            variant: AppTextVariant.bodyMedium,
+            color: colors.textSecondary,
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: AppSpacing.xl),
+          AppButton(
+            label: _requiresSettings
+                ? l10n.action_open_settings
+                : l10n.contacts_permission_allow,
+            icon: _requiresSettings
+                ? Icons.settings_outlined
+                : Icons.person_search_rounded,
+            isFullWidth: true,
+            isLoading: _isPermissionActionLoading,
+            onPressed: _isPermissionActionLoading
+                ? null
+                : () => unawaited(_requestContactsPermission()),
+          ),
+        ],
+      ),
     );
   }
 

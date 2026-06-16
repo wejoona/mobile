@@ -45,7 +45,7 @@ void main() {
     );
     final pickerPermissionCard = _methodBody(
       pickerSource,
-      '_buildPermissionRequest',
+      '_buildPermissionRequestCard',
     );
 
     expect(pickerPermissionBody, contains('requestContactsPermission'));
@@ -60,6 +60,18 @@ void main() {
       pickerPermissionCard,
       isNot(contains('variant: AppButtonVariant.secondary')),
     );
+    expect(
+      pickerSource,
+      contains('canShowLookupWithoutContacts'),
+      reason:
+          'Korido username/account search should remain available without phone-book permission',
+    );
+    expect(
+      pickerSource,
+      contains('_permissionRequired && !canShowLookupWithoutContacts'),
+    );
+    expect(pickerSource, contains('_buildLookupSection(colors)'));
+    expect(pickerSource, contains('_buildPermissionRequestCard(colors)'));
     expect(serviceSource, contains('_contactsGrantedByFlutterPlugin'));
     expect(serviceSource, contains('FlutterContacts.requestPermission'));
     expect(pickerSource, contains('contactsService.hasContactsPermission'));
