@@ -88,7 +88,21 @@ if [[ -z "$version_line" || -z "$major_version" || "$major_version" -ge 2 ]]; th
 fi
 
 if [[ "$RUN_CHECKS" -eq 1 ]]; then
-  flutter analyze
+  set +e
+  dart analyze --format machine > analyze.txt
+  ANALYZE_EXIT=$?
+  set -e
+  if grep -E '^(ERROR|WARNING)' analyze.txt; then
+    echo "Analyzer errors/warnings found" >&2
+    rm -f analyze.txt
+    exit 1
+  fi
+  if [[ "$ANALYZE_EXIT" -gt 2 ]]; then
+    cat analyze.txt >&2
+    rm -f analyze.txt
+    exit "$ANALYZE_EXIT"
+  fi
+  rm -f analyze.txt
   flutter test test/services/api_contract_alignment_test.dart
 fi
 
