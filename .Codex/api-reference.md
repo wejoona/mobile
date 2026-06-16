@@ -90,6 +90,8 @@ Avatar URL handling: the API may return absolute URLs, `/user/avatar/...`, `user
 
 KYC state should drive the mobile FSM: unverified users can start KYC, pending/manual-review users should see review state, rejected users should see retry/remediation, and approved/verified/auto-approved users should unlock higher-risk flows according to backend limits and risk decisions.
 
+Use only `/kyc/liveness/*` for product liveness. The legacy backend `/liveness/*` mock controller is not part of the mobile/API contract and must not be used for KYC, account recovery, or money-flow step-up.
+
 ### Liveness Capability Contract
 
 `POST /kyc/liveness/session` accepts:
