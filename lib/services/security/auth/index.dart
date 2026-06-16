@@ -11,8 +11,6 @@ export 'package:usdc_wallet/services/security/auth/credential_rotation_service.d
 export 'package:usdc_wallet/services/security/auth/lockout_state_store.dart'
     hide LockoutState;
 export 'package:usdc_wallet/services/security/auth/login_attempt_tracker.dart';
-export 'package:usdc_wallet/services/security/auth/mfa_enrollment_manager.dart';
-export 'package:usdc_wallet/services/security/auth/mfa_provider.dart';
 export 'package:usdc_wallet/services/security/auth/password_policy_service.dart';
 export 'package:usdc_wallet/services/security/auth/permission_checker.dart';
 export 'package:usdc_wallet/services/security/auth/pin_hash_service.dart';
@@ -23,7 +21,3 @@ export 'package:usdc_wallet/services/security/auth/secure_token_storage.dart';
 export 'package:usdc_wallet/services/security/auth/session_security_service.dart';
 export 'package:usdc_wallet/services/security/auth/session_timeout_manager.dart';
 export 'package:usdc_wallet/services/security/auth/sms_verification_service.dart';
-export 'package:usdc_wallet/services/security/auth/step_up_auth_coordinator.dart';
-export 'package:usdc_wallet/services/security/auth/step_up_auth_service.dart';
-export 'package:usdc_wallet/services/security/auth/totp_secret_store.dart';
-export 'package:usdc_wallet/services/security/auth/totp_service.dart';

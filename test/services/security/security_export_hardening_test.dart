@@ -33,5 +33,30 @@ void main() {
         isEmpty,
       );
     });
+
+    test('does not export disabled local MFA or TOTP implementations', () {
+      final authBarrel = File(
+        'lib/services/security/auth/index.dart',
+      ).readAsStringSync();
+      final securityBarrel = File(
+        'lib/services/security/index.dart',
+      ).readAsStringSync();
+
+      for (final forbidden in [
+        'mfa_enrollment_manager.dart',
+        'mfa_provider.dart',
+        'step_up_auth_coordinator.dart',
+        'step_up_auth_service.dart',
+        'totp_secret_store.dart',
+        'totp_service.dart',
+      ]) {
+        expect(authBarrel, isNot(contains(forbidden)));
+      }
+
+      expect(
+        securityBarrel,
+        contains('services/security/risk_based_security_service.dart'),
+      );
+    });
   });
 }

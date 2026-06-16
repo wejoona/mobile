@@ -1,8 +1,8 @@
-import 'package:usdc_wallet/lib/services/security/network/network_trust_evaluator.dart';
-import 'package:usdc_wallet/lib/services/security/network/vpn_proxy_detector.dart';
-import 'package:usdc_wallet/lib/services/security/network/mitm_detector.dart';
-import 'package:usdc_wallet/lib/services/security/auth/brute_force_lockout_service.dart';
-import 'package:usdc_wallet/lib/services/security/auth/mfa_provider.dart';
+import 'package:usdc_wallet/services/security/auth/brute_force_lockout_service.dart';
+import 'package:usdc_wallet/services/security/network/dns_security_service.dart';
+import 'package:usdc_wallet/services/security/network/mitm_detector.dart';
+import 'package:usdc_wallet/services/security/network/network_trust_evaluator.dart';
+import 'package:usdc_wallet/services/security/network/vpn_proxy_detector.dart';
 
 /// Mock network trust evaluator for testing.
 class MockNetworkTrustEvaluator extends NetworkTrustEvaluator {
@@ -10,12 +10,12 @@ class MockNetworkTrustEvaluator extends NetworkTrustEvaluator {
 
   MockNetworkTrustEvaluator({
     NetworkTrustLevel level = NetworkTrustLevel.trusted,
-  })  : _fixedLevel = level,
-        super(
-          vpnDetector: _MockVpnDetector(),
-          mitmDetector: _MockMitmDetector(),
-          dnsService: _MockDnsService(),
-        );
+  }) : _fixedLevel = level,
+       super(
+         vpnDetector: _MockVpnDetector(),
+         mitmDetector: _MockMitmDetector(),
+         dnsService: _MockDnsService(),
+       );
 
   @override
   Future<NetworkTrustResult> evaluate(String apiHost) async {
@@ -51,7 +51,17 @@ class _MockMitmDetector extends MitmDetector {
   }
 }
 
-class _MockDnsService {}
+class _MockDnsService extends DnsSecurityService {
+  @override
+  Future<DnsResolutionResult> secureResolve(String hostname) async {
+    return DnsResolutionResult(
+      hostname: hostname,
+      addresses: [],
+      isSecure: true,
+      resolveTime: Duration.zero,
+    );
+  }
+}
 
 /// Mock brute force service that never locks.
 class MockBruteForceLockoutService extends BruteForceLockoutService {
