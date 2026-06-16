@@ -211,26 +211,23 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
     setState(() => _isUploading = true);
 
     try {
-      final result = await FilePicker.platform.pickFiles(
+      final file = await FilePicker.pickFile(
         type: FileType.custom,
         allowedExtensions: ['csv'],
-        allowMultiple: false,
       );
 
-      if (result != null && result.files.isNotEmpty) {
-        final file = result.files.first;
+      if (file != null) {
         _fileName = file.name;
 
-        if (file.bytes != null) {
-          final csvContent = utf8.decode(file.bytes!);
-          final batch = await ref
-              .read(bulkPaymentActionsProvider)
-              .parseCsvFile(csvContent);
-          ref.read(draftBatchProvider.notifier).state = batch;
+        final bytes = await file.readAsBytes();
+        final csvContent = utf8.decode(bytes);
+        final batch = await ref
+            .read(bulkPaymentActionsProvider)
+            .parseCsvFile(csvContent);
+        ref.read(draftBatchProvider.notifier).state = batch;
 
-          if (mounted) {
-            context.push('/bulk-payments/preview');
-          }
+        if (mounted) {
+          context.push('/bulk-payments/preview');
         }
       }
     } catch (e) {

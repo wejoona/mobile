@@ -27,7 +27,9 @@ class LocalNotificationService {
     if (_isInitialized) return;
 
     // Android settings
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
 
     // iOS settings
     const iosSettings = DarwinInitializationSettings(
@@ -42,7 +44,7 @@ class LocalNotificationService {
     );
 
     await _localNotifications.initialize(
-      initSettings,
+      settings: initSettings,
       onDidReceiveNotificationResponse: _onNotificationTap,
     );
 
@@ -56,9 +58,10 @@ class LocalNotificationService {
 
   /// Create Android notification channels
   Future<void> _createNotificationChannels() async {
-    final androidPlugin =
-        _localNotifications.resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
+    final androidPlugin = _localNotifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
 
     if (androidPlugin == null) return;
 
@@ -67,7 +70,8 @@ class LocalNotificationService {
       const AndroidNotificationChannel(
         'high_importance_channel',
         'Important Notifications',
-        description: 'Notifications for transactions, security alerts, and urgent updates',
+        description:
+            'Notifications for transactions, security alerts, and urgent updates',
         importance: Importance.high,
         enableVibration: true,
         playSound: true,
@@ -152,17 +156,17 @@ class LocalNotificationService {
     );
 
     await _localNotifications.show(
-      id,
-      title,
-      body,
-      details,
+      id: id,
+      title: title,
+      body: body,
+      notificationDetails: details,
       payload: payload,
     );
   }
 
   /// Cancel a notification
   Future<void> cancel(int id) async {
-    await _localNotifications.cancel(id);
+    await _localNotifications.cancel(id: id);
   }
 
   /// Cancel all notifications
@@ -244,7 +248,9 @@ class LocalNotificationService {
 }
 
 /// Local Notification Service Provider
-final localNotificationServiceProvider = Provider<LocalNotificationService>((ref) {
+final localNotificationServiceProvider = Provider<LocalNotificationService>((
+  ref,
+) {
   return LocalNotificationService();
 });
 
@@ -253,4 +259,3 @@ final localNotificationInitProvider = FutureProvider<void>((ref) async {
   final service = ref.read(localNotificationServiceProvider);
   await service.initialize();
 });
-

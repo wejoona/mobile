@@ -31,7 +31,9 @@ class _DailySpendingChartState extends State<DailySpendingChart> {
       return const SizedBox.shrink();
     }
 
-    final maxY = widget.dailyTrends.map((t) => t.amount).reduce((a, b) => a > b ? a : b);
+    final maxY = widget.dailyTrends
+        .map((t) => t.amount)
+        .reduce((a, b) => a > b ? a : b);
 
     return AspectRatio(
       aspectRatio: 1.5,
@@ -57,7 +59,7 @@ class _DailySpendingChartState extends State<DailySpendingChart> {
               },
               touchTooltipData: BarTouchTooltipData(
                 getTooltipColor: (group) => context.colors.container,
-                tooltipRoundedRadius: 8,
+                tooltipBorderRadius: BorderRadius.circular(8),
                 tooltipPadding: const EdgeInsets.all(8),
                 getTooltipItem: (group, groupIndex, rod, rodIndex) {
                   final trend = widget.dailyTrends[groupIndex];
@@ -135,20 +137,19 @@ class _DailySpendingChartState extends State<DailySpendingChart> {
             toY: trend.amount,
             color: isTouched ? context.colors.goldLight : context.colors.gold,
             width: isTouched ? 24 : 20,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(4),
-            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
             backDrawRodData: BackgroundBarChartRodData(
               show: true,
-              toY: (widget.dailyTrends.map((t) => t.amount).reduce((a, b) => a > b ? a : b)) * 1.2,
+              toY:
+                  (widget.dailyTrends
+                      .map((t) => t.amount)
+                      .reduce((a, b) => a > b ? a : b)) *
+                  1.2,
               color: context.colors.container,
             ),
             gradient: isTouched
                 ? LinearGradient(
-                    colors: [
-                      context.colors.goldLight,
-                      context.colors.gold,
-                    ],
+                    colors: [context.colors.goldLight, context.colors.gold],
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
                   )
@@ -169,7 +170,7 @@ class _DailySpendingChartState extends State<DailySpendingChart> {
     final label = DateFormat('E').format(trend.date); // Mon, Tue, Wed
 
     return SideTitleWidget(
-      axisSide: meta.axisSide,
+      meta: meta,
       child: Text(
         label.substring(0, 1), // First letter only
         style: AppTypography.bodySmall.copyWith(
@@ -189,5 +190,4 @@ class _DailySpendingChartState extends State<DailySpendingChart> {
       textAlign: TextAlign.left,
     );
   }
-
 }

@@ -48,7 +48,10 @@ class SentryService {
       options.environment = environment;
       options.debug = kDebugMode;
       options.sendDefaultPii = false;
+      options.enableLogs = true;
       options.attachStacktrace = true;
+      options.replay.sessionSampleRate = kDebugMode ? 1.0 : 0.1;
+      options.replay.onErrorSampleRate = 1.0;
 
       // Navigation breadcrumbs are added via SentryNavigatorObserver in the app's navigatorObservers
     }, appRunner: appRunner);
