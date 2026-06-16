@@ -69,50 +69,55 @@ class WalletBalance {
   });
 
   factory WalletBalance.fromJson(Map<String, dynamic> json) {
+    final available = _walletAmountOrNull(json, const [
+      'availableDecimal',
+      'available_decimal',
+      'availableBalanceDecimal',
+      'available_balance_decimal',
+      'balanceDecimal',
+      'balance_decimal',
+      'available',
+      'availableBalance',
+      'available_balance',
+      'balance',
+    ]);
+    final pending = _walletAmountOrNull(json, const [
+      'pendingDecimal',
+      'pending_decimal',
+      'pendingBalanceDecimal',
+      'pending_balance_decimal',
+      'pending',
+      'pendingBalance',
+      'pending_balance',
+    ]);
+    final total = _walletAmountOrNull(json, const [
+      'totalDecimal',
+      'total_decimal',
+      'totalBalanceDecimal',
+      'total_balance_decimal',
+      'balanceDecimal',
+      'balance_decimal',
+      'total',
+      'totalBalance',
+      'total_balance',
+      'balance',
+      'available',
+      'availableBalance',
+      'available_balance',
+    ]);
+
     return WalletBalance(
       currency: json['currency'] as String? ?? 'USD',
-      available: _walletAmount(json, const [
-        'availableDecimal',
-        'available_decimal',
-        'availableBalanceDecimal',
-        'available_balance_decimal',
-        'balanceDecimal',
-        'balance_decimal',
-        'available',
-        'availableBalance',
-        'available_balance',
-        'balance',
-      ]),
-      pending: _walletAmount(json, const [
-        'pendingDecimal',
-        'pending_decimal',
-        'pendingBalanceDecimal',
-        'pending_balance_decimal',
-        'pending',
-        'pendingBalance',
-        'pending_balance',
-      ]),
-      total: _walletAmount(json, const [
-        'totalDecimal',
-        'total_decimal',
-        'totalBalanceDecimal',
-        'total_balance_decimal',
-        'balanceDecimal',
-        'balance_decimal',
-        'total',
-        'totalBalance',
-        'total_balance',
-        'balance',
-        'available',
-        'availableBalance',
-        'available_balance',
-      ]),
+      available: available ?? total ?? 0,
+      pending: pending ?? 0,
+      total: total ?? available ?? 0,
     );
   }
 }
 
-double _walletAmount(Map<String, dynamic> json, List<String> keys) {
+double? _walletAmountOrNull(Map<String, dynamic> json, List<String> keys) {
   for (final key in keys) {
+    if (!json.containsKey(key)) continue;
     final value = json[key];
     if (value is num) return value.toDouble();
     if (value is String) {
@@ -120,7 +125,7 @@ double _walletAmount(Map<String, dynamic> json, List<String> keys) {
       if (parsed != null) return parsed;
     }
   }
-  return 0;
+  return null;
 }
 
 /// Deposit Channel
