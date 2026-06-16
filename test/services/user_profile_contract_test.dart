@@ -168,6 +168,30 @@ void main() {
       expect(result.debugCode, '123456');
     });
 
+    test('user service verifies email through backend contract', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'data': {'verified': true, 'message': 'Email verified successfully'},
+        });
+      final service = UserService(dio);
+
+      final result = await service.verifyEmail('123456');
+
+      expect(dio.requestHistory.single.method, 'POST');
+      expect(dio.requestHistory.single.path, '/user/verify-email');
+      expect(dio.requestHistory.single.data, {'code': '123456'});
+      expect(result.verified, isTrue);
+      expect(result.message, 'Email verified successfully');
+    });
+
+    test('email verification result accepts legacy verified aliases', () {
+      final result = EmailVerificationResult.fromJson({
+        'data': {'emailVerified': 'true'},
+      });
+
+      expect(result.verified, isTrue);
+    });
+
     test('normalizes backend KYC approval statuses used by profile gating', () {
       final approvedProfile = UserProfile.fromJson({
         'id': 'usr_approved',
