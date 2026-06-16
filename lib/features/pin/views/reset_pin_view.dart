@@ -30,7 +30,8 @@ class ResetPinView extends ConsumerStatefulWidget {
 }
 
 class _ResetPinViewState extends ConsumerState<ResetPinView> {
-  int _step = 1; // 1: request OTP, 2: enter OTP, 5: liveness, 3/4: PIN
+  int _step =
+      1; // 1: request OTP, 2: enter OTP, 5: liveness, 3/4: PIN, 6: review
   final _otpController = TextEditingController();
   String _newPin = '';
   String _confirmPin = '';
@@ -39,6 +40,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   bool _isLoading = false;
   StepUpDecision? _riskDecision;
   String? _stepUpChallengeToken;
+  String? _manualReviewTicketId;
 
   @override
   void dispose() {
@@ -78,6 +80,8 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         return _buildNewPinStep(l10n);
       case 4:
         return _buildConfirmPinStep(l10n);
+      case 6:
+        return _buildManualReviewStep(l10n);
       default:
         return const SizedBox.shrink();
     }
@@ -139,6 +143,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
             borderRadius: BorderRadius.circular(AppRadius.lg),
             child: LivenessCheckWidget(
               onComplete: _handleLivenessComplete,
+              onManualReviewRequired: _routePinResetToManualReview,
               onCancel: () {
                 setState(() {
                   _step = 2;
@@ -148,6 +153,65 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
               },
             ),
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildManualReviewStep(AppLocalizations l10n) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          width: 76,
+          height: 76,
+          decoration: BoxDecoration(
+            color: context.colors.goldSubtle,
+            shape: BoxShape.circle,
+            border: Border.all(color: context.colors.borderGold),
+          ),
+          child: Icon(
+            Icons.manage_accounts_rounded,
+            color: context.colors.gold,
+            size: 36,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        AppText(
+          'Manual review started',
+          variant: AppTextVariant.titleLarge,
+          color: context.colors.textPrimary,
+          textAlign: TextAlign.center,
+          fontWeight: FontWeight.w700,
+        ),
+        const SizedBox(height: AppSpacing.md),
+        AppText(
+          'We could not safely complete the automated identity check. A Korido reviewer will verify this PIN reset request.',
+          variant: AppTextVariant.bodyMedium,
+          color: context.colors.textSecondary,
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        InfoCallout(
+          icon: Icons.schedule_rounded,
+          title:
+              'Expected first response: within 30 minutes for locked account recovery.',
+          tone: InfoCalloutTone.info,
+        ),
+        if (_manualReviewTicketId != null) ...[
+          const SizedBox(height: AppSpacing.md),
+          AppText(
+            'Reference ${_manualReviewTicketId!}',
+            variant: AppTextVariant.bodySmall,
+            color: context.colors.textTertiary,
+            textAlign: TextAlign.center,
+          ),
+        ],
+        const SizedBox(height: AppSpacing.xxxl),
+        AppButton(
+          label: 'Return to sign in',
+          onPressed: () => context.go('/login'),
+          isFullWidth: true,
         ),
       ],
     );
@@ -379,11 +443,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       _stepUpChallengeToken = decision.challengeToken;
 
       if (_requiresManualReview(decision)) {
-        setState(() {
-          _isLoading = false;
-          _errorMessage =
-              'This PIN reset needs manual review. Please contact support.';
-        });
+        await _routePinResetToManualReview('risk_manual_review');
         return;
       }
 
@@ -458,10 +518,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       }
     } catch (_) {
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _errorMessage = 'We could not verify this PIN reset.';
-        });
+        await _routePinResetToManualReview('risk_or_provider_unavailable');
       }
     }
   }
@@ -484,11 +541,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
 
     final faceScore = result.faceMatchScore ?? 1.0;
     if (!result.isLive || result.confidence < 0.50 || faceScore < 0.50) {
-      setState(() {
-        _showError = true;
-        _errorMessage =
-            'We could not confirm your face and liveness. Please try again.';
-      });
+      await _routePinResetToManualReview('liveness_low_confidence');
       return;
     }
 
@@ -523,6 +576,59 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       _showError = false;
       _errorMessage = null;
     });
+  }
+
+  Future<void> _routePinResetToManualReview(String reason) async {
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = true;
+      _showError = false;
+      _errorMessage = null;
+    });
+
+    try {
+      final response = await ref
+          .read(dioProvider)
+          .post(
+            '/support/tickets',
+            data: {
+              'subject': 'Manual review required for PIN reset',
+              'category': 'account_recovery',
+              'priority': 'high',
+              'message':
+                  'A PIN reset could not complete automated verification. '
+                  'Reason: $reason. Flow: pin_reset. '
+                  'Please review identity evidence and approve or reject recovery.',
+            },
+          );
+      final body = response.data is Map
+          ? Map<String, dynamic>.from(response.data as Map)
+          : const <String, dynamic>{};
+      final data = body['data'] is Map
+          ? Map<String, dynamic>.from(body['data'] as Map)
+          : body;
+
+      if (!mounted) return;
+      setState(() {
+        _manualReviewTicketId = data['id']?.toString();
+        _isLoading = false;
+        _step = 6;
+      });
+    } on DioException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorMessage = ApiException.fromDioError(e).message;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorMessage =
+            'We could not create the manual review request. Please try again.';
+      });
+    }
   }
 
   void _handleNewPinNumber(int digit) {

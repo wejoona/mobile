@@ -328,6 +328,30 @@ void main() {
           'the runtime session should be ended before the login flow state is discarded',
     );
   });
+
+  test('PIN reset can route failed liveness to manual recovery review', () {
+    final resetSource = File(
+      'lib/features/pin/views/reset_pin_view.dart',
+    ).readAsStringSync();
+    final livenessSource = File(
+      'lib/features/liveness/widgets/liveness_check_widget.dart',
+    ).readAsStringSync();
+
+    final reviewBody = _methodBody(resetSource, '_routePinResetToManualReview');
+
+    expect(livenessSource, contains('onManualReviewRequired'));
+    expect(resetSource, contains('onManualReviewRequired'));
+    expect(reviewBody, contains("'/support/tickets'"));
+    expect(reviewBody, contains("'category': 'account_recovery'"));
+    expect(reviewBody, contains("'priority': 'high'"));
+    expect(resetSource, contains('_buildManualReviewStep'));
+    expect(
+      resetSource,
+      contains('Expected first response: within 30 minutes'),
+      reason:
+          'manual recovery must tell the user what happens next instead of dead-ending at provider failure',
+    );
+  });
 }
 
 String _methodBody(String source, String methodName) {

@@ -20,9 +20,15 @@ import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 /// 4. After all challenges → backend verifies → result returned
 class LivenessCheckWidget extends ConsumerStatefulWidget {
   final void Function(LivenessResult result)? onComplete;
+  final void Function(String reason)? onManualReviewRequired;
   final VoidCallback? onCancel;
 
-  const LivenessCheckWidget({super.key, this.onComplete, this.onCancel});
+  const LivenessCheckWidget({
+    super.key,
+    this.onComplete,
+    this.onManualReviewRequired,
+    this.onCancel,
+  });
 
   @override
   ConsumerState<LivenessCheckWidget> createState() =>
@@ -139,7 +145,10 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
         });
       }
     } catch (e) {
-      _fail('Failed to create liveness session: $e');
+      _fail(
+        'Failed to create liveness session: $e',
+        manualReviewReason: 'liveness_session_unavailable',
+      );
     }
   }
 
@@ -211,17 +220,23 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
         });
       }
     } catch (e) {
-      _fail('Challenge submission failed: $e');
+      _fail(
+        'Challenge submission failed: $e',
+        manualReviewReason: 'liveness_challenge_unavailable',
+      );
     }
   }
 
-  void _fail(String message) {
+  void _fail(String message, {String? manualReviewReason}) {
     if (mounted) {
       setState(() {
         _state = _LivenessState.failed;
         _statusMessage = 'Verification failed';
         _errorMessage = message;
       });
+      if (manualReviewReason != null) {
+        widget.onManualReviewRequired?.call(manualReviewReason);
+      }
     }
   }
 
