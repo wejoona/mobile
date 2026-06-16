@@ -352,6 +352,39 @@ void main() {
           'manual recovery must tell the user what happens next instead of dead-ending at provider failure',
     );
   });
+
+  test('KYC liveness declares capture capability and has manual review fallback', () {
+    final serviceSource = File(
+      'lib/services/liveness/liveness_service.dart',
+    ).readAsStringSync();
+    final widgetSource = File(
+      'lib/features/liveness/widgets/liveness_check_widget.dart',
+    ).readAsStringSync();
+    final kycLivenessSource = File(
+      'lib/features/kyc/views/kyc_liveness_view.dart',
+    ).readAsStringSync();
+
+    final manualReviewBody = _methodBody(
+      kycLivenessSource,
+      '_routeKycToManualReview',
+    );
+
+    expect(serviceSource, contains("'capabilities': capabilities.toJson()"));
+    expect(serviceSource, contains("'captureMode': captureMode.value"));
+    expect(serviceSource, contains("'mediaType': captureMode.value"));
+    expect(widgetSource, contains('LivenessClientCapabilities'));
+    expect(widgetSource, contains('LivenessCaptureMode.photo'));
+    expect(kycLivenessSource, contains('onManualReviewRequired'));
+    expect(manualReviewBody, contains("'/support/tickets'"));
+    expect(manualReviewBody, contains("'category': 'kyc'"));
+    expect(manualReviewBody, contains("'priority': 'high'"));
+    expect(
+      manualReviewBody,
+      contains('identity document, profile photo, reference selfie'),
+      reason:
+          'manual KYC review must preserve the same evidence graph as automated face matching',
+    );
+  });
 }
 
 String _methodBody(String source, String methodName) {

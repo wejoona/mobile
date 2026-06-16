@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
@@ -24,7 +26,9 @@ class KycLivenessView extends ConsumerStatefulWidget {
 class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
   bool _isComplete = false;
   bool _hasFailed = false;
+  bool _isCreatingManualReview = false;
   String? _errorMessage;
+  String? _manualReviewTicketId;
   Timer? _navigationTimer;
 
   LivenessDecision? _decision;
@@ -92,6 +96,7 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
     if (!_isComplete && !_hasFailed) {
       return LivenessCheckWidget(
         onComplete: _onLivenessComplete,
+        onManualReviewRequired: _routeKycToManualReview,
         onCancel: _onCancel,
       );
     }
@@ -158,9 +163,15 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                isManualReview ? Icons.hourglass_top : Icons.check_circle,
+                _isCreatingManualReview
+                    ? Icons.support_agent
+                    : isManualReview
+                    ? Icons.hourglass_top
+                    : Icons.check_circle,
                 size: 80,
-                color: isManualReview ? colors.warning : colors.success,
+                color: isManualReview || _isCreatingManualReview
+                    ? colors.warning
+                    : colors.success,
               ),
               const SizedBox(height: AppSpacing.xxl),
               AppText(
@@ -173,10 +184,13 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
               const SizedBox(height: AppSpacing.md),
               AppText(
                 isManualReview
-                    ? l10n.liveness_manualReviewMessage
+                    ? _manualReviewTicketId == null
+                          ? l10n.liveness_manualReviewMessage
+                          : '${l10n.liveness_manualReviewMessage}\nReference $_manualReviewTicketId'
                     : l10n.liveness_proceedingToVerification,
                 variant: AppTextVariant.bodyMedium,
                 color: colors.textSecondary,
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.xxl),
               CircularProgressIndicator(color: colors.gold),
@@ -185,5 +199,58 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
         ),
       ),
     );
+  }
+
+  Future<void> _routeKycToManualReview(String reason) async {
+    if (!mounted || _isCreatingManualReview) return;
+
+    setState(() {
+      _isCreatingManualReview = true;
+      _isComplete = true;
+      _hasFailed = false;
+      _decision = LivenessDecision.manualReview;
+      _errorMessage = null;
+    });
+
+    try {
+      final response = await ref
+          .read(dioProvider)
+          .post(
+            '/support/tickets',
+            data: {
+              'subject': 'Manual review required for KYC liveness',
+              'category': 'kyc',
+              'priority': 'high',
+              'message':
+                  'Automated liveness verification could not complete. '
+                  'Reason: $reason. Flow: kyc_liveness. '
+                  'Please review identity document, profile photo, reference selfie, '
+                  'and any captured liveness evidence.',
+            },
+          );
+      final body = response.data is Map
+          ? Map<String, dynamic>.from(response.data as Map)
+          : const <String, dynamic>{};
+      final data = body['data'] is Map
+          ? Map<String, dynamic>.from(body['data'] as Map)
+          : body;
+
+      if (!mounted) return;
+      setState(() {
+        _manualReviewTicketId = data['id']?.toString();
+        _isCreatingManualReview = false;
+      });
+    } on DioException {
+      if (!mounted) return;
+      setState(() => _isCreatingManualReview = false);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isCreatingManualReview = false);
+    }
+
+    _navigationTimer?.cancel();
+    _navigationTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) context.go('/kyc/submitted');
+    });
   }
 }

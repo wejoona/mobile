@@ -134,7 +134,15 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
 
     try {
       final livenessService = ref.read(livenessServiceProvider);
-      final session = await livenessService.createSession();
+      final session = await livenessService.createSession(
+        capabilities: const LivenessClientCapabilities(
+          supportedCaptureModes: [LivenessCaptureMode.photo],
+          preferredCaptureMode: LivenessCaptureMode.photo,
+          supportedMimeTypes: ['image/jpeg'],
+          supportsOnDeviceFaceDetection: false,
+          supportsReferenceSelfie: true,
+        ),
+      );
 
       if (mounted) {
         setState(() {

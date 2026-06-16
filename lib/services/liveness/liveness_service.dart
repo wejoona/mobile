@@ -5,6 +5,61 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 /// Liveness challenge types
 enum LivenessChallengeType { blink, smile, turnLeft, turnRight, lookUp, nod }
 
+enum LivenessCaptureMode { photo, video }
+
+extension LivenessCaptureModeExt on LivenessCaptureMode {
+  String get value {
+    switch (this) {
+      case LivenessCaptureMode.photo:
+        return 'photo';
+      case LivenessCaptureMode.video:
+        return 'video';
+    }
+  }
+
+  static LivenessCaptureMode fromString(String? value) {
+    switch (value?.toLowerCase()) {
+      case 'video':
+        return LivenessCaptureMode.video;
+      case 'photo':
+      default:
+        return LivenessCaptureMode.photo;
+    }
+  }
+}
+
+class LivenessClientCapabilities {
+  final List<LivenessCaptureMode> supportedCaptureModes;
+  final LivenessCaptureMode preferredCaptureMode;
+  final List<String> supportedMimeTypes;
+  final int? maxVideoDurationSeconds;
+  final bool supportsOnDeviceFaceDetection;
+  final bool supportsReferenceSelfie;
+
+  const LivenessClientCapabilities({
+    this.supportedCaptureModes = const [LivenessCaptureMode.photo],
+    this.preferredCaptureMode = LivenessCaptureMode.photo,
+    this.supportedMimeTypes = const ['image/jpeg'],
+    this.maxVideoDurationSeconds,
+    this.supportsOnDeviceFaceDetection = false,
+    this.supportsReferenceSelfie = true,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'supportedCaptureModes': supportedCaptureModes
+          .map((mode) => mode.value)
+          .toList(),
+      'preferredCaptureMode': preferredCaptureMode.value,
+      'supportedMimeTypes': supportedMimeTypes,
+      if (maxVideoDurationSeconds != null)
+        'maxVideoDurationSeconds': maxVideoDurationSeconds,
+      'supportsOnDeviceFaceDetection': supportsOnDeviceFaceDetection,
+      'supportsReferenceSelfie': supportsReferenceSelfie,
+    };
+  }
+}
+
 extension LivenessChallengeTypeExt on LivenessChallengeType {
   String get value {
     switch (this) {
@@ -48,18 +103,30 @@ class LivenessChallenge {
   final String challengeId;
   final LivenessChallengeType type;
   final String instruction;
+  final LivenessCaptureMode requiredCaptureMode;
+  final List<LivenessCaptureMode> acceptedCaptureModes;
 
   const LivenessChallenge({
     required this.challengeId,
     required this.type,
     required this.instruction,
+    this.requiredCaptureMode = LivenessCaptureMode.photo,
+    this.acceptedCaptureModes = const [LivenessCaptureMode.photo],
   });
 
   factory LivenessChallenge.fromJson(Map<String, dynamic> json) {
     return LivenessChallenge(
-      challengeId: json['id'] as String,
+      challengeId: (json['id'] ?? json['challengeId']) as String,
       type: LivenessChallengeTypeExt.fromString(json['type'] as String),
       instruction: json['instruction'] as String,
+      requiredCaptureMode: LivenessCaptureModeExt.fromString(
+        json['requiredCaptureMode'] as String?,
+      ),
+      acceptedCaptureModes:
+          (json['acceptedCaptureModes'] as List<dynamic>?)
+              ?.map((mode) => LivenessCaptureModeExt.fromString('$mode'))
+              .toList() ??
+          const [LivenessCaptureMode.photo],
     );
   }
 }
@@ -68,8 +135,17 @@ class LivenessChallenge {
 class LivenessSession {
   final String sessionToken;
   final List<LivenessChallenge> challenges;
+  final LivenessCaptureMode requiredCaptureMode;
+  final List<LivenessCaptureMode> acceptedCaptureModes;
+  final List<String> requiredEvidence;
 
-  const LivenessSession({required this.sessionToken, required this.challenges});
+  const LivenessSession({
+    required this.sessionToken,
+    required this.challenges,
+    this.requiredCaptureMode = LivenessCaptureMode.photo,
+    this.acceptedCaptureModes = const [LivenessCaptureMode.photo],
+    this.requiredEvidence = const ['challenge_photo', 'reference_selfie'],
+  });
 
   factory LivenessSession.fromJson(Map<String, dynamic> json) {
     final challengesData = json['challenges'] as List<dynamic>? ?? [];
@@ -78,6 +154,19 @@ class LivenessSession {
       challenges: challengesData
           .map((e) => LivenessChallenge.fromJson(e as Map<String, dynamic>))
           .toList(),
+      requiredCaptureMode: LivenessCaptureModeExt.fromString(
+        json['requiredCaptureMode'] as String?,
+      ),
+      acceptedCaptureModes:
+          (json['acceptedCaptureModes'] as List<dynamic>?)
+              ?.map((mode) => LivenessCaptureModeExt.fromString('$mode'))
+              .toList() ??
+          const [LivenessCaptureMode.photo],
+      requiredEvidence:
+          (json['requiredEvidence'] as List<dynamic>?)
+              ?.map((evidence) => '$evidence')
+              .toList() ??
+          const ['challenge_photo', 'reference_selfie'],
     );
   }
 }
@@ -202,9 +291,15 @@ class LivenessService {
 
   /// Create a new liveness session
   /// Returns sessionToken + list of challenges (2-3)
-  Future<LivenessSession> createSession() async {
+  Future<LivenessSession> createSession({
+    LivenessClientCapabilities capabilities =
+        const LivenessClientCapabilities(),
+  }) async {
     try {
-      final response = await _dio.post('/kyc/liveness/session');
+      final response = await _dio.post(
+        '/kyc/liveness/session',
+        data: {'capabilities': capabilities.toJson()},
+      );
       return LivenessSession.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -217,14 +312,20 @@ class LivenessService {
     required String sessionToken,
     required String challengeId,
     required String photoPath,
+    LivenessCaptureMode captureMode = LivenessCaptureMode.photo,
+    String mimeType = 'image/jpeg',
   }) async {
     try {
       final formData = FormData.fromMap({
         'sessionToken': sessionToken,
         'challengeId': challengeId,
+        'captureMode': captureMode.value,
+        'mediaType': captureMode.value,
+        'mimeType': mimeType,
         'photo': await MultipartFile.fromFile(
           photoPath,
           filename: 'challenge.jpg',
+          contentType: DioMediaType.parse(mimeType),
         ),
       });
 
