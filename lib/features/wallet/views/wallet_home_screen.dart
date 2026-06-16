@@ -606,9 +606,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                  if (!showInitialBalanceLoading &&
-                      !_isBalanceHidden &&
-                      balanceHasActivity) ...[
+                  if (!showInitialBalanceLoading && !_isBalanceHidden) ...[
                     const SizedBox(height: AppSpacing.lg),
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -1207,8 +1205,8 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     await Future.wait<void>([
       _refreshWalletForHome(),
       _refreshTransactionsForHome(),
-    ], eagerError: false).timeout(
-      const Duration(seconds: 14),
+    ]).timeout(
+      const Duration(seconds: 17),
       onTimeout: () {
         _logger.warn('Home refresh timed out before every source completed');
         return const <void>[];
@@ -1221,7 +1219,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
       await ref
           .read(walletStateMachineProvider.notifier)
           .refresh()
-          .timeout(const Duration(seconds: 11));
+          .timeout(const Duration(seconds: 15));
     } on Object catch (error, stackTrace) {
       _logger.error(
         'Wallet refresh did not complete cleanly',
