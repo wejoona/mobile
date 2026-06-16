@@ -142,12 +142,13 @@ class AuthGatedShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
 
-    if (!authState.isAuthenticated) {
-      return Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      );
-    }
-
-    return PopScope(canPop: false, child: MainShell(child: child));
+    return PopScope(
+      canPop: false,
+      child: authState.isAuthenticated
+          ? MainShell(child: child)
+          : Scaffold(
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            ),
+    );
   }
 }

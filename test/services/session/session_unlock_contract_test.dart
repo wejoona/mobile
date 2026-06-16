@@ -50,6 +50,24 @@ void main() {
     );
     expect(pinSuccessBody, contains('context.enterAuthenticatedApp('));
     expect(
+      pinScreenSource,
+      contains('ref.listenManual<AuthState>'),
+      reason:
+          'PIN unlock listeners must be registered once per screen lifecycle',
+    );
+    expect(
+      pinScreenSource,
+      contains('ref.listenManual<SessionState>'),
+      reason:
+          'session unlock listener must be registered once per screen lifecycle',
+    );
+    expect(
+      _methodBody(pinScreenSource, 'build'),
+      isNot(contains('ref.listen')),
+      reason:
+          'registering listeners in build can reschedule stale PIN redirects on every rebuild',
+    );
+    expect(
       biometricUnlockBody,
       contains('appFsmProvider.notifier).unlockSession()'),
       reason:
@@ -220,6 +238,12 @@ void main() {
     expect(shellSource, contains('PopScope'));
     expect(shellSource, contains('canPop: false'));
     expect(
+      shellSource.indexOf('return PopScope('),
+      lessThan(shellSource.indexOf('authState.isAuthenticated')),
+      reason:
+          'the authenticated shell placeholder must also block back-swipe while auth state settles',
+    );
+    expect(
       File('lib/router/navigation_extensions.dart').readAsStringSync(),
       contains('enterAuthenticatedApp'),
       reason:
@@ -287,7 +311,7 @@ void main() {
 String _methodBody(String source, String methodName) {
   final signatureIndex = source.indexOf(
     RegExp(
-      r'(?:void|bool|String|Future<[^>]+>)\s+' +
+      r'(?:void|bool|String|Widget|Future<[^>]+>)\s+' +
           RegExp.escape(methodName) +
           r'\s*\(',
     ),

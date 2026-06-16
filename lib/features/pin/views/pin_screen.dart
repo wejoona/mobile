@@ -16,7 +16,7 @@ import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/state/transaction_state_machine.dart';
-import 'package:usdc_wallet/state/fsm/index.dart';
+import 'package:usdc_wallet/state/fsm/index.dart' hide AuthState, SessionState;
 
 /// Where the PIN screen was opened from — determines what happens on success.
 enum PinContext {
@@ -64,17 +64,34 @@ class _PinScreenState extends ConsumerState<PinScreen>
   bool _hasCompletedSuccess = false;
   bool _queuedUnlockedRedirect = false;
   int _biometricAttempt = 0;
+  ProviderSubscription<AuthState>? _authSubscription;
+  ProviderSubscription<SessionState>? _sessionSubscription;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _authSubscription = ref.listenManual<AuthState>(
+      authProvider,
+      (_, _) => _dismissIfAlreadyUnlocked(),
+    );
+    _sessionSubscription = ref.listenManual<SessionState>(
+      sessionServiceProvider,
+      (_, _) => _dismissIfAlreadyUnlocked(),
+    );
     unawaited(_checkBiometric());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _dismissIfAlreadyUnlocked();
+      }
+    });
   }
 
   @override
   void dispose() {
     _biometricAttempt++;
+    _authSubscription?.close();
+    _sessionSubscription?.close();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -461,11 +478,6 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
   @override
   Widget build(BuildContext context) {
-    ref
-      ..listen(authProvider, (_, _) => _dismissIfAlreadyUnlocked())
-      ..listen(sessionServiceProvider, (_, _) => _dismissIfAlreadyUnlocked());
-    _dismissIfAlreadyUnlocked();
-
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
 
