@@ -42,6 +42,7 @@ enum _LivenessState {
   uploading,
   processing,
   completed,
+  manualReview,
   failed,
 }
 
@@ -56,6 +57,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
   LivenessEvidencePolicy _evidencePolicy = const LivenessEvidencePolicy();
   int _currentChallengeIndex = 0;
   String? _errorMessage;
+  String? _manualReviewReason;
 
   @override
   void initState() {
@@ -310,9 +312,14 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
   void _fail(String message, {String? manualReviewReason}) {
     if (mounted) {
       setState(() {
-        _state = _LivenessState.failed;
-        _statusMessage = 'Verification failed';
+        _state = manualReviewReason == null
+            ? _LivenessState.failed
+            : _LivenessState.manualReview;
+        _statusMessage = manualReviewReason == null
+            ? 'Verification failed'
+            : 'Manual review needed';
         _errorMessage = message;
+        _manualReviewReason = manualReviewReason;
       });
       if (manualReviewReason != null) {
         widget.onManualReviewRequired?.call(manualReviewReason);
@@ -325,6 +332,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
       _state = _LivenessState.initializing;
       _statusMessage = 'Initializing...';
       _errorMessage = null;
+      _manualReviewReason = null;
       _sessionToken = null;
       _challenges = [];
       _submittedEvidence.clear();
@@ -388,6 +396,9 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
 
       case _LivenessState.completed:
         return _buildSuccess(colors);
+
+      case _LivenessState.manualReview:
+        return _buildManualReview(colors);
 
       case _LivenessState.failed:
         return _buildFailure(colors);
@@ -538,6 +549,57 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
             color: colors.textSecondary,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildManualReview(ThemeColors colors) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: colors.goldSubtle,
+                border: Border.all(color: colors.borderGold),
+              ),
+              child: Icon(
+                Icons.manage_accounts_rounded,
+                size: 38,
+                color: colors.gold,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            AppText(
+              'Manual review needed',
+              variant: AppTextVariant.titleMedium,
+              color: colors.textPrimary,
+              textAlign: TextAlign.center,
+              fontWeight: FontWeight.w700,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            AppText(
+              'We could not safely complete the automated identity check. A Korido reviewer will use your identity evidence to continue this flow.',
+              color: colors.textSecondary,
+              textAlign: TextAlign.center,
+            ),
+            if (_manualReviewReason != null) ...[
+              const SizedBox(height: AppSpacing.lg),
+              InfoCallout(
+                icon: Icons.verified_user_outlined,
+                title: 'Reason: ${_manualReviewReason!.replaceAll('_', ' ')}',
+                tone: InfoCalloutTone.info,
+              ),
+            ],
+            const SizedBox(height: AppSpacing.xl),
+            AppButton(label: 'Continue', onPressed: widget.onCancel),
+          ],
+        ),
       ),
     );
   }

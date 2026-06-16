@@ -340,6 +340,8 @@ void main() {
     final reviewBody = _methodBody(resetSource, '_routePinResetToManualReview');
 
     expect(livenessSource, contains('onManualReviewRequired'));
+    expect(livenessSource, contains('_LivenessState.manualReview'));
+    expect(livenessSource, contains('Manual review needed'));
     expect(resetSource, contains('onManualReviewRequired'));
     expect(reviewBody, contains("'/support/tickets'"));
     expect(reviewBody, contains("'category': 'account_recovery'"));
