@@ -257,23 +257,25 @@ void main() {
       expect(items, hasLength(1));
 
       final cardId = created['id'] as String;
-      final frozen = await service.freezeCard(cardId);
+      const pinToken = 'test-pin-token';
+      final frozen = await service.freezeCard(cardId, pinToken: pinToken);
       expect(frozen['status'], 'frozen');
 
-      final unfrozen = await service.unfreezeCard(cardId);
+      final unfrozen = await service.unfreezeCard(cardId, pinToken: pinToken);
       expect(unfrozen['status'], 'active');
 
       final limited = await service.updateSpendingLimit(
         cardId,
         dailyLimit: 750,
         transactionLimit: 750,
+        pinToken: pinToken,
       );
       expect(limited['spendingLimit'], 750);
 
       final transactions = await service.loadCardTransactions(cardId);
       expect(transactions, isNotEmpty);
 
-      await service.cancelCard(cardId);
+      await service.cancelCard(cardId, pinToken: pinToken);
       final afterCancel = await service.getCards();
       expect(afterCancel['data'], isEmpty);
     },

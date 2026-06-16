@@ -8,10 +8,28 @@ class CardsRepository {
 
   Future<dynamic> getCards() => _service.getCards();
   Future<dynamic> getCard(String id) => _service.getCard(id);
-  Future<dynamic> createCard({String? cardType, String? currency, String? spendingLimit, String? nickname}) =>
-    _service.createCard(cardType: cardType ?? 'virtual', currency: currency ?? 'USDC', nickname: nickname);
-  Future<dynamic> toggleCardFreeze(String id, {bool? freeze}) => _service.freezeCard(id);
-  Future<void> cancelCard(String id) => _service.cancelCard(id);
+  Future<dynamic> createCard({
+    String? cardType,
+    String? currency,
+    String? spendingLimit,
+    String? nickname,
+    required String cardholderName,
+  }) => _service.createCard(
+    cardType: cardType ?? 'virtual',
+    currency: currency ?? 'USDC',
+    nickname: nickname,
+    cardholderName: cardholderName,
+    spendingLimit: double.tryParse(spendingLimit ?? ''),
+  );
+  Future<dynamic> toggleCardFreeze(
+    String id, {
+    bool? freeze,
+    required String pinToken,
+  }) => freeze == false
+      ? _service.unfreezeCard(id, pinToken: pinToken)
+      : _service.freezeCard(id, pinToken: pinToken);
+  Future<void> cancelCard(String id, {required String pinToken}) =>
+      _service.cancelCard(id, pinToken: pinToken);
 }
 
 final cardsRepositoryProvider = Provider<CardsRepository>((ref) {

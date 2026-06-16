@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 
 /// Cards Service
 ///
@@ -63,14 +64,26 @@ class CardsService {
   }
 
   /// Freeze a card
-  Future<Map<String, dynamic>> freezeCard(String cardId) async {
-    final response = await _dio.put('/cards/$cardId/freeze');
+  Future<Map<String, dynamic>> freezeCard(
+    String cardId, {
+    required String pinToken,
+  }) async {
+    final response = await _dio.put(
+      '/cards/$cardId/freeze',
+      options: _pinProtectedOptions(pinToken),
+    );
     return response.data as Map<String, dynamic>;
   }
 
   /// Unfreeze a card
-  Future<Map<String, dynamic>> unfreezeCard(String cardId) async {
-    final response = await _dio.put('/cards/$cardId/unfreeze');
+  Future<Map<String, dynamic>> unfreezeCard(
+    String cardId, {
+    required String pinToken,
+  }) async {
+    final response = await _dio.put(
+      '/cards/$cardId/unfreeze',
+      options: _pinProtectedOptions(pinToken),
+    );
     return response.data as Map<String, dynamic>;
   }
 
@@ -79,17 +92,22 @@ class CardsService {
     String cardId, {
     required double dailyLimit,
     required double transactionLimit,
+    required String pinToken,
   }) async {
     final response = await _dio.put(
       '/cards/$cardId/limit',
       data: {'spendingLimit': dailyLimit},
+      options: _pinProtectedOptions(pinToken),
     );
     return response.data as Map<String, dynamic>;
   }
 
   /// Cancel a card
-  Future<void> cancelCard(String cardId) async {
-    await _dio.delete('/cards/$cardId');
+  Future<void> cancelCard(String cardId, {required String pinToken}) async {
+    await _dio.delete(
+      '/cards/$cardId',
+      options: _pinProtectedOptions(pinToken),
+    );
   }
 
   /// Get card transactions
@@ -109,15 +127,19 @@ class CardsService {
   }
 
   // === Convenience aliases ===
-  Future<void> freeze(String cardId) => freezeCard(cardId);
-  Future<void> toggleCardFreeze(String cardId) async {
+  Future<void> freeze(String cardId, {required String pinToken}) =>
+      freezeCard(cardId, pinToken: pinToken);
+  Future<void> toggleCardFreeze(
+    String cardId, {
+    required String pinToken,
+  }) async {
     // Determine current state and toggle
     final card = await getCard(cardId);
     final isFrozen = card['isFrozen'] as bool? ?? false;
     if (isFrozen) {
-      await unfreezeCard(cardId);
+      await unfreezeCard(cardId, pinToken: pinToken);
     } else {
-      await freezeCard(cardId);
+      await freezeCard(cardId, pinToken: pinToken);
     }
   }
 
@@ -137,8 +159,16 @@ class CardsService {
         cardholderName: data['cardholderName'] as String?,
         spendingLimit: _parseDouble(data['spendingLimit']),
       );
-  Future<void> setSpendLimit(String cardId, double limit) =>
-      updateSpendingLimit(cardId, dailyLimit: limit, transactionLimit: limit);
+  Future<void> setSpendLimit(
+    String cardId,
+    double limit, {
+    required String pinToken,
+  }) => updateSpendingLimit(
+    cardId,
+    dailyLimit: limit,
+    transactionLimit: limit,
+    pinToken: pinToken,
+  );
   Future<List<dynamic>> loadCardTransactions(String cardId) async {
     final result = await getCardTransactions(cardId);
     return (result['data'] as List?) ?? (result['transactions'] as List?) ?? [];
@@ -150,3 +180,6 @@ double? _parseDouble(Object? value) {
   if (value is String) return double.tryParse(value);
   return null;
 }
+
+Options _pinProtectedOptions(String pinToken) =>
+    Options(headers: transactionHeaders(pinToken: pinToken));

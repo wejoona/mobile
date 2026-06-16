@@ -13,7 +13,10 @@ void main() {
 
     expect(listSource, contains('_confirmBlockCard'));
     expect(listSource, contains('cards_blockCardConfirmation'));
-    expect(listSource, contains('cancelCard(cardId)'));
+    expect(listSource, contains('PinConfirmationSheet.show'));
+    expect(listSource, contains('verifyPinWithBackend'));
+    expect(listSource, contains('cancelCard('));
+    expect(listSource, contains('pinToken: pinToken'));
     expect(listSource, isNot(contains('actions.block')));
     expect(serviceSource, isNot(contains('Future<void> block(')));
   });
