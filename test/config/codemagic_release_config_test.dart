@@ -14,6 +14,18 @@ void main() {
       stagingEnv = File('env.staging.json').readAsStringSync();
     });
 
+    test('iOS build declares export compliance for TestFlight submission', () {
+      final infoPlist = File('ios/Runner/Info.plist').readAsStringSync();
+
+      expect(infoPlist, contains('<key>ITSAppUsesNonExemptEncryption</key>'));
+      expect(
+        RegExp(
+          r'<key>ITSAppUsesNonExemptEncryption</key>\s*<false/>',
+        ).hasMatch(infoPlist),
+        isTrue,
+      );
+    });
+
     test('builds staging iOS and Android with staging dart defines', () {
       const stagingDefine =
           r'--dart-define-from-file="$CM_BUILD_DIR/env.staging.json"';
