@@ -50,11 +50,13 @@ class FilteredPaginatedTransactionsNotifier
     try {
       final filter = _ref.read(transactionFilterProvider);
       final service = _ref.read(transactionsServiceProvider);
-      final page = await service.getTransactions(
-        page: 1,
-        pageSize: _transactionsPageSize,
-        filter: filter,
-      );
+      final page = await service
+          .getTransactions(
+            page: 1,
+            pageSize: _transactionsPageSize,
+            filter: filter,
+          )
+          .timeout(const Duration(seconds: 12));
       if (!mounted) {
         return;
       }
@@ -81,11 +83,13 @@ class FilteredPaginatedTransactionsNotifier
     try {
       final filter = _ref.read(transactionFilterProvider);
       final service = _ref.read(transactionsServiceProvider);
-      final page = await service.getTransactions(
-        page: nextPage,
-        pageSize: _transactionsPageSize,
-        filter: filter,
-      );
+      final page = await service
+          .getTransactions(
+            page: nextPage,
+            pageSize: _transactionsPageSize,
+            filter: filter,
+          )
+          .timeout(const Duration(seconds: 12));
       if (!mounted) {
         return;
       }

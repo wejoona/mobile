@@ -56,6 +56,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
     final state = ref.watch(filteredPaginatedTransactionsProvider);
     final filter = ref.watch(transactionFilterProvider);
     final activeFilterCount = filter.activeFilterCount;
+    final hasTransactions = state.transactions.isNotEmpty;
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -149,6 +150,9 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
           if (filter.hasActiveFilters)
             _buildActiveFiltersBar(filter, colors, l10n),
 
+          if (state.error != null && hasTransactions)
+            _buildStaleDataBanner(state.error!, colors, l10n),
+
           // Transactions list
           Expanded(
             child: RefreshIndicator(
@@ -159,11 +163,11 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
               },
               color: colors.gold,
               backgroundColor: colors.container,
-              child: state.isLoading && state.transactions.isEmpty
+              child: state.isLoading && !hasTransactions
                   ? _buildLoadingState(colors)
-                  : state.error != null
+                  : state.error != null && !hasTransactions
                   ? _buildErrorState(state.error!, colors, l10n)
-                  : state.transactions.isEmpty
+                  : !hasTransactions
                   ? _buildEmptyState(filter, colors, l10n)
                   : _buildTransactionsList(
                       context,
@@ -176,6 +180,70 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildStaleDataBanner(
+    String error,
+    ThemeColors colors,
+    AppLocalizations l10n,
+  ) {
+    final isConnectionError =
+        error.toLowerCase().contains('connection') ||
+        error.toLowerCase().contains('timeout') ||
+        error.toLowerCase().contains('network') ||
+        error.toLowerCase().contains('socket');
+    final message = isConnectionError
+        ? l10n.transactions_connectionErrorMessage
+        : l10n.transactions_somethingWentWrong;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.screenPadding,
+        0,
+        AppSpacing.screenPadding,
+        AppSpacing.sm,
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: colors.warningBg,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          border: Border.all(color: colors.warning.withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.info_outline_rounded,
+              color: colors.warningText,
+              size: 20,
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: AppText(
+                message,
+                variant: AppTextVariant.bodySmall,
+                color: colors.warningText,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            TextButton(
+              onPressed: () {
+                ref
+                    .read(filteredPaginatedTransactionsProvider.notifier)
+                    .refresh();
+              },
+              child: AppText(
+                l10n.action_retry,
+                variant: AppTextVariant.labelMedium,
+                color: colors.warningText,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -607,7 +675,8 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
               ),
             ),
           ),
-          itemCount: grouped.length + (state.hasMore ? 1 : 0),
+          itemCount:
+              grouped.length + (state.hasMore && state.isLoading ? 1 : 0),
           itemBuilder: (context, index) {
             if (index >= grouped.length) {
               return Center(
