@@ -38,8 +38,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
       if (!mounted) {
         return;
       }
-      unawaited(_routeToPermissionPromptIfNeeded());
-      unawaited(ref.read(contactsProvider.notifier).syncContacts());
+      unawaited(_loadContactsOrRouteToPermission());
     });
   }
 
@@ -130,18 +129,27 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
     }
   }
 
-  Future<void> _routeToPermissionPromptIfNeeded() async {
+  Future<void> _loadContactsOrRouteToPermission() async {
+    final routed = await _routeToPermissionPromptIfNeeded();
+    if (!routed && mounted) {
+      await ref.read(contactsProvider.notifier).syncContacts();
+    }
+  }
+
+  Future<bool> _routeToPermissionPromptIfNeeded() async {
     final contactsService = ref.read(contactsServiceProvider);
     final hasPermission = await contactsService.hasContactsPermission();
     if (hasPermission || !mounted) {
-      return;
+      return false;
     }
 
     final requiresSettings = await contactsService
         .contactsPermissionRequiresSettings();
     if (!requiresSettings && mounted) {
       context.go('/contacts/permission');
+      return true;
     }
+    return false;
   }
 
   Future<void> _requestPermissionAndSync({
