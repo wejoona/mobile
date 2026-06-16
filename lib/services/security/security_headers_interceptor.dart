@@ -51,45 +51,13 @@ class SecurityHeadersInterceptor extends Interceptor {
     RequestInterceptorHandler handler,
   ) async {
     try {
-      // Eagerly collect fingerprint on first request (cached after that)
-      if (_fingerprintService.cachedDeviceId == null && !_collecting) {
-        _collecting = true;
-        try {
-          await _fingerprintService.collect();
-        } finally {
-          _collecting = false;
+      final headers = await buildHeadersForPath(options.path);
+      for (final entry in headers.entries) {
+        if (entry.key == 'User-Agent' &&
+            options.headers.containsKey('User-Agent')) {
+          continue;
         }
-      }
-
-      final deviceId = _fingerprintService.cachedDeviceId;
-      final fingerprint = _fingerprintService.cachedFingerprintHash;
-      final device = _fingerprintService.cachedFingerprint;
-
-      if (deviceId != null) {
-        options.headers['X-Device-Id'] = deviceId;
-      }
-      if (fingerprint != null) {
-        options.headers['X-Device-Fingerprint'] = fingerprint;
-      }
-      if (device != null && !options.headers.containsKey('User-Agent')) {
-        options.headers['User-Agent'] =
-            'Korido/${device.appVersion} '
-            '(${device.os}; ${device.model ?? device.platform}; '
-            '${device.osVersion ?? 'unknown'})';
-      }
-
-      // Attach session risk token if available
-      if (sessionRiskToken != null) {
-        options.headers['X-Risk-Session'] = sessionRiskToken;
-      }
-
-      // Attach risk score only on sensitive endpoints to avoid overhead
-      if (_isSensitive(options.path)) {
-        final action = _inferAction(options.path);
-        final score = await _riskScoreService.calculateRiskScore(
-          action: action,
-        );
-        options.headers['X-Risk-Score'] = score.toStringAsFixed(2);
+        options.headers[entry.key] = entry.value;
       }
     } catch (e) {
       // Never block a request because of header enrichment failure
@@ -99,6 +67,49 @@ class SecurityHeadersInterceptor extends Interceptor {
     }
 
     handler.next(options);
+  }
+
+  /// Build the same security headers for requests made by temporary Dio
+  /// clients, such as token refresh retries that do not pass through the
+  /// normal interceptor chain.
+  Future<Map<String, String>> buildHeadersForPath(String path) async {
+    // Eagerly collect fingerprint on first request (cached after that).
+    if (_fingerprintService.cachedDeviceId == null && !_collecting) {
+      _collecting = true;
+      try {
+        await _fingerprintService.collect();
+      } finally {
+        _collecting = false;
+      }
+    }
+
+    final headers = <String, String>{};
+    final deviceId = _fingerprintService.cachedDeviceId;
+    final fingerprint = _fingerprintService.cachedFingerprintHash;
+    final device = _fingerprintService.cachedFingerprint;
+
+    if (deviceId != null) {
+      headers['X-Device-Id'] = deviceId;
+    }
+    if (fingerprint != null) {
+      headers['X-Device-Fingerprint'] = fingerprint;
+    }
+    if (device != null) {
+      headers['User-Agent'] =
+          'Korido/${device.appVersion} '
+          '(${device.os}; ${device.model ?? device.platform}; '
+          '${device.osVersion ?? 'unknown'})';
+    }
+    if (sessionRiskToken != null) {
+      headers['X-Risk-Session'] = sessionRiskToken!;
+    }
+    if (_isSensitive(path)) {
+      final action = _inferAction(path);
+      final score = await _riskScoreService.calculateRiskScore(action: action);
+      headers['X-Risk-Score'] = score.toStringAsFixed(2);
+    }
+
+    return headers;
   }
 
   bool _isSensitive(String path) {

@@ -433,10 +433,14 @@ class AuthInterceptor extends Interceptor {
           receiveTimeout: ApiConfig.receiveTimeout,
         ),
       );
+      final securityHeaders = await _ref
+          .read(securityHeadersInterceptorProvider)
+          .buildHeadersForPath('/auth/refresh');
 
       final response = await dio.post(
         '/auth/refresh',
         data: {'refreshToken': refreshToken},
+        options: Options(headers: securityHeaders),
       );
 
       if (response.statusCode == 200) {

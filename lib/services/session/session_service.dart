@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/services/security/security_headers_interceptor.dart';
 
 /// Session configuration
 class SessionConfig {
@@ -450,10 +451,14 @@ class SessionService extends Notifier<SessionState> {
           receiveTimeout: ApiConfig.receiveTimeout,
         ),
       );
+      final securityHeaders = await ref
+          .read(securityHeadersInterceptorProvider)
+          .buildHeadersForPath('/auth/refresh');
 
       final response = await dio.post(
         '/auth/refresh',
         data: {'refreshToken': refreshToken},
+        options: Options(headers: securityHeaders),
       );
 
       if (response.statusCode == 200) {

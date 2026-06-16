@@ -534,6 +534,38 @@ void main() {
       expect(enveloped.expiresIn, 1200);
     });
 
+    test('token refresh retries carry device security headers', () {
+      final apiClientSource = File(
+        'lib/services/api/api_client.dart',
+      ).readAsStringSync();
+      final sessionServiceSource = File(
+        'lib/services/session/session_service.dart',
+      ).readAsStringSync();
+      final securityHeadersSource = File(
+        'lib/services/security/security_headers_interceptor.dart',
+      ).readAsStringSync();
+
+      expect(
+        securityHeadersSource,
+        contains('Future<Map<String, String>> buildHeadersForPath'),
+      );
+      expect(
+        securityHeadersSource,
+        contains("headers['X-Device-Id']"),
+        reason: 'backend device blacklist guard keys off X-Device-Id',
+      );
+      expect(
+        securityHeadersSource,
+        contains("headers['X-Device-Fingerprint']"),
+      );
+
+      for (final source in [apiClientSource, sessionServiceSource]) {
+        expect(source, contains('securityHeadersInterceptorProvider'));
+        expect(source, contains("buildHeadersForPath('/auth/refresh')"));
+        expect(source, contains('options: Options(headers: securityHeaders)'));
+      }
+    });
+
     test('transaction stats accepts backend aggregate names', () {
       final stats = TransactionStats.fromJson({
         'totalTransactions': 7,
