@@ -2003,6 +2003,35 @@ void main() {
       },
     );
 
+    test('contact sync accepts split backend contact names', () async {
+      final service = ContactsService(MockSecureStorage());
+      final contact = SyncedContact(
+        id: 'local_1',
+        name: 'Local Alias',
+        phone: '+2250748805663',
+      );
+      final phoneHash = service.hashPhone(contact.phone);
+      final dio = MockDio()
+        ..queueResponse({
+          'matches': [
+            {
+              'phoneHash': phoneHash,
+              'userId': 'user_1',
+              'firstName': 'Awa',
+              'lastName': 'Korido',
+              'username': 'awa',
+            },
+          ],
+        });
+
+      final contacts = await service.getKoridoContacts(dio, [contact]);
+
+      expect(contacts.single.isKoridoUser, isTrue);
+      expect(contacts.single.joonaPayUserId, 'user_1');
+      expect(contacts.single.name, 'Awa Korido');
+      expect(contacts.single.username, 'awa');
+    });
+
     test('contact list sync uses the active market phone prefix', () async {
       final service = ContactsService(MockSecureStorage());
       final phoneHash = service.hashPhone(

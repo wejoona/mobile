@@ -548,11 +548,13 @@ class ContactsService {
   List<_ContactSyncMatch> _parseContactSyncMatches(Object? data) {
     return _extractMapList(data, ['matches', 'users', 'contacts'])
         .map((match) {
-          final displayName = _stringField(match, [
-            'displayName',
-            'name',
-            'username',
-          ]);
+          final splitName = [
+            _stringField(match, ['firstName', 'first_name']),
+            _stringField(match, ['lastName', 'last_name']),
+          ].where((part) => part.trim().isNotEmpty).join(' ');
+          final displayName = _stringField(match, ['displayName', 'name'])
+              .ifEmpty(splitName)
+              .ifEmpty(_stringField(match, ['username', 'handle']));
           final avatarUrl = _stringField(match, [
             'avatarUrl',
             'photoUrl',
@@ -585,6 +587,10 @@ class ContactsService {
         .where((match) => match.phoneHash.isNotEmpty && match.userId.isNotEmpty)
         .toList();
   }
+}
+
+extension _ContactStringFallback on String {
+  String ifEmpty(String fallback) => trim().isEmpty ? fallback : this;
 }
 
 /// Contacts Service Provider
