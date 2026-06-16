@@ -11,9 +11,9 @@ class NotificationsApi {
   Future<Response> list({int? page, int? limit, int? offset}) => _dio.get(
     '/notifications',
     queryParameters: {
-      if (_resolvedPage(page: page, limit: limit, offset: offset) != null)
-        'page': _resolvedPage(page: page, limit: limit, offset: offset),
       if (limit != null) 'limit': limit,
+      if (_resolvedOffset(page: page, limit: limit, offset: offset) != null)
+        'offset': _resolvedOffset(page: page, limit: limit, offset: offset),
     },
   );
 
@@ -60,12 +60,13 @@ class NotificationsApi {
   }
 }
 
-int? _resolvedPage({int? page, int? limit, int? offset}) {
-  if (page != null) {
-    return page;
+int? _resolvedOffset({int? page, int? limit, int? offset}) {
+  if (offset != null) {
+    return offset < 0 ? 0 : offset;
   }
-  if (offset != null && limit != null && limit > 0) {
-    return (offset ~/ limit) + 1;
+  if (page != null && limit != null && limit > 0) {
+    final safePage = page < 1 ? 1 : page;
+    return (safePage - 1) * limit;
   }
   return null;
 }

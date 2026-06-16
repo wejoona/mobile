@@ -929,7 +929,10 @@ void main() {
 
         expect(dio.requestHistory[0].method, 'GET');
         expect(dio.requestHistory[0].path, '/notifications');
-        expect(dio.requestHistory[0].queryParameters, {'page': 3, 'limit': 20});
+        expect(dio.requestHistory[0].queryParameters, {
+          'limit': 20,
+          'offset': 40,
+        });
         expect(dio.requestHistory[1].method, 'DELETE');
         expect(
           dio.requestHistory[1].path,
