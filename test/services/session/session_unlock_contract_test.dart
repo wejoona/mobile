@@ -306,6 +306,28 @@ void main() {
           'a rejected/cleared refresh token must not route users to a dead PIN unlock screen',
     );
   });
+
+  test('local auth cleanup clears pending OTP and PIN login flow state', () {
+    final source = File(
+      'lib/features/auth/providers/auth_provider.dart',
+    ).readAsStringSync();
+
+    final cleanupBody = _methodBody(source, 'clearLocalSession');
+
+    expect(source, contains('login_provider.dart'));
+    expect(
+      cleanupBody,
+      contains('ref.invalidate(loginProvider)'),
+      reason:
+          'logout/security cleanup must not leave a stale pending PIN session that can keep PIN screens reachable',
+    );
+    expect(
+      cleanupBody.indexOf('endSession()'),
+      lessThan(cleanupBody.indexOf('ref.invalidate(loginProvider)')),
+      reason:
+          'the runtime session should be ended before the login flow state is discarded',
+    );
+  });
 }
 
 String _methodBody(String source, String methodName) {
