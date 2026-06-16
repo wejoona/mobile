@@ -33,6 +33,7 @@ class _ContactPickerBottomSheetState
   bool _permissionRequired = false;
   bool _requiresSettings = false;
   bool _isPermissionActionLoading = false;
+  bool _initialPermissionPromptAttempted = false;
   Timer? _lookupDebounce;
 
   @override
@@ -64,7 +65,11 @@ class _ContactPickerBottomSheetState
       }
     } on Object {
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+          _permissionRequired = true;
+          _requiresSettings = false;
+        });
       }
     }
   }
@@ -75,10 +80,25 @@ class _ContactPickerBottomSheetState
     if (!hasPermission) {
       final requiresSettings = await contactsService
           .contactsPermissionRequiresSettings();
+
+      // Opening the picker from "From contacts" is already an explicit user
+      // action. Request immediately while iOS/Android can still show the
+      // system prompt; otherwise the sheet feels like it reports an error
+      // without ever asking for permission.
+      if (!requiresSettings && !_initialPermissionPromptAttempted) {
+        _initialPermissionPromptAttempted = true;
+        final granted = await contactsService.requestContactsPermission();
+        if (granted) {
+          return _readSyncedDeviceContacts(contactsService);
+        }
+      }
+
+      final refreshedRequiresSettings = await contactsService
+          .contactsPermissionRequiresSettings();
       if (mounted) {
         setState(() {
           _permissionRequired = true;
-          _requiresSettings = requiresSettings;
+          _requiresSettings = refreshedRequiresSettings;
           _isLoading = false;
         });
       }
@@ -283,13 +303,15 @@ class _ContactPickerBottomSheetState
       height: MediaQuery.of(context).size.height * 0.8,
       decoration: BoxDecoration(
         color: colors.container,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppRadius.lg),
+        ),
       ),
       child: Column(
         children: [
           // Handle
           Container(
-            margin: EdgeInsets.only(top: AppSpacing.sm),
+            margin: const EdgeInsets.only(top: AppSpacing.sm),
             width: 40,
             height: 4,
             decoration: BoxDecoration(
@@ -297,11 +319,11 @@ class _ContactPickerBottomSheetState
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          SizedBox(height: AppSpacing.md),
+          const SizedBox(height: AppSpacing.md),
 
           // Header
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -317,10 +339,10 @@ class _ContactPickerBottomSheetState
               ],
             ),
           ),
-          SizedBox(height: AppSpacing.md),
+          const SizedBox(height: AppSpacing.md),
 
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: AppInput(
               controller: _searchController,
               hint: l10n.send_searchContacts,
@@ -328,7 +350,7 @@ class _ContactPickerBottomSheetState
               onChanged: _filterContacts,
             ),
           ),
-          SizedBox(height: AppSpacing.md),
+          const SizedBox(height: AppSpacing.md),
 
           // Contacts list
           Expanded(
@@ -345,11 +367,13 @@ class _ContactPickerBottomSheetState
                       !_isLookupLoading
                 ? _buildEmptyState(colors)
                 : ListView(
-                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                    ),
                     children: [
                       if (query.length >= 3) _buildLookupSection(colors),
                       if (_permissionRequired) ...[
-                        SizedBox(height: AppSpacing.md),
+                        const SizedBox(height: AppSpacing.md),
                         _buildPermissionRequestCard(colors),
                       ],
                       if (_filteredContacts.isNotEmpty) ...[
@@ -397,7 +421,6 @@ class _ContactPickerBottomSheetState
                       fr: 'Aucun compte Korido trouvé',
                     )
                   : AppLocalizations.of(context)!.send_noContactsFound,
-              variant: AppTextVariant.bodyMedium,
               color: colors.textPrimary,
               textAlign: TextAlign.center,
               fontWeight: FontWeight.w600,
@@ -420,12 +443,10 @@ class _ContactPickerBottomSheetState
     );
   }
 
-  Widget _buildPermissionRequest(ThemeColors colors) {
-    return ListView(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      children: [_buildPermissionRequestCard(colors)],
-    );
-  }
+  Widget _buildPermissionRequest(ThemeColors colors) => ListView(
+    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+    children: [_buildPermissionRequestCard(colors)],
+  );
 
   Widget _buildPermissionRequestCard(ThemeColors colors) {
     final l10n = AppLocalizations.of(context)!;
@@ -445,7 +466,7 @@ class _ContactPickerBottomSheetState
             ),
             child: Icon(Icons.contacts_outlined, color: colors.gold, size: 30),
           ),
-          SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.lg),
           AppText(
             l10n.contacts_permission_title,
             variant: AppTextVariant.titleMedium,
@@ -453,14 +474,25 @@ class _ContactPickerBottomSheetState
             textAlign: TextAlign.center,
             fontWeight: FontWeight.w700,
           ),
-          SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: AppSpacing.sm),
           AppText(
             l10n.contacts_permission_benefit2_desc,
-            variant: AppTextVariant.bodyMedium,
             color: colors.textSecondary,
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: AppSpacing.xl),
+          if (!_requiresSettings) ...[
+            const SizedBox(height: AppSpacing.sm),
+            AppText(
+              _localizedText(
+                en: 'You can still search Korido accounts by name, username, or phone.',
+                fr: 'Vous pouvez toujours rechercher des comptes Korido par nom, identifiant ou numéro.',
+              ),
+              variant: AppTextVariant.bodySmall,
+              color: colors.textTertiary,
+              textAlign: TextAlign.center,
+            ),
+          ],
+          const SizedBox(height: AppSpacing.xl),
           AppButton(
             label: _requiresSettings
                 ? l10n.action_open_settings
@@ -484,7 +516,7 @@ class _ContactPickerBottomSheetState
 
     if (_isLookupLoading) {
       return Padding(
-        padding: EdgeInsets.only(bottom: AppSpacing.md),
+        padding: const EdgeInsets.only(bottom: AppSpacing.md),
         child: Row(
           children: [
             SizedBox(
@@ -495,7 +527,7 @@ class _ContactPickerBottomSheetState
                 valueColor: AlwaysStoppedAnimation<Color>(colors.gold),
               ),
             ),
-            SizedBox(width: AppSpacing.sm),
+            const SizedBox(width: AppSpacing.sm),
             AppText(
               _localizedText(
                 en: 'Searching Korido accounts',
@@ -511,12 +543,12 @@ class _ContactPickerBottomSheetState
 
     if (_lookupResults.isEmpty) {
       return Padding(
-        padding: EdgeInsets.only(bottom: AppSpacing.md),
+        padding: const EdgeInsets.only(bottom: AppSpacing.md),
         child: AppCard(
           child: Row(
             children: [
               Icon(Icons.verified_user_outlined, color: colors.textSecondary),
-              SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: AppText(
                   l10n.contacts_no_results,
@@ -537,22 +569,20 @@ class _ContactPickerBottomSheetState
         ..._lookupResults.map(
           (contact) => _buildContactItem(contact, colors, fromLookup: true),
         ),
-        SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: AppSpacing.sm),
       ],
     );
   }
 
-  Widget _buildSectionLabel(String label, ThemeColors colors) {
-    return Padding(
-      padding: EdgeInsets.only(top: AppSpacing.xs, bottom: AppSpacing.sm),
-      child: AppText(
-        label,
-        variant: AppTextVariant.labelMedium,
-        color: colors.textSecondary,
-        fontWeight: FontWeight.w700,
-      ),
-    );
-  }
+  Widget _buildSectionLabel(String label, ThemeColors colors) => Padding(
+    padding: const EdgeInsets.only(top: AppSpacing.xs, bottom: AppSpacing.sm),
+    child: AppText(
+      label,
+      variant: AppTextVariant.labelMedium,
+      color: colors.textSecondary,
+      fontWeight: FontWeight.w700,
+    ),
+  );
 
   Widget _buildContactItem(
     SyncedContact contact,
@@ -574,9 +604,9 @@ class _ContactPickerBottomSheetState
       behavior: HitTestBehavior.opaque,
       onTap: canSelect
           ? () => Navigator.pop(context, contact)
-          : () => _showLookupNeedsPhoneMessage(),
+          : _showLookupNeedsPhoneMessage,
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         child: Row(
           children: [
             Stack(
@@ -600,7 +630,7 @@ class _ContactPickerBottomSheetState
                   ),
               ],
             ),
-            SizedBox(width: AppSpacing.md),
+            const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -616,12 +646,12 @@ class _ContactPickerBottomSheetState
                         ),
                       ),
                       if (contact.isKoridoUser) ...[
-                        SizedBox(width: AppSpacing.xs),
+                        const SizedBox(width: AppSpacing.xs),
                         const KoridoAccountBadge(compact: true),
                       ],
                     ],
                   ),
-                  SizedBox(height: AppSpacing.xs),
+                  const SizedBox(height: AppSpacing.xs),
                   AppText(
                     fromLookup && contact.phone.isEmpty
                         ? _localizedText(
