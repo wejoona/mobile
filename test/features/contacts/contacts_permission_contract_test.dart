@@ -84,6 +84,19 @@ void main() {
     expect(permissionScreenSource, isNot(contains('permission_handler')));
     expect(listSource, contains('openContactsSettings'));
     expect(listSource, isNot(contains('permission_handler')));
+    expect(listSource, contains('_loadContactsOrRouteToPermission'));
+    expect(
+      listSource,
+      contains('final routed = await _routeToPermissionPromptIfNeeded();'),
+      reason:
+          'contacts list startup should not sync and show an inline error while also routing first-time users to the permission explainer',
+    );
+    expect(
+      listSource,
+      contains('if (!routed && mounted)'),
+      reason:
+          'background contact sync must only run after the permission route decision is settled',
+    );
 
     final recipientContactBody = _methodBody(
       recipientSource,
@@ -115,9 +128,15 @@ String _methodBody(String source, String methodName) {
   var depth = 0;
   for (var i = bodyStart; i < source.length; i++) {
     final char = source[i];
-    if (char == '{') depth++;
-    if (char == '}') depth--;
-    if (depth == 0) return source.substring(bodyStart, i + 1);
+    if (char == '{') {
+      depth++;
+    }
+    if (char == '}') {
+      depth--;
+    }
+    if (depth == 0) {
+      return source.substring(bodyStart, i + 1);
+    }
   }
 
   fail('Could not parse $methodName body');
