@@ -97,5 +97,14 @@ void main() {
       expect(match.isError, isFalse);
       expect(match.matches.last.route, isA<GoRoute>());
     });
+
+    test('starts anonymous users on login instead of registration', () {
+      final container = buildContainer();
+      addTearDown(container.dispose);
+
+      final router = container.read(routerProvider);
+
+      expect(router.routeInformationProvider.value.uri.path, '/login');
+    });
   });
 }

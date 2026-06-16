@@ -103,7 +103,8 @@ class _SplashViewState extends ConsumerState<SplashView>
       if (_tryNavigate(currentState)) return;
     }
 
-    // New users: check onboarding flag
+    // New users should land on login. Product intro/onboarding stays opt-in from
+    // explicit signup actions so registration never becomes the default door.
     final prefs = await SharedPreferences.getInstance();
     final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
 
@@ -113,7 +114,7 @@ class _SplashViewState extends ConsumerState<SplashView>
         !currentState.isAuthenticated &&
         !currentState.isLocked) {
       _hasNavigated = true;
-      context.go('/onboarding');
+      context.go('/login');
       return;
     }
 

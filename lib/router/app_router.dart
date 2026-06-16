@@ -10,7 +10,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   final refreshNotifier = ref.watch(routerRefreshProvider);
 
   return GoRouter(
-    initialLocation: '/',
+    initialLocation: '/login',
     debugLogDiagnostics: EnvironmentConfig.verboseLogs,
     refreshListenable: refreshNotifier,
     observers: [SentryNavigatorObserver()],

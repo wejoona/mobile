@@ -76,6 +76,18 @@ void main() {
       isNot(contains('acceptedTerms')),
       reason: 'terms acceptance belongs to register/onboarding, never login',
     );
+    expect(
+      source,
+      contains("context.go('/onboarding/phone')"),
+      reason:
+          'Sign up from login must open the registration phone step, not the intro carousel',
+    );
+    expect(
+      source,
+      isNot(contains("context.go('/onboarding')")),
+      reason:
+          'The intro carousel must not be wired as the login sign-up target',
+    );
   });
 }
 
