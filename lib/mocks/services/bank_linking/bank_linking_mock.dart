@@ -272,7 +272,9 @@ class BankLinkingMock {
     await Future.delayed(const Duration(milliseconds: 800));
 
     // ignore: avoid_dynamic_calls
-    final params = options.extractPathParams('/api/v1/bank-accounts/:id/verify');
+    final params = options.extractPathParams(
+      '/api/v1/bank-accounts/:id/verify',
+    );
     // ignore: avoid_dynamic_calls
     final id = params['id'];
     // ignore: avoid_dynamic_calls
@@ -289,7 +291,7 @@ class BankLinkingMock {
     }
 
     // Mock OTP validation (accept any 6-digit code in dev)
-    if (otp == null || otp.length != 6) {
+    if (otp.length != 6) {
       return MockResponse(
         statusCode: 400,
         data: {'message': 'Invalid OTP code'},
@@ -365,7 +367,9 @@ class BankLinkingMock {
     await Future.delayed(const Duration(milliseconds: 500));
 
     // ignore: avoid_dynamic_calls
-    final params = options.extractPathParams('/api/v1/bank-accounts/:id/balance');
+    final params = options.extractPathParams(
+      '/api/v1/bank-accounts/:id/balance',
+    );
     // ignore: avoid_dynamic_calls
     final id = params['id'];
 
@@ -398,7 +402,9 @@ class BankLinkingMock {
     await Future.delayed(const Duration(seconds: 2));
 
     // ignore: avoid_dynamic_calls
-    final params = options.extractPathParams('/api/v1/bank-accounts/:id/deposit');
+    final params = options.extractPathParams(
+      '/api/v1/bank-accounts/:id/deposit',
+    );
     // ignore: avoid_dynamic_calls
     final id = params['id'];
     // ignore: avoid_dynamic_calls

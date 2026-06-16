@@ -288,7 +288,10 @@ class DepositMock {
         20;
     final offset =
         int.tryParse(options.queryParameters['offset']?.toString() ?? '0') ?? 0;
-    final deposits = DepositMockState.deposits.skip(offset).take(limit).toList();
+    final deposits = DepositMockState.deposits
+        .skip(offset)
+        .take(limit)
+        .toList();
 
     return MockResponse.success({
       'deposits': deposits,
@@ -653,23 +656,6 @@ class DepositMock {
         return _legacyInstructions('wave-ci');
       default:
         return 'Follow the in-app payment instructions to complete deposit.';
-    }
-  }
-
-  static String _paymentMethodType(String providerCode) {
-    switch (providerCode) {
-      case 'OMCI':
-        return 'OTP';
-      case 'WAVECI':
-        return 'QR_LINK';
-      case 'US_CARD':
-        return 'CARD';
-      case 'US_ACH':
-        return 'ACH';
-      case 'USDC_CRYPTO':
-        return 'CRYPTO';
-      default:
-        return 'PUSH';
     }
   }
 
