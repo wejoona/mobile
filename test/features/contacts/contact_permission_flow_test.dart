@@ -76,6 +76,14 @@ void main() {
       expect(lookupBody, contains('localUserIds'));
       expect(lookupBody, contains('_lookupFailed = true'));
       expect(source, contains('!_isLookupLoading'));
+      expect(
+        source,
+        isNot(
+          contains(
+            'if (!state.permissionRequired)\n                    Padding',
+          ),
+        ),
+      );
     });
   });
 }

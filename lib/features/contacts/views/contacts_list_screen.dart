@@ -239,16 +239,15 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                       ),
                     ),
 
-                  if (!state.permissionRequired)
-                    Padding(
-                      padding: EdgeInsets.all(AppSpacing.md),
-                      child: AppInput(
-                        controller: _searchController,
-                        label: l10n.contacts_search,
-                        prefixIcon: Icons.search,
-                        onChanged: _handleSearchChanged,
-                      ),
+                  Padding(
+                    padding: EdgeInsets.all(AppSpacing.md),
+                    child: AppInput(
+                      controller: _searchController,
+                      label: l10n.contacts_search,
+                      prefixIcon: Icons.search,
+                      onChanged: _handleSearchChanged,
                     ),
+                  ),
 
                   // Sync status banner
                   if (state.lastSyncResult != null &&
@@ -340,10 +339,10 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                                     en: 'Korido search is unavailable',
                                     fr: 'La recherche Korido est indisponible',
                                   )
-                                : state.permissionRequired
-                                ? l10n.contacts_permission_title
                                 : _searchQuery.isNotEmpty
                                 ? l10n.contacts_no_results
+                                : state.permissionRequired
+                                ? l10n.contacts_permission_title
                                 : l10n.contacts_empty,
                             description: _lookupFailed
                                 ? _localizedText(
@@ -352,8 +351,9 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                                   )
                                 : null,
                             showAction:
-                                state.permissionRequired ||
-                                _searchQuery.isEmpty,
+                                _searchQuery.isEmpty ||
+                                (state.permissionRequired &&
+                                    _searchQuery.trim().length < 3),
                             requiresSettings: state.permissionRequiresSettings,
                             isLoading: _isPermissionActionLoading,
                             onAction: _manualSync,
