@@ -148,6 +148,6 @@ class AuthGatedShell extends ConsumerWidget {
       );
     }
 
-    return MainShell(child: child);
+    return PopScope(canPop: false, child: MainShell(child: child));
   }
 }

@@ -95,6 +95,12 @@ String? appRedirect(BuildContext context, GoRouterState state) {
     return unlockedLockScreenRedirect;
   }
 
+  if (isAuthenticated &&
+      !isLockedState &&
+      _isAuthenticatedDeadEndRoute(location)) {
+    return '/home';
+  }
+
   final fsmRedirect = _fsmRedirect(
     location: location,
     fsmTargetRoute: fsmTargetRoute,
@@ -336,6 +342,12 @@ bool _isFsmRoute(String location) {
 
 bool _isAuthRoute(String location) =>
     location.startsWith('/login') || location == '/otp';
+
+bool _isAuthenticatedDeadEndRoute(String location) =>
+    _isAuthRoute(location) ||
+    location == '/onboarding' ||
+    location == '/onboarding/phone' ||
+    location == '/onboarding/otp';
 
 bool _isMerchantQrPath(String location) =>
     location == '/scan-to-pay' ||

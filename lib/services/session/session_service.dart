@@ -157,6 +157,7 @@ class SessionService extends Notifier<SessionState> {
   /// Record user activity to reset inactivity timer
   void recordActivity() {
     if (state.status == SessionStatus.inactive ||
+        state.status == SessionStatus.locked ||
         state.status == SessionStatus.expired) {
       return;
     }
@@ -190,9 +191,19 @@ class SessionService extends Notifier<SessionState> {
 
   /// Unlock the session after successful PIN/biometric
   void unlockSession() {
+    _cancelWarningTimer();
+    _countdownTimer?.cancel();
+    _countdownTimer = null;
+    _warningTimer?.cancel();
+    _warningTimer = null;
+    _backgroundLockTimer?.cancel();
+    _backgroundLockTimer = null;
+    _backgroundEnteredAt = null;
     state = state.copyWith(
       status: SessionStatus.active,
       lastActivity: DateTime.now(),
+      remainingSeconds: null,
+      isInBackground: false,
     );
     _startInactivityTimer();
   }

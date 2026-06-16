@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/domain/entities/expense.dart';
 import 'package:usdc_wallet/features/alerts/views/alert_detail_view.dart';
@@ -14,6 +15,7 @@ import 'package:usdc_wallet/features/expenses/views/expense_detail_view.dart';
 import 'package:usdc_wallet/features/expenses/views/expense_reports_view.dart';
 import 'package:usdc_wallet/features/expenses/views/expenses_view.dart';
 import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
+import 'package:usdc_wallet/features/merchant_pay/providers/merchant_provider.dart';
 import 'package:usdc_wallet/features/merchant_pay/views/create_payment_request_view.dart';
 import 'package:usdc_wallet/features/merchant_pay/views/merchant_dashboard_view.dart';
 import 'package:usdc_wallet/features/merchant_pay/views/merchant_qr_view.dart';
@@ -60,39 +62,42 @@ List<RouteBase> commerceRoutes() => [
   GoRoute(
     path: '/merchant-qr',
     pageBuilder: (context, state) {
-      final merchant = state.extra as MerchantResponse?;
-      Widget child;
-      if (merchant != null) {
-        child = MerchantQrView(merchant: merchant);
-      } else {
-        child = const RoutePlaceholderPage(title: 'Merchant Not Found');
-      }
+      final merchant = state.extra is MerchantResponse
+          ? state.extra as MerchantResponse
+          : null;
+      final child = _MerchantProfileRoute(
+        title: 'Merchant Not Found',
+        merchant: merchant,
+        builder: (merchant) => MerchantQrView(merchant: merchant),
+      );
       return AppPageTransitions.verticalSlide(state: state, child: child);
     },
   ),
   GoRoute(
     path: '/create-payment-request',
     pageBuilder: (context, state) {
-      final merchant = state.extra as MerchantResponse?;
-      Widget child;
-      if (merchant != null) {
-        child = CreatePaymentRequestView(merchant: merchant);
-      } else {
-        child = const RoutePlaceholderPage(title: 'Merchant Not Found');
-      }
+      final merchant = state.extra is MerchantResponse
+          ? state.extra as MerchantResponse
+          : null;
+      final child = _MerchantProfileRoute(
+        title: 'Merchant Not Found',
+        merchant: merchant,
+        builder: (merchant) => CreatePaymentRequestView(merchant: merchant),
+      );
       return AppPageTransitions.verticalSlide(state: state, child: child);
     },
   ),
   GoRoute(
     path: '/merchant-transactions',
     pageBuilder: (context, state) {
-      final merchantId = state.extra as String?;
-      Widget child;
-      if (merchantId != null) {
-        child = MerchantTransactionsView(merchantId: merchantId);
-      } else {
-        child = const RoutePlaceholderPage(title: 'Merchant Not Found');
-      }
+      final merchantId = state.extra is String ? state.extra as String : null;
+      final child = merchantId != null
+          ? MerchantTransactionsView(merchantId: merchantId)
+          : _MerchantProfileRoute(
+              title: 'Merchant Not Found',
+              builder: (merchant) =>
+                  MerchantTransactionsView(merchantId: merchant.merchantId),
+            );
       return AppPageTransitions.fade(state: state, child: child);
     },
   ),
@@ -269,3 +274,34 @@ List<RouteBase> commerceRoutes() => [
     },
   ),
 ];
+
+class _MerchantProfileRoute extends ConsumerWidget {
+  const _MerchantProfileRoute({
+    required this.title,
+    required this.builder,
+    this.merchant,
+  });
+
+  final String title;
+  final MerchantResponse? merchant;
+  final Widget Function(MerchantResponse merchant) builder;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final resolvedMerchant = merchant;
+    if (resolvedMerchant != null) {
+      return builder(resolvedMerchant);
+    }
+
+    final profile = ref.watch(merchantProfileProvider);
+    return profile.when(
+      data: (merchant) => merchant == null
+          ? RoutePlaceholderPage(title: title)
+          : builder(merchant),
+      loading: () => const Scaffold(
+        body: SafeArea(child: Center(child: CircularProgressIndicator())),
+      ),
+      error: (_, __) => RoutePlaceholderPage(title: title),
+    );
+  }
+}

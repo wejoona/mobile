@@ -145,8 +145,19 @@ void main() {
     final source = File(
       'lib/services/session/session_manager.dart',
     ).readAsStringSync();
+    final sessionServiceSource = File(
+      'lib/services/session/session_service.dart',
+    ).readAsStringSync();
 
     final showLockBody = _methodBody(source, '_showLockScreen');
+    final recordActivityBody = _methodBody(
+      sessionServiceSource,
+      'recordActivity',
+    );
+    final unlockSessionBody = _methodBody(
+      sessionServiceSource,
+      'unlockSession',
+    );
 
     expect(showLockBody, contains('ref.read(sessionServiceProvider)'));
     expect(showLockBody, isNot(contains('!auth.isLocked')));
@@ -165,6 +176,30 @@ void main() {
       redirectorSource,
       contains('authState.isLocked || sessionState.isLocked'),
     );
+    expect(
+      recordActivityBody,
+      contains('state.status == SessionStatus.locked'),
+      reason: 'PIN screen taps must not restart inactivity timers while locked',
+    );
+    expect(unlockSessionBody, contains('_cancelWarningTimer()'));
+    expect(unlockSessionBody, contains('_backgroundLockTimer?.cancel()'));
+    expect(unlockSessionBody, contains('_backgroundEnteredAt = null'));
+    expect(unlockSessionBody, contains('remainingSeconds: null'));
+  });
+
+  test('authenticated main shell cannot pop back to login', () {
+    final shellSource = File(
+      'lib/router/widgets/navigation_shell.dart',
+    ).readAsStringSync();
+    final redirectorSource = File(
+      'lib/router/app_redirector.dart',
+    ).readAsStringSync();
+
+    expect(shellSource, contains('PopScope'));
+    expect(shellSource, contains('canPop: false'));
+    expect(redirectorSource, contains('_isAuthenticatedDeadEndRoute'));
+    expect(redirectorSource, contains("location == '/onboarding/phone'"));
+    expect(redirectorSource, contains("return '/home'"));
   });
 
   test('session refresh accepts the backend response envelope', () {

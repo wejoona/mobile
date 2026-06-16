@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:screenshot/screenshot.dart';
@@ -206,12 +207,10 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
                   Expanded(
                     child: AppButton(
                       label: 'Request Amount',
-                      onPressed: () {
-                        Navigator.of(context).pushNamed(
-                          '/create-payment-request',
-                          arguments: widget.merchant,
-                        );
-                      },
+                      onPressed: () => context.push(
+                        '/create-payment-request',
+                        extra: widget.merchant,
+                      ),
                       variant: AppButtonVariant.primary,
                       icon: Icons.add,
                     ),
