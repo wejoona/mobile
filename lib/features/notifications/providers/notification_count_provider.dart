@@ -5,14 +5,19 @@ import 'package:usdc_wallet/features/notifications/providers/notifications_provi
 
 /// Run 360: Unread notification count provider with auto-refresh
 final unreadNotificationCountProvider = Provider<int>((ref) {
-  return ref.watch(notifications.unreadNotificationCountProvider).value ?? 0;
+  final unreadCount = ref.watch(notifications.unreadNotificationCountProvider);
+  final lastKnown = ref.watch(
+    notifications.lastKnownUnreadNotificationCountProvider,
+  );
+  return unreadCount.hasValue ? unreadCount.value ?? lastKnown : lastKnown;
 });
 
 /// Provider that periodically polls for new notifications
 final notificationPollingProvider = Provider<void>((ref) {
   final timer = Timer.periodic(const Duration(minutes: 2), (_) {
-    ref.invalidate(notifications.notificationsProvider);
-    ref.invalidate(notifications.unreadNotificationCountProvider);
+    ref
+      ..invalidate(notifications.notificationsProvider)
+      ..invalidate(notifications.unreadNotificationCountProvider);
   });
   ref.onDispose(timer.cancel);
 });

@@ -815,6 +815,41 @@ void main() {
       },
     );
 
+    test(
+      'home notification badge preserves last known unread count while reloading',
+      () async {
+        final container = ProviderContainer(
+          overrides: [
+            notification_feed.lastKnownUnreadNotificationCountProvider
+                .overrideWith((ref) => 5),
+            notification_feed.unreadNotificationCountProvider.overrideWith((
+              ref,
+            ) {
+              return Future<int>.delayed(const Duration(seconds: 30), () => 9);
+            }),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        expect(
+          container.read(notification_count.unreadNotificationCountProvider),
+          5,
+        );
+      },
+    );
+
+    test('notification permission provider delegates unread count to feed', () {
+      final permissionProviderSource = File(
+        'lib/features/notifications/providers/notification_permission_provider.dart',
+      ).readAsStringSync();
+
+      expect(permissionProviderSource, isNot(contains('sdkProvider')));
+      expect(
+        permissionProviderSource,
+        contains('notifications.unreadNotificationCountProvider.future'),
+      );
+    });
+
     test('notifications pull refresh reloads feed and unread count', () {
       final notificationsViewSource = File(
         'lib/features/notifications/views/notifications_view.dart',

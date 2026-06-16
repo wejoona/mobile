@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart'
+    as notifications;
 import 'package:usdc_wallet/services/notifications/push_notification_service.dart';
-import 'package:usdc_wallet/services/sdk/usdc_wallet_sdk.dart';
 
 /// Notification Permission State
 class NotificationPermissionState {
@@ -96,10 +97,5 @@ final isNotificationEnabledProvider = FutureProvider<bool>((ref) async {
 
 /// Provider for unread notification count
 final unreadNotificationCountProvider = FutureProvider<int>((ref) async {
-  final sdk = ref.watch(sdkProvider);
-  try {
-    return await sdk.notifications.getUnreadCount();
-  } catch (e) {
-    return 0;
-  }
+  return ref.watch(notifications.unreadNotificationCountProvider.future);
 });
