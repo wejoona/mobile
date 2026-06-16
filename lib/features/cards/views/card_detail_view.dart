@@ -106,39 +106,68 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
             const SizedBox(height: AppSpacing.md),
 
             // Card Number
-            _buildDetailRow(
-              context,
-              l10n,
-              colors,
-              label: l10n.cards_cardNumber,
-              value: _showFullNumber
-                  ? (card.cardNumber ?? card.maskedNumber)
-                  : card.maskedNumber,
-              icon: _showFullNumber ? Icons.visibility_off : Icons.visibility,
-              onIconPressed: () {
-                setState(() => _showFullNumber = !_showFullNumber);
+            Builder(
+              builder: (context) {
+                final fullCardNumber = card.cardNumber;
+                final hasFullCardNumber =
+                    fullCardNumber != null && fullCardNumber.isNotEmpty;
+
+                return _buildDetailRow(
+                  context,
+                  l10n,
+                  colors,
+                  label: l10n.cards_cardNumber,
+                  value: hasFullCardNumber && _showFullNumber
+                      ? fullCardNumber
+                      : card.maskedNumber,
+                  icon: hasFullCardNumber
+                      ? (_showFullNumber
+                            ? Icons.visibility_off
+                            : Icons.visibility)
+                      : null,
+                  onIconPressed: hasFullCardNumber
+                      ? () {
+                          setState(() => _showFullNumber = !_showFullNumber);
+                        }
+                      : null,
+                  onCopy: hasFullCardNumber
+                      ? () => _copyToClipboard(context, l10n, fullCardNumber)
+                      : null,
+                );
               },
-              onCopy: () => _copyToClipboard(
-                context,
-                l10n,
-                card.cardNumber ?? card.maskedNumber,
-              ),
             ),
 
             const SizedBox(height: AppSpacing.md),
 
             // CVV
-            _buildDetailRow(
-              context,
-              l10n,
-              colors,
-              label: l10n.cards_cvv,
-              value: _showCVV ? (card.cvv ?? '***') : '***',
-              icon: _showCVV ? Icons.visibility_off : Icons.visibility,
-              onIconPressed: () {
-                setState(() => _showCVV = !_showCVV);
+            Builder(
+              builder: (context) {
+                final cvv = card.cvv;
+                final hasCvv = cvv != null && cvv.isNotEmpty;
+
+                return _buildDetailRow(
+                  context,
+                  l10n,
+                  colors,
+                  label: l10n.cards_cvv,
+                  value: hasCvv && _showCVV
+                      ? cvv
+                      : hasCvv
+                      ? '***'
+                      : l10n.biometric_settings_unavailable,
+                  icon: hasCvv
+                      ? (_showCVV ? Icons.visibility_off : Icons.visibility)
+                      : null,
+                  onIconPressed: hasCvv
+                      ? () {
+                          setState(() => _showCVV = !_showCVV);
+                        }
+                      : null,
+                  onCopy: hasCvv
+                      ? () => _copyToClipboard(context, l10n, cvv)
+                      : null,
+                );
               },
-              onCopy: () => _copyToClipboard(context, l10n, card.cvv ?? '***'),
             ),
 
             const SizedBox(height: AppSpacing.md),

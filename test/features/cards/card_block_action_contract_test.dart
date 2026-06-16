@@ -20,4 +20,19 @@ void main() {
     expect(listSource, isNot(contains('actions.block')));
     expect(serviceSource, isNot(contains('Future<void> block(')));
   });
+
+  test('card detail does not reveal or copy placeholder sensitive values', () {
+    final detailSource = File(
+      'lib/features/cards/views/card_detail_view.dart',
+    ).readAsStringSync();
+
+    expect(detailSource, contains('hasFullCardNumber'));
+    expect(detailSource, contains('hasCvv'));
+    expect(detailSource, contains('biometric_settings_unavailable'));
+    expect(
+      detailSource,
+      isNot(contains('card.cardNumber ?? card.maskedNumber')),
+    );
+    expect(detailSource, isNot(contains("card.cvv ?? '***'")));
+  });
 }
