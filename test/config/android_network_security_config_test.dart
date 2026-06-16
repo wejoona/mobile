@@ -17,8 +17,23 @@ void main() {
       expect(xml, contains('korido-api.joonapay.com'));
       expect(
         xml,
+        contains(
+          '<domain includeSubdomains="false">korido-api.joonapay.com</domain>',
+        ),
+      );
+      expect(
+        xml,
+        contains('<domain includeSubdomains="false">joonapay.com</domain>'),
+      );
+      expect(
+        xml,
         isNot(contains('<domain includeSubdomains="true">api.joonapay.com')),
       );
+      expect(
+        xml,
+        isNot(contains('<domain includeSubdomains="true">joonapay.com')),
+      );
+      expect(xml, isNot(contains('staging-korido-api.joonapay.com')));
       expect(xml, contains('DcXImxqsw11wXDKaem3Be3mcFibKSosQGkPpNOw9Zuw='));
     });
 

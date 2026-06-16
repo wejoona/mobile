@@ -23,10 +23,12 @@
         </trust-anchors>
     </base-config>
 
-    <!-- Production API domain with certificate pinning -->
+    <!-- Production hosts with certificate pinning.
+         Keep these exact-host scoped so staging and future product subdomains
+         are not accidentally pinned to Korido prod. -->
     <domain-config cleartextTrafficPermitted="false">
-        <domain includeSubdomains="true">korido-api.joonapay.com</domain>
-        <domain includeSubdomains="true">joonapay.com</domain>
+        <domain includeSubdomains="false">korido-api.joonapay.com</domain>
+        <domain includeSubdomains="false">joonapay.com</domain>
         <pin-set expiration="2026-08-04">
             <!-- Leaf SPKI SHA-256 for Korido API, generated 2026-06-03. -->
             <pin digest="SHA-256">DcXImxqsw11wXDKaem3Be3mcFibKSosQGkPpNOw9Zuw=</pin>
