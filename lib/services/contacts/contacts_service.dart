@@ -5,7 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:permission_handler/permission_handler.dart' as ph;
 import 'package:usdc_wallet/domain/entities/contact.dart' as domain;
 import 'package:usdc_wallet/features/contacts/models/contact_sync_result.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
@@ -158,15 +158,14 @@ class ContactsService {
   /// action so unrelated app startup or background reads cannot trigger the
   /// iOS Contacts system prompt.
   Future<List<Contact>> getDeviceContacts() async {
-    final status = await Permission.contacts.status;
+    final status = await ph.Permission.contacts.status;
     if (!_canReadContacts(status) && !_contactsGrantedByFlutterPlugin) {
       return [];
     }
 
     try {
-      return await FlutterContacts.getContacts(
-        withProperties: true,
-        withPhoto: false,
+      return await FlutterContacts.getAll(
+        properties: const {ContactProperty.name, ContactProperty.phone},
       );
     } on Object {
       _contactsGrantedByFlutterPlugin = false;
@@ -181,7 +180,7 @@ class ContactsService {
         .where((c) => c.phones.isNotEmpty)
         .map(
           (c) => ContactInfo(
-            name: c.displayName,
+            name: c.displayName ?? '',
             phoneNumber: _normalizePhone(c.phones.first.number),
           ),
         )
@@ -249,8 +248,8 @@ class ContactsService {
         : '';
 
     return AppContact(
-      id: contact.id,
-      name: contact.displayName,
+      id: contact.id ?? contact.displayName ?? phone,
+      name: contact.displayName ?? phone,
       phone: phone,
       hasApp: false,
     );
@@ -263,7 +262,7 @@ class ContactsService {
 
   /// Request contacts permission
   Future<bool> requestContactsPermission() async {
-    final current = await Permission.contacts.status;
+    final current = await ph.Permission.contacts.status;
     if (_canReadContacts(current)) {
       _contactsGrantedByFlutterPlugin = true;
       return true;
@@ -272,7 +271,7 @@ class ContactsService {
       return false;
     }
 
-    final requested = await Permission.contacts.request();
+    final requested = await ph.Permission.contacts.request();
     if (_canReadContacts(requested)) {
       _contactsGrantedByFlutterPlugin = true;
       return true;
@@ -284,12 +283,15 @@ class ContactsService {
     // Some platform/plugin combinations update FlutterContacts before
     // permission_handler observes the new state. Keep this as a narrow fallback
     // for the actual contact reader package.
-    if (await FlutterContacts.requestPermission(readonly: true)) {
+    final pluginStatus = await FlutterContacts.permissions.request(
+      PermissionType.read,
+    );
+    if (_canReadFlutterContacts(pluginStatus)) {
       _contactsGrantedByFlutterPlugin = true;
       return true;
     }
 
-    final refreshed = _canReadContacts(await Permission.contacts.status);
+    final refreshed = _canReadContacts(await ph.Permission.contacts.status);
     _contactsGrantedByFlutterPlugin = refreshed;
     return refreshed;
   }
@@ -299,23 +301,26 @@ class ContactsService {
     if (_contactsGrantedByFlutterPlugin) {
       return true;
     }
-    final status = await Permission.contacts.status;
+    final status = await ph.Permission.contacts.status;
     final granted = _canReadContacts(status);
     _contactsGrantedByFlutterPlugin = granted;
     return granted;
   }
 
   Future<bool> contactsPermissionRequiresSettings() async {
-    final status = await Permission.contacts.status;
+    final status = await ph.Permission.contacts.status;
     return status.isPermanentlyDenied || status.isRestricted;
   }
 
   Future<void> openContactsSettings() async {
-    await openAppSettings();
+    await ph.openAppSettings();
   }
 
-  bool _canReadContacts(PermissionStatus status) =>
+  bool _canReadContacts(ph.PermissionStatus status) =>
       status.isGranted || status.isLimited;
+
+  bool _canReadFlutterContacts(PermissionStatus status) =>
+      status == PermissionStatus.granted || status == PermissionStatus.limited;
 
   /// Normalize phone to E.164 format.
   ///
@@ -379,11 +384,11 @@ class ContactsService {
         }
 
         final phone = phones.first;
-        final name = contact.displayName;
+        final name = contact.displayName ?? phone;
 
         synced.add(
           SyncedContact(
-            id: contact.id,
+            id: contact.id ?? phone,
             name: name,
             phone: phone,
             lookupPhones: phones,

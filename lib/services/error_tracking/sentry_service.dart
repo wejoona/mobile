@@ -48,7 +48,10 @@ class SentryService {
       options.environment = environment;
       options.debug = kDebugMode;
       options.sendDefaultPii = false;
+      options.enableLogs = true;
       options.attachStacktrace = true;
+      options.replay.sessionSampleRate = kDebugMode ? 1.0 : 0.1;
+      options.replay.onErrorSampleRate = 1.0;
 
       // Navigation breadcrumbs are added via SentryNavigatorObserver in the app's navigatorObservers
     }, appRunner: appRunner);
@@ -122,8 +125,10 @@ class SentryService {
     if (!_initialized) return;
 
     await Sentry.configureScope((scope) {
-      if (id != null || email != null || username != null) {
-        scope.setUser(SentryUser(id: id, email: email, username: username));
+      if (id != null) {
+        // Keep crash telemetry pseudonymous for financial flows. Phone, email,
+        // and username can be joined server-side when support has a valid reason.
+        scope.setUser(SentryUser(id: id));
       } else {
         scope.setUser(null);
       }

@@ -157,7 +157,7 @@ class _SpendingLineChartState extends State<SpendingLineChart>
                 lineTouchData: LineTouchData(
                   touchTooltipData: LineTouchTooltipData(
                     getTooltipColor: (touchedSpot) => context.colors.container,
-                    tooltipRoundedRadius: 8,
+                    tooltipBorderRadius: BorderRadius.circular(8),
                     tooltipPadding: const EdgeInsets.all(8),
                     tooltipBorder: BorderSide(
                       color: context.colors.gold.withValues(alpha: 0.3),
@@ -209,7 +209,7 @@ class _SpendingLineChartState extends State<SpendingLineChart>
     }
 
     return SideTitleWidget(
-      axisSide: meta.axisSide,
+      meta: meta,
       child: AppText(
         label,
         variant: AppTextVariant.bodySmall,

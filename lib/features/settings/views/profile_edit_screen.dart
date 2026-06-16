@@ -711,11 +711,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
       await ref
           .read(profileProvider.notifier)
-          .applyProfileSnapshot(
-            profile,
-            avatarUrl: _avatarUrl,
-            avatarThumb: _avatarThumb,
-          );
+          .applyProfileSnapshot(profile);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -152,14 +152,6 @@ class ErrorReporter {
   }) async {
     try {
       await _crashlytics.setUserIdentifier(userId);
-
-      if (email != null) {
-        await _crashlytics.setCustomKey('user_email', email);
-      }
-
-      if (phoneNumber != null) {
-        await _crashlytics.setCustomKey('user_phone', phoneNumber);
-      }
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Failed to set user info: $e');

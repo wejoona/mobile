@@ -1,4 +1,4 @@
-import 'package:flutter/services.dart';
+import 'package:local_auth_platform_interface/types/auth_exception.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:local_auth_platform_interface/types/biometric_type.dart'
     as platform;
@@ -120,9 +120,11 @@ void main() {
 
     test('should handle PlatformException gracefully', () async {
       // Arrange
-      when(
-        () => mockAuth.getAvailableBiometrics(),
-      ).thenThrow(PlatformException(code: 'NotAvailable'));
+      when(() => mockAuth.getAvailableBiometrics()).thenThrow(
+        const LocalAuthException(
+          code: LocalAuthExceptionCode.noBiometricHardware,
+        ),
+      );
       final biometricService = service();
 
       // Act
@@ -141,7 +143,9 @@ void main() {
         () => mockAuth.authenticate(
           localizedReason: any(named: 'localizedReason'),
           authMessages: any(named: 'authMessages'),
-          options: any(named: 'options'),
+          biometricOnly: any(named: 'biometricOnly'),
+          sensitiveTransaction: any(named: 'sensitiveTransaction'),
+          persistAcrossBackgrounding: any(named: 'persistAcrossBackgrounding'),
         ),
       ).thenAnswer((_) async => true);
       final biometricService = service();
@@ -160,7 +164,9 @@ void main() {
         () => mockAuth.authenticate(
           localizedReason: any(named: 'localizedReason'),
           authMessages: any(named: 'authMessages'),
-          options: any(named: 'options'),
+          biometricOnly: any(named: 'biometricOnly'),
+          sensitiveTransaction: any(named: 'sensitiveTransaction'),
+          persistAcrossBackgrounding: any(named: 'persistAcrossBackgrounding'),
         ),
       ).thenAnswer((_) async => false);
       final biometricService = service();
@@ -180,7 +186,9 @@ void main() {
         () => mockAuth.authenticate(
           localizedReason: any(named: 'localizedReason'),
           authMessages: any(named: 'authMessages'),
-          options: any(named: 'options'),
+          biometricOnly: any(named: 'biometricOnly'),
+          sensitiveTransaction: any(named: 'sensitiveTransaction'),
+          persistAcrossBackgrounding: any(named: 'persistAcrossBackgrounding'),
         ),
       ).thenAnswer((_) async => true);
       final biometricService = service();
@@ -193,7 +201,9 @@ void main() {
         () => mockAuth.authenticate(
           localizedReason: 'Custom reason',
           authMessages: any(named: 'authMessages'),
-          options: any(named: 'options'),
+          biometricOnly: any(named: 'biometricOnly'),
+          sensitiveTransaction: any(named: 'sensitiveTransaction'),
+          persistAcrossBackgrounding: any(named: 'persistAcrossBackgrounding'),
         ),
       ).called(1);
     });
@@ -207,9 +217,15 @@ void main() {
         () => mockAuth.authenticate(
           localizedReason: any(named: 'localizedReason'),
           authMessages: any(named: 'authMessages'),
-          options: any(named: 'options'),
+          biometricOnly: any(named: 'biometricOnly'),
+          sensitiveTransaction: any(named: 'sensitiveTransaction'),
+          persistAcrossBackgrounding: any(named: 'persistAcrossBackgrounding'),
         ),
-      ).thenThrow(PlatformException(code: 'NotEnrolled'));
+      ).thenThrow(
+        const LocalAuthException(
+          code: LocalAuthExceptionCode.noBiometricsEnrolled,
+        ),
+      );
       final biometricService = service();
 
       // Act
@@ -227,9 +243,15 @@ void main() {
         () => mockAuth.authenticate(
           localizedReason: any(named: 'localizedReason'),
           authMessages: any(named: 'authMessages'),
-          options: any(named: 'options'),
+          biometricOnly: any(named: 'biometricOnly'),
+          sensitiveTransaction: any(named: 'sensitiveTransaction'),
+          persistAcrossBackgrounding: any(named: 'persistAcrossBackgrounding'),
         ),
-      ).thenThrow(PlatformException(code: 'NotAvailable'));
+      ).thenThrow(
+        const LocalAuthException(
+          code: LocalAuthExceptionCode.noBiometricHardware,
+        ),
+      );
       final biometricService = service();
 
       // Act
@@ -430,7 +452,9 @@ void main() {
         () => mockAuth.authenticate(
           localizedReason: any(named: 'localizedReason'),
           authMessages: any(named: 'authMessages'),
-          options: any(named: 'options'),
+          biometricOnly: any(named: 'biometricOnly'),
+          sensitiveTransaction: any(named: 'sensitiveTransaction'),
+          persistAcrossBackgrounding: any(named: 'persistAcrossBackgrounding'),
         ),
       ).thenAnswer((_) async => true);
       final biometricService = service();
@@ -444,7 +468,9 @@ void main() {
         () => mockAuth.authenticate(
           localizedReason: any(named: 'localizedReason'),
           authMessages: any(named: 'authMessages'),
-          options: any(named: 'options'),
+          biometricOnly: any(named: 'biometricOnly'),
+          sensitiveTransaction: any(named: 'sensitiveTransaction'),
+          persistAcrossBackgrounding: any(named: 'persistAcrossBackgrounding'),
         ),
       ).called(1);
     });
@@ -477,9 +503,11 @@ void main() {
 
     test('should handle PlatformException', () async {
       // Arrange
-      when(
-        () => mockAuth.canCheckBiometrics,
-      ).thenThrow(PlatformException(code: 'NotAvailable'));
+      when(() => mockAuth.canCheckBiometrics).thenThrow(
+        const LocalAuthException(
+          code: LocalAuthExceptionCode.noBiometricHardware,
+        ),
+      );
       final biometricService = service();
 
       // Act

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:local_auth/error_codes.dart' as auth_error;
+import 'package:local_auth_platform_interface/types/auth_exception.dart';
 import 'package:local_auth_platform_interface/types/auth_messages.dart';
 import 'package:local_auth_platform_interface/types/biometric_type.dart'
     as platform;
@@ -102,12 +102,9 @@ class BiometricService {
       final didAuthenticate = await _localAuth.authenticate(
         localizedReason: authenticationReason,
         authMessages: const <AuthMessages>[],
-        options: AuthenticationOptions(
-          stickyAuth: stickyAuth,
-          biometricOnly: true,
-          useErrorDialogs: true,
-          sensitiveTransaction: true,
-        ),
+        biometricOnly: true,
+        sensitiveTransaction: true,
+        persistAcrossBackgrounding: stickyAuth,
       );
 
       if (didAuthenticate) {
@@ -118,19 +115,18 @@ class BiometricService {
           reason: BiometricFailureReason.cancelled,
         );
       }
-    } on Exception catch (e) {
-      final message = e.toString();
-
-      if (message.contains(auth_error.notAvailable) ||
-          message.contains(auth_error.notEnrolled)) {
+    } on LocalAuthException catch (e) {
+      if (e.code == LocalAuthExceptionCode.noBiometricHardware ||
+          e.code == LocalAuthExceptionCode.noBiometricsEnrolled ||
+          e.code == LocalAuthExceptionCode.noCredentialsSet) {
         return const BiometricResult.failure(
           'Biométrie non configurée sur cet appareil',
           reason: BiometricFailureReason.notEnrolled,
         );
       }
 
-      if (message.contains(auth_error.lockedOut) ||
-          message.contains(auth_error.permanentlyLockedOut)) {
+      if (e.code == LocalAuthExceptionCode.temporaryLockout ||
+          e.code == LocalAuthExceptionCode.biometricLockout) {
         return const BiometricResult.failure(
           'Biométrie verrouillée. Utilisez votre code d\'accès.',
           reason: BiometricFailureReason.lockedOut,

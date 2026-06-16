@@ -45,10 +45,8 @@ class _BiometricPromptViewState extends ConsumerState<BiometricPromptView> {
 
       final didAuthenticate = await _localAuth.authenticate(
         localizedReason: l10n.biometric_authenticateReason,
-        options: const AuthenticationOptions(
-          stickyAuth: true,
-          biometricOnly: true,
-        ),
+        biometricOnly: true,
+        persistAcrossBackgrounding: true,
       );
 
       if (mounted) {
