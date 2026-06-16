@@ -761,39 +761,37 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     WalletState walletState,
     ThemeColors colors,
     AppLocalizations l10n,
-  ) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.sm,
+  ) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(
+      horizontal: AppSpacing.md,
+      vertical: AppSpacing.sm,
+    ),
+    decoration: BoxDecoration(
+      color: Color.alphaBlend(
+        colors.warning.withValues(alpha: colors.isDark ? 0.16 : 0.10),
+        colors.surface,
       ),
-      decoration: BoxDecoration(
-        color: Color.alphaBlend(
-          colors.warning.withValues(alpha: colors.isDark ? 0.16 : 0.10),
-          colors.surface,
-        ),
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(
-          color: colors.warning.withValues(alpha: colors.isDark ? 0.28 : 0.22),
-        ),
+      borderRadius: BorderRadius.circular(AppRadius.md),
+      border: Border.all(
+        color: colors.warning.withValues(alpha: colors.isDark ? 0.28 : 0.22),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.info_outline_rounded, color: colors.warningText, size: 18),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: AppText(
-              _balanceWarningMessage(walletState, l10n),
-              variant: AppTextVariant.bodySmall,
-              color: colors.warningText,
-            ),
+    ),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(Icons.info_outline_rounded, color: colors.warningText, size: 18),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: AppText(
+            _balanceWarningMessage(walletState, l10n),
+            variant: AppTextVariant.bodySmall,
+            color: colors.warningText,
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
 
   String _balanceWarningMessage(
     WalletState walletState,
@@ -1280,6 +1278,28 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         return const <void>[];
       },
     );
+
+    if (!mounted) {
+      return;
+    }
+
+    final wallet = ref.read(walletStateMachineProvider);
+    if (wallet.isDegraded || wallet.isStale || wallet.isCached) {
+      context.showSnack(
+        _localizedText(
+          en: 'Showing last known balance. We will keep trying in the background.',
+          fr: 'Dernier solde connu affiché. Nous continuons en arrière-plan.',
+        ),
+        tone: AppSnackTone.warning,
+        duration: const Duration(seconds: 4),
+      );
+      return;
+    }
+
+    context.showSnack(
+      _localizedText(en: 'Balance updated', fr: 'Solde mis à jour'),
+      tone: AppSnackTone.success,
+    );
   }
 
   Future<void> _refreshWalletForHome() async {
@@ -1374,6 +1394,11 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     }
 
     return typeLabel;
+  }
+
+  String _localizedText({required String en, required String fr}) {
+    final locale = Localizations.localeOf(context).languageCode.toLowerCase();
+    return locale == 'fr' ? fr : en;
   }
 
   String _getTransactionSubtitle(
