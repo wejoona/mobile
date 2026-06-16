@@ -73,7 +73,8 @@ void main() {
     expect(pickerSource, contains('_buildLookupSection(colors)'));
     expect(pickerSource, contains('_buildPermissionRequestCard(colors)'));
     expect(serviceSource, contains('_contactsGrantedByFlutterPlugin'));
-    expect(serviceSource, contains('FlutterContacts.requestPermission'));
+    expect(serviceSource, contains('FlutterContacts.permissions.request'));
+    expect(serviceSource, contains('PermissionType.read'));
     expect(pickerSource, contains('contactsService.hasContactsPermission'));
     expect(pickerSource, isNot(contains('permission_handler')));
     expect(pickerSource, contains('_readSyncedDeviceContacts'));

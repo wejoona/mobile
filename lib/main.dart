@@ -56,6 +56,7 @@ Future<void> main() async {
   // Initialize Sentry and run the app inside its error zone
   final sentryService = SentryService();
   await sentryService.initializeAndRunApp(
+    environment: EnvironmentConfig.environment,
     appRunner: () async {
       // Global error handling — forward to both Crashlytics and Sentry
       FlutterError.onError = (details) {

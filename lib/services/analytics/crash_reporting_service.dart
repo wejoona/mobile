@@ -125,7 +125,7 @@ class CrashReportingService {
         );
       }
       if (userId != null) {
-        await _crashlytics?.setCustomKey('user_id', userId);
+        await _setSafeCustomKey('user_id', userId);
       }
 
       await recordError(exception, exception.stackTrace, reason: reason);
@@ -163,7 +163,7 @@ class CrashReportingService {
     try {
       await _crashlytics?.setCustomKey('error_type', 'auth_error');
       if (userId != null) {
-        await _crashlytics?.setCustomKey('user_id', userId);
+        await _setSafeCustomKey('user_id', userId);
       }
 
       await recordError(
@@ -203,7 +203,7 @@ class CrashReportingService {
         await _crashlytics?.setCustomKey('transaction_id', transactionId);
       }
       if (userId != null) {
-        await _crashlytics?.setCustomKey('user_id', userId);
+        await _setSafeCustomKey('user_id', userId);
       }
 
       await recordError(
@@ -237,7 +237,7 @@ class CrashReportingService {
         await _crashlytics?.setCustomKey('kyc_step', step);
       }
       if (userId != null) {
-        await _crashlytics?.setCustomKey('user_id', userId);
+        await _setSafeCustomKey('user_id', userId);
       }
 
       await recordError(
@@ -285,22 +285,40 @@ class CrashReportingService {
     }
 
     try {
-      if (value is String) {
-        await _crashlytics?.setCustomKey(key, value);
-      } else if (value is int) {
-        await _crashlytics?.setCustomKey(key, value);
-      } else if (value is double) {
-        await _crashlytics?.setCustomKey(key, value);
-      } else if (value is bool) {
-        await _crashlytics?.setCustomKey(key, value);
-      } else {
-        await _crashlytics?.setCustomKey(key, value.toString());
-      }
+      await _setSafeCustomKey(key, value);
 
       _logger.debug('Custom key set: $key = $value');
     } on Object catch (error) {
       _logger.debug('Failed to set custom key: $error');
     }
+  }
+
+  Future<void> _setSafeCustomKey(String key, Object? value) async {
+    if (_isSensitiveCrashKey(key)) {
+      await _crashlytics?.setCustomKey(key, '[redacted]');
+      return;
+    }
+
+    if (value is String) {
+      await _crashlytics?.setCustomKey(key, value);
+    } else if (value is int) {
+      await _crashlytics?.setCustomKey(key, value);
+    } else if (value is double) {
+      await _crashlytics?.setCustomKey(key, value);
+    } else if (value is bool) {
+      await _crashlytics?.setCustomKey(key, value);
+    } else {
+      await _crashlytics?.setCustomKey(key, value.toString());
+    }
+  }
+
+  bool _isSensitiveCrashKey(String key) {
+    final normalized = key.toLowerCase();
+    return normalized.contains('email') ||
+        normalized.contains('phone') ||
+        normalized.contains('token') ||
+        normalized.contains('authorization') ||
+        normalized.contains('wallet_address');
   }
 
   /// Clear user data (e.g., on logout)

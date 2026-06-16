@@ -122,8 +122,10 @@ class SentryService {
     if (!_initialized) return;
 
     await Sentry.configureScope((scope) {
-      if (id != null || email != null || username != null) {
-        scope.setUser(SentryUser(id: id, email: email, username: username));
+      if (id != null) {
+        // Keep crash telemetry pseudonymous for financial flows. Phone, email,
+        // and username can be joined server-side when support has a valid reason.
+        scope.setUser(SentryUser(id: id));
       } else {
         scope.setUser(null);
       }
