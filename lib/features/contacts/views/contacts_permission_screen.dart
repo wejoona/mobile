@@ -129,7 +129,13 @@ class _ContactsPermissionScreenState
               // Maybe later
               Center(
                 child: TextButton(
-                  onPressed: () => context.pop(),
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.go('/home');
+                    }
+                  },
                   child: AppText(
                     l10n.contacts_permission_later,
                     variant: AppTextVariant.bodyMedium,
@@ -203,7 +209,9 @@ class _ContactsPermissionScreenState
         }
       }
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
