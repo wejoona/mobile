@@ -81,9 +81,13 @@ class UserService {
   }
 
   /// POST /user/verify-email — verify email with OTP code
-  Future<void> verifyEmail(String code) async {
+  Future<EmailVerificationResult> verifyEmail(String code) async {
     try {
-      await _dio.post('/user/verify-email', data: {'code': code});
+      final response = await _dio.post(
+        '/user/verify-email',
+        data: {'code': code},
+      );
+      return EmailVerificationResult.fromJson(_readPayload(response.data));
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -318,6 +322,22 @@ class EmailVerificationResendResult {
       expiresIn: _readInt(payload, const ['expiresIn', 'expires_in']) ?? 1800,
       message: payload['message'] as String?,
       debugCode: (payload['debugCode'] ?? payload['debug_code']) as String?,
+    );
+  }
+}
+
+class EmailVerificationResult {
+  final bool verified;
+  final String? message;
+
+  const EmailVerificationResult({required this.verified, this.message});
+
+  factory EmailVerificationResult.fromJson(Map<String, dynamic> json) {
+    final payload = _readPayload(json);
+    return EmailVerificationResult(
+      verified:
+          _readBool(payload, const ['verified', 'emailVerified']) ?? false,
+      message: payload['message'] as String?,
     );
   }
 }

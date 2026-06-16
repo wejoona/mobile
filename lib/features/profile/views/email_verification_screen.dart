@@ -137,7 +137,10 @@ class _EmailVerificationScreenState
 
     try {
       final userService = ref.read(userServiceProvider);
-      await userService.verifyEmail(code);
+      final result = await userService.verifyEmail(code);
+      if (!result.verified) {
+        throw StateError('Email verification was not confirmed by the API.');
+      }
 
       if (!mounted) return;
       setState(() {
