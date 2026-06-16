@@ -1,13 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/features/settings/providers/sessions_provider.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/settings/models/session.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/features/settings/providers/sessions_provider.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 class SessionsScreen extends ConsumerStatefulWidget {
   const SessionsScreen({super.key});
@@ -22,7 +23,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
     super.initState();
     // Load sessions on init
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(sessionsProvider.notifier).loadSessions();
+      unawaited(ref.read(sessionsProvider.notifier).loadSessions());
     });
   }
 
@@ -305,7 +306,9 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
             SizedBox(height: AppSpacing.lg),
             AppButton(
               label: l10n.auth_tapToUnlock,
-              onPressed: () => context.go('/session-locked'),
+              onPressed: () => context.go(
+                '/session-locked?returnTo=${Uri.encodeComponent('/settings/sessions')}',
+              ),
               variant: AppButtonVariant.primary,
             ),
           ],

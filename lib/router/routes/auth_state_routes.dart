@@ -128,9 +128,9 @@ List<RouteBase> authStateRoutes() => [
     path: '/session-locked',
     pageBuilder: (context, state) => AppPageTransitions.fade(
       state: state,
-      child: const PinScreen(
+      child: PinScreen(
         pinContext: PinContext.sessionLock,
-        successRoute: '/home',
+        successRoute: _sessionLockReturnTo(state),
       ),
     ),
   ),
@@ -194,9 +194,28 @@ List<RouteBase> authStateRoutes() => [
   ),
   GoRoute(
     path: '/create-wallet',
-    pageBuilder: (context, state) => AppPageTransitions.fade(
-      state: state,
-      child: const CreateWalletView(),
-    ),
+    pageBuilder: (context, state) =>
+        AppPageTransitions.fade(state: state, child: const CreateWalletView()),
   ),
 ];
+
+String _sessionLockReturnTo(GoRouterState state) {
+  final returnTo = state.uri.queryParameters['returnTo']?.trim();
+  if (returnTo == null || returnTo.isEmpty) {
+    return '/home';
+  }
+
+  final uri = Uri.tryParse(returnTo);
+  if (uri == null ||
+      uri.hasScheme ||
+      uri.hasAuthority ||
+      !returnTo.startsWith('/') ||
+      returnTo.startsWith('//') ||
+      returnTo.startsWith('/login') ||
+      returnTo.startsWith('/onboarding') ||
+      returnTo == '/session-locked') {
+    return '/home';
+  }
+
+  return returnTo;
+}

@@ -307,6 +307,29 @@ void main() {
     );
   });
 
+  test('active sessions unlock returns to sessions screen safely', () {
+    final routesSource = File(
+      'lib/router/routes/auth_state_routes.dart',
+    ).readAsStringSync();
+    final sessionsScreenSource = File(
+      'lib/features/settings/views/sessions_screen.dart',
+    ).readAsStringSync();
+
+    expect(routesSource, contains('_sessionLockReturnTo(state)'));
+    expect(routesSource, contains("state.uri.queryParameters['returnTo']"));
+    expect(routesSource, contains('uri.hasScheme'));
+    expect(routesSource, contains('uri.hasAuthority'));
+    expect(routesSource, contains("returnTo.startsWith('/login')"));
+    expect(routesSource, contains("returnTo.startsWith('/onboarding')"));
+    expect(routesSource, contains("return '/home'"));
+    expect(
+      sessionsScreenSource,
+      contains("Uri.encodeComponent('/settings/sessions')"),
+      reason:
+          'Active Sessions should return to its task context after explicit unlock',
+    );
+  });
+
   test('local auth cleanup clears pending OTP and PIN login flow state', () {
     final source = File(
       'lib/features/auth/providers/auth_provider.dart',
@@ -355,38 +378,41 @@ void main() {
     );
   });
 
-  test('KYC liveness declares capture capability and has manual review fallback', () {
-    final serviceSource = File(
-      'lib/services/liveness/liveness_service.dart',
-    ).readAsStringSync();
-    final widgetSource = File(
-      'lib/features/liveness/widgets/liveness_check_widget.dart',
-    ).readAsStringSync();
-    final kycLivenessSource = File(
-      'lib/features/kyc/views/kyc_liveness_view.dart',
-    ).readAsStringSync();
+  test(
+    'KYC liveness declares capture capability and has manual review fallback',
+    () {
+      final serviceSource = File(
+        'lib/services/liveness/liveness_service.dart',
+      ).readAsStringSync();
+      final widgetSource = File(
+        'lib/features/liveness/widgets/liveness_check_widget.dart',
+      ).readAsStringSync();
+      final kycLivenessSource = File(
+        'lib/features/kyc/views/kyc_liveness_view.dart',
+      ).readAsStringSync();
 
-    final manualReviewBody = _methodBody(
-      kycLivenessSource,
-      '_routeKycToManualReview',
-    );
+      final manualReviewBody = _methodBody(
+        kycLivenessSource,
+        '_routeKycToManualReview',
+      );
 
-    expect(serviceSource, contains("'capabilities': capabilities.toJson()"));
-    expect(serviceSource, contains("'captureMode': captureMode.value"));
-    expect(serviceSource, contains("'mediaType': captureMode.value"));
-    expect(widgetSource, contains('LivenessClientCapabilities'));
-    expect(widgetSource, contains('LivenessCaptureMode.photo'));
-    expect(kycLivenessSource, contains('onManualReviewRequired'));
-    expect(manualReviewBody, contains("'/support/tickets'"));
-    expect(manualReviewBody, contains("'category': 'kyc'"));
-    expect(manualReviewBody, contains("'priority': 'high'"));
-    expect(
-      manualReviewBody,
-      contains('identity document, profile photo, reference selfie'),
-      reason:
-          'manual KYC review must preserve the same evidence graph as automated face matching',
-    );
-  });
+      expect(serviceSource, contains("'capabilities': capabilities.toJson()"));
+      expect(serviceSource, contains("'captureMode': captureMode.value"));
+      expect(serviceSource, contains("'mediaType': captureMode.value"));
+      expect(widgetSource, contains('LivenessClientCapabilities'));
+      expect(widgetSource, contains('LivenessCaptureMode.photo'));
+      expect(kycLivenessSource, contains('onManualReviewRequired'));
+      expect(manualReviewBody, contains("'/support/tickets'"));
+      expect(manualReviewBody, contains("'category': 'kyc'"));
+      expect(manualReviewBody, contains("'priority': 'high'"));
+      expect(
+        manualReviewBody,
+        contains('identity document, profile photo, reference selfie'),
+        reason:
+            'manual KYC review must preserve the same evidence graph as automated face matching',
+      );
+    },
+  );
 }
 
 String _methodBody(String source, String methodName) {
