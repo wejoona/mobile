@@ -110,7 +110,6 @@ class CardsService {
 
   // === Convenience aliases ===
   Future<void> freeze(String cardId) => freezeCard(cardId);
-  Future<void> block(String cardId) => cancelCard(cardId);
   Future<void> toggleCardFreeze(String cardId) async {
     // Determine current state and toggle
     final card = await getCard(cardId);

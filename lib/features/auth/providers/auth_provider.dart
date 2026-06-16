@@ -63,6 +63,8 @@ class AuthState {
 
 /// Auth Notifier
 class AuthNotifier extends Notifier<AuthState> {
+  int _sessionMutationVersion = 0;
+
   @override
   AuthState build() {
     ref.listen<int>(authSessionInvalidatedProvider, (previous, next) {
@@ -86,6 +88,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
   /// Check if user is already authenticated
   Future<void> checkAuth({bool startupOnly = false}) async {
+    final restoreVersion = _sessionMutationVersion;
     if (!ref.mounted) return;
     if (startupOnly && state.status != AuthStatus.initial) {
       return;
@@ -105,6 +108,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
       final token = await _storage.read(key: StorageKeys.accessToken);
       if (!ref.mounted) return;
+      if (!_isCurrentSessionMutation(restoreVersion)) return;
 
       if (!ref.mounted) {
         return;
@@ -117,9 +121,15 @@ class AuthNotifier extends Notifier<AuthState> {
 
       if (token != null) {
         final refreshToken = await _storage.read(key: StorageKeys.refreshToken);
+        if (!ref.mounted) return;
+        if (!_isCurrentSessionMutation(restoreVersion)) return;
         if (refreshToken != null && refreshToken.isNotEmpty) {
-          final canRestore = await _refreshStoredSession(refreshToken);
+          final canRestore = await _refreshStoredSession(
+            refreshToken,
+            restoreVersion: restoreVersion,
+          );
           if (!ref.mounted) return;
+          if (!_isCurrentSessionMutation(restoreVersion)) return;
           if (!canRestore) {
             return;
           }
@@ -128,6 +138,7 @@ class AuthNotifier extends Notifier<AuthState> {
         if (debugToken.isNotEmpty && EnvironmentConfig.debugSkipPin) {
           final userId = await _storage.read(key: 'user_id');
           if (!ref.mounted) return;
+          if (!_isCurrentSessionMutation(restoreVersion)) return;
           ref
               .read(appFsmProvider.notifier)
               .restoreSession(
@@ -154,6 +165,7 @@ class AuthNotifier extends Notifier<AuthState> {
         // Sync FSM: restore auth state and trigger data fetches in background
         final userId = await _storage.read(key: 'user_id');
         if (!ref.mounted) return;
+        if (!_isCurrentSessionMutation(restoreVersion)) return;
         ref
             .read(appFsmProvider.notifier)
             .restoreSession(
@@ -173,11 +185,16 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  Future<bool> _refreshStoredSession(String refreshToken) async {
+  Future<bool> _refreshStoredSession(
+    String refreshToken, {
+    required int restoreVersion,
+  }) async {
     try {
       final response = await _authService.refreshToken(
         refreshToken: refreshToken,
       );
+      if (!ref.mounted) return false;
+      if (!_isCurrentSessionMutation(restoreVersion)) return false;
       await _storage.write(
         key: StorageKeys.accessToken,
         value: response.accessToken,
@@ -200,10 +217,23 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  /// Lock the session (requires PIN/biometric to unlock)
-  void setLocked() {
-    if (state.status == AuthStatus.authenticated) {
-      state = state.copyWith(status: AuthStatus.locked);
+  bool _isCurrentSessionMutation(int expectedVersion) =>
+      _sessionMutationVersion == expectedVersion;
+
+  /// Lock the session (requires PIN/biometric to unlock).
+  ///
+  /// Foreground security screens can receive a 401 while the auth provider is
+  /// still restoring. In that case, prefer the lock screen over a raw API error
+  /// when local session material exists.
+  Future<void> setLocked() async {
+    if (state.status == AuthStatus.authenticated ||
+        state.status == AuthStatus.loading ||
+        state.status == AuthStatus.initial) {
+      final accessToken = await _storage.read(key: StorageKeys.accessToken);
+      final refreshToken = await _storage.read(key: StorageKeys.refreshToken);
+      if (accessToken != null || refreshToken != null) {
+        state = state.copyWith(status: AuthStatus.locked);
+      }
     }
   }
 
@@ -238,10 +268,20 @@ class AuthNotifier extends Notifier<AuthState> {
   /// Force the local auth/session state back to active after a trusted account
   /// recovery flow such as a server-approved PIN reset.
   Future<bool> unlockAfterAccountRecovery() async {
-    final token = await _storage.read(key: StorageKeys.accessToken);
+    var token = await _storage.read(key: StorageKeys.accessToken);
     if (token == null || token.isEmpty) {
       return false;
     }
+
+    final storedRefresh = await _storage.read(key: StorageKeys.refreshToken);
+    if (storedRefresh != null && storedRefresh.isNotEmpty) {
+      await _refreshTokenOnUnlock();
+      token = await _storage.read(key: StorageKeys.accessToken);
+      if (token == null || token.isEmpty) {
+        return false;
+      }
+    }
+
     final refreshToken = await _storage.read(key: StorageKeys.refreshToken);
     final userId = await _storage.read(key: 'user_id');
 
@@ -263,7 +303,6 @@ class AuthNotifier extends Notifier<AuthState> {
       ref.read(appFsmProvider.notifier).unlockSession();
     } catch (_) {}
 
-    unawaited(_refreshTokenOnUnlock());
     ref.read(appFsmProvider.notifier).hydrateAuthenticatedSession();
     unawaited(
       ref
@@ -315,7 +354,13 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   /// Register new user
-  Future<void> register(String phone, String countryCode) async {
+  Future<void> register(
+    String phone,
+    String countryCode, {
+    bool acceptedTerms = false,
+    String? termsVersion,
+    String? privacyVersion,
+  }) async {
     state = state.copyWith(status: AuthStatus.loading, phone: phone);
 
     // Sync with FSM: notify that login/register is starting
@@ -325,6 +370,9 @@ class AuthNotifier extends Notifier<AuthState> {
       final response = await _authService.register(
         phone: phone,
         countryCode: countryCode,
+        acceptedTerms: acceptedTerms,
+        termsVersion: termsVersion,
+        privacyVersion: privacyVersion,
       );
 
       state = state.copyWith(
@@ -744,6 +792,8 @@ class AuthNotifier extends Notifier<AuthState> {
 
   /// Clear local auth/session state without calling the backend.
   Future<void> clearLocalSession() async {
+    _sessionMutationVersion++;
+
     // Stop real-time sync
     ref.read(realtimeServiceProvider).stop();
 

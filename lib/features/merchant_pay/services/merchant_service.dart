@@ -15,6 +15,7 @@ class MerchantService {
     String? displayName,
     required String category,
     required String country,
+    String? mcc,
     String? businessAddress,
     String? businessPhone,
     String? businessEmail,
@@ -28,6 +29,7 @@ class MerchantService {
           'businessName': businessName,
           if (displayName != null) 'displayName': displayName,
           'category': category,
+          if (mcc != null && mcc.isNotEmpty) 'mcc': mcc,
           'country': country,
           if (businessAddress != null) 'businessAddress': businessAddress,
           if (businessPhone != null) 'businessPhone': businessPhone,
@@ -117,11 +119,20 @@ class MerchantService {
     required String pinToken,
     String? idempotencyKey,
     double? amount,
+    String? merchantId,
+    String? merchantMcc,
+    String? merchantCategory,
   }) async {
     try {
       final response = await _dio.post(
         '/merchants/pay',
-        data: {'qrData': qrData, if (amount != null) 'amount': amount},
+        data: {
+          'qrData': qrData,
+          if (amount != null) 'amount': amount,
+          if (merchantId != null) 'merchantId': merchantId,
+          if (merchantMcc != null) 'merchantMcc': merchantMcc,
+          if (merchantCategory != null) 'merchantCategory': merchantCategory,
+        },
         options: Options(
           headers: transactionHeaders(
             pinToken: pinToken,
@@ -178,6 +189,7 @@ class MerchantResponse {
   final String businessName;
   final String displayName;
   final String category;
+  final String? mcc;
   final String country;
   final String walletId;
   final String qrCode;
@@ -204,6 +216,7 @@ class MerchantResponse {
     required this.businessName,
     required this.displayName,
     required this.category,
+    this.mcc,
     required this.country,
     required this.walletId,
     required this.qrCode,
@@ -232,6 +245,7 @@ class MerchantResponse {
       businessName: json['businessName'] as String,
       displayName: json['displayName'] as String,
       category: json['category'] as String,
+      mcc: json['mcc'] as String?,
       country: json['country'] as String,
       walletId: json['walletId'] as String,
       qrCode: json['qrCode'] as String,
@@ -262,12 +276,14 @@ class MerchantResponse {
 class MerchantQrResponse {
   final String merchantId;
   final String merchantName;
+  final String? mcc;
   final String qrCode;
   final String? qrCodeUrl;
 
   const MerchantQrResponse({
     required this.merchantId,
     required this.merchantName,
+    this.mcc,
     required this.qrCode,
     this.qrCodeUrl,
   });
@@ -276,6 +292,7 @@ class MerchantQrResponse {
     return MerchantQrResponse(
       merchantId: json['merchantId'] as String,
       merchantName: json['merchantName'] as String,
+      mcc: json['mcc'] as String?,
       qrCode: json['qrCode'] as String,
       qrCodeUrl: json['qrCodeUrl'] as String?,
     );
@@ -286,6 +303,7 @@ class QrDecodeResponse {
   final String merchantId;
   final String displayName;
   final String category;
+  final String? mcc;
   final bool isVerified;
   final String? logoUrl;
   final String qrType;
@@ -296,6 +314,7 @@ class QrDecodeResponse {
     required this.merchantId,
     required this.displayName,
     required this.category,
+    this.mcc,
     required this.isVerified,
     this.logoUrl,
     required this.qrType,
@@ -308,6 +327,7 @@ class QrDecodeResponse {
       merchantId: json['merchantId'] as String,
       displayName: json['displayName'] as String,
       category: json['category'] as String,
+      mcc: json['mcc'] as String?,
       isVerified: json['isVerified'] as bool,
       logoUrl: json['logoUrl'] as String?,
       qrType: json['qrType'] as String,
@@ -367,6 +387,7 @@ class PaymentReceipt {
   final String transactionId;
   final String merchantName;
   final String merchantCategory;
+  final String? merchantMcc;
   final double amount;
   final double fee;
   final double total;
@@ -377,6 +398,7 @@ class PaymentReceipt {
     required this.transactionId,
     required this.merchantName,
     required this.merchantCategory,
+    this.merchantMcc,
     required this.amount,
     required this.fee,
     required this.total,
@@ -389,6 +411,7 @@ class PaymentReceipt {
       transactionId: json['transactionId'] as String,
       merchantName: json['merchantName'] as String,
       merchantCategory: json['merchantCategory'] as String,
+      merchantMcc: json['merchantMcc'] as String?,
       amount: (json['amount'] as num).toDouble(),
       fee: (json['fee'] as num).toDouble(),
       total: (json['total'] as num).toDouble(),

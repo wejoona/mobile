@@ -92,9 +92,13 @@ class User {
       firstName: json['firstName'] as String?,
       lastName: json['lastName'] as String?,
       email: json['email'] as String?,
-      avatarUrl: json['avatarUrl'] as String?,
+      avatarUrl: (json['avatarUrl'] ?? json['avatar_url']) as String?,
       avatarBase64:
-          json['avatarBase64'] as String? ?? json['avatarThumb'] as String?,
+          (json['avatarBase64'] ??
+                  json['avatar_base64'] ??
+                  json['avatarThumb'] ??
+                  json['avatar_thumb'])
+              as String?,
       preferredLocale: json['preferredLocale'] as String? ?? 'fr',
       countryCode: json['countryCode'] as String? ?? 'CI',
       // Backend returns 'phoneVerified', handle both keys
@@ -157,6 +161,8 @@ class User {
     bool? hasPin,
     DateTime? createdAt,
     DateTime? updatedAt,
+    bool clearAvatarUrl = false,
+    bool clearAvatarBase64 = false,
   }) {
     return User(
       id: id ?? this.id,
@@ -165,8 +171,10 @@ class User {
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
       email: email ?? this.email,
-      avatarUrl: avatarUrl ?? this.avatarUrl,
-      avatarBase64: avatarBase64 ?? this.avatarBase64,
+      avatarUrl: clearAvatarUrl ? null : avatarUrl ?? this.avatarUrl,
+      avatarBase64: clearAvatarBase64
+          ? null
+          : avatarBase64 ?? this.avatarBase64,
       preferredLocale: preferredLocale ?? this.preferredLocale,
       countryCode: countryCode ?? this.countryCode,
       isPhoneVerified: isPhoneVerified ?? this.isPhoneVerified,

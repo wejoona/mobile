@@ -1,5 +1,11 @@
+enum TransactionLimitOperation { send, deposit, withdraw }
+
 class TransactionLimits {
   final double dailyLimit;
+  final double dailyDepositLimit;
+  final double dailyDepositUsed;
+  final double dailyWithdrawLimit;
+  final double dailyWithdrawUsed;
   final double weeklyLimit;
   final double monthlyLimit;
   final double singleTransactionLimit;
@@ -25,6 +31,10 @@ class TransactionLimits {
 
   const TransactionLimits({
     required this.dailyLimit,
+    this.dailyDepositLimit = 0,
+    this.dailyDepositUsed = 0,
+    this.dailyWithdrawLimit = 0,
+    this.dailyWithdrawUsed = 0,
     this.weeklyLimit = 0,
     required this.monthlyLimit,
     required this.singleTransactionLimit,
@@ -50,47 +60,81 @@ class TransactionLimits {
   });
 
   factory TransactionLimits.fromJson(Map<String, dynamic> json) {
+    final daily = _mapOf(json['daily']);
+    final dailySend = _mapOf(daily['send']);
+    final dailyDeposit = _mapOf(daily['deposit']);
+    final dailyWithdraw = _mapOf(daily['withdraw']);
+    final monthly = _mapOf(json['monthly']);
+    final monthlyTotal = _mapOf(monthly['total']);
+    final perTransaction = _mapOf(json['perTransaction']);
+    final tier = json['tier'] as String?;
+
+    final singleTransactionLimit =
+        _numberOf(json['singleTransactionLimit']) ??
+        _numberOf(perTransaction['send']) ??
+        0.0;
+
     return TransactionLimits(
-      dailyLimit: (json['dailyLimit'] as num?)?.toDouble() ?? 0.0,
-      weeklyLimit: (json['weeklyLimit'] as num?)?.toDouble() ?? 0.0,
-      monthlyLimit: (json['monthlyLimit'] as num?)?.toDouble() ?? 0.0,
-      singleTransactionLimit:
-          (json['singleTransactionLimit'] as num?)?.toDouble() ?? 0.0,
-      singleTransactionMax:
-          (json['singleTransactionMax'] as num?)?.toDouble() ??
-          (json['singleTransactionLimit'] as num?)?.toDouble() ??
+      dailyLimit:
+          _numberOf(json['dailyLimit']) ?? _numberOf(dailySend['limit']) ?? 0.0,
+      dailyDepositLimit:
+          _numberOf(dailyDeposit['limit']) ??
+          _numberOf(json['dailyLimit']) ??
           0.0,
-      withdrawalLimit: (json['withdrawalLimit'] as num?)?.toDouble() ?? 0.0,
-      dailyUsed: (json['dailyUsed'] as num?)?.toDouble() ?? 0.0,
-      weeklyUsed: (json['weeklyUsed'] as num?)?.toDouble() ?? 0.0,
-      monthlyUsed: (json['monthlyUsed'] as num?)?.toDouble() ?? 0.0,
+      dailyDepositUsed:
+          _numberOf(json['dailyDepositUsed']) ??
+          _numberOf(dailyDeposit['used']) ??
+          0.0,
+      dailyWithdrawLimit:
+          _numberOf(dailyWithdraw['limit']) ??
+          _numberOf(json['dailyLimit']) ??
+          0.0,
+      dailyWithdrawUsed:
+          _numberOf(json['dailyWithdrawUsed']) ??
+          _numberOf(dailyWithdraw['used']) ??
+          0.0,
+      weeklyLimit: _numberOf(json['weeklyLimit']) ?? 0.0,
+      monthlyLimit:
+          _numberOf(json['monthlyLimit']) ??
+          _numberOf(monthlyTotal['limit']) ??
+          0.0,
+      singleTransactionLimit: singleTransactionLimit,
+      singleTransactionMax:
+          _numberOf(json['singleTransactionMax']) ?? singleTransactionLimit,
+      withdrawalLimit:
+          _numberOf(json['withdrawalLimit']) ??
+          _numberOf(perTransaction['withdraw']) ??
+          0.0,
+      dailyUsed:
+          _numberOf(json['dailyUsed']) ?? _numberOf(dailySend['used']) ?? 0.0,
+      weeklyUsed: _numberOf(json['weeklyUsed']) ?? 0.0,
+      monthlyUsed:
+          _numberOf(json['monthlyUsed']) ??
+          _numberOf(monthlyTotal['used']) ??
+          0.0,
       currency: json['currency'] as String? ?? 'USDC',
-      kycTier: (json['kycTier'] as num?)?.toInt() ?? 0,
-      tierName: json['tierName'] as String? ?? 'Basic',
+      kycTier: (json['kycTier'] as num?)?.toInt() ?? _tierNumberFromName(tier),
+      tierName: json['tierName'] as String? ?? _tierDisplayName(tier),
       kycStatus: json['kycStatus'] as String?,
       upgradeMessage: json['upgradeMessage'] as String?,
       nextTierName: json['nextTierName'] as String?,
-      nextTierDailyLimit: json['nextTierDailyLimit'] != null
-          ? (json['nextTierDailyLimit'] as num).toDouble()
-          : null,
-      nextTierMonthlyLimit: json['nextTierMonthlyLimit'] != null
-          ? (json['nextTierMonthlyLimit'] as num).toDouble()
-          : null,
-      resetTime: json['resetTime'] != null
-          ? DateTime.parse(json['resetTime'] as String)
-          : null,
+      nextTierDailyLimit: _numberOf(json['nextTierDailyLimit']),
+      nextTierMonthlyLimit: _numberOf(json['nextTierMonthlyLimit']),
+      resetTime: _dateOf(json['resetTime']),
       hoursUntilReset: json['hoursUntilReset'] as int?,
       minutesUntilReset: json['minutesUntilReset'] as int?,
       overrideActive: json['overrideActive'] as bool? ?? false,
       overrideReason: json['overrideReason'] as String?,
-      overrideExpiresAt: json['overrideExpiresAt'] != null
-          ? DateTime.parse(json['overrideExpiresAt'] as String)
-          : null,
+      overrideExpiresAt: _dateOf(json['overrideExpiresAt']),
     );
   }
 
   Map<String, dynamic> toJson() => {
     'dailyLimit': dailyLimit,
+    'dailyDepositLimit': dailyDepositLimit,
+    'dailyDepositUsed': dailyDepositUsed,
+    'dailyWithdrawLimit': dailyWithdrawLimit,
+    'dailyWithdrawUsed': dailyWithdrawUsed,
     'monthlyLimit': monthlyLimit,
     'singleTransactionLimit': singleTransactionLimit,
     'withdrawalLimit': withdrawalLimit,
@@ -113,6 +157,10 @@ class TransactionLimits {
 
   TransactionLimits copyWith({
     double? dailyLimit,
+    double? dailyDepositLimit,
+    double? dailyDepositUsed,
+    double? dailyWithdrawLimit,
+    double? dailyWithdrawUsed,
     double? monthlyLimit,
     double? singleTransactionLimit,
     double? withdrawalLimit,
@@ -134,6 +182,10 @@ class TransactionLimits {
   }) {
     return TransactionLimits(
       dailyLimit: dailyLimit ?? this.dailyLimit,
+      dailyDepositLimit: dailyDepositLimit ?? this.dailyDepositLimit,
+      dailyDepositUsed: dailyDepositUsed ?? this.dailyDepositUsed,
+      dailyWithdrawLimit: dailyWithdrawLimit ?? this.dailyWithdrawLimit,
+      dailyWithdrawUsed: dailyWithdrawUsed ?? this.dailyWithdrawUsed,
       monthlyLimit: monthlyLimit ?? this.monthlyLimit,
       singleTransactionLimit:
           singleTransactionLimit ?? this.singleTransactionLimit,
@@ -158,6 +210,16 @@ class TransactionLimits {
 
   // Helper getters
   double get dailyRemaining => (dailyLimit - dailyUsed).clamp(0.0, dailyLimit);
+  double get dailyDepositRemaining {
+    final limit = dailyDepositLimit > 0 ? dailyDepositLimit : dailyLimit;
+    return (limit - dailyDepositUsed).clamp(0.0, limit);
+  }
+
+  double get dailyWithdrawRemaining {
+    final limit = dailyWithdrawLimit > 0 ? dailyWithdrawLimit : dailyLimit;
+    return (limit - dailyWithdrawUsed).clamp(0.0, limit);
+  }
+
   double get monthlyRemaining =>
       (monthlyLimit - monthlyUsed).clamp(0.0, monthlyLimit);
   double get dailyPercentage =>
@@ -170,11 +232,63 @@ class TransactionLimits {
   bool get isMonthlyAtLimit => monthlyPercentage >= 1.0;
   bool get hasNextTier => nextTierName != null;
   bool get hasActiveOverride => overrideActive;
+
+  double dailyLimitFor(TransactionLimitOperation operation) {
+    return switch (operation) {
+      TransactionLimitOperation.send => dailyLimit,
+      TransactionLimitOperation.deposit =>
+        dailyDepositLimit > 0 ? dailyDepositLimit : dailyLimit,
+      TransactionLimitOperation.withdraw =>
+        dailyWithdrawLimit > 0 ? dailyWithdrawLimit : dailyLimit,
+    };
+  }
+
+  double dailyUsedFor(TransactionLimitOperation operation) {
+    return switch (operation) {
+      TransactionLimitOperation.send => dailyUsed,
+      TransactionLimitOperation.deposit => dailyDepositUsed,
+      TransactionLimitOperation.withdraw => dailyWithdrawUsed,
+    };
+  }
+
+  double dailyRemainingFor(TransactionLimitOperation operation) {
+    return switch (operation) {
+      TransactionLimitOperation.send => dailyRemaining,
+      TransactionLimitOperation.deposit => dailyDepositRemaining,
+      TransactionLimitOperation.withdraw => dailyWithdrawRemaining,
+    };
+  }
+
+  double dailyPercentageFor(TransactionLimitOperation operation) {
+    final limit = dailyLimitFor(operation);
+    return limit > 0 ? (dailyUsedFor(operation) / limit).clamp(0.0, 1.0) : 0.0;
+  }
+
+  bool isDailyNearLimitFor(TransactionLimitOperation operation) {
+    return dailyPercentageFor(operation) >= 0.8;
+  }
+
+  bool isDailyAtLimitFor(TransactionLimitOperation operation) {
+    return dailyPercentageFor(operation) >= 1.0;
+  }
+
   double get effectiveMax {
+    return effectiveMaxFor(TransactionLimitOperation.send);
+  }
+
+  double effectiveMaxFor(TransactionLimitOperation operation) {
+    final dailyForOperation = switch (operation) {
+      TransactionLimitOperation.send => dailyRemaining,
+      TransactionLimitOperation.deposit => dailyDepositRemaining,
+      TransactionLimitOperation.withdraw => dailyWithdrawRemaining,
+    };
+    final operationLimit = operation == TransactionLimitOperation.withdraw
+        ? withdrawalLimit
+        : singleTransactionLimit;
     final candidates = [
-      dailyRemaining,
+      dailyForOperation,
       monthlyRemaining,
-      singleTransactionLimit,
+      operationLimit,
     ].where((value) => value > 0).toList();
     if (candidates.isEmpty) {
       return 0;
@@ -183,15 +297,78 @@ class TransactionLimits {
   }
 
   String? limitHitBy(double amount) {
-    if (amount > singleTransactionLimit && singleTransactionLimit > 0) {
+    return limitHitByFor(TransactionLimitOperation.send, amount);
+  }
+
+  String? limitHitByFor(TransactionLimitOperation operation, double amount) {
+    final operationLimit = operation == TransactionLimitOperation.withdraw
+        ? withdrawalLimit
+        : singleTransactionLimit;
+    if (amount > operationLimit && operationLimit > 0) {
       return 'single_transaction';
     }
-    if (dailyLimit > 0 && amount > dailyRemaining) {
+    final dailyLimit = dailyLimitFor(operation);
+    if (dailyLimit > 0 && amount > dailyRemainingFor(operation)) {
       return 'daily';
     }
     if (monthlyLimit > 0 && amount > monthlyRemaining) {
       return 'monthly';
     }
     return null;
+  }
+}
+
+Map<String, dynamic> _mapOf(Object? value) {
+  if (value is Map<String, dynamic>) {
+    return value;
+  }
+  if (value is Map) {
+    return Map<String, dynamic>.from(value);
+  }
+  return const {};
+}
+
+double? _numberOf(Object? value) {
+  if (value is num) {
+    return value.toDouble();
+  }
+  if (value is String) {
+    return double.tryParse(value);
+  }
+  return null;
+}
+
+DateTime? _dateOf(Object? value) {
+  if (value is! String || value.isEmpty) {
+    return null;
+  }
+  return DateTime.tryParse(value);
+}
+
+int _tierNumberFromName(String? tier) {
+  switch (tier?.toLowerCase()) {
+    case 'basic':
+      return 1;
+    case 'verified':
+      return 2;
+    case 'premium':
+      return 3;
+    case 'unverified':
+    default:
+      return 0;
+  }
+}
+
+String _tierDisplayName(String? tier) {
+  switch (tier?.toLowerCase()) {
+    case 'basic':
+      return 'Basic';
+    case 'verified':
+      return 'Verified';
+    case 'premium':
+      return 'Premium';
+    case 'unverified':
+    default:
+      return 'Unverified';
   }
 }

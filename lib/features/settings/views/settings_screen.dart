@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -228,6 +229,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _handleVersionTap() {
+    if (!kDebugMode) {
+      return;
+    }
+
     setState(() {
       _debugTapCount++;
     });
@@ -480,6 +485,7 @@ class _KycTile extends ConsumerWidget {
         subtitleColor = context.colors.successText;
         icon = Icons.verified_user;
       case KycStatus.submitted:
+      case KycStatus.manualReview:
         subtitle = l10n.kyc_status_submitted_title;
         subtitleColor = context.colors.warning;
         icon = Icons.hourglass_top;

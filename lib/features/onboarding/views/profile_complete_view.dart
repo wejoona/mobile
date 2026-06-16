@@ -6,7 +6,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/state/user_state_machine.dart';
+import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 
 /// Minimal "What's your name?" screen shown after first login
@@ -43,18 +43,12 @@ class _ProfileCompleteViewState extends ConsumerState<ProfileCompleteView> {
 
     try {
       final userService = ref.read(userServiceProvider);
-      await userService.updateProfile(
+      final profile = await userService.updateProfile(
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
       );
 
-      // Update local state
-      ref
-          .read(userStateMachineProvider.notifier)
-          .updateName(
-            firstName: _firstNameController.text.trim(),
-            lastName: _lastNameController.text.trim(),
-          );
+      await ref.read(profileProvider.notifier).applyProfileSnapshot(profile);
 
       HapticFeedback.mediumImpact();
 

@@ -1,12 +1,31 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:usdc_wallet/features/send/models/transfer_request.dart';
 import 'package:usdc_wallet/services/contacts/contacts_service.dart';
 import 'package:usdc_wallet/services/transfers/transfers_service.dart';
 
 import '../../helpers/test_utils.dart';
 
 void main() {
+  test(
+    'transfer request serializes phone recipient using backend toPhone key',
+    () {
+      const request = TransferRequest(
+        recipientPhone: '+2250748805663',
+        amount: 12.5,
+        note: 'Dinner',
+      );
+
+      expect(request.toJson(), {
+        'toPhone': '+2250748805663',
+        'amount': 12.5,
+        'note': 'Dinner',
+      });
+      expect(request.toJson().containsKey('recipientPhone'), isFalse);
+    },
+  );
+
   test('Korido lookup keeps username when phone is masked', () async {
     final dio = MockDio();
     dio.queueResponse({
@@ -62,6 +81,36 @@ void main() {
     },
   );
 
+  test(
+    'internal transfer sends recipientId when selected from lookup',
+    () async {
+      final dio = MockDio();
+      dio.queueResponse({
+        'transactionId': 'tx-456',
+        'status': 'completed',
+        'amount': 12,
+        'currency': 'USDC',
+        'supportReference': 'tx-456',
+      });
+
+      final service = TransfersService(dio);
+      await service.createInternalTransfer(
+        recipientId: '123e4567-e89b-12d3-a456-426614174003',
+        amount: 12,
+        pinToken: 'pin-token',
+        idempotencyKey: 'idem-456',
+      );
+
+      final request = dio.requestHistory.single;
+      expect(request.path, '/wallet/transfer/internal');
+      expect(request.data, isA<Map<String, dynamic>>());
+      final body = request.data as Map<String, dynamic>;
+      expect(body['recipientId'], '123e4567-e89b-12d3-a456-426614174003');
+      expect(body.containsKey('toPhone'), isFalse);
+      expect(body.containsKey('recipientUsername'), isFalse);
+    },
+  );
+
   test('send screens allow discoverable username recipients', () {
     final contactsScreen = File(
       'lib/features/contacts/views/contacts_list_screen.dart',
@@ -82,5 +131,35 @@ void main() {
     expect(route, contains("extra['username'] ?? extra['recipientUsername']"));
     expect(recipient, contains('setKnownKoridoRecipient'));
     expect(recipient, contains('_hasUsernameRecipient'));
+    expect(recipient, contains('_hasUserIdRecipient'));
+    expect(
+      recipient,
+      contains(
+        'final myUsername = _normalizeUsername(authState.user?.username);',
+      ),
+    );
+    expect(recipient, contains('_selectedRecipientUsername == myUsername'));
+  });
+
+  test('recent recipients preserve Korido user identity for stable sends', () {
+    final recent = RecentRecipient.fromJson({
+      'phoneNumber': '+2250748805663',
+      'name': 'Awa Konan',
+      'userId': 'user-123',
+      'username': 'awa_k',
+      'lastTransferDate': '2026-06-14T10:00:00.000Z',
+      'lastAmount': 15,
+      'isKoridoUser': true,
+    });
+
+    expect(recent.userId, 'user-123');
+    expect(recent.username, 'awa_k');
+    expect(recent.isKoridoUser, isTrue);
+
+    final recipientScreen = File(
+      'lib/features/send/views/recipient_screen.dart',
+    ).readAsStringSync();
+    expect(recipientScreen, contains('username: recipient.username'));
+    expect(recipientScreen, contains('userId: recipient.userId'));
   });
 }

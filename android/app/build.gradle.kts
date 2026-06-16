@@ -135,6 +135,9 @@ dependencies {
     // SECURITY: Strong biometric availability checks for enrollment state guard
     implementation("androidx.biometric:biometric:1.1.0")
 
+    // Profile photo face checks must respect EXIF rotation from camera/gallery.
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
+
     // Coroutines for async Play Integrity calls
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")

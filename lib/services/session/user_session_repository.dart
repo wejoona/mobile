@@ -40,7 +40,10 @@ class UserSessionRepository {
       final updated = session.copyWith(lastActive: DateTime.now());
       await _storage.write(key: _sessionKey, value: updated.toJsonString());
       // Also save phone for "remember me"
-      await _storage.write(key: _rememberedPhoneKey, value: session.phoneNumber);
+      await _storage.write(
+        key: _rememberedPhoneKey,
+        value: session.phoneNumber,
+      );
       _log.debug('Session saved for user ${session.userId}');
     } catch (e) {
       _log.error('Failed to save session', e);
@@ -75,6 +78,11 @@ class UserSessionRepository {
     String? walletId,
     String? kycStatus,
     bool? hasCompletedKyc,
+    bool clearDisplayName = false,
+    bool clearFirstName = false,
+    bool clearLastName = false,
+    bool clearEmail = false,
+    bool clearAvatarUrl = false,
   }) async {
     final session = await load();
     if (session == null) return;
@@ -88,6 +96,11 @@ class UserSessionRepository {
       kycStatus: kycStatus,
       hasCompletedKyc: hasCompletedKyc,
       lastActive: DateTime.now(),
+      clearDisplayName: clearDisplayName,
+      clearFirstName: clearFirstName,
+      clearLastName: clearLastName,
+      clearEmail: clearEmail,
+      clearAvatarUrl: clearAvatarUrl,
     );
     await save(updated);
   }

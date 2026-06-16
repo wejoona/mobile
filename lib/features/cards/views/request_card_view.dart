@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/cards/providers/cards_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart';
@@ -53,10 +52,8 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
     final userState = ref.watch(userStateMachineProvider);
     final kycState = ref.watch(kycStateMachineProvider);
 
-    // Check KYC level (tier 2+ = verified or higher)
     final canRequestCard =
-        userState.kycStatus == KycStatus.verified ||
-        kycState.status == KycStatus.verified;
+        userState.kycStatus.isVerified || kycState.status.isVerified;
 
     return Scaffold(
       backgroundColor: colors.canvas,

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/components/dialogs/index.dart'
     hide AlertDialog;
@@ -87,6 +88,10 @@ class DevicesScreen extends ConsumerWidget {
       return Center(
         child: CircularProgressIndicator(color: context.colors.gold),
       );
+    }
+
+    if (state.requiresUnlock && state.devices.isEmpty) {
+      return _buildUnlockRequired(context, l10n);
     }
 
     if (state.error != null && state.devices.isEmpty) {
@@ -211,6 +216,41 @@ class DevicesScreen extends ConsumerWidget {
             AppButton(
               label: l10n.action_retry,
               onPressed: () => ref.read(deviceActionsProvider).refresh(),
+              variant: AppButtonVariant.primary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUnlockRequired(BuildContext context, AppLocalizations l10n) {
+    final colors = context.colors;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xxl),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.lock_outline_rounded, size: 48, color: colors.gold),
+            const SizedBox(height: AppSpacing.xl),
+            AppText(
+              l10n.session_unlockReason,
+              variant: AppTextVariant.titleMedium,
+              textAlign: TextAlign.center,
+              color: colors.textPrimary,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            AppText(
+              l10n.settings_devicesDescription,
+              variant: AppTextVariant.bodyMedium,
+              color: colors.textSecondary,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            AppButton(
+              label: l10n.auth_tapToUnlock,
+              onPressed: () => context.go('/session-locked'),
               variant: AppButtonVariant.primary,
             ),
           ],
@@ -401,6 +441,10 @@ class _CurrentDeviceCard extends ConsumerWidget {
             device: device,
             fallbackLastActive: l10n.settings_justNow,
           ),
+          if (device?.cannotAccess == true) ...[
+            const SizedBox(height: AppSpacing.md),
+            _DeviceAccessNotice(device: device!),
+          ],
         ],
       ),
     );
@@ -491,6 +535,10 @@ class _OtherDeviceCard extends ConsumerWidget {
                       ),
                   ],
                 ),
+                if (device.cannotAccess) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  _DeviceAccessNotice(device: device),
+                ],
               ],
             ),
           ),
@@ -718,6 +766,57 @@ class _DeviceMenu extends ConsumerWidget {
         );
       }
     }
+  }
+}
+
+class _DeviceAccessNotice extends StatelessWidget {
+  const _DeviceAccessNotice({required this.device});
+
+  final Device device;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
+    final isBlocked = device.isBlocked;
+    final rawReason = device.blockedReason?.trim();
+    final message = rawReason != null && rawReason.isNotEmpty
+        ? rawReason
+        : isBlocked
+        ? l10n.settings_deviceBlockedDescription
+        : l10n.settings_deviceInactiveDescription;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: isBlocked ? colors.errorBg : colors.warningBg,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+        border: Border.all(
+          color: (isBlocked ? colors.error : colors.warning).withValues(
+            alpha: 0.26,
+          ),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            isBlocked ? Icons.shield_rounded : Icons.info_outline_rounded,
+            size: 16,
+            color: isBlocked ? colors.errorText : colors.warningText,
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          Expanded(
+            child: AppText(
+              message,
+              variant: AppTextVariant.bodySmall,
+              color: isBlocked ? colors.errorText : colors.warningText,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

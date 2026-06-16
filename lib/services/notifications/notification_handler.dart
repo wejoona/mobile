@@ -37,13 +37,14 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
 
     final pushService = ref.read(pushNotificationServiceProvider);
 
-    // Initialize push notifications
-    await pushService.initialize();
-
-    // Set up callbacks
+    // Set callbacks before initialize so terminated-state notification taps
+    // are routed when Firebase returns the initial message during startup.
     pushService.onForegroundMessage = _handleForegroundMessage;
     pushService.onMessageOpenedApp = _handleMessageTap;
     pushService.onNavigate = _handleNavigation;
+
+    // Initialize push notifications
+    await pushService.initialize();
 
     // Register token with backend (user should be authenticated at this point)
     await pushService.registerWithBackend();

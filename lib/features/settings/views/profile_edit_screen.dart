@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,7 +9,9 @@ import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
 import 'package:usdc_wallet/features/profile/services/profile_picture_service.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/image_analysis/image_analysis_service.dart';
+import 'package:usdc_wallet/services/user/avatar_multipart.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/state/index.dart';
 
@@ -25,6 +28,7 @@ class ProfileEditScreen extends ConsumerStatefulWidget {
 
 class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _usernameController = TextEditingController();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -46,16 +50,11 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
     final avatarUrl = _avatarUrl?.trim();
     final avatarThumb = _avatarThumb?.trim();
-    if (avatarThumb != null &&
-        avatarThumb.isNotEmpty &&
-        _isProtectedRelativeAvatarUrl(avatarUrl)) {
+    if (avatarThumb != null && avatarThumb.isNotEmpty) {
       return avatarThumb;
     }
     if (avatarUrl != null && avatarUrl.isNotEmpty) {
       return avatarUrl;
-    }
-    if (avatarThumb != null && avatarThumb.isNotEmpty) {
-      return avatarThumb;
     }
     return null;
   }
@@ -63,22 +62,18 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   @override
   void initState() {
     super.initState();
-    // Pre-fill with current user data
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final userState = ref.read(userStateMachineProvider);
-      setState(() {
-        _firstNameController.text = userState.firstName ?? '';
-        _lastNameController.text = userState.lastName ?? '';
-        _emailController.text = userState.email ?? '';
-        _avatarUrl = userState.avatarUrl;
-        _avatarThumb = userState.avatarThumb;
-      });
+      _hydrateFormFromUserState(userState);
+      unawaited(_recoverLostProfileImage());
+      unawaited(_refreshProfileSnapshot());
     });
   }
 
   @override
   void dispose() {
+    _usernameController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
@@ -114,6 +109,27 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               _buildAvatarSection(userState),
 
               const SizedBox(height: AppSpacing.xxxl),
+
+              // Username
+              AppInput(
+                label: _usernameLabel(context),
+                controller: _usernameController,
+                hint: '@ben_ouattara',
+                keyboardType: TextInputType.text,
+                validator: (value) {
+                  final normalized = _normalizeUsername(value);
+                  if (normalized == null) return null;
+                  if (normalized.length < 3 || normalized.length > 20) {
+                    return _usernameLengthError(context);
+                  }
+                  if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(normalized)) {
+                    return _usernameFormatError(context);
+                  }
+                  return null;
+                },
+              ),
+
+              const SizedBox(height: AppSpacing.lg),
 
               // First Name
               AppInput(
@@ -319,6 +335,27 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     });
   }
 
+  void _hydrateFormFromUserState(UserState userState) {
+    if (!mounted) return;
+    setState(() {
+      _usernameController.text = userState.username ?? '';
+      _firstNameController.text = userState.firstName ?? '';
+      _lastNameController.text = userState.lastName ?? '';
+      _emailController.text = userState.email ?? '';
+      _avatarUrl = userState.avatarUrl;
+      _avatarThumb = userState.avatarThumb;
+    });
+  }
+
+  Future<void> _refreshProfileSnapshot() async {
+    await ref.read(profileProvider.notifier).loadProfile();
+    if (!mounted || _selectedImage != null || _profilePhotoStatus != null) {
+      return;
+    }
+
+    _hydrateFormFromUserState(ref.read(userStateMachineProvider));
+  }
+
   void _showProfilePhotoSnack(String message, {required bool isError}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -443,54 +480,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         return;
       }
 
-      _setProfilePhotoBusy('Preparing photo...');
-      final compressed = await pictureService.compressImage(picked);
-      _setProfilePhotoBusy('Checking face on this device...');
-      final faceCheck = await ref
-          .read(imageAnalysisServiceProvider)
-          .detectFaces(compressed);
-      if (!mounted) return;
-
-      if (!faceCheck.isAvailable || !faceCheck.hasExactlyOneFace) {
-        _showProfilePhotoSnack(
-          _profilePhotoFaceMessage(faceCheck),
-          isError: true,
-        );
-        return;
-      }
-
-      _setProfilePhotoBusy('Uploading photo...');
-      setState(() {
-        _selectedImage = compressed;
-      });
-
-      final uploadResult = await ref
-          .read(profileProvider.notifier)
-          .uploadAvatar(compressed);
-      final profileState = ref.read(profileProvider);
-      if (!mounted) return;
-
-      if (uploadResult == null || profileState.error != null) {
-        setState(() => _selectedImage = null);
-        _showProfilePhotoSnack(
-          profileState.error ??
-              'Unable to upload your photo. Please try another image.',
-          isError: true,
-        );
-        return;
-      }
-
-      final userState = ref.read(userStateMachineProvider);
-      setState(() {
-        _selectedImage = null;
-        _avatarUrl = uploadResult.avatarUrl ?? userState.avatarUrl;
-        _avatarThumb = uploadResult.avatarThumb ?? userState.avatarThumb;
-      });
-
-      _showProfilePhotoSnack(
-        AppLocalizations.of(context)!.settings_profileUpdated,
-        isError: false,
-      );
+      await _processProfileImage(picked);
     } on PlatformException catch (error) {
       if (!mounted) return;
       setState(() => _selectedImage = null);
@@ -508,6 +498,103 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     } finally {
       _setProfilePhotoBusy(null);
     }
+  }
+
+  Future<void> _recoverLostProfileImage() async {
+    try {
+      final recovered = await ref
+          .read(profilePictureServiceProvider)
+          .retrieveLostImage();
+      if (!mounted || recovered == null) {
+        return;
+      }
+      await _processProfileImage(recovered);
+    } on PlatformException catch (error) {
+      if (!mounted) return;
+      _showProfilePhotoSnack(
+        _profilePhotoPickErrorMessage(error),
+        isError: true,
+      );
+    } on Exception catch (error) {
+      if (!mounted) return;
+      _showProfilePhotoSnack(
+        _profilePhotoPickErrorMessage(error),
+        isError: true,
+      );
+    } finally {
+      _setProfilePhotoBusy(null);
+    }
+  }
+
+  Future<void> _processProfileImage(File picked) async {
+    final pictureService = ref.read(profilePictureServiceProvider);
+    _setProfilePhotoBusy('Preparing photo...');
+    final compressed = await pictureService.compressImage(picked);
+    _setProfilePhotoBusy('Checking face on this device...');
+    var faceDetection = await ref
+        .read(imageAnalysisServiceProvider)
+        .detectFaces(compressed);
+    if (!mounted) return;
+
+    if (!faceDetection.isAvailable) {
+      _setProfilePhotoBusy('Retrying face check on a lighter photo...');
+      final faceCheckImage = await pictureService.prepareForFaceDetection(
+        compressed,
+      );
+      faceDetection = await ref
+          .read(imageAnalysisServiceProvider)
+          .detectFaces(faceCheckImage);
+      if (!mounted) return;
+    }
+
+    if (!faceDetection.isAvailable || !faceDetection.hasExactlyOneFace) {
+      setState(() => _selectedImage = null);
+      _showProfilePhotoSnack(
+        _profilePhotoFaceMessage(faceDetection),
+        isError: true,
+      );
+      return;
+    }
+    final faceCheck = AvatarDeviceFaceCheck.fromDeviceAnalysis(
+      isAvailable: faceDetection.isAvailable,
+      faceCount: faceDetection.faceCount,
+    );
+
+    _setProfilePhotoBusy('Uploading photo...');
+    setState(() {
+      _selectedImage = compressed;
+    });
+
+    final uploadResult = await ref
+        .read(profileProvider.notifier)
+        .uploadAvatar(compressed, faceCheck: faceCheck);
+    final profileState = ref.read(profileProvider);
+    if (!mounted) return;
+
+    final uploadedAvatar = uploadResult;
+    if (uploadedAvatar == null ||
+        !((uploadedAvatar.avatarUrl?.isNotEmpty ?? false) ||
+            (uploadedAvatar.avatarThumb?.isNotEmpty ?? false))) {
+      setState(() => _selectedImage = null);
+      _showProfilePhotoSnack(
+        profileState.error ??
+            'Unable to upload your photo. Please try another image.',
+        isError: true,
+      );
+      return;
+    }
+
+    final userState = ref.read(userStateMachineProvider);
+    setState(() {
+      _selectedImage = null;
+      _avatarUrl = uploadedAvatar.avatarUrl ?? userState.avatarUrl;
+      _avatarThumb = uploadedAvatar.avatarThumb ?? userState.avatarThumb;
+    });
+
+    _showProfilePhotoSnack(
+      AppLocalizations.of(context)!.settings_profileUpdated,
+      isError: false,
+    );
   }
 
   String _profilePhotoFaceMessage(FaceDetectionResult result) {
@@ -579,11 +666,29 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     return phone;
   }
 
-  bool _isProtectedRelativeAvatarUrl(String? value) {
-    if (value == null || value.isEmpty) {
-      return false;
-    }
-    return value.startsWith('/user/avatar/');
+  String? _normalizeUsername(String? value) {
+    final normalized = value?.trim().replaceFirst(RegExp(r'^@+'), '');
+    if (normalized == null || normalized.isEmpty) return null;
+    return normalized.toLowerCase();
+  }
+
+  String _usernameLabel(BuildContext context) {
+    final locale = Localizations.localeOf(context).languageCode;
+    return locale == 'fr' ? "Nom d'utilisateur" : 'Username';
+  }
+
+  String _usernameLengthError(BuildContext context) {
+    final locale = Localizations.localeOf(context).languageCode;
+    return locale == 'fr'
+        ? 'Le nom d’utilisateur doit contenir 3 à 20 caractères.'
+        : 'Username must be 3 to 20 characters.';
+  }
+
+  String _usernameFormatError(BuildContext context) {
+    final locale = Localizations.localeOf(context).languageCode;
+    return locale == 'fr'
+        ? 'Utilisez uniquement lettres, chiffres et underscore.'
+        : 'Use only letters, numbers, and underscores.';
   }
 
   Future<void> _handleSave() async {
@@ -595,6 +700,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       final profile = await ref
           .read(userServiceProvider)
           .updateProfile(
+            username: _normalizeUsername(_usernameController.text),
             firstName: _firstNameController.text.trim(),
             lastName: _lastNameController.text.trim(),
             email: _emailController.text.trim().isEmpty
@@ -603,7 +709,13 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             clearEmail: _emailController.text.trim().isEmpty,
           );
 
-      await ref.read(profileProvider.notifier).applyProfileSnapshot(profile);
+      await ref
+          .read(profileProvider.notifier)
+          .applyProfileSnapshot(
+            profile,
+            avatarUrl: _avatarUrl,
+            avatarThumb: _avatarThumb,
+          );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -620,9 +732,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              AppLocalizations.of(context)!.settings_failedToUpdateProfile,
-            ),
+            content: Text(_profileSaveErrorMessage(e)),
             backgroundColor: context.colors.error,
           ),
         );
@@ -632,5 +742,17 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  String _profileSaveErrorMessage(Object error) {
+    if (error is ApiException) {
+      if (error.statusCode == 401) {
+        return AppLocalizations.of(context)!.error_sessionExpired;
+      }
+      if (error.message.trim().isNotEmpty) {
+        return error.message;
+      }
+    }
+    return AppLocalizations.of(context)!.settings_failedToUpdateProfile;
   }
 }

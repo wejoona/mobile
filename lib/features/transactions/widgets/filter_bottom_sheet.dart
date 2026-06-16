@@ -5,7 +5,8 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
-import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart' hide TransactionFilter;
+import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart'
+    hide TransactionFilter;
 
 /// Bottom sheet for advanced transaction filtering
 class FilterBottomSheet extends ConsumerStatefulWidget {
@@ -89,7 +90,9 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
       ),
       decoration: BoxDecoration(
         color: colors.container,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadius.xxl),
+        ),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -111,10 +114,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                AppText(
-                  l10n.filters_title,
-                  variant: AppTextVariant.titleLarge,
-                ),
+                AppText(l10n.filters_title, variant: AppTextVariant.titleLarge),
                 TextButton(
                   onPressed: _resetFilters,
                   child: Text(
@@ -177,7 +177,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
           Padding(
             padding: const EdgeInsets.all(AppSpacing.screenPadding),
             child: AppButton(
-              label: 'Apply Filters${_getActiveFilterCount() > 0 ? ' (${_getActiveFilterCount()})' : ''}',
+              label: _applyLabel(l10n),
               onPressed: _applyFilters,
               isFullWidth: true,
             ),
@@ -199,12 +199,13 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
   }
 
   Widget _buildTypeChips(ThemeColors colors) {
+    final l10n = AppLocalizations.of(context)!;
     final types = [
-      (null, 'All'),
-      ('deposit', 'Deposits'),
-      ('withdrawal', 'Withdrawals'),
-      ('transfer_internal', 'Received'),
-      ('transfer_external', 'Sent'),
+      (null, l10n.filters_all),
+      ('deposit', l10n.filters_deposits),
+      ('withdrawal', l10n.filters_withdrawals),
+      ('transfer_internal', l10n.filters_received),
+      ('transfer_external', l10n.filters_sent),
     ];
 
     return Wrap(
@@ -234,12 +235,13 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
   }
 
   Widget _buildStatusChips(ThemeColors colors) {
+    final l10n = AppLocalizations.of(context)!;
     final statuses = [
-      (null, 'All'),
-      ('completed', 'Completed'),
-      ('pending', 'Pending'),
-      ('processing', 'Processing'),
-      ('failed', 'Failed'),
+      (null, l10n.filters_all),
+      ('completed', l10n.filters_completed),
+      ('pending', l10n.filters_pending),
+      ('processing', l10n.filters_processing),
+      ('failed', l10n.filters_failed),
     ];
 
     return Wrap(
@@ -285,13 +287,14 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
   }
 
   Widget _buildDateRangeChips(ThemeColors colors) {
+    final l10n = AppLocalizations.of(context)!;
     final options = [
-      (null, 'All Time'),
-      (DateRangeOption.today, 'Today'),
-      (DateRangeOption.thisWeek, 'This Week'),
-      (DateRangeOption.thisMonth, 'This Month'),
-      (DateRangeOption.last3Months, '3 Months'),
-      (DateRangeOption.custom, 'Custom'),
+      (null, l10n.filters_allTime),
+      (DateRangeOption.today, l10n.filters_today),
+      (DateRangeOption.thisWeek, l10n.filters_thisWeek),
+      (DateRangeOption.thisMonth, l10n.filters_thisMonth),
+      (DateRangeOption.last3Months, l10n.filters_last3Months),
+      (DateRangeOption.custom, l10n.filters_custom),
     ];
 
     return Wrap(
@@ -328,7 +331,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
   }
 
   Widget _buildCustomDatePickers(AppLocalizations l10n) {
-    final dateFormat = DateFormat('MMM d, yyyy');
+    final dateFormat = DateFormat.yMMMd(l10n.localeName);
 
     return Row(
       children: [
@@ -337,6 +340,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
             label: l10n.filters_from,
             date: _customStartDate,
             dateFormat: dateFormat,
+            selectLabel: l10n.filters_selectDate,
             onTap: () => _selectDate(isStart: true),
           ),
         ),
@@ -346,6 +350,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
             label: l10n.filters_to,
             date: _customEndDate,
             dateFormat: dateFormat,
+            selectLabel: l10n.filters_selectDate,
             onTap: () => _selectDate(isStart: false),
           ),
         ),
@@ -367,9 +372,9 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
         final colors = context.colors;
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.dark(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
               primary: colors.gold,
-              onPrimary: colors.canvas,
+              onPrimary: colors.onGold,
               surface: colors.container,
               onSurface: colors.textPrimary,
             ),
@@ -399,8 +404,8 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
 
   Widget _buildAmountRangeSlider(ThemeColors colors) {
     final l10n = AppLocalizations.of(context)!;
-    final hasRange = _amountRange.start > _minAmount ||
-        _amountRange.end < _maxAmount;
+    final hasRange =
+        _amountRange.start > _minAmount || _amountRange.end < _maxAmount;
 
     return Column(
       children: [
@@ -461,9 +466,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
   Widget _buildSortOptions(ThemeColors colors) {
     return Row(
       children: [
-        Expanded(
-          child: _buildSortByDropdown(),
-        ),
+        Expanded(child: _buildSortByDropdown()),
         const SizedBox(width: AppSpacing.md),
         _buildSortOrderToggle(colors),
       ],
@@ -471,17 +474,18 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
   }
 
   Widget _buildSortByDropdown() {
+    final l10n = AppLocalizations.of(context)!;
     return AppSelect<String>(
       value: _sortBy,
-      items: const [
+      items: [
         AppSelectItem(
           value: 'createdAt',
-          label: 'Date',
+          label: l10n.filters_sortDate,
           icon: Icons.calendar_today,
         ),
         AppSelectItem(
           value: 'amount',
-          label: 'Amount',
+          label: l10n.filters_sortAmount,
           icon: Icons.attach_money,
         ),
       ],
@@ -495,6 +499,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
   }
 
   Widget _buildSortOrderToggle(ThemeColors colors) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: colors.elevated,
@@ -506,14 +511,14 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
         children: [
           _SortOrderButton(
             icon: Icons.arrow_downward,
-            tooltip: 'Newest/Highest first',
+            tooltip: l10n.filters_descendingFirst,
             isSelected: _sortOrder == 'DESC',
             onTap: () => setState(() => _sortOrder = 'DESC'),
             colors: colors,
           ),
           _SortOrderButton(
             icon: Icons.arrow_upward,
-            tooltip: 'Oldest/Lowest first',
+            tooltip: l10n.filters_ascendingFirst,
             isSelected: _sortOrder == 'ASC',
             onTap: () => setState(() => _sortOrder = 'ASC'),
             colors: colors,
@@ -532,6 +537,12 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
       count++;
     }
     return count;
+  }
+
+  String _applyLabel(AppLocalizations l10n) {
+    final count = _getActiveFilterCount();
+    if (count == 0) return l10n.filters_apply;
+    return l10n.filters_applyWithCount(count);
   }
 
   void _resetFilters() {
@@ -570,12 +581,14 @@ class _DatePickerButton extends StatelessWidget {
     required this.label,
     required this.date,
     required this.dateFormat,
+    required this.selectLabel,
     required this.onTap,
   });
 
   final String label;
   final DateTime? date;
   final DateFormat dateFormat;
+  final String selectLabel;
   final VoidCallback onTap;
 
   @override
@@ -593,11 +606,7 @@ class _DatePickerButton extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(
-              Icons.calendar_today,
-              size: 16,
-              color: colors.textTertiary,
-            ),
+            Icon(Icons.calendar_today, size: 16, color: colors.textTertiary),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Column(
@@ -610,7 +619,7 @@ class _DatePickerButton extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.xxs),
                   AppText(
-                    date != null ? dateFormat.format(date!) : 'Select',
+                    date != null ? dateFormat.format(date!) : selectLabel,
                     variant: AppTextVariant.bodyMedium,
                     color: date != null
                         ? colors.textPrimary

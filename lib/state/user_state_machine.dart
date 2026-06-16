@@ -144,6 +144,7 @@ class UserStateMachine extends Notifier<UserState> {
       state = state.copyWith(
         userId: profile.id,
         phone: profile.phone,
+        username: profile.username,
         firstName: profile.firstName,
         lastName: profile.lastName,
         email: profile.email,
@@ -212,6 +213,7 @@ class UserStateMachine extends Notifier<UserState> {
         );
         state = state.copyWith(
           userId: cached.userId,
+          username: cached.username,
           firstName: cached.firstName,
           lastName: cached.lastName,
           email: cached.email,
@@ -242,6 +244,8 @@ class UserStateMachine extends Notifier<UserState> {
       case 'in_review':
       case 'pending_verification':
         return KycStatus.submitted;
+      case 'manual_review':
+        return KycStatus.manualReview;
       case 'rejected':
         return KycStatus.rejected;
       case 'additional_info_needed':
@@ -308,6 +312,7 @@ class UserStateMachine extends Notifier<UserState> {
         status: AuthStatus.authenticated,
         userId: response.user.id,
         phone: response.user.phone,
+        username: response.user.username,
         firstName: response.user.firstName,
         lastName: response.user.lastName,
         email: response.user.email,
@@ -334,6 +339,7 @@ class UserStateMachine extends Notifier<UserState> {
 
   /// Update user profile
   void updateProfile({
+    String? username,
     String? firstName,
     String? lastName,
     String? email,
@@ -346,6 +352,7 @@ class UserStateMachine extends Notifier<UserState> {
     bool clearAvatarThumb = false,
   }) {
     state = state.copyWith(
+      username: username ?? state.username,
       firstName: firstName ?? state.firstName,
       lastName: lastName ?? state.lastName,
       email: email ?? state.email,
@@ -364,6 +371,7 @@ class UserStateMachine extends Notifier<UserState> {
   Future<void> applyServerAvatar({
     String? avatarUrl,
     String? avatarThumb,
+    bool clearAvatarThumb = false,
     bool clearLocalCache = true,
   }) async {
     final hasAvatarUrl = avatarUrl != null && avatarUrl.isNotEmpty;
@@ -376,7 +384,11 @@ class UserStateMachine extends Notifier<UserState> {
       await _clearLocalAvatarCache();
     }
 
-    updateProfile(avatarUrl: avatarUrl, avatarThumb: avatarThumb);
+    updateProfile(
+      avatarUrl: avatarUrl,
+      avatarThumb: avatarThumb,
+      clearAvatarThumb: clearAvatarThumb,
+    );
   }
 
   /// Clear all avatar references after the backend confirms removal.

@@ -362,7 +362,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
     if (!isOfflineQueueableErrorMessage(state.error) ||
         state.recipient == null ||
         state.amount == null ||
-        !state.recipient!.hasPhone) {
+        !state.recipient!.canSend) {
       return false;
     }
 
@@ -372,6 +372,8 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
       ref,
       recipientName: state.recipient!.name,
       recipientPhone: state.recipient!.phoneNumber,
+      recipientId: state.recipient!.userId,
+      recipientUsername: state.recipient!.username,
       amount: state.amount!,
       description: state.note,
     );

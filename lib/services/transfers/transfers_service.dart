@@ -20,6 +20,7 @@ class TransfersService {
   /// [idempotencyKey] — required by backend IdempotencyGuard (X-Idempotency-Key header)
   /// [amount] — in user-facing USDC units. Backend transfer use cases expect major units.
   Future<TransferResult> createInternalTransfer({
+    String? recipientId,
     String? recipientPhone,
     String? recipientUsername,
     required double amount,
@@ -28,11 +29,13 @@ class TransfersService {
     required String pinToken,
     required String idempotencyKey,
   }) async {
+    final normalizedRecipientId = recipientId?.trim();
     final normalizedPhone = recipientPhone?.trim();
     final normalizedUsername = _normalizeUsername(recipientUsername);
-    if ((normalizedPhone == null || normalizedPhone.isEmpty) &&
+    if ((normalizedRecipientId == null || normalizedRecipientId.isEmpty) &&
+        (normalizedPhone == null || normalizedPhone.isEmpty) &&
         (normalizedUsername == null || normalizedUsername.isEmpty)) {
-      throw ArgumentError('Recipient phone or username is required');
+      throw ArgumentError('Recipient ID, phone, or username is required');
     }
 
     // Internal transfers usually get green flow (no verification)
@@ -44,6 +47,7 @@ class TransfersService {
         currency: 'USDC',
         recipientId:
             riskRecipientId ??
+            normalizedRecipientId ??
             normalizedUsername ??
             normalizedPhone ??
             'internal-recipient',
@@ -77,6 +81,8 @@ class TransfersService {
       final response = await _dio.post(
         '/wallet/transfer/internal',
         data: {
+          if (normalizedRecipientId != null && normalizedRecipientId.isNotEmpty)
+            'recipientId': normalizedRecipientId,
           if (normalizedPhone != null && normalizedPhone.isNotEmpty)
             'toPhone': normalizedPhone,
           if (normalizedUsername != null && normalizedUsername.isNotEmpty)

@@ -11,7 +11,12 @@ class Transaction {
   final double? fee;
   final String? description;
   final String? externalReference;
+  final String? supportReference;
+  final String? ledgerReference;
+  final String? providerReference;
   final String? failureReason;
+  final String? counterpartyName;
+  final String? counterpartyPhone;
   final String? recipientPhone;
   final String? recipientAddress;
   final String? recipientWalletId;
@@ -30,7 +35,12 @@ class Transaction {
     this.fee,
     this.description,
     this.externalReference,
+    this.supportReference,
+    this.ledgerReference,
+    this.providerReference,
     this.failureReason,
+    this.counterpartyName,
+    this.counterpartyPhone,
     this.recipientPhone,
     this.recipientAddress,
     this.recipientWalletId,
@@ -62,10 +72,26 @@ class Transaction {
   bool get isCompleted => status == TransactionStatus.completed;
   bool get isFailed => status == TransactionStatus.failed;
 
-  /// Reference for display - uses externalReference or id
-  String get reference => externalReference ?? id;
+  /// Best transaction reference for customer-facing display and receipts.
+  String get reference =>
+      externalReference ??
+      providerReference ??
+      ledgerReference ??
+      supportReference ??
+      id;
+
+  String? get displayCounterpartyName => counterpartyName;
+  String? get displayCounterpartyPhone => counterpartyPhone ?? recipientPhone;
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
+    final counterpartyPhone = _stringValue(json, const [
+      'counterpartyPhone',
+      'recipientPhone',
+      'senderPhone',
+      'toPhone',
+      'fromPhone',
+    ]);
+
     return Transaction(
       id: json['id'] as String? ?? json['transactionId'] as String? ?? '',
       walletId: _stringValue(json, const ['walletId', 'wallet_id']) ?? '',
@@ -86,11 +112,24 @@ class Transaction {
       externalReference:
           json['externalReference'] as String? ??
           json['reference'] as String? ??
-          json['supportReference'] as String?,
+          json['providerReference'] as String? ??
+          json['ledgerReference'] as String?,
+      supportReference: json['supportReference'] as String?,
+      ledgerReference: json['ledgerReference'] as String?,
+      providerReference:
+          json['providerReference'] as String? ??
+          json['yellowCardRef'] as String?,
       failureReason:
           json['failureReason'] as String? ?? json['errorMessage'] as String?,
+      counterpartyName: _stringValue(json, const [
+        'counterpartyName',
+        'recipientName',
+        'senderName',
+      ]),
+      counterpartyPhone: counterpartyPhone,
       recipientPhone:
-          json['recipientPhone'] as String? ?? json['toPhone'] as String?,
+          _stringValue(json, const ['recipientPhone', 'toPhone']) ??
+          counterpartyPhone,
       recipientAddress: json['recipientAddress'] as String?,
       recipientWalletId: json['recipientWalletId'] as String?,
       direction: (json['direction'] as String?)?.toLowerCase(),
@@ -167,7 +206,13 @@ class Transaction {
       'fee': fee,
       'description': description,
       'externalReference': externalReference,
+      'supportReference': supportReference,
+      'ledgerReference': ledgerReference,
+      'providerReference': providerReference,
       'failureReason': failureReason,
+      'counterpartyName': counterpartyName,
+      'counterpartyPhone': counterpartyPhone,
+      'recipientPhone': recipientPhone,
       'direction': direction,
       'createdAt': createdAt.toIso8601String(),
       'completedAt': completedAt?.toIso8601String(),

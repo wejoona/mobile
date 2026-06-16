@@ -41,6 +41,34 @@ void main() {
       expect(saved.idempotencyKey, isNull);
     });
 
+    test('persists recipient identity without PIN replay headers', () async {
+      await queue.enqueue(
+        PendingTransfer(
+          id: 'transfer-username',
+          recipientId: 'user-recipient-1',
+          recipientPhone: '',
+          recipientName: 'Awa Kone',
+          recipientUsername: 'awa',
+          amount: 12.50,
+          description: 'Lunch',
+          timestamp: DateTime.now(),
+          status: TransferStatus.needsAuthorization,
+          pinToken: 'pin-token',
+          idempotencyKey: 'idem-key',
+        ),
+      );
+
+      final saved = queue.getQueue().single;
+
+      expect(saved.recipientId, 'user-recipient-1');
+      expect(saved.recipientPhone, isEmpty);
+      expect(saved.recipientUsername, 'awa');
+      expect(saved.displayRecipientIdentifier, '@awa');
+      expect(saved.hasRecipientIdentifier, isTrue);
+      expect(saved.pinToken, isNull);
+      expect(saved.idempotencyKey, isNull);
+    });
+
     test(
       'does not replay stale processing transfers without fresh auth',
       () async {
@@ -93,5 +121,28 @@ void main() {
         expect(queue.getTransfersToProcess(), isEmpty);
       },
     );
+
+    test('can move failed draft back to fresh authorization state', () async {
+      await queue.enqueue(
+        transfer(
+          status: TransferStatus.failed,
+          pinToken: null,
+          idempotencyKey: null,
+        ),
+      );
+      await queue.markFailed('transfer-1', 'Network timeout');
+
+      await queue.updateTransferStatus(
+        'transfer-1',
+        TransferStatus.needsAuthorization,
+        clearErrorMessage: true,
+      );
+
+      final saved = queue.getQueue().single;
+      expect(saved.status, TransferStatus.needsAuthorization);
+      expect(saved.errorMessage, isNull);
+      expect(saved.canReplayWithAuthorization, isFalse);
+      expect(queue.getTransfersToProcess(), isEmpty);
+    });
   });
 }

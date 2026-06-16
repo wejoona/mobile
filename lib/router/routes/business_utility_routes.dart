@@ -16,6 +16,7 @@ import 'package:usdc_wallet/features/bulk_payments/views/bulk_upload_view.dart';
 import 'package:usdc_wallet/features/sub_business/views/create_sub_business_view.dart';
 import 'package:usdc_wallet/features/sub_business/views/sub_business_detail_view.dart';
 import 'package:usdc_wallet/features/sub_business/views/sub_business_staff_view.dart';
+import 'package:usdc_wallet/features/sub_business/views/sub_business_transfer_view.dart';
 import 'package:usdc_wallet/features/sub_business/views/sub_businesses_view.dart';
 import 'package:usdc_wallet/router/page_transitions.dart';
 import 'package:usdc_wallet/router/widgets/placeholder_pages.dart';
@@ -65,12 +66,16 @@ List<RouteBase> businessUtilityRoutes({bool includeDevelopmentRoutes = true}) {
     ),
     GoRoute(
       path: '/sub-businesses/transfer/:id',
-      pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
-        state: state,
-        child: const RoutePlaceholderPage(
-          title: 'Transfer Between Sub-Businesses',
-        ),
-      ),
+      pageBuilder: (context, state) {
+        final id = state.pathParameters['id'];
+        Widget child;
+        if (id != null) {
+          child = SubBusinessTransferView(subBusinessId: id);
+        } else {
+          child = const RoutePlaceholderPage(title: 'Sub-Business Not Found');
+        }
+        return AppPageTransitions.verticalSlide(state: state, child: child);
+      },
     ),
 
     // Bulk Payments Routes

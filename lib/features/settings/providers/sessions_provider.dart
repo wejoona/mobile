@@ -12,23 +12,30 @@ class SessionsState {
     this.error,
     this.sessions = const [],
     this.currentSessionId,
+    this.requiresUnlock = false,
   });
 
   final bool isLoading;
   final String? error;
   final List<Session> sessions;
   final String? currentSessionId;
+  final bool requiresUnlock;
 
   SessionsState copyWith({
     bool? isLoading,
     String? error,
     List<Session>? sessions,
     String? currentSessionId,
+    bool? requiresUnlock,
+    bool clearCurrentSessionId = false,
   }) => SessionsState(
     isLoading: isLoading ?? this.isLoading,
     error: error,
     sessions: sessions ?? this.sessions,
-    currentSessionId: currentSessionId ?? this.currentSessionId,
+    currentSessionId: clearCurrentSessionId
+        ? null
+        : (currentSessionId ?? this.currentSessionId),
+    requiresUnlock: requiresUnlock ?? this.requiresUnlock,
   );
 }
 
@@ -39,6 +46,11 @@ class SessionsNotifier extends Notifier<SessionsState> {
 
   /// Load all active sessions
   Future<void> loadSessions() async {
+    final authReady = await _ensureAuthenticatedForSessionRead();
+    if (!authReady) {
+      return;
+    }
+
     state = state.copyWith(isLoading: true);
     final repository = ref.read(sessionsRepositoryProvider);
     try {
@@ -50,8 +62,14 @@ class SessionsNotifier extends Notifier<SessionsState> {
         isLoading: false,
         sessions: sessions,
         currentSessionId: currentSession?.id,
+        clearCurrentSessionId: currentSession == null,
+        requiresUnlock: false,
       );
     } on ApiException catch (e) {
+      if (e.isDeviceBlacklisted) {
+        await _clearLocalSessionAfterSecurityBlock(e);
+        return;
+      }
       if (e.statusCode == 401 && await _refreshAuthForRetry()) {
         try {
           final sessions = await repository.getSessions();
@@ -60,21 +78,29 @@ class SessionsNotifier extends Notifier<SessionsState> {
             isLoading: false,
             sessions: sessions,
             currentSessionId: currentSession?.id,
+            clearCurrentSessionId: currentSession == null,
             error: null,
+            requiresUnlock: false,
           );
           return;
         } on ApiException catch (retryError) {
+          if (retryError.isDeviceBlacklisted) {
+            await _clearLocalSessionAfterSecurityBlock(retryError);
+            return;
+          }
           if (await _handleExpiredSession(retryError)) {
             state = state.copyWith(
               isLoading: false,
               sessions: const [],
               error: _friendlyError(retryError),
+              requiresUnlock: true,
             );
             return;
           }
           state = state.copyWith(
             isLoading: false,
             error: _friendlyError(retryError),
+            requiresUnlock: false,
           );
           return;
         }
@@ -84,14 +110,20 @@ class SessionsNotifier extends Notifier<SessionsState> {
           isLoading: false,
           sessions: const [],
           error: _friendlyError(e),
+          requiresUnlock: true,
         );
         return;
       }
-      state = state.copyWith(isLoading: false, error: _friendlyError(e));
+      state = state.copyWith(
+        isLoading: false,
+        error: _friendlyError(e),
+        requiresUnlock: false,
+      );
     } on Object {
       state = state.copyWith(
         isLoading: false,
         error: 'Unable to load active sessions. Please try again.',
+        requiresUnlock: false,
       );
     }
   }
@@ -106,15 +138,20 @@ class SessionsNotifier extends Notifier<SessionsState> {
       await loadSessions();
       return true;
     } on ApiException catch (e) {
-      if (await _handleExpiredSession(e)) {
-        state = state.copyWith(error: null);
+      if (e.isDeviceBlacklisted) {
+        await _clearLocalSessionAfterSecurityBlock(e);
         return false;
       }
-      state = state.copyWith(error: _friendlyError(e));
+      if (await _handleExpiredSession(e)) {
+        state = state.copyWith(error: _friendlyError(e), requiresUnlock: true);
+        return false;
+      }
+      state = state.copyWith(error: _friendlyError(e), requiresUnlock: false);
       return false;
     } on Object {
       state = state.copyWith(
         error: 'Unable to revoke this device. Please try again.',
+        requiresUnlock: false,
       );
       return false;
     }
@@ -126,25 +163,59 @@ class SessionsNotifier extends Notifier<SessionsState> {
       final repository = ref.read(sessionsRepositoryProvider);
       await repository.logoutAllDevices();
 
-      await ref.read(authProvider.notifier).clearLocalSession();
-      state = state.copyWith(sessions: []);
+      await _clearLocalSessionAfterLogoutAll();
       return true;
     } on ApiException catch (e) {
+      if (e.isDeviceBlacklisted) {
+        await _clearLocalSessionAfterSecurityBlock(e);
+        return true;
+      }
+      if (e.statusCode == 401 || e.statusCode == 403) {
+        await _clearLocalSessionAfterLogoutAll();
+        return true;
+      }
       if (await _handleExpiredSession(e)) {
-        state = state.copyWith(error: null);
+        state = state.copyWith(error: _friendlyError(e), requiresUnlock: true);
         return false;
       }
-      state = state.copyWith(error: _friendlyError(e));
+      state = state.copyWith(error: _friendlyError(e), requiresUnlock: false);
       return false;
     } on Object {
       state = state.copyWith(
         error: 'Unable to log out other devices. Please try again.',
+        requiresUnlock: false,
       );
       return false;
     }
   }
 
+  Future<void> _clearLocalSessionAfterLogoutAll() async {
+    await ref.read(authProvider.notifier).clearLocalSession();
+    state = state.copyWith(
+      sessions: const [],
+      currentSessionId: null,
+      clearCurrentSessionId: true,
+      error: null,
+      requiresUnlock: false,
+    );
+  }
+
+  Future<void> _clearLocalSessionAfterSecurityBlock(ApiException error) async {
+    await ref.read(authProvider.notifier).clearLocalSession();
+    state = state.copyWith(
+      isLoading: false,
+      sessions: const [],
+      currentSessionId: null,
+      clearCurrentSessionId: true,
+      error: error.message,
+      requiresUnlock: false,
+    );
+  }
+
   String _friendlyError(ApiException error) {
+    if (error.isDeviceBlacklisted) {
+      return error.message;
+    }
     if (error.statusCode == 401) {
       return 'Please unlock Korido again to continue.';
     }
@@ -158,7 +229,7 @@ class SessionsNotifier extends Notifier<SessionsState> {
     if (error.statusCode != 401) {
       return false;
     }
-    ref.read(authProvider.notifier).setLocked();
+    await ref.read(authProvider.notifier).setLocked();
     return true;
   }
 
@@ -166,6 +237,30 @@ class SessionsNotifier extends Notifier<SessionsState> {
     return ref
         .read(authProvider.notifier)
         .refreshAccessTokenForForegroundRequest();
+  }
+
+  Future<bool> _ensureAuthenticatedForSessionRead() async {
+    var authState = ref.read(authProvider);
+    if (authState.status == AuthStatus.initial ||
+        authState.status == AuthStatus.loading) {
+      await ref.read(authProvider.notifier).checkAuth();
+      authState = ref.read(authProvider);
+    }
+
+    if (authState.isAuthenticated) {
+      return true;
+    }
+
+    state = state.copyWith(
+      isLoading: false,
+      sessions: const [],
+      error: authState.isLocked
+          ? 'Please unlock Korido again to continue.'
+          : 'Please sign in again to manage active sessions.',
+      requiresUnlock: authState.isLocked,
+      clearCurrentSessionId: true,
+    );
+    return false;
   }
 
   Session? _resolveCurrentSession(List<Session> sessions) {

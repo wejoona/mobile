@@ -318,6 +318,10 @@
     "contacts_search",
     "contacts_on_joonapay",
     "contacts_invite_to_joonapay",
+    "contacts_send",
+    "contacts_invite",
+    "contacts_sendMoneyTo",
+    "contacts_inviteToKorido",
     "contacts_empty",
     "contacts_no_results",
     "contacts_sync_success",
@@ -1493,6 +1497,7 @@
     "billPayments_paymentComplete",
     "budget_categoryAdded",
     "budget_deleteCategory",
+    "budget_notifySuccess",
     "budget_tapCategoryToEdit",
     "bulkPayments_error",
     "bulkPayments_fileLoadError",
@@ -1627,7 +1632,8 @@
     "wallet_pending",
     "withdraw_comingSoon",
     "withdraw_failed",
-    "withdraw_initiated"
+    "withdraw_initiated",
+    "withdraw_notifySuccess"
   ],
 
   "pt": [
@@ -1815,6 +1821,7 @@
     "billPayments_paymentComplete",
     "budget_categoryAdded",
     "budget_deleteCategory",
+    "budget_notifySuccess",
     "budget_tapCategoryToEdit",
     "bulkPayments_error",
     "bulkPayments_fileLoadError",
@@ -1949,6 +1956,7 @@
     "wallet_pending",
     "withdraw_comingSoon",
     "withdraw_failed",
-    "withdraw_initiated"
+    "withdraw_initiated",
+    "withdraw_notifySuccess"
   ]
 }

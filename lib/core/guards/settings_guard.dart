@@ -1,15 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/core/guards/guard_base.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// Garde pour les modifications de paramètres sensibles.
 class SettingsGuard extends GuardBase {
   static const _tag = 'SettingsGuard';
-  final AppLogger _log = AppLogger(_tag);
+  final AppLogger _log = const AppLogger(_tag);
 
   static const _sensitiveSettings = [
-    'phone', 'email', 'pin', 'biometric', 'security',
-    'withdrawal_address', 'notification_preferences',
+    'phone',
+    'email',
+    'pin',
+    'biometric',
+    'security',
+    'withdrawal_address',
+    'notification_preferences',
   ];
 
   @override
@@ -23,7 +28,9 @@ class SettingsGuard extends GuardBase {
       final recentAuth = context.params['recentAuth'] as bool? ?? false;
       if (!recentAuth) {
         _log.debug('Settings guard: step-up required for $setting');
-        return const GuardResult.redirect('/step-up-auth');
+        return const GuardResult.deny(
+          'Security verification is required before changing this setting.',
+        );
       }
     }
 
@@ -31,6 +38,4 @@ class SettingsGuard extends GuardBase {
   }
 }
 
-final settingsGuardProvider = Provider<SettingsGuard>((ref) {
-  return SettingsGuard();
-});
+final settingsGuardProvider = Provider<SettingsGuard>((ref) => SettingsGuard());

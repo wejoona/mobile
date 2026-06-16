@@ -4,23 +4,58 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Contacts permission flow', () {
-    test('contacts screen open is passive, manual sync requests permission', () {
+    test('contacts screen open checks permission, manual sync can recover', () {
       final source = File(
         'lib/features/contacts/views/contacts_list_screen.dart',
       ).readAsStringSync();
-      final loadBody = RegExp(
-        r'Future<void> _loadContacts\(\) async \{([\s\S]*?)\n  Future<void> _manualSync',
+      final providerSource = File(
+        'lib/features/contacts/providers/contacts_provider.dart',
+      ).readAsStringSync();
+      final initBody = RegExp(
+        r'void initState\(\) \{([\s\S]*?)\n  @override',
       ).firstMatch(source)!.group(1)!;
       final manualSyncBody = RegExp(
-        r'Future<void> _manualSync\(\) async \{([\s\S]*?)\n  @override',
+        r'Future<void> _manualSync\(\) async \{([\s\S]*?)\n  Future<void> _requestPermissionAndSync',
+      ).firstMatch(source)!.group(1)!;
+      final routePermissionBody = RegExp(
+        r'Future<void> _routeToPermissionPromptIfNeeded\(\) async \{([\s\S]*?)\n  Future<void> _requestPermissionAndSync',
+      ).firstMatch(source)!.group(1)!;
+      final requestAndSyncBody = RegExp(
+        r'Future<void> _requestPermissionAndSync\(\{([\s\S]*?)\n  @override',
       ).firstMatch(source)!.group(1)!;
 
       expect(
-        loadBody,
-        contains('ref.read(contactsProvider.notifier).syncContacts()'),
+        initBody,
+        contains('WidgetsBinding.instance.addPostFrameCallback'),
       );
-      expect(loadBody, isNot(contains('requestPermission()')));
-      expect(manualSyncBody, contains('requestPermission()'));
+      expect(initBody, contains('syncContacts()'));
+      expect(
+        initBody,
+        isNot(contains('_requestPermissionAndSync(showSettingsDialog: false)')),
+      );
+      expect(initBody, contains('_routeToPermissionPromptIfNeeded()'));
+      expect(routePermissionBody, contains('hasContactsPermission()'));
+      expect(
+        routePermissionBody,
+        contains('contactsPermissionRequiresSettings()'),
+      );
+      expect(
+        routePermissionBody,
+        contains("context.go('/contacts/permission')"),
+      );
+      expect(routePermissionBody, isNot(contains('requestContactsPermission')));
+      expect(
+        manualSyncBody,
+        contains('_requestPermissionAndSync(showSettingsDialog: true)'),
+      );
+      expect(requestAndSyncBody, contains('notifier.requestPermission()'));
+      expect(requestAndSyncBody, isNot(contains('Permission.contacts.status')));
+      expect(requestAndSyncBody, contains('state.permissionRequiresSettings'));
+      expect(requestAndSyncBody, contains('_showContactsSettingsDialog'));
+      expect(providerSource, contains('permissionRequiresSettings'));
+      expect(providerSource, contains('contactsPermissionRequiresSettings()'));
+      expect(source, contains('requiresSettings'));
+      expect(source, contains('l10n.action_open_settings'));
     });
 
     test('contacts screen search uses backend Korido lookup', () {
@@ -35,9 +70,12 @@ void main() {
       ).firstMatch(source)!.group(1)!;
 
       expect(searchBody, contains('_lookupKoridoUsers(trimmed)'));
+      expect(searchBody, contains('_lookupFailed = false'));
       expect(lookupBody, contains('lookupKoridoUsers(query)'));
       expect(lookupBody, contains('localPhones'));
       expect(lookupBody, contains('localUserIds'));
+      expect(lookupBody, contains('_lookupFailed = true'));
+      expect(source, contains('!_isLookupLoading'));
     });
   });
 }

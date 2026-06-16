@@ -16,6 +16,15 @@ void main() {
     final recipientSource = File(
       'lib/features/send/views/recipient_screen.dart',
     ).readAsStringSync();
+    final entrySource = File(
+      'lib/features/contacts/views/contacts_entry_screen.dart',
+    ).readAsStringSync();
+    final permissionScreenSource = File(
+      'lib/features/contacts/views/contacts_permission_screen.dart',
+    ).readAsStringSync();
+    final listSource = File(
+      'lib/features/contacts/views/contacts_list_screen.dart',
+    ).readAsStringSync();
 
     final syncContactsBody = _methodBody(providerSource, 'syncContacts');
     final requestPermissionBody = _methodBody(
@@ -40,7 +49,12 @@ void main() {
     );
 
     expect(pickerPermissionBody, contains('requestContactsPermission'));
-    expect(pickerPermissionBody, contains('openAppSettings'));
+    expect(
+      pickerPermissionBody,
+      contains('contactsPermissionRequiresSettings'),
+    );
+    expect(pickerPermissionBody, contains('openContactsSettings'));
+    expect(pickerPermissionBody, isNot(contains('Permission.contacts.status')));
     expect(pickerPermissionCard, contains('_requiresSettings'));
     expect(
       pickerPermissionCard,
@@ -49,7 +63,15 @@ void main() {
     expect(serviceSource, contains('_contactsGrantedByFlutterPlugin'));
     expect(serviceSource, contains('FlutterContacts.requestPermission'));
     expect(pickerSource, contains('contactsService.hasContactsPermission'));
+    expect(pickerSource, isNot(contains('permission_handler')));
     expect(pickerSource, contains('_readSyncedDeviceContacts'));
+    expect(entrySource, contains('contactsServiceProvider'));
+    expect(entrySource, contains('hasContactsPermission'));
+    expect(entrySource, isNot(contains('permission_handler')));
+    expect(permissionScreenSource, contains('openContactsSettings'));
+    expect(permissionScreenSource, isNot(contains('permission_handler')));
+    expect(listSource, contains('openContactsSettings'));
+    expect(listSource, isNot(contains('permission_handler')));
 
     final recipientContactBody = _methodBody(
       recipientSource,
@@ -58,7 +80,7 @@ void main() {
 
     expect(recipientSource, isNot(contains('permission_handler')));
     expect(recipientContactBody, contains('ContactPickerBottomSheet'));
-    expect(recipientContactBody, contains('requestContactsPermission'));
+    expect(recipientContactBody, isNot(contains('requestContactsPermission')));
     expect(recipientContactBody, isNot(contains('Permission.contacts')));
   });
 }

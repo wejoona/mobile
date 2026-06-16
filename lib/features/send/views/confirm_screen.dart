@@ -124,7 +124,7 @@ class ConfirmScreen extends ConsumerWidget {
                               ),
                               icon: Icon(
                                 Icons.edit_outlined,
-                                color: colors.infoText,
+                                color: colors.gold,
                                 size: 20,
                               ),
                               onPressed: () => context.go('/send'),
@@ -169,7 +169,7 @@ class ConfirmScreen extends ConsumerWidget {
                                 ),
                                 icon: Icon(
                                   Icons.edit_outlined,
-                                  color: colors.infoText,
+                                  color: colors.gold,
                                   size: 20,
                                 ),
                                 onPressed: () => context.go('/send/amount'),
@@ -306,7 +306,7 @@ class ConfirmScreen extends ConsumerWidget {
     if (ref.read(connectivityProvider).isOnline ||
         state.recipient == null ||
         state.amount == null ||
-        !state.recipient!.hasPhone) {
+        !state.recipient!.canSend) {
       return false;
     }
 
@@ -315,6 +315,8 @@ class ConfirmScreen extends ConsumerWidget {
       ref,
       recipientName: state.recipient!.name,
       recipientPhone: state.recipient!.phoneNumber,
+      recipientId: state.recipient!.userId,
+      recipientUsername: state.recipient!.username,
       amount: state.amount!,
       description: state.note,
     );

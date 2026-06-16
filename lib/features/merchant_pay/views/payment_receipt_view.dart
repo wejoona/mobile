@@ -16,10 +16,7 @@ import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 class PaymentReceiptView extends ConsumerStatefulWidget {
   final PaymentResponse payment;
 
-  const PaymentReceiptView({
-    super.key,
-    required this.payment,
-  });
+  const PaymentReceiptView({super.key, required this.payment});
 
   static const String routeName = '/payment-receipt';
 
@@ -174,7 +171,10 @@ class _PaymentReceiptViewState extends ConsumerState<PaymentReceiptView>
                               ),
                               SizedBox(height: AppSpacing.xs),
                               AppText(
-                                _formatCategory(receipt.merchantCategory),
+                                _merchantCategoryLabel(
+                                  receipt.merchantCategory,
+                                  receipt.merchantMcc,
+                                ),
                                 variant: AppTextVariant.bodyMedium,
                                 color: context.colors.textSecondary,
                               ),
@@ -184,7 +184,9 @@ class _PaymentReceiptViewState extends ConsumerState<PaymentReceiptView>
                         SizedBox(height: AppSpacing.lg),
 
                         // Divider
-                        Divider(color: context.colors.elevated.withValues(alpha: 0.2)),
+                        Divider(
+                          color: context.colors.elevated.withValues(alpha: 0.2),
+                        ),
                         SizedBox(height: AppSpacing.lg),
 
                         // Use ReceiptWidget for consistent receipt display
@@ -233,5 +235,10 @@ class _PaymentReceiptViewState extends ConsumerState<PaymentReceiptView>
 
   String _formatCategory(String category) {
     return category[0].toUpperCase() + category.substring(1);
+  }
+
+  String _merchantCategoryLabel(String category, String? mcc) {
+    final label = _formatCategory(category);
+    return mcc == null || mcc.isEmpty ? label : '$label • MCC $mcc';
   }
 }

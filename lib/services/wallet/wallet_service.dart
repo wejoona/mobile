@@ -24,14 +24,13 @@ class WalletService {
         ),
       );
       if (response.statusCode == 404) {
-        throw ApiException(
-          message: _messageFromPayload(response.data, 'Wallet not found'),
-          statusCode: 404,
-          data: response.data,
-        );
+        return createWallet();
       }
       return WalletBalanceResponse.fromJson(response.data);
     } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        return createWallet();
+      }
       throw ApiException.fromDioError(e);
     }
   }
@@ -50,19 +49,6 @@ class WalletService {
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
-  }
-
-  String _messageFromPayload(Object? payload, String fallback) {
-    if (payload is Map && payload['message'] != null) {
-      return payload['message'].toString();
-    }
-    if (payload is Map) {
-      final error = payload['error'];
-      if (error is Map && error['message'] != null) {
-        return error['message'].toString();
-      }
-    }
-    return fallback;
   }
 
   /// GET /wallet/deposit/channels
@@ -238,17 +224,17 @@ class WalletService {
     }
   }
 
-  /// GET /wallet/kyc/status
+  /// GET /kyc/status
   Future<KycStatusResponse> getKycStatus() async {
     try {
-      final response = await _dio.get('/wallet/kyc/status');
+      final response = await _dio.get('/kyc/status');
       return KycStatusResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
   }
 
-  /// POST /wallet/kyc/submit
+  /// POST /kyc/submit
   Future<KycStatusResponse> submitKyc({
     required String firstName,
     required String lastName,
@@ -261,7 +247,7 @@ class WalletService {
   }) async {
     try {
       final response = await _dio.post(
-        '/wallet/kyc/submit',
+        '/kyc/submit',
         data: {
           'firstName': firstName,
           'lastName': lastName,
@@ -369,15 +355,15 @@ class WalletBalanceResponse {
   WalletBalance? _primaryBalance() {
     if (balances.isEmpty) return null;
 
-    final declaredCurrency = currency.toUpperCase();
     for (final balance in balances) {
-      if (balance.currency.toUpperCase() == declaredCurrency) {
+      if (balance.currency.toUpperCase() == 'USDC') {
         return balance;
       }
     }
 
+    final declaredCurrency = currency.toUpperCase();
     for (final balance in balances) {
-      if (balance.currency.toUpperCase() == 'USDC') {
+      if (balance.currency.toUpperCase() == declaredCurrency) {
         return balance;
       }
     }
@@ -393,7 +379,7 @@ class WalletBalanceResponse {
 
   factory WalletBalanceResponse.fromJson(Map<String, dynamic> json) {
     final payload = _walletPayload(json);
-    final List<dynamic> balanceList = payload['balances'] as List? ?? [];
+    final balanceList = _balanceEntries(payload['balances']);
 
     // Handle both GET /wallet and POST /wallet/create response formats
     // GET returns: {walletId, walletAddress, balances: [...]}
@@ -427,10 +413,13 @@ class WalletBalanceResponse {
       final balance = _readAmount(payload, const [
         'availableDecimal',
         'available_decimal',
+        'availableBalanceDecimal',
+        'available_balance_decimal',
         'balanceDecimal',
         'balance_decimal',
         'available',
         'availableBalance',
+        'available_balance',
         'balanceUsdc',
         'balance',
         'total',
@@ -438,16 +427,22 @@ class WalletBalanceResponse {
       final pending = _readAmount(payload, const [
         'pendingDecimal',
         'pending_decimal',
+        'pendingBalanceDecimal',
+        'pending_balance_decimal',
         'pending',
         'pendingBalance',
+        'pending_balance',
       ]);
       final total = _readAmount(payload, const [
         'totalDecimal',
         'total_decimal',
+        'totalBalanceDecimal',
+        'total_balance_decimal',
         'balanceDecimal',
         'balance_decimal',
         'total',
         'totalBalance',
+        'total_balance',
         'balanceUsdc',
         'balance',
       ]);
@@ -477,6 +472,28 @@ class WalletBalanceResponse {
       readStatus: payload['readStatus'] as String?,
     );
   }
+}
+
+List<Map<String, dynamic>> _balanceEntries(Object? raw) {
+  if (raw is List) {
+    return raw.whereType<Map>().map(Map<String, dynamic>.from).toList();
+  }
+
+  if (raw is Map) {
+    return raw.entries.map((entry) {
+      final currency = entry.key.toString().toUpperCase();
+      final value = entry.value;
+      if (value is Map) {
+        return {
+          'currency': value['currency'] ?? currency,
+          ...Map<String, dynamic>.from(value),
+        };
+      }
+      return {'currency': currency, 'available': value, 'total': value};
+    }).toList();
+  }
+
+  return const [];
 }
 
 Map<String, dynamic> _walletPayload(Map<String, dynamic> json) {
@@ -528,7 +545,10 @@ double _readAmount(Map<String, dynamic> json, List<String> keys) {
   for (final key in keys) {
     final value = json[key];
     if (value is num) return value.toDouble();
-    if (value is String) return double.tryParse(value) ?? 0;
+    if (value is String) {
+      final parsed = double.tryParse(value.trim());
+      if (parsed != null) return parsed;
+    }
   }
   return 0;
 }
@@ -711,15 +731,27 @@ class KycStatusResponse {
 
   factory KycStatusResponse.fromJson(Map<String, dynamic> json) {
     return KycStatusResponse(
-      walletId: json['walletId'] as String,
-      kycStatus: json['kycStatus'] as String,
-      providerStatus: json['providerStatus'] as String?,
-      verifiedAt: json['verifiedAt'] != null
-          ? DateTime.parse(json['verifiedAt'] as String)
-          : null,
+      walletId:
+          json['walletId'] as String? ?? json['wallet_id'] as String? ?? '',
+      kycStatus:
+          json['kycStatus'] as String? ??
+          json['kyc_status'] as String? ??
+          json['status'] as String? ??
+          'pending',
+      providerStatus:
+          json['providerStatus'] as String? ??
+          json['provider_status'] as String?,
+      verifiedAt: _parseOptionalDate(json['verifiedAt'] ?? json['approvedAt']),
       message: json['message'] as String?,
     );
   }
+}
+
+DateTime? _parseOptionalDate(Object? value) {
+  if (value is String && value.isNotEmpty) {
+    return DateTime.tryParse(value);
+  }
+  return null;
 }
 
 /// Transaction Limits Response

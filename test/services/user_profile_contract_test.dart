@@ -1,7 +1,12 @@
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:usdc_wallet/domain/entities/user.dart';
+import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
+import 'package:usdc_wallet/services/session/user_session.dart';
 import 'package:usdc_wallet/services/storage/hive_models.dart';
+import 'package:usdc_wallet/services/user/avatar_multipart.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/state/app_state.dart';
 
@@ -36,6 +41,7 @@ void main() {
 
       expect(profile.id, 'usr_001');
       expect(profile.phoneVerified, isTrue);
+      expect(profile.username, 'ben');
       expect(profile.avatarUrl, '/user/avatar/usr_001');
       expect(profile.avatarThumb, startsWith('data:image/jpeg;base64,'));
       expect(profile.preferredLocale, 'fr');
@@ -101,6 +107,95 @@ void main() {
       expect(avatar.avatarThumb, startsWith('data:image/jpeg;base64,'));
     });
 
+    test('core user entity accepts backend avatar aliases', () {
+      final user = User.fromJson({
+        'id': 'usr_avatar',
+        'phone': '+2250748805663',
+        'firstName': 'Ben',
+        'lastName': 'Ouattara',
+        'avatar_url': '/user/avatar/usr_avatar?v=123',
+        'avatar_thumb': 'data:image/jpeg;base64,/9j/thumb',
+        'countryCode': 'CI',
+        'phoneVerified': true,
+        'role': 'user',
+        'status': 'active',
+        'hasPin': true,
+        'createdAt': '2026-06-04T10:00:00.000Z',
+        'updatedAt': '2026-06-04T10:00:00.000Z',
+      });
+
+      expect(user.avatarUrl, '/user/avatar/usr_avatar?v=123');
+      expect(user.avatarBase64, startsWith('data:image/jpeg;base64,'));
+      expect(user.displayName, 'Ben Ouattara');
+    });
+
+    test(
+      'core user entity can clear stale avatar thumbnail after replacement',
+      () {
+        final user = User.fromJson({
+          'id': 'usr_avatar',
+          'phone': '+2250748805663',
+          'avatarUrl': '/user/avatar/usr_avatar?v=123',
+          'avatarThumb': 'data:image/jpeg;base64,/9j/old',
+        });
+
+        final updated = user.copyWith(
+          avatarUrl: '/user/avatar/usr_avatar?v=456',
+          clearAvatarBase64: true,
+        );
+
+        expect(updated.avatarUrl, '/user/avatar/usr_avatar?v=456');
+        expect(updated.avatarBase64, isNull);
+      },
+    );
+
+    test('email verification resend accepts backend aliases', () {
+      final result = EmailVerificationResendResult.fromJson({
+        'data': {
+          'sent': 'false',
+          'email': 'ben@example.com',
+          'pending_verification': 'true',
+          'expires_in': '300',
+          'message': 'Verification code generated',
+          'debug_code': '123456',
+        },
+      });
+
+      expect(result.sent, isFalse);
+      expect(result.email, 'ben@example.com');
+      expect(result.pendingVerification, isTrue);
+      expect(result.expiresIn, 300);
+      expect(result.debugCode, '123456');
+    });
+
+    test('normalizes backend KYC approval statuses used by profile gating', () {
+      final approvedProfile = UserProfile.fromJson({
+        'id': 'usr_approved',
+        'kycStatus': 'approved',
+      });
+      final autoApprovedProfile = UserProfile.fromJson({
+        'id': 'usr_auto_approved',
+        'kyc_status': 'auto_approved',
+      });
+      final manualReviewProfile = UserProfile.fromJson({
+        'id': 'usr_manual_review',
+        'kycStatus': 'manual_review',
+      });
+      final notStartedProfile = UserProfile.fromJson({
+        'id': 'usr_not_started',
+        'kycStatus': 'not_started',
+      });
+
+      expect(approvedProfile.isKycVerified, isTrue);
+      expect(approvedProfile.needsKyc, isFalse);
+      expect(autoApprovedProfile.isKycVerified, isTrue);
+      expect(autoApprovedProfile.needsKyc, isFalse);
+      expect(manualReviewProfile.isKycPending, isTrue);
+      expect(manualReviewProfile.needsKyc, isFalse);
+      expect(notStartedProfile.isKycVerified, isFalse);
+      expect(notStartedProfile.needsKyc, isTrue);
+    });
+
     test('user service unwraps standard profile envelopes', () async {
       final dio = MockDio()
         ..queueResponse({
@@ -136,6 +231,124 @@ void main() {
       expect(dio.requestHistory.single.data, {'email': null});
       expect(profile.email, isNull);
     });
+
+    test(
+      'user service sends username updates to the profile endpoint',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'data': {'id': 'usr_username', 'username': 'ben_ouattara'},
+          });
+        final service = UserService(dio);
+
+        final profile = await service.updateProfile(username: 'ben_ouattara');
+
+        expect(dio.requestHistory.single.path, '/user/profile');
+        expect(dio.requestHistory.single.data, {'username': 'ben_ouattara'});
+        expect(profile.username, 'ben_ouattara');
+      },
+    );
+
+    test(
+      'user service deactivates the account through the backend endpoint',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({'message': 'Account deactivated'});
+        final service = UserService(dio);
+
+        await service.deactivateAccount();
+
+        expect(dio.requestHistory.single.method, 'POST');
+        expect(dio.requestHistory.single.path, '/user/deactivate');
+      },
+    );
+
+    test(
+      'user avatar upload declares the device face-check contract',
+      () async {
+        final avatarFile = await _writeTinyJpeg();
+        final dio = MockDio()
+          ..queueResponse({
+            'avatarUrl': '/user/avatar/usr_face_checked',
+            'avatarThumb': 'data:image/jpeg;base64,/9j/thumb',
+          });
+        final service = UserService(dio);
+
+        final avatar = await service.uploadAvatar(
+          avatarFile.path,
+          faceCheck: AvatarDeviceFaceCheck.fromDeviceAnalysis(
+            isAvailable: true,
+            faceCount: 1,
+          ),
+        );
+
+        final formData = dio.requestHistory.single.data as FormData;
+        expect(dio.requestHistory.single.path, '/user/avatar');
+        expect(formData.files.single.key, 'avatar');
+        expect(
+          formData.fields.any(
+            (entry) =>
+                entry.key == avatarDeviceFaceCheckField &&
+                entry.value == avatarDeviceFaceCheckToken,
+          ),
+          isTrue,
+        );
+        expect(avatar.avatarUrl, '/user/avatar/usr_face_checked');
+      },
+    );
+
+    test('user avatar upload unwraps nested user response envelopes', () async {
+      final avatarFile = await _writeTinyJpeg();
+      final dio = MockDio()
+        ..queueResponse({
+          'data': {
+            'user': {
+              'avatar_url': '/user/avatar/usr_nested',
+              'avatarBase64': 'data:image/jpeg;base64,/9j/nested',
+            },
+          },
+        });
+      final service = UserService(dio);
+
+      final avatar = await service.uploadAvatar(
+        avatarFile.path,
+        faceCheck: AvatarDeviceFaceCheck.fromDeviceAnalysis(
+          isAvailable: true,
+          faceCount: 1,
+        ),
+      );
+
+      expect(avatar.avatarUrl, '/user/avatar/usr_nested');
+      expect(avatar.avatarThumb, startsWith('data:image/jpeg;base64,'));
+    });
+
+    test(
+      'user avatar upload unwraps nested avatar response envelopes',
+      () async {
+        final avatarFile = await _writeTinyJpeg();
+        final dio = MockDio()
+          ..queueResponse({
+            'data': {
+              'avatar': {
+                'avatar_url': '/user/avatar/usr_avatar',
+                'avatar_thumb': 'data:image/jpeg;base64,/9j/avatar',
+              },
+            },
+          });
+        final service = UserService(dio);
+
+        final avatar = await service.uploadAvatar(
+          avatarFile.path,
+          faceCheck: AvatarDeviceFaceCheck.fromDeviceAnalysis(
+            isAvailable: true,
+            faceCount: 1,
+          ),
+        );
+
+        expect(avatar.avatarUrl, '/user/avatar/usr_avatar');
+        expect(avatar.avatarThumb, startsWith('data:image/jpeg;base64,'));
+      },
+    );
   });
 
   group('UserState avatar contract', () {
@@ -156,12 +369,73 @@ void main() {
     });
 
     test('can explicitly clear stale profile email', () {
-      const state = UserState(email: 'old@korido.co', emailVerified: true);
+      const state = UserState(
+        username: 'old_name',
+        email: 'old@korido.co',
+        emailVerified: true,
+      );
 
-      final cleared = state.copyWith(clearEmail: true, emailVerified: false);
+      final cleared = state.copyWith(
+        username: 'new_name',
+        clearEmail: true,
+        emailVerified: false,
+      );
 
+      expect(cleared.username, 'new_name');
       expect(cleared.email, isNull);
       expect(cleared.emailVerified, isFalse);
+    });
+
+    test('secure session profile fields can be explicitly cleared', () {
+      final session = UserSession(
+        userId: 'usr_001',
+        phoneNumber: '+22507080910',
+        displayName: 'Old Name',
+        firstName: 'Old',
+        lastName: 'Name',
+        email: 'old@korido.co',
+        avatarUrl: '/old/avatar',
+        accessToken: 'access',
+        refreshToken: 'refresh',
+        tokenExpiresAt: DateTime.parse('2026-06-04T10:15:00.000Z'),
+        lastActive: DateTime.parse('2026-06-04T10:00:00.000Z'),
+        sessionCreatedAt: DateTime.parse('2026-06-04T09:00:00.000Z'),
+      );
+
+      final cleared = session.copyWith(
+        clearDisplayName: true,
+        clearFirstName: true,
+        clearLastName: true,
+        clearEmail: true,
+        clearAvatarUrl: true,
+      );
+
+      expect(cleared.displayName, isNull);
+      expect(cleared.firstName, isNull);
+      expect(cleared.lastName, isNull);
+      expect(cleared.email, isNull);
+      expect(cleared.avatarUrl, isNull);
+      expect(cleared.userId, 'usr_001');
+      expect(cleared.accessToken, 'access');
+    });
+
+    test('profile snapshots update auth user and persistent session state', () {
+      final source = File(
+        'lib/features/profile/providers/profile_provider.dart',
+      ).readAsStringSync();
+
+      expect(source, contains('auth.authProvider.notifier'));
+      expect(source, contains('updateUser(user)'));
+      expect(source, contains('userSessionRepositoryProvider'));
+      expect(source, contains('clearEmail: profile.email == null'));
+      expect(source, contains('clearAvatarUrl: sessionAvatar == null'));
+    });
+
+    test('profile provider preserves and explicitly clears errors', () {
+      const state = ProfileState(error: 'Upload failed');
+
+      expect(state.copyWith(isUploading: false).error, 'Upload failed');
+      expect(state.copyWith(clearError: true).error, isNull);
     });
 
     test('profile edit screen rebuilds after hydrating existing avatar', () {
@@ -174,10 +448,49 @@ void main() {
 
       expect(initStateBody, contains('addPostFrameCallback'));
       expect(initStateBody, contains('if (!mounted) return'));
-      expect(initStateBody, contains('setState'));
-      expect(initStateBody, contains('_avatarUrl = userState.avatarUrl'));
-      expect(initStateBody, contains('_avatarThumb = userState.avatarThumb'));
+      expect(initStateBody, contains('_hydrateFormFromUserState(userState)'));
+      expect(initStateBody, contains('_refreshProfileSnapshot()'));
+      expect(source, contains('Future<void> _refreshProfileSnapshot()'));
+      expect(source, contains('loadProfile()'));
+      expect(source, contains('_selectedImage != null'));
+      expect(source, contains('_profilePhotoStatus != null'));
+      expect(source, contains('_avatarUrl = userState.avatarUrl'));
+      expect(source, contains('_avatarThumb = userState.avatarThumb'));
+      expect(source, contains('_profileSaveErrorMessage'));
+      expect(source, contains('error is ApiException'));
     });
+
+    test('email verification auto-requests a missing active code once', () {
+      final source = File(
+        'lib/features/profile/views/email_verification_screen.dart',
+      ).readAsStringSync();
+
+      expect(source, contains('_autoRequestedCode'));
+      expect(source, contains('!pendingVerification'));
+      expect(source, contains('email.isNotEmpty'));
+      expect(source, contains('unawaited(_resend())'));
+      expect(source, contains("value.replaceAll(RegExp(r'\\D'), '')"));
+      expect(source, contains('maxLength: index == 0 ? 6 : 1'));
+    });
+
+    test(
+      'profile edit prefers uploaded avatar thumbnail for immediate preview',
+      () {
+        final source = File(
+          'lib/features/settings/views/profile_edit_screen.dart',
+        ).readAsStringSync();
+        final effectiveAvatarBody = RegExp(
+          r'String\? get _effectiveAvatarImage \{([\s\S]*?)\n  @override',
+        ).firstMatch(source)!.group(1)!;
+
+        expect(
+          effectiveAvatarBody.indexOf('return avatarThumb'),
+          lessThan(effectiveAvatarBody.indexOf('return avatarUrl')),
+          reason:
+              'fresh upload thumbnails should render before network avatar URLs',
+        );
+      },
+    );
 
     test('avatar upload paths clear stale local avatar cache', () {
       final userStateSource = File(
@@ -192,15 +505,80 @@ void main() {
 
       expect(userStateSource, contains('Future<void> applyServerAvatar'));
       expect(userStateSource, contains('await _clearLocalAvatarCache();'));
+      expect(userStateSource, contains('clearAvatarThumb: clearAvatarThumb'));
       expect(userStateSource, contains("delete(key: 'local_avatar_path')"));
       expect(profileProviderSource, contains('await _applyAvatarUploadResult'));
       expect(profileProviderSource, contains('applyServerAvatar('));
+      expect(profileProviderSource, contains('clearAvatarThumb: hasAvatarUrl'));
+      expect(
+        profileProviderSource,
+        contains('clearAvatarBase64: hasAvatarUrl'),
+      );
+      expect(profileProviderSource, contains('auth.authProvider).user'));
+      expect(profileProviderSource, contains('updateUser(updatedUser)'));
+      expect(profileProviderSource, contains('userSessionRepositoryProvider'));
       expect(profileEditSource, contains('detectFaces(compressed)'));
+      expect(
+        profileEditSource,
+        contains('AvatarDeviceFaceCheck.fromDeviceAnalysis'),
+      );
       expect(profileEditSource, contains('Checking face on this device'));
       expect(profileEditSource, contains('_profilePhotoPickErrorMessage'));
       expect(profileEditSource, contains('PlatformException'));
-      expect(profileEditSource, contains('uploadAvatar(compressed)'));
+      expect(profileEditSource, contains('uploadAvatar(compressed, faceCheck'));
       expect(profileEditSource, contains('_selectedImage = null'));
+    });
+
+    test('avatar widget resolves protected API avatar routes robustly', () {
+      final avatarSource = File(
+        'lib/design/components/primitives/user_avatar.dart',
+      ).readAsStringSync();
+
+      expect(avatarSource, contains("relative.path.startsWith('/api/')"));
+      expect(avatarSource, contains("resolvedPath.contains('/user/avatar/')"));
+      expect(avatarSource, contains('pathSegments: resolvedSegments'));
+      expect(avatarSource, contains('_startsWithSegments'));
+    });
+
+    test('profile completion applies backend profile snapshot', () {
+      final profileCompleteSource = File(
+        'lib/features/onboarding/views/profile_complete_view.dart',
+      ).readAsStringSync();
+
+      expect(profileCompleteSource, contains('final profile ='));
+      expect(profileCompleteSource, contains('applyProfileSnapshot(profile)'));
+      expect(profileCompleteSource, isNot(contains('updateName(')));
+    });
+
+    test('avatar device face-check proof is only created for one face', () {
+      expect(
+        () => AvatarDeviceFaceCheck.fromDeviceAnalysis(
+          isAvailable: true,
+          faceCount: 0,
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => AvatarDeviceFaceCheck.fromDeviceAnalysis(
+          isAvailable: true,
+          faceCount: 2,
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => AvatarDeviceFaceCheck.fromDeviceAnalysis(
+          isAvailable: false,
+          faceCount: 1,
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        AvatarDeviceFaceCheck.fromDeviceAnalysis(
+          isAvailable: true,
+          faceCount: 1,
+        ).token,
+        avatarDeviceFaceCheckToken,
+      );
     });
 
     test('cached profile preserves avatar thumbnail for offline rendering', () {
@@ -224,4 +602,25 @@ void main() {
       expect(userStateSource, contains('avatarThumb: cached.avatarThumb'));
     });
   });
+}
+
+Future<File> _writeTinyJpeg() async {
+  final file = File('${Directory.systemTemp.path}/korido-user-avatar.jpg');
+  await file.writeAsBytes(const [
+    0xFF,
+    0xD8,
+    0xFF,
+    0xE0,
+    0x00,
+    0x10,
+    0x4A,
+    0x46,
+    0x49,
+    0x46,
+    0x00,
+    0x01,
+    0xFF,
+    0xD9,
+  ]);
+  return file;
 }

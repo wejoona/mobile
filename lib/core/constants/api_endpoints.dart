@@ -35,6 +35,7 @@ abstract final class ApiEndpoints {
 
   // Withdraw
   static const withdrawInitiate = '/withdrawals/initiate';
+  static const withdrawQuote = '/withdrawals/quote';
   static const withdrawStatus = '/withdrawals';
 
   // Cards

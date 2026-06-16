@@ -22,7 +22,6 @@ import 'package:usdc_wallet/features/wallet/widgets/wallet_home_actions.dart';
 import 'package:usdc_wallet/features/wallet/widgets/wallet_home_status_widgets.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/currency/currency_provider.dart';
-import 'package:usdc_wallet/services/currency/currency_service.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
@@ -357,7 +356,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
       );
     }
 
-    if (walletState.hasError) {
+    if (walletState.hasError && !walletState.hasBalanceData) {
       return WalletErrorCard(
         colors: colors,
         error: walletState.error ?? l10n.error_failedToLoadBalance,
@@ -384,8 +383,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
 
     final currencyState = ref.watch(currencyProvider);
     final currencyService = ref.read(currencyServiceProvider);
-    final ReferenceCurrency? referenceCurrency =
-        currencyState.shouldShowReference
+    final referenceCurrency = currencyState.shouldShowReference
         ? currencyState.referenceCurrency
         : null;
     final referenceAmount = referenceCurrency == null
@@ -398,26 +396,22 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
             referenceCurrency,
           );
 
+    final balanceHasActivity =
+        primaryBalance > 0 || pendingBalance > 0 || totalBalance > 0;
     final surfaceStart = colors.isDark
         ? Color.alphaBlend(colors.gold.withValues(alpha: 0.07), colors.surface)
         : Color.alphaBlend(
             colors.gold.withValues(alpha: 0.055),
             colors.surface,
           );
-    final surfaceEnd = colors.isDark
-        ? colors.container
-        : Color.alphaBlend(
-            colors.gold.withValues(alpha: 0.08),
-            colors.container,
-          );
+    final surfaceColor = Color.alphaBlend(
+      colors.gold.withValues(alpha: colors.isDark ? 0.035 : 0.025),
+      surfaceStart,
+    );
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [surfaceStart, surfaceEnd],
-        ),
+        color: surfaceColor,
         borderRadius: BorderRadius.circular(AppRadius.xxl),
         border: Border.all(
           color: colors.gold.withValues(alpha: colors.isDark ? 0.24 : 0.28),
@@ -463,7 +457,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                 AppSpacing.xxl,
                 AppSpacing.xl,
                 AppSpacing.xxl,
-                AppSpacing.xxl,
+                AppSpacing.xl,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -529,6 +523,19 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                         ),
                       ),
                       const SizedBox(width: AppSpacing.sm),
+                      if (walletState.isRefreshing) ...[
+                        SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              colors.gold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                      ],
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.md,
@@ -599,8 +606,10 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                  if (!showInitialBalanceLoading && !_isBalanceHidden) ...[
-                    const SizedBox(height: AppSpacing.xl),
+                  if (!showInitialBalanceLoading &&
+                      !_isBalanceHidden &&
+                      balanceHasActivity) ...[
+                    const SizedBox(height: AppSpacing.lg),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         vertical: AppSpacing.md,
@@ -648,7 +657,11 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                     ),
                   ],
                   if (!showInitialBalanceLoading) ...[
-                    const SizedBox(height: AppSpacing.md),
+                    SizedBox(
+                      height: balanceHasActivity
+                          ? AppSpacing.md
+                          : AppSpacing.lg,
+                    ),
                     Wrap(
                       spacing: AppSpacing.md,
                       runSpacing: AppSpacing.xs,
@@ -662,16 +675,20 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                           colors: colors,
                           icon: walletState.isDegraded || walletState.isStale
                               ? Icons.cloud_off_rounded
-                              : Icons.sync_rounded,
-                          label: walletState.isDegraded || walletState.isStale
-                              ? _balanceSyncLabel(walletState)
-                              : l10n.converter_updatedJustNow,
+                              : walletState.isRefreshing
+                              ? Icons.sync_rounded
+                              : Icons.verified_rounded,
+                          label: _balanceSyncLabel(walletState, l10n),
                           color: walletState.isDegraded || walletState.isStale
                               ? colors.warningText
                               : null,
                         ),
                       ],
                     ),
+                    if (_shouldShowBalanceWarning(walletState)) ...[
+                      const SizedBox(height: AppSpacing.md),
+                      _buildBalanceWarning(walletState, colors, l10n),
+                    ],
                   ],
                 ],
               ),
@@ -711,8 +728,6 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         amount: amount,
         size: AmountTextSize.small,
         color: valueColor ?? colors.textPrimary,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
       ),
     ],
   );
@@ -735,16 +750,93 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     ],
   );
 
-  String _balanceSyncLabel(WalletState walletState) {
+  bool _shouldShowBalanceWarning(WalletState walletState) {
+    final warning = walletState.balanceWarning?.trim();
+    return walletState.isDegraded ||
+        walletState.isStale ||
+        (warning != null && warning.isNotEmpty);
+  }
+
+  Widget _buildBalanceWarning(
+    WalletState walletState,
+    ThemeColors colors,
+    AppLocalizations l10n,
+  ) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: Color.alphaBlend(
+          colors.warning.withValues(alpha: colors.isDark ? 0.16 : 0.10),
+          colors.surface,
+        ),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(
+          color: colors.warning.withValues(alpha: colors.isDark ? 0.28 : 0.22),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.info_outline_rounded, color: colors.warningText, size: 18),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: AppText(
+              _balanceWarningMessage(walletState, l10n),
+              variant: AppTextVariant.bodySmall,
+              color: colors.warningText,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _balanceWarningMessage(
+    WalletState walletState,
+    AppLocalizations l10n,
+  ) {
+    final warning = walletState.balanceWarning?.trim();
+    if (warning != null && warning.isNotEmpty) {
+      return warning;
+    }
+    return l10n.wallet_liveSyncDelayedMessage;
+  }
+
+  String _balanceSyncLabel(WalletState walletState, AppLocalizations l10n) {
+    if (walletState.isRefreshing) {
+      return l10n.wallet_refreshingBalance;
+    }
+
+    if (walletState.isDegraded || walletState.isStale) {
+      return l10n.wallet_syncDelayed;
+    }
+
     final status = walletState.balanceReadStatus;
-    if (status == 'degraded') return 'Sync delayed';
+    if (status == 'degraded' ||
+        status == 'cached_degraded' ||
+        status == 'local_mirror') {
+      return l10n.wallet_syncDelayed;
+    }
 
     final warning = walletState.balanceWarning;
     if (warning != null && warning.trim().isNotEmpty) {
-      return 'Sync delayed';
+      return l10n.wallet_syncDelayed;
     }
 
-    return 'Local balance';
+    if (walletState.balanceReadStatus == 'fresh' ||
+        walletState.balanceSourceOfTruth == 'blnk') {
+      return l10n.wallet_liveBalance;
+    }
+
+    if (walletState.walletId.isNotEmpty) {
+      return l10n.wallet_active;
+    }
+
+    return l10n.wallet_balanceReady;
   }
 
   Widget _buildMobileLayout(
@@ -920,7 +1012,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     final kycStatus = userState.kycStatus;
 
     // Don't show banner if verified or already submitted (in review)
-    if (kycStatus == KycStatus.verified || kycStatus == KycStatus.submitted) {
+    if (kycStatus == KycStatus.verified || kycStatus.isInReview) {
       return const SizedBox.shrink();
     }
 
@@ -1112,8 +1204,16 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
   }
 
   Future<void> _refreshHomeData() async {
-    await _refreshWalletForHome();
-    unawaited(_refreshTransactionsForHome());
+    await Future.wait<void>([
+      _refreshWalletForHome(),
+      _refreshTransactionsForHome(),
+    ], eagerError: false).timeout(
+      const Duration(seconds: 14),
+      onTimeout: () {
+        _logger.warn('Home refresh timed out before every source completed');
+        return const <void>[];
+      },
+    );
   }
 
   Future<void> _refreshWalletForHome() async {
@@ -1121,7 +1221,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
       await ref
           .read(walletStateMachineProvider.notifier)
           .refresh()
-          .timeout(const Duration(seconds: 13));
+          .timeout(const Duration(seconds: 11));
     } on Object catch (error, stackTrace) {
       _logger.error(
         'Wallet refresh did not complete cleanly',
@@ -1138,7 +1238,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         await ref
             .read(walletStateMachineProvider.notifier)
             .fetch(force: true)
-            .timeout(const Duration(seconds: 15));
+            .timeout(const Duration(seconds: 7));
       } on Object catch (error, stackTrace) {
         _logger.error(
           'Home refresh recovery fetch timed out or failed',

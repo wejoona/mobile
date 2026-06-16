@@ -1,18 +1,19 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
-import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
+import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
@@ -36,6 +37,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   String? _errorMessage;
   bool _isLoading = false;
   StepUpDecision? _riskDecision;
+  String? _stepUpChallengeToken;
 
   @override
   void dispose() {
@@ -273,10 +275,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
 
     try {
       final dio = ref.read(dioProvider);
-      // The user is authenticated, get their phone from profile
-      final profileResponse = await dio.get('/user/profile');
-      final profileData = profileResponse.data as Map<String, dynamic>;
-      final phone = profileData['phone'] as String?;
+      final phone = await _resolveRecoveryPhone();
 
       if (phone == null) {
         if (mounted) {
@@ -314,6 +313,38 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     }
   }
 
+  Future<String?> _resolveRecoveryPhone() async {
+    final authState = ref.read(authProvider);
+    final inMemoryPhone = authState.user?.phone ?? authState.phone;
+    if (inMemoryPhone != null && inMemoryPhone.isNotEmpty) {
+      return inMemoryPhone;
+    }
+
+    final storage = ref.read(secureStorageProvider);
+    final storedPhone = await storage.read(key: 'user_phone');
+    if (storedPhone != null && storedPhone.isNotEmpty) {
+      return storedPhone;
+    }
+
+    final token = await storage.read(key: StorageKeys.accessToken);
+    if (token == null || token.isEmpty) {
+      return null;
+    }
+
+    final profileResponse = await ref.read(dioProvider).get('/user/profile');
+    final rawProfileData = profileResponse.data;
+    final profileData = rawProfileData is Map<String, dynamic>
+        ? (rawProfileData['data'] is Map<String, dynamic>
+              ? rawProfileData['data'] as Map<String, dynamic>
+              : rawProfileData)
+        : const <String, dynamic>{};
+    final profilePhone = profileData['phone'] as String?;
+    if (profilePhone == null || profilePhone.isEmpty) {
+      return null;
+    }
+    return profilePhone;
+  }
+
   /// Verify OTP entered by user
   /// OTP is validated server-side during PIN reset call
   Future<void> _verifyOtp() async {
@@ -344,6 +375,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       if (!mounted) return;
 
       _riskDecision = decision;
+      _stepUpChallengeToken = decision.challengeToken;
 
       if (_requiresManualReview(decision)) {
         setState(() {
@@ -355,6 +387,15 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       }
 
       if (_requiresFaceAndLiveness(decision)) {
+        if (decision.challengeToken == null) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage =
+                'We could not start the required security check. Please try again.';
+          });
+          return;
+        }
+
         setState(() {
           _isLoading = false;
           _step = 5;
@@ -363,6 +404,15 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       }
 
       if (decision.stepUpRequired) {
+        if (decision.challengeToken == null) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage =
+                'We could not start the required security check. Please try again.';
+          });
+          return;
+        }
+
         final verified = await riskService.executeStepUp(decision);
         if (!mounted) return;
         if (!verified) {
@@ -372,6 +422,31 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           });
           return;
         }
+
+        final validated = await riskService.validateStepUp(
+          challengeToken: decision.challengeToken!,
+          biometricVerified:
+              decision.stepUpType == StepUpType.biometric ||
+              decision.stepUpType == StepUpType.biometricAndLiveness,
+        );
+        if (!mounted) return;
+        if (!validated) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = 'We could not validate this security check.';
+          });
+          return;
+        }
+        _stepUpChallengeToken = decision.challengeToken;
+      }
+
+      if (_stepUpChallengeToken == null) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage =
+              'We could not start the required security check. Please try again.';
+        });
+        return;
       }
 
       if (mounted) {
@@ -416,26 +491,34 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       return;
     }
 
-    final decision = _riskDecision;
-    if (decision?.challengeToken != null) {
-      final valid = await ref
-          .read(riskBasedSecurityServiceProvider)
-          .validateStepUp(
-            challengeToken: decision!.challengeToken!,
-            livenessSessionId: result.sessionId,
-          );
-      if (!mounted) return;
-      if (!valid) {
-        setState(() {
-          _showError = true;
-          _errorMessage = 'We could not validate this security check.';
-        });
-        return;
-      }
+    final challengeToken = _riskDecision?.challengeToken;
+    if (challengeToken == null) {
+      setState(() {
+        _showError = true;
+        _errorMessage =
+            'We could not validate this security check. Please try again.';
+      });
+      return;
+    }
+
+    final valid = await ref
+        .read(riskBasedSecurityServiceProvider)
+        .validateStepUp(
+          challengeToken: challengeToken,
+          livenessSessionId: result.sessionId,
+        );
+    if (!mounted) return;
+    if (!valid) {
+      setState(() {
+        _showError = true;
+        _errorMessage = 'We could not validate this security check.';
+      });
+      return;
     }
 
     setState(() {
       _step = 3;
+      _stepUpChallengeToken = challengeToken;
       _showError = false;
       _errorMessage = null;
     });
@@ -498,7 +581,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       });
 
       if (_confirmPin.length == 6) {
-        _submitReset();
+        unawaited(_submitReset());
       }
     }
   }
@@ -514,7 +597,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   }
 
   /// Submit PIN reset to backend
-  /// Calls POST /user/pin/reset { otp, newPinHash }
+  /// Calls POST /user/pin/reset { otp, newPinHash, stepUpChallengeToken }
   Future<void> _submitReset() async {
     final l10n = AppLocalizations.of(context)!;
 
@@ -531,7 +614,18 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
 
     try {
       final dio = ref.read(dioProvider);
-      final pinService = ref.read(pinServiceProvider);
+      final stepUpChallengeToken = _stepUpChallengeToken;
+
+      if (stepUpChallengeToken == null) {
+        setState(() {
+          _isLoading = false;
+          _showError = true;
+          _errorMessage =
+              'Complete the security check before creating a new PIN.';
+        });
+        _resetConfirmPin();
+        return;
+      }
 
       // Hash the new PIN for transmission (same method as PinService)
       // We need to call the backend reset endpoint with OTP + hashed PIN
@@ -540,11 +634,17 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         data: {
           'otp': _otpController.text,
           'newPinHash': _hashPinForBackend(_newPin),
+          'stepUpChallengeToken': stepUpChallengeToken,
         },
       );
 
-      // Also update local PIN storage
-      await pinService.setPin(_newPin);
+      // Also update local PIN storage and in-memory PIN state.
+      final pinUpdated = await ref
+          .read(pinStateProvider.notifier)
+          .setPin(_newPin);
+      if (!pinUpdated) {
+        throw StateError('Local PIN update failed after backend reset');
+      }
 
       final unlocked = await _unlockAfterReset();
       if (!mounted) return;
@@ -602,17 +702,35 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       final unlocked = await ref
           .read(authProvider.notifier)
           .unlockAfterAccountRecovery();
-      if (!unlocked || !mounted) return false;
-    } catch (_) {}
+      if (!unlocked || !mounted) {
+        return false;
+      }
+    } on Object {
+      return false;
+    }
+
+    try {
+      ref.read(authProvider.notifier).unlock();
+    } on Object {
+      // Auth may already be active after account recovery.
+    }
+    try {
+      ref.read(sessionServiceProvider.notifier).unlockSession();
+    } on Object {
+      // Session may already be active after account recovery.
+    }
+    try {
+      ref.read(appFsmProvider.notifier).unlockSession();
+    } on Object {
+      // FSM may already have transitioned after account recovery.
+    }
 
     final authState = ref.read(authProvider);
     final sessionState = ref.read(sessionServiceProvider);
-    final appState = ref.read(appFsmProvider);
 
     return authState.isAuthenticated &&
-        !sessionState.isLocked &&
-        appState.currentRoute != '/session-locked' &&
-        appState.currentRoute != '/auth-locked';
+        !authState.isLocked &&
+        !sessionState.isLocked;
   }
 
   void _resetNewPin() {

@@ -272,6 +272,25 @@ class AppLocalizationsPt extends AppLocalizations {
   String get wallet_securedWallet => 'Carteira protegida';
 
   @override
+  String get wallet_liveBalance => 'Saldo em tempo real';
+
+  @override
+  String get wallet_refreshingBalance => 'Atualizando saldo';
+
+  @override
+  String get wallet_syncDelayed => 'Sincronização atrasada';
+
+  @override
+  String get wallet_active => 'Carteira ativa';
+
+  @override
+  String get wallet_balanceReady => 'Saldo pronto';
+
+  @override
+  String get wallet_liveSyncDelayedMessage =>
+      'A sincronização do livro razão está atrasada. Mostrando o último saldo disponível.';
+
+  @override
   String get wallet_balanceHidden => 'Saldo oculto';
 
   @override
@@ -1530,6 +1549,47 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String get deposit_rateUsdUsdc => '1 USD = 1 USDC';
+
+  @override
+  String deposit_rateUsdToCurrency(String amount, String currency) {
+    return '1 USD = $amount $currency';
+  }
+
+  @override
+  String deposit_limitRange(String min, String max) {
+    return 'Mín.: $min • Máx.: $max';
+  }
+
+  @override
+  String deposit_minimumAmount(String amount) {
+    return 'Mínimo $amount';
+  }
+
+  @override
+  String deposit_maximumAmount(String amount) {
+    return 'Máximo $amount';
+  }
+
+  @override
+  String get deposit_timeJustNow => 'agora mesmo';
+
+  @override
+  String deposit_timeMinutesAgo(int count) {
+    return 'há $count min';
+  }
+
+  @override
+  String deposit_timeHoursAgo(int count) {
+    return 'há $count h';
+  }
+
+  @override
+  String deposit_timeDaysAgo(int count) {
+    return 'há $count d';
+  }
+
+  @override
   String get deposit_youWillReceive => 'You will receber';
 
   @override
@@ -2076,6 +2136,18 @@ class AppLocalizationsPt extends AppLocalizations {
   String get transactionDetails_transactionId => 'Transação id';
 
   @override
+  String get transactionDetails_supportReference => 'Referência de suporte';
+
+  @override
+  String get transactionDetails_providerReference => 'Referência do provedor';
+
+  @override
+  String get transactionDetails_ledgerReference => 'Referência do ledger';
+
+  @override
+  String get transactionDetails_counterparty => 'Contraparte';
+
+  @override
   String get transactionDetails_date => 'Data';
 
   @override
@@ -2125,6 +2197,74 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get filters_clear => 'Limpar';
+
+  @override
+  String get filters_apply => 'Aplicar filtros';
+
+  @override
+  String filters_applyWithCount(int count) {
+    return 'Aplicar filtros ($count)';
+  }
+
+  @override
+  String get filters_all => 'Todos';
+
+  @override
+  String get filters_deposits => 'Depósitos';
+
+  @override
+  String get filters_withdrawals => 'Levantamentos';
+
+  @override
+  String get filters_received => 'Recebidos';
+
+  @override
+  String get filters_sent => 'Enviados';
+
+  @override
+  String get filters_completed => 'Concluídos';
+
+  @override
+  String get filters_pending => 'Pendentes';
+
+  @override
+  String get filters_processing => 'Em processamento';
+
+  @override
+  String get filters_failed => 'Falharam';
+
+  @override
+  String get filters_allTime => 'Todo o período';
+
+  @override
+  String get filters_today => 'Hoje';
+
+  @override
+  String get filters_thisWeek => 'Esta semana';
+
+  @override
+  String get filters_thisMonth => 'Este mês';
+
+  @override
+  String get filters_last3Months => '3 meses';
+
+  @override
+  String get filters_custom => 'Personalizado';
+
+  @override
+  String get filters_selectDate => 'Selecionar';
+
+  @override
+  String get filters_sortDate => 'Data';
+
+  @override
+  String get filters_sortAmount => 'Valor';
+
+  @override
+  String get filters_descendingFirst => 'Mais recente ou maior primeiro';
+
+  @override
+  String get filters_ascendingFirst => 'Mais antigo ou menor primeiro';
 
   @override
   String get onboarding_skip => 'Saltar';
@@ -3079,6 +3219,22 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get contacts_invite_to_joonapay => 'Invite to Korido';
+
+  @override
+  String get contacts_send => 'Enviar';
+
+  @override
+  String get contacts_invite => 'Convidar';
+
+  @override
+  String contacts_sendMoneyTo(String name) {
+    return 'Enviar dinheiro para $name';
+  }
+
+  @override
+  String contacts_inviteToKorido(String name) {
+    return 'Convidar $name para Korido';
+  }
 
   @override
   String get contacts_empty => 'Connect your contacts to find Korido users.';
@@ -6986,6 +7142,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get budget_deleteCategory => 'Delete Category?';
 
   @override
+  String get budget_notifySuccess =>
+      'We\'ll notify you when budget controls are ready.';
+
+  @override
   String get budget_tapCategoryToEdit => 'Tap any category to edit its budget';
 
   @override
@@ -7451,6 +7611,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get withdraw_initiated => 'Withdrawal initiated';
 
   @override
+  String get withdraw_notifySuccess =>
+      'We\'ll notify you when this withdrawal rail is ready.';
+
+  @override
   String get auth_useBiometric => 'Usar login biométrico';
 
   @override
@@ -7609,9 +7773,60 @@ class AppLocalizationsPt extends AppLocalizations {
   String get emailVerification_sendCode => 'Send code';
 
   @override
+  String get emailVerification_missingEmailTitle => 'Add an email first';
+
+  @override
+  String get emailVerification_missingEmailMessage =>
+      'Korido needs an email address on your profile before it can send a verification code.';
+
+  @override
+  String get emailVerification_addEmail => 'Add email';
+
+  @override
   String get emailVerification_successTitle => 'Email verified';
 
   @override
   String get emailVerification_successMessage =>
       'Your email address has been verified successfully.';
+
+  @override
+  String get subBusiness_transferTitle => 'Transfer funds';
+
+  @override
+  String get subBusiness_transferFrom => 'From';
+
+  @override
+  String get subBusiness_transferTo => 'To';
+
+  @override
+  String get subBusiness_chooseDestination => 'Choose destination';
+
+  @override
+  String get subBusiness_noTransferDestination =>
+      'Create another sub-business before moving funds.';
+
+  @override
+  String get subBusiness_transferAmountHelper =>
+      'Funds move between business wallets immediately after confirmation.';
+
+  @override
+  String get subBusiness_transferNoteHint => 'Optional note';
+
+  @override
+  String get subBusiness_transferReviewTitle => 'Transfer summary';
+
+  @override
+  String get subBusiness_transferSubmit => 'Send transfer';
+
+  @override
+  String get subBusiness_transferSuccessTitle => 'Transfer complete';
+
+  @override
+  String get subBusiness_transferSuccessMessage =>
+      'Funds were moved between sub-business wallets.';
+
+  @override
+  String delete_confirmInstruction(String phrase) {
+    return 'Digite $phrase para desativar esta conta e sair de todos os dispositivos registrados.';
+  }
 }

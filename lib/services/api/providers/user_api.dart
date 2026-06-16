@@ -27,8 +27,12 @@ class UserApi {
   // ── Avatar ──
 
   /// POST /user/avatar — upload avatar image
-  Future<Response> uploadAvatar(File file) async {
+  Future<Response> uploadAvatar(
+    File file, {
+    required AvatarDeviceFaceCheck faceCheck,
+  }) async {
     final formData = FormData.fromMap({
+      avatarDeviceFaceCheckField: faceCheck.token,
       'avatar': await avatarMultipartFile(file),
     });
     return _dio.post('/user/avatar', data: formData);
@@ -79,9 +83,14 @@ class UserApi {
   Future<Response> resetPin({
     required String otp,
     required String newPinHash,
+    required String stepUpChallengeToken,
   }) => _dio.post(
     '/user/pin/reset',
-    data: {'otp': otp, 'newPinHash': newPinHash},
+    data: {
+      'otp': otp,
+      'newPinHash': newPinHash,
+      'stepUpChallengeToken': stepUpChallengeToken,
+    },
   );
 
   // ── Search ──

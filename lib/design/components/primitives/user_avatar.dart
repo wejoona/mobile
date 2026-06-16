@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/material.dart';
+
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/design/components/primitives/app_skeleton.dart';
 import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
-import 'package:usdc_wallet/design/components/primitives/app_skeleton.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// UserAvatar - Displays user profile picture with fallback
@@ -171,9 +173,59 @@ class UserAvatar extends StatelessWidget {
 
   /// Resolve URL: if it's a relative path like /user/avatar/xxx, prepend base URL
   String _resolveUrl(String url) {
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    // Relative API path — prepend base URL from ApiConfig
-    return '${ApiConfig.baseUrl}$url';
+    final trimmed = url.trim();
+    if (trimmed.startsWith('http://') ||
+        trimmed.startsWith('https://') ||
+        trimmed.startsWith('data:image/')) {
+      return trimmed;
+    }
+
+    final base = Uri.parse(ApiConfig.baseUrl);
+    final relative = Uri.parse(trimmed);
+    final origin = base.replace(path: '', query: null, fragment: null);
+
+    if (relative.path.startsWith('/api/')) {
+      return origin
+          .replace(
+            path: relative.path,
+            query: relative.hasQuery ? relative.query : null,
+          )
+          .toString();
+    }
+
+    final baseSegments = base.pathSegments
+        .where((segment) => segment.isNotEmpty)
+        .toList(growable: false);
+    final relativeSegments = relative.pathSegments
+        .where((segment) => segment.isNotEmpty)
+        .toList(growable: false);
+
+    final resolvedSegments = _startsWithSegments(relativeSegments, baseSegments)
+        ? relativeSegments
+        : [...baseSegments, ...relativeSegments];
+
+    return base
+        .replace(
+          pathSegments: resolvedSegments,
+          query: relative.hasQuery ? relative.query : null,
+          fragment: relative.hasFragment ? relative.fragment : null,
+        )
+        .toString();
+  }
+
+  bool _startsWithSegments(List<String> value, List<String> prefix) {
+    if (prefix.isEmpty) return true;
+    if (value.length < prefix.length) return false;
+    for (var i = 0; i < prefix.length; i++) {
+      if (value[i] != prefix[i]) return false;
+    }
+    return true;
+  }
+
+  bool _needsAuthHeaders(String url) {
+    final resolvedPath = Uri.tryParse(_resolveUrl(url))?.path ?? url;
+    return resolvedPath.endsWith('/user/avatar') ||
+        resolvedPath.contains('/user/avatar/');
   }
 
   bool _isBase64Image(String value) {
@@ -215,8 +267,41 @@ class UserAvatar extends StatelessWidget {
   }
 
   Widget _buildNetworkImage() {
+    final rawUrl = imageUrl!;
+    if (!_needsAuthHeaders(rawUrl)) {
+      return _buildCachedNetworkImage(_resolveUrl(rawUrl));
+    }
+
+    return Consumer(
+      builder: (context, ref, _) {
+        final storage = ref.watch(secureStorageProvider);
+        return FutureBuilder<String?>(
+          future: storage.read(key: StorageKeys.accessToken),
+          builder: (context, snapshot) {
+            final token = snapshot.data;
+            if (snapshot.connectionState != ConnectionState.done) {
+              return AppSkeleton.circle(size: size);
+            }
+
+            return _buildCachedNetworkImage(
+              _resolveUrl(rawUrl),
+              httpHeaders: token == null || token.isEmpty
+                  ? null
+                  : {'Authorization': 'Bearer $token'},
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildCachedNetworkImage(
+    String resolvedUrl, {
+    Map<String, String>? httpHeaders,
+  }) {
     return CachedNetworkImage(
-      imageUrl: _resolveUrl(imageUrl!),
+      imageUrl: resolvedUrl,
+      httpHeaders: httpHeaders,
       fit: BoxFit.cover,
       placeholder: (context, url) => AppSkeleton.circle(size: size),
       errorWidget: (context, url, error) => _buildInitialsFallback(context),

@@ -201,13 +201,49 @@ class TransactionDetailView extends ConsumerWidget {
                     onCopy: () => _copyToClipboard(context, transaction.id),
                     colors: colors,
                   ),
+                  if (transaction.supportReference != null &&
+                      transaction.supportReference != transaction.id) ...[
+                    Divider(color: colors.borderSubtle),
+                    _DetailRow(
+                      label: l10n.transactionDetails_supportReference,
+                      value: transaction.supportReference!,
+                      onCopy: () => _copyToClipboard(
+                        context,
+                        transaction.supportReference!,
+                      ),
+                      colors: colors,
+                    ),
+                  ],
+                  if (transaction.providerReference != null) ...[
+                    Divider(color: colors.borderSubtle),
+                    _DetailRow(
+                      label: l10n.transactionDetails_providerReference,
+                      value: transaction.providerReference!,
+                      onCopy: () => _copyToClipboard(
+                        context,
+                        transaction.providerReference!,
+                      ),
+                      colors: colors,
+                    ),
+                  ],
+                  if (transaction.ledgerReference != null) ...[
+                    Divider(color: colors.borderSubtle),
+                    _DetailRow(
+                      label: l10n.transactionDetails_ledgerReference,
+                      value: transaction.ledgerReference!,
+                      onCopy: () => _copyToClipboard(
+                        context,
+                        transaction.ledgerReference!,
+                      ),
+                      colors: colors,
+                    ),
+                  ],
                   Divider(color: colors.borderSubtle),
                   _DetailRow(
                     label: l10n.transactionDetails_date,
-                    value: DateFormat(
-                      'dd MMM yyyy • HH:mm',
-                      'fr',
-                    ).format(transaction.createdAt),
+                    value: DateFormat.yMMMd(
+                      l10n.localeName,
+                    ).add_Hm().format(transaction.createdAt),
                     colors: colors,
                   ),
                   Divider(color: colors.borderSubtle),
@@ -216,11 +252,19 @@ class TransactionDetailView extends ConsumerWidget {
                     value: transaction.currency,
                     colors: colors,
                   ),
-                  if (transaction.recipientPhone != null) ...[
+                  if (transaction.displayCounterpartyName != null) ...[
+                    Divider(color: colors.borderSubtle),
+                    _DetailRow(
+                      label: l10n.transactionDetails_counterparty,
+                      value: transaction.displayCounterpartyName!,
+                      colors: colors,
+                    ),
+                  ],
+                  if (transaction.displayCounterpartyPhone != null) ...[
                     Divider(color: colors.borderSubtle),
                     _DetailRow(
                       label: l10n.transactionDetails_recipientPhone,
-                      value: transaction.recipientPhone!,
+                      value: transaction.displayCounterpartyPhone!,
                       colors: colors,
                     ),
                   ],
@@ -489,11 +533,7 @@ class _DetailRow extends StatelessWidget {
                   const SizedBox(width: AppSpacing.sm),
                   GestureDetector(
                     onTap: onCopy,
-                    child: Icon(
-                      Icons.copy,
-                      size: 16,
-                      color: colors.gold,
-                    ),
+                    child: Icon(Icons.copy, size: 16, color: colors.gold),
                   ),
                 ],
               ],

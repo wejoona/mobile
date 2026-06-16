@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/user/avatar_multipart.dart';
 
@@ -23,6 +24,7 @@ class UserService {
 
   /// PUT /user/profile
   Future<UserProfile> updateProfile({
+    String? username,
     String? firstName,
     String? lastName,
     String? email,
@@ -32,6 +34,7 @@ class UserService {
       final response = await _dio.put(
         '/user/profile',
         data: {
+          if (username != null) 'username': username,
           if (firstName != null) 'firstName': firstName,
           if (lastName != null) 'lastName': lastName,
           if (email != null) 'email': email,
@@ -45,9 +48,13 @@ class UserService {
   }
 
   /// POST /user/avatar - Upload avatar image
-  Future<AvatarUploadResult> uploadAvatar(String filePath) async {
+  Future<AvatarUploadResult> uploadAvatar(
+    String filePath, {
+    required AvatarDeviceFaceCheck faceCheck,
+  }) async {
     try {
       final formData = FormData.fromMap({
+        avatarDeviceFaceCheckField: faceCheck.token,
         'avatar': await avatarMultipartFile(File(filePath)),
       });
 
@@ -112,6 +119,15 @@ class UserService {
       throw ApiException.fromDioError(e);
     }
   }
+
+  /// POST /user/deactivate - User-initiated account deactivation.
+  Future<void> deactivateAccount() async {
+    try {
+      await _dio.post('/user/deactivate');
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
 }
 
 /// User Profile DTO
@@ -171,9 +187,15 @@ class UserProfile {
     return phone;
   }
 
-  bool get isKycVerified => kycStatus == 'verified';
-  bool get isKycPending => kycStatus == 'pending';
-  bool get needsKyc => kycStatus == 'none' || kycStatus == 'not_started';
+  KycStatus get normalizedKycStatus {
+    final normalized = kycStatus.toLowerCase();
+    if (normalized == 'not_started') return KycStatus.none;
+    return KycStatus.fromString(normalized);
+  }
+
+  bool get isKycVerified => normalizedKycStatus.isVerified;
+  bool get isKycPending => normalizedKycStatus.isInReview;
+  bool get needsKyc => normalizedKycStatus.needsKyc;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
@@ -252,12 +274,15 @@ class AvatarUploadResult {
   const AvatarUploadResult({this.avatarUrl, this.avatarThumb, this.message});
 
   factory AvatarUploadResult.fromJson(Map<String, dynamic> json) {
+    final payload = _readPayload(json);
     return AvatarUploadResult(
-      avatarUrl: (json['avatarUrl'] ?? json['avatar_url']) as String?,
+      avatarUrl: (payload['avatarUrl'] ?? payload['avatar_url']) as String?,
       avatarThumb:
-          (json['avatarThumb'] ?? json['avatar_thumb'] ?? json['avatarBase64'])
+          (payload['avatarThumb'] ??
+                  payload['avatar_thumb'] ??
+                  payload['avatarBase64'])
               as String?,
-      message: json['message'] as String?,
+      message: payload['message'] as String? ?? json['message'] as String?,
     );
   }
 }
@@ -280,13 +305,19 @@ class EmailVerificationResendResult {
   });
 
   factory EmailVerificationResendResult.fromJson(Map<String, dynamic> json) {
+    final payload = _readPayload(json);
     return EmailVerificationResendResult(
-      sent: json['sent'] as bool? ?? true,
-      email: json['email'] as String?,
-      pendingVerification: json['pendingVerification'] as bool? ?? true,
-      expiresIn: json['expiresIn'] as int? ?? 1800,
-      message: json['message'] as String?,
-      debugCode: json['debugCode'] as String?,
+      sent: _readBool(payload, const ['sent']) ?? true,
+      email: payload['email'] as String?,
+      pendingVerification:
+          _readBool(payload, const [
+            'pendingVerification',
+            'pending_verification',
+          ]) ??
+          true,
+      expiresIn: _readInt(payload, const ['expiresIn', 'expires_in']) ?? 1800,
+      message: payload['message'] as String?,
+      debugCode: (payload['debugCode'] ?? payload['debug_code']) as String?,
     );
   }
 }
@@ -296,15 +327,21 @@ Map<String, dynamic> _readPayload(Object? raw) {
     final map = Map<String, dynamic>.from(raw);
     final data = map['data'];
     if (data is Map) {
-      return Map<String, dynamic>.from(data);
+      return _unwrapKnownPayload(Map<String, dynamic>.from(data));
     }
-    final user = map['user'];
-    if (user is Map) {
-      return Map<String, dynamic>.from(user);
-    }
-    return map;
+    return _unwrapKnownPayload(map);
   }
   return const {};
+}
+
+Map<String, dynamic> _unwrapKnownPayload(Map<String, dynamic> map) {
+  for (final key in const ['user', 'profile', 'avatar']) {
+    final nested = map[key];
+    if (nested is Map) {
+      return {...map, ...Map<String, dynamic>.from(nested)};
+    }
+  }
+  return map;
 }
 
 bool? _readBool(Map<String, dynamic> json, List<String> keys) {
@@ -316,6 +353,16 @@ bool? _readBool(Map<String, dynamic> json, List<String> keys) {
       if (normalized == 'true') return true;
       if (normalized == 'false') return false;
     }
+  }
+  return null;
+}
+
+int? _readInt(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value.trim());
   }
   return null;
 }

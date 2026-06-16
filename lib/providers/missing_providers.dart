@@ -19,6 +19,8 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart'
     hide TransactionItem, TransactionPage;
 import 'package:usdc_wallet/services/sdk/usdc_wallet_sdk.dart';
+import 'package:usdc_wallet/services/notifications/notifications_service.dart';
+import 'package:usdc_wallet/services/transactions/transactions_service.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
 
 /// Filtered+paginated transactions — wired to GET /wallet/transactions.
@@ -44,20 +46,15 @@ class FilteredPaginatedTransactionsNotifier
   final Ref _ref;
 
   Future<void> refresh() async {
-    state = state.copyWith(isLoading: true, page: 1);
+    state = state.copyWith(isLoading: true, page: 1, clearError: true);
     try {
       final filter = _ref.read(transactionFilterProvider);
-      final dio = _ref.read(dioProvider);
-      final params = <String, dynamic>{
-        ...filter.toQueryParams(),
-        'offset': 0,
-        'limit': _transactionsPageSize,
-      };
-      final response = await dio.get(
-        '/wallet/transactions',
-        queryParameters: params,
+      final service = _ref.read(transactionsServiceProvider);
+      final page = await service.getTransactions(
+        page: 1,
+        pageSize: _transactionsPageSize,
+        filter: filter,
       );
-      final page = TransactionPage.fromJson(_asStringMap(response.data));
       if (!mounted) {
         return;
       }
@@ -80,20 +77,15 @@ class FilteredPaginatedTransactionsNotifier
       return;
     }
     final nextPage = state.page + 1;
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final filter = _ref.read(transactionFilterProvider);
-      final dio = _ref.read(dioProvider);
-      final params = <String, dynamic>{
-        ...filter.toQueryParams(),
-        'offset': (nextPage - 1) * _transactionsPageSize,
-        'limit': _transactionsPageSize,
-      };
-      final response = await dio.get(
-        '/wallet/transactions',
-        queryParameters: params,
+      final service = _ref.read(transactionsServiceProvider);
+      final page = await service.getTransactions(
+        page: nextPage,
+        pageSize: _transactionsPageSize,
+        filter: filter,
       );
-      final page = TransactionPage.fromJson(_asStringMap(response.data));
       if (!mounted) {
         return;
       }
@@ -102,6 +94,7 @@ class FilteredPaginatedTransactionsNotifier
         transactions: [...state.transactions, ...page.transactions],
         hasMore: page.hasMore,
         page: nextPage,
+        clearError: true,
       );
     } catch (e) {
       if (!mounted) {
@@ -138,20 +131,10 @@ final exchangeRateProvider = FutureProvider.autoDispose<ExchangeRate>((
   }
 
   final depositService = ref.watch(depositServiceProvider);
-  try {
-    return await depositService.getExchangeRate(
-      from: effectiveCountry.primaryCurrency,
-      to: 'USD',
-    );
-  } catch (_) {
-    // Fallback to approximate BCEAO peg rate
-    return ExchangeRate(
-      fromCurrency: 'XOF',
-      toCurrency: 'USD',
-      rate: 655.957,
-      timestamp: DateTime.now(),
-    );
-  }
+  return depositService.getExchangeRate(
+    from: effectiveCountry.primaryCurrency,
+    to: 'USD',
+  );
 });
 
 /// Spending trend provider (insights) derived from real transaction history.
@@ -284,18 +267,13 @@ Future<List<Transaction>> _fetchInsightTransactions(
   Ref ref,
   String period,
 ) async {
-  final dio = ref.watch(dioProvider);
-  final response = await dio.get(
-    '/wallet/transactions',
-    queryParameters: {
-      'offset': 0,
-      'limit': 100,
-      'startDate': _periodStart(period).toIso8601String(),
-      'sortBy': 'createdAt',
-      'sortOrder': 'DESC',
-    },
+  final service = ref.watch(transactionsServiceProvider);
+  final page = await service.getTransactions(
+    page: 1,
+    pageSize: 100,
+    filter: TransactionFilter(startDate: _periodStart(period)),
   );
-  return TransactionPage.fromJson(_asStringMap(response.data)).transactions;
+  return page.transactions;
 }
 
 DateTime _periodStart(String period) {
@@ -347,14 +325,8 @@ int _intAmount(Map<String, dynamic> json, String key) {
 /// Notifications notifier provider — wired to GET /notifications.
 final notificationsNotifierProvider = FutureProvider.autoDispose<List<dynamic>>(
   (ref) async {
-    final dio = ref.watch(dioProvider);
-    try {
-      final response = await dio.get('/notifications');
-      final data = response.data as Map<String, dynamic>;
-      return (data['data'] as List?) ?? [];
-    } catch (_) {
-      return [];
-    }
+    final service = ref.watch(notificationsServiceProvider);
+    return service.getNotifications(pageSize: 100);
   },
 );
 

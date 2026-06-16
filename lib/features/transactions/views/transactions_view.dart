@@ -902,6 +902,11 @@ class _TransactionGroup extends StatelessWidget {
   }
 
   String _getTransactionTitle(Transaction tx) {
+    final counterpartyName = tx.displayCounterpartyName?.trim();
+    if (counterpartyName != null && counterpartyName.isNotEmpty) {
+      return counterpartyName;
+    }
+
     if (tx.description != null && tx.description!.isNotEmpty) {
       return tx.description!;
     }
@@ -926,10 +931,10 @@ class _TransactionGroup extends StatelessWidget {
       case TransactionType.withdrawal:
         return l10n.transactions_mobileMoneyWithdrawal;
       case TransactionType.transferInternal:
-        if (tx.isDebit && tx.recipientPhone != null) {
-          return tx.recipientPhone!;
-        }
-        return l10n.transactions_fromKoridoUser;
+        return tx.displayCounterpartyPhone ??
+            (tx.isDebit
+                ? l10n.transactions_transferSent
+                : l10n.transactions_fromKoridoUser);
       case TransactionType.transferExternal:
         return l10n.transactions_externalWallet;
     }

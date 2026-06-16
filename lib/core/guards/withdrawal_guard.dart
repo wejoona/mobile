@@ -1,11 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/core/guards/guard_base.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// Garde pour les retraits - vérifications supplémentaires.
 class WithdrawalGuard extends GuardBase {
   static const _tag = 'WithdrawalGuard';
-  final AppLogger _log = AppLogger(_tag);
+  final AppLogger _log = const AppLogger(_tag);
 
   @override
   String get name => 'withdrawal';
@@ -22,7 +22,8 @@ class WithdrawalGuard extends GuardBase {
 
     // Daily withdrawal limit by KYC tier
     final dailyLimit = kycTier == 'verified' ? 2000000.0 : 200000.0;
-    final dailyTotal = (context.params['dailyWithdrawn'] as num?)?.toDouble() ?? 0;
+    final dailyTotal =
+        (context.params['dailyWithdrawn'] as num?)?.toDouble() ?? 0;
 
     if (dailyTotal + amount > dailyLimit) {
       return const GuardResult.deny('Limite de retrait journalière atteinte');
@@ -32,7 +33,9 @@ class WithdrawalGuard extends GuardBase {
     if (amount > 500000) {
       final stepUpDone = context.params['stepUpCompleted'] as bool? ?? false;
       if (!stepUpDone) {
-        return const GuardResult.redirect('/step-up-auth');
+        return const GuardResult.deny(
+          'Security verification is required before this withdrawal.',
+        );
       }
     }
 
@@ -41,6 +44,6 @@ class WithdrawalGuard extends GuardBase {
   }
 }
 
-final withdrawalGuardProvider = Provider<WithdrawalGuard>((ref) {
-  return WithdrawalGuard();
-});
+final withdrawalGuardProvider = Provider<WithdrawalGuard>(
+  (ref) => WithdrawalGuard(),
+);

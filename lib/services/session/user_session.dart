@@ -73,14 +73,19 @@ class UserSession {
     bool? biometricEnabled,
     String? walletId,
     String? avatarUrl,
+    bool clearDisplayName = false,
+    bool clearFirstName = false,
+    bool clearLastName = false,
+    bool clearEmail = false,
+    bool clearAvatarUrl = false,
   }) {
     return UserSession(
       userId: userId ?? this.userId,
       phoneNumber: phoneNumber ?? this.phoneNumber,
-      displayName: displayName ?? this.displayName,
-      firstName: firstName ?? this.firstName,
-      lastName: lastName ?? this.lastName,
-      email: email ?? this.email,
+      displayName: clearDisplayName ? null : displayName ?? this.displayName,
+      firstName: clearFirstName ? null : firstName ?? this.firstName,
+      lastName: clearLastName ? null : lastName ?? this.lastName,
+      email: clearEmail ? null : email ?? this.email,
       countryCode: countryCode ?? this.countryCode,
       accessToken: accessToken ?? this.accessToken,
       refreshToken: refreshToken ?? this.refreshToken,
@@ -91,7 +96,7 @@ class UserSession {
       kycStatus: kycStatus ?? this.kycStatus,
       biometricEnabled: biometricEnabled ?? this.biometricEnabled,
       walletId: walletId ?? this.walletId,
-      avatarUrl: avatarUrl ?? this.avatarUrl,
+      avatarUrl: clearAvatarUrl ? null : avatarUrl ?? this.avatarUrl,
     );
   }
 
@@ -128,9 +133,15 @@ class UserSession {
       countryCode: json['countryCode'] as String?,
       accessToken: json['accessToken'] as String? ?? '',
       refreshToken: json['refreshToken'] as String? ?? '',
-      tokenExpiresAt: DateTime.tryParse(json['tokenExpiresAt'] as String? ?? '') ?? DateTime.now(),
-      lastActive: DateTime.tryParse(json['lastActive'] as String? ?? '') ?? DateTime.now(),
-      sessionCreatedAt: DateTime.tryParse(json['sessionCreatedAt'] as String? ?? '') ?? DateTime.now(),
+      tokenExpiresAt:
+          DateTime.tryParse(json['tokenExpiresAt'] as String? ?? '') ??
+          DateTime.now(),
+      lastActive:
+          DateTime.tryParse(json['lastActive'] as String? ?? '') ??
+          DateTime.now(),
+      sessionCreatedAt:
+          DateTime.tryParse(json['sessionCreatedAt'] as String? ?? '') ??
+          DateTime.now(),
       hasCompletedKyc: json['hasCompletedKyc'] as bool? ?? false,
       kycStatus: json['kycStatus'] as String?,
       biometricEnabled: json['biometricEnabled'] as bool? ?? false,
@@ -144,12 +155,15 @@ class UserSession {
   static UserSession? fromJsonString(String? jsonString) {
     if (jsonString == null || jsonString.isEmpty) return null;
     try {
-      return UserSession.fromJson(jsonDecode(jsonString) as Map<String, dynamic>);
+      return UserSession.fromJson(
+        jsonDecode(jsonString) as Map<String, dynamic>,
+      );
     } catch (_) {
       return null;
     }
   }
 
   @override
-  String toString() => 'UserSession(userId: $userId, phone: $phoneNumber, tokenExpired: $isTokenExpired, sessionValid: $isSessionValid)';
+  String toString() =>
+      'UserSession(userId: $userId, phone: $phoneNumber, tokenExpired: $isTokenExpired, sessionValid: $isSessionValid)';
 }

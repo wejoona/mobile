@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -102,7 +104,9 @@ class MockSessionNotifier extends Notifier<SessionState>
     required String accessToken,
     String? refreshToken,
     Duration? tokenValidity,
-  }) async {}
+  }) async {
+    state = const SessionState(status: SessionStatus.active);
+  }
 
   @override
   Future<void> endSession() async {}
@@ -114,10 +118,14 @@ class MockSessionNotifier extends Notifier<SessionState>
   Future<void> extendSession() async {}
 
   @override
-  void unlockSession() {}
+  void unlockSession() {
+    state = const SessionState(status: SessionStatus.active);
+  }
 
   @override
-  Future<void> lockSession() async {}
+  Future<void> lockSession() async {
+    state = const SessionState(status: SessionStatus.locked);
+  }
 
   SessionConfig get config => const SessionConfig();
 
@@ -572,6 +580,41 @@ void main() {
       expect(state.user, isNull);
     });
 
+    test('should ignore stale startup refresh after logout', () async {
+      // Arrange
+      await mockStorage.write(key: StorageKeys.accessToken, value: 'old.token');
+      await mockStorage.write(
+        key: StorageKeys.refreshToken,
+        value: 'old.refresh',
+      );
+
+      final refreshCompleter = Completer<RefreshResponse>();
+      when(
+        () => mockAuthService.refreshToken(refreshToken: 'old.refresh'),
+      ).thenAnswer((_) => refreshCompleter.future);
+
+      final notifier = container.read(authProvider.notifier);
+
+      // Act: start restore, then log out before refresh returns.
+      final restore = notifier.checkAuth();
+      await Future<void>.delayed(Duration.zero);
+      await notifier.logout();
+      refreshCompleter.complete(
+        RefreshResponse(
+          accessToken: 'new.token',
+          refreshToken: 'new.refresh',
+          expiresIn: 900,
+        ),
+      );
+      await restore;
+
+      // Assert: stale restore must not resurrect a locked/authenticated session.
+      final state = container.read(authProvider);
+      expect(state.status, equals(AuthStatus.unauthenticated));
+      expect(mockStorage.storage[StorageKeys.accessToken], isNull);
+      expect(mockStorage.storage[StorageKeys.refreshToken], isNull);
+    });
+
     test(
       'should clear locked auth state when local session is invalidated',
       () async {
@@ -666,6 +709,60 @@ void main() {
         expect(container.read(authProvider).status, equals(AuthStatus.error));
         expect(mockStorage.storage[StorageKeys.accessToken], isNull);
         expect(mockStorage.storage[StorageKeys.refreshToken], isNull);
+      },
+    );
+  });
+
+  group('Account recovery unlock', () {
+    test(
+      'refreshes deterministically before unlocking after PIN reset',
+      () async {
+        // Arrange
+        await mockStorage.write(
+          key: StorageKeys.accessToken,
+          value: 'old.access.token',
+        );
+
+        final notifier = container.read(authProvider.notifier);
+        await notifier.checkAuth();
+        expect(container.read(authProvider).status, equals(AuthStatus.locked));
+
+        await mockStorage.write(
+          key: StorageKeys.refreshToken,
+          value: 'recovery.refresh.token',
+        );
+        when(
+          () => mockAuthService.refreshToken(
+            refreshToken: 'recovery.refresh.token',
+          ),
+        ).thenAnswer(
+          (_) async => const RefreshResponse(
+            accessToken: 'fresh.access.token',
+            refreshToken: 'fresh.refresh.token',
+            expiresIn: 900,
+          ),
+        );
+
+        // Act
+        final unlocked = await notifier.unlockAfterAccountRecovery();
+
+        // Assert
+        expect(unlocked, isTrue);
+        expect(container.read(authProvider).status, AuthStatus.authenticated);
+        expect(container.read(sessionServiceProvider).isLocked, isFalse);
+        expect(
+          mockStorage.storage[StorageKeys.accessToken],
+          'fresh.access.token',
+        );
+        expect(
+          mockStorage.storage[StorageKeys.refreshToken],
+          'fresh.refresh.token',
+        );
+        verify(
+          () => mockAuthService.refreshToken(
+            refreshToken: 'recovery.refresh.token',
+          ),
+        ).called(1);
       },
     );
   });

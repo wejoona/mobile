@@ -321,7 +321,11 @@ class RiskBasedSecurityService {
     final Map<String, StepUpType> defaults = {
       'pin_change': StepUpType.biometric,
       'add_recipient': StepUpType.biometric,
-      'account_recovery': StepUpType.liveness,
+      // Account recovery cannot safely proceed with a locally fabricated
+      // liveness challenge because the PIN reset endpoint consumes a backend
+      // challenge token. If the risk API is unavailable, fail closed into
+      // support review instead of showing an impossible liveness flow.
+      'account_recovery': StepUpType.manualReview,
       'kyc_selfie': StepUpType.liveness,
       'export_keys': StepUpType.biometricAndLiveness,
       'delete_account': StepUpType.biometricAndLiveness,

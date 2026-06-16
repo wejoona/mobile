@@ -46,100 +46,101 @@ class NotificationPermissionScreen extends ConsumerWidget {
 
                       // Illustration
                       Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  color: colors.container,
-                  borderRadius: BorderRadius.circular(AppRadius.xxl),
-                  border: Border.all(
-                    color: colors.borderGold,
-                    width: 2,
-                  ),
-                ),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Background rings
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: colors.gold.withValues(alpha: 0.1),
-                          width: 1,
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          color: colors.container,
+                          borderRadius: BorderRadius.circular(AppRadius.xxl),
+                          border: Border.all(
+                            color: colors.borderGold,
+                            width: 2,
+                          ),
+                        ),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // Background rings
+                            Container(
+                              width: 120,
+                              height: 120,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: colors.gold.withValues(alpha: 0.1),
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: colors.borderGold,
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                            // Bell icon
+                            Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: colors.gold.withValues(alpha: 0.15),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.notifications_active,
+                                color: colors.gold,
+                                size: 32,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: colors.borderGold,
-                          width: 1,
-                        ),
+
+                      const SizedBox(height: AppSpacing.xxl),
+
+                      // Title
+                      AppText(
+                        l10n.notifications_permission_title,
+                        variant: AppTextVariant.headlineMedium,
+                        color: colors.textPrimary,
+                        textAlign: TextAlign.center,
                       ),
-                    ),
-                    // Bell icon
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: colors.gold.withValues(alpha: 0.15),
-                        shape: BoxShape.circle,
+
+                      const SizedBox(height: AppSpacing.md),
+
+                      // Description
+                      AppText(
+                        l10n.notifications_permission_description,
+                        variant: AppTextVariant.bodyLarge,
+                        color: colors.textSecondary,
+                        textAlign: TextAlign.center,
                       ),
-                      child: Icon(
-                        Icons.notifications_active,
-                        color: colors.gold,
-                        size: 32,
+
+                      const SizedBox(height: AppSpacing.xl),
+
+                      // Benefits
+                      _BenefitItem(
+                        icon: Icons.account_balance_wallet,
+                        title: l10n.notifications_benefit_transactions,
+                        description:
+                            l10n.notifications_benefit_transactions_desc,
                       ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: AppSpacing.xxl),
-
-              // Title
-              AppText(
-                l10n.notifications_permission_title,
-                variant: AppTextVariant.headlineMedium,
-                color: colors.textPrimary,
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: AppSpacing.md),
-
-              // Description
-              AppText(
-                l10n.notifications_permission_description,
-                variant: AppTextVariant.bodyLarge,
-                color: colors.textSecondary,
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: AppSpacing.xl),
-
-              // Benefits
-              _BenefitItem(
-                icon: Icons.account_balance_wallet,
-                title: l10n.notifications_benefit_transactions,
-                description: l10n.notifications_benefit_transactions_desc,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _BenefitItem(
-                icon: Icons.security,
-                title: l10n.notifications_benefit_security,
-                description: l10n.notifications_benefit_security_desc,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _BenefitItem(
-                icon: Icons.trending_up,
-                title: l10n.notifications_benefit_updates,
-                description: l10n.notifications_benefit_updates_desc,
-              ),
+                      const SizedBox(height: AppSpacing.md),
+                      _BenefitItem(
+                        icon: Icons.security,
+                        title: l10n.notifications_benefit_security,
+                        description: l10n.notifications_benefit_security_desc,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      _BenefitItem(
+                        icon: Icons.trending_up,
+                        title: l10n.notifications_benefit_updates,
+                        description: l10n.notifications_benefit_updates_desc,
+                      ),
 
                       const SizedBox(height: AppSpacing.xxl),
                     ],
@@ -193,6 +194,13 @@ class NotificationPermissionScreen extends ConsumerWidget {
             backgroundColor: colors.success,
           ),
         );
+      } else if (ref.read(notificationPermissionProvider).error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.common_errorTryAgain),
+            backgroundColor: colors.error,
+          ),
+        );
       } else {
         // Permission denied - show settings guidance
         _showPermissionDeniedDialog(context);
@@ -224,10 +232,7 @@ class NotificationPermissionScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: AppText(
-              l10n.action_cancel,
-              color: colors.textSecondary,
-            ),
+            child: AppText(l10n.action_cancel, color: colors.textSecondary),
           ),
           AppButton(
             label: l10n.action_open_settings,
@@ -267,11 +272,7 @@ class _BenefitItem extends StatelessWidget {
             color: colors.gold.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
-          child: Icon(
-            icon,
-            color: colors.gold,
-            size: 24,
-          ),
+          child: Icon(icon, color: colors.gold, size: 24),
         ),
         const SizedBox(width: AppSpacing.md),
         Expanded(

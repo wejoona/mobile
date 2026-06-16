@@ -354,6 +354,12 @@
   "@wallet_securedWallet": {
     "description": "Wallet security status label"
   },
+  "wallet_liveBalance": "رصيد مباشر",
+  "wallet_refreshingBalance": "تحديث الرصيد",
+  "wallet_syncDelayed": "تأخر المزامنة",
+  "wallet_active": "المحفظة نشطة",
+  "wallet_balanceReady": "الرصيد جاهز",
+  "wallet_liveSyncDelayedMessage": "تأخرت مزامنة السجل المباشر. يتم عرض آخر رصيد متاح.",
   "wallet_balanceHidden": "الرصيد مخفي",
   "@wallet_balanceHidden": {
     "description": "Label shown when the user hides wallet balances"
@@ -1750,6 +1756,15 @@
       }
     }
   },
+  "deposit_rateUsdUsdc": "1 USD = 1 USDC",
+  "deposit_rateUsdToCurrency": "1 USD = {amount} {currency}",
+  "deposit_limitRange": "الحد الأدنى: {min} • الحد الأقصى: {max}",
+  "deposit_minimumAmount": "الحد الأدنى {amount}",
+  "deposit_maximumAmount": "الحد الأقصى {amount}",
+  "deposit_timeJustNow": "الآن",
+  "deposit_timeMinutesAgo": "منذ {count} د",
+  "deposit_timeHoursAgo": "منذ {count} س",
+  "deposit_timeDaysAgo": "منذ {count} ي",
   "deposit_youWillReceive": "ستستلم",
   "@deposit_youWillReceive": {
     "description": "Amount you will receive label"
@@ -2417,6 +2432,10 @@
   "@transactionDetails_transactionId": {
     "description": "Transaction ID label"
   },
+  "transactionDetails_supportReference": "مرجع الدعم",
+  "transactionDetails_providerReference": "مرجع المزود",
+  "transactionDetails_ledgerReference": "مرجع السجل",
+  "transactionDetails_counterparty": "الطرف المقابل",
   "transactionDetails_date": "التاريخ",
   "@transactionDetails_date": {
     "description": "Transaction date label"
@@ -2485,6 +2504,28 @@
   "@filters_clear": {
     "description": "Clear filters button"
   },
+  "filters_apply": "تطبيق الفلاتر",
+  "filters_applyWithCount": "تطبيق الفلاتر ({count})",
+  "filters_all": "الكل",
+  "filters_deposits": "الإيداعات",
+  "filters_withdrawals": "السحوبات",
+  "filters_received": "المستلمة",
+  "filters_sent": "المرسلة",
+  "filters_completed": "مكتملة",
+  "filters_pending": "قيد الانتظار",
+  "filters_processing": "قيد المعالجة",
+  "filters_failed": "فاشلة",
+  "filters_allTime": "كل الوقت",
+  "filters_today": "اليوم",
+  "filters_thisWeek": "هذا الأسبوع",
+  "filters_thisMonth": "هذا الشهر",
+  "filters_last3Months": "3 أشهر",
+  "filters_custom": "مخصص",
+  "filters_selectDate": "اختر",
+  "filters_sortDate": "التاريخ",
+  "filters_sortAmount": "المبلغ",
+  "filters_descendingFirst": "الأحدث أو الأعلى أولاً",
+  "filters_ascendingFirst": "الأقدم أو الأقل أولاً",
   "send_noContactsFound": "لم يتم العثور على جهات اتصال",
   "@send_noContactsFound": {
     "description": "No contacts found message"
@@ -2573,9 +2614,31 @@
   },
   "emailVerification_resendCode": "Resend code",
   "emailVerification_sendCode": "Send code",
+  "emailVerification_missingEmailTitle": "Add an email first",
+  "emailVerification_missingEmailMessage": "Korido needs an email address on your profile before it can send a verification code.",
+  "emailVerification_addEmail": "Add email",
   "emailVerification_successTitle": "Email verified",
   "emailVerification_successMessage": "Your email address has been verified successfully.",
   "security_twoFactorComingSoonSubtitle": "Authenticator app 2FA is being prepared. Biometric login and transaction PIN protect this device today.",
   "security_twoFactorNotifyMe": "Notify me",
-  "security_twoFactorNotifySuccess": "We'll let you know when authenticator app 2FA is ready."
+  "security_twoFactorNotifySuccess": "We'll let you know when authenticator app 2FA is ready.",
+  "subBusiness_transferTitle": "Transfer funds",
+  "subBusiness_transferFrom": "From",
+  "subBusiness_transferTo": "To",
+  "subBusiness_chooseDestination": "Choose destination",
+  "subBusiness_noTransferDestination": "Create another sub-business before moving funds.",
+  "subBusiness_transferAmountHelper": "Funds move between business wallets immediately after confirmation.",
+  "subBusiness_transferNoteHint": "Optional note",
+  "subBusiness_transferReviewTitle": "Transfer summary",
+  "subBusiness_transferSubmit": "Send transfer",
+  "subBusiness_transferSuccessTitle": "Transfer complete",
+  "subBusiness_transferSuccessMessage": "Funds were moved between sub-business wallets.",
+  "delete_confirmInstruction": "Type {phrase} to deactivate this account and sign out every registered device.",
+  "@delete_confirmInstruction": {
+    "placeholders": {
+      "phrase": {
+        "type": "String"
+      }
+    }
+  }
 }

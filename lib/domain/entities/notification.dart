@@ -6,6 +6,7 @@ class AppNotification {
   final String title;
   final String body;
   final NotificationType type;
+  final String? severity;
   final String? action;
   final bool isRead;
   final String? actionUrl;
@@ -18,6 +19,7 @@ class AppNotification {
     required this.title,
     required this.body,
     required this.type,
+    this.severity,
     this.action,
     this.isRead = false,
     this.actionUrl,
@@ -39,6 +41,7 @@ class AppNotification {
       title: json['title'] as String? ?? 'Notification',
       body: json['body'] as String? ?? '',
       type: _notificationTypeFromJson(json),
+      severity: _normalizedString(json['severity']),
       action: json['action'] as String?,
       isRead:
           json['isRead'] as bool? ??
@@ -138,12 +141,13 @@ String? _safeInAppPath(String? raw) {
 }
 
 NotificationType _notificationTypeFromJson(Map<String, dynamic> json) {
-  final normalized = (json['type'] ?? json['category'] ?? '')
-      .toString()
-      .trim()
-      .replaceAll('-', '_')
-      .replaceAll(' ', '_')
-      .toLowerCase();
+  final normalized =
+      (json['presentationType'] ?? json['type'] ?? json['category'] ?? '')
+          .toString()
+          .trim()
+          .replaceAll('-', '_')
+          .replaceAll(' ', '_')
+          .toLowerCase();
 
   for (final type in NotificationType.values) {
     if (type.name.toLowerCase() == normalized) return type;
@@ -151,9 +155,15 @@ NotificationType _notificationTypeFromJson(Map<String, dynamic> json) {
 
   switch (normalized) {
     case 'transaction':
+    case 'transaction_complete':
+    case 'transactioncomplete':
     case 'transfer':
     case 'transfer_received':
     case 'transfer_sent':
+      if (normalized == 'transaction_complete' ||
+          normalized == 'transactioncomplete') {
+        return NotificationType.transactionComplete;
+      }
       return NotificationType.transfer;
     case 'deposit':
     case 'deposit_completed':
@@ -176,11 +186,14 @@ NotificationType _notificationTypeFromJson(Map<String, dynamic> json) {
       return NotificationType.promotion;
     case 'low_balance':
       return NotificationType.lowBalance;
-    case 'transaction_complete':
-      return NotificationType.transactionComplete;
     case 'transaction_failed':
       return NotificationType.transactionFailed;
     default:
       return NotificationType.general;
   }
+}
+
+String? _normalizedString(Object? value) {
+  final text = value?.toString().trim().toLowerCase();
+  return text == null || text.isEmpty ? null : text;
 }

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/profile/services/profile_picture_service.dart';
+import 'package:usdc_wallet/services/user/avatar_multipart.dart';
 
 import '../helpers/test_utils.dart';
 
@@ -20,11 +21,26 @@ void main() {
         });
       final service = ProfilePictureService(dio);
 
-      final result = await service.uploadAvatar(file, onProgress: (_) {});
+      final result = await service.uploadAvatar(
+        file,
+        onProgress: (_) {},
+        faceCheck: AvatarDeviceFaceCheck.fromDeviceAnalysis(
+          isAvailable: true,
+          faceCount: 1,
+        ),
+      );
 
       expect(dio.requestHistory.single.path, '/user/avatar');
       final formData = dio.requestHistory.single.data as FormData;
       expect(formData.files.single.key, 'avatar');
+      expect(
+        formData.fields.any(
+          (entry) =>
+              entry.key == avatarDeviceFaceCheckField &&
+              entry.value == avatarDeviceFaceCheckToken,
+        ),
+        isTrue,
+      );
       expect(result.avatarUrl, '/user/avatar/usr_profile_picture');
       expect(result.avatarThumb, startsWith('data:image/jpeg;base64,'));
       expect(result.message, 'Avatar uploaded successfully');
@@ -43,9 +59,42 @@ void main() {
         });
       final service = ProfilePictureService(dio);
 
-      final result = await service.uploadAvatar(file, onProgress: (_) {});
+      final result = await service.uploadAvatar(
+        file,
+        onProgress: (_) {},
+        faceCheck: AvatarDeviceFaceCheck.fromDeviceAnalysis(
+          isAvailable: true,
+          faceCount: 1,
+        ),
+      );
 
       expect(result.avatarUrl, '/user/avatar/usr_nested');
+      expect(result.avatarThumb, startsWith('data:image/jpeg;base64,'));
+    });
+
+    test('unwraps nested profile avatar upload envelopes', () async {
+      final file = await _writeTinyJpeg();
+      final dio = MockDio()
+        ..queueResponse({
+          'data': {
+            'profile': {
+              'avatarUrl': '/user/avatar/usr_profile',
+              'avatarThumb': 'data:image/jpeg;base64,/9j/profile',
+            },
+          },
+        });
+      final service = ProfilePictureService(dio);
+
+      final result = await service.uploadAvatar(
+        file,
+        onProgress: (_) {},
+        faceCheck: AvatarDeviceFaceCheck.fromDeviceAnalysis(
+          isAvailable: true,
+          faceCount: 1,
+        ),
+      );
+
+      expect(result.avatarUrl, '/user/avatar/usr_profile');
       expect(result.avatarThumb, startsWith('data:image/jpeg;base64,'));
     });
   });

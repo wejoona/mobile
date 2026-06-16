@@ -192,17 +192,15 @@ void main() {
     expect(notifications.single.navigationRoute, '/transactions/txn_live_1');
   });
 
-  test('device token removal encodes path segment', () async {
+  test('FCM token removal uses the mobile SDK route body', () async {
     final dio = MockDio()..queueResponse(null, statusCode: 204);
     final service = NotificationsService(dio);
 
     await service.removeFcmToken('abc/def:ghi');
 
     expect(dio.requestHistory.single.method, 'DELETE');
-    expect(
-      dio.requestHistory.single.path,
-      '/notifications/device-token/abc%2Fdef%3Aghi',
-    );
+    expect(dio.requestHistory.single.path, '/notifications/push/token');
+    expect(dio.requestHistory.single.data, {'token': 'abc/def:ghi'});
   });
 
   test('bulk push token cleanup uses live backend route', () async {

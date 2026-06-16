@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/state/app_state.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_base.dart';
@@ -24,6 +25,32 @@ void main() {
 
       expect(state.availableBalance, 42.25);
     });
+
+    test(
+      'availableBalanceProvider uses the same wallet state as home',
+      () async {
+        final dio = MockDio();
+        final container = ProviderContainer(
+          overrides: [
+            dioProvider.overrideWithValue(dio),
+            appFsmProvider.overrideWith(_NoopAppFsmNotifier.new),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        container
+            .read(walletStateMachineProvider.notifier)
+            .state = const WalletState(
+          status: WalletStatus.loaded,
+          walletId: 'wallet-home',
+          usdcBalance: 42.25,
+          pendingBalance: 1.5,
+        );
+
+        expect(container.read(availableBalanceProvider), 42.25);
+        expect(dio.requestHistory, isEmpty);
+      },
+    );
 
     test(
       'creates a wallet automatically when fresh users have no wallet',
@@ -352,6 +379,51 @@ void main() {
         expect(state.status, WalletStatus.loaded);
         expect(state.walletId, 'wallet-refresh-once');
         expect(state.usdcBalance, 31);
+      },
+    );
+
+    test(
+      'manual refresh failure preserves balance but marks it cached degraded',
+      () async {
+        final dio = MockDio()
+          ..queueErrorResponse(
+            statusCode: 503,
+            data: {'message': 'Ledger temporarily unavailable'},
+          );
+
+        final container = ProviderContainer(
+          overrides: [
+            dioProvider.overrideWithValue(dio),
+            appFsmProvider.overrideWith(_NoopAppFsmNotifier.new),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        container.read(walletStateMachineProvider.notifier).state = WalletState(
+          status: WalletStatus.loaded,
+          walletId: 'wallet-existing',
+          walletAddress: '0xabc',
+          blockchain: 'polygon',
+          usdcBalance: 42,
+          pendingBalance: 1,
+          lastUpdated: DateTime.utc(2026, 6, 14),
+        );
+
+        await container.read(walletStateMachineProvider.notifier).refresh();
+
+        expect(dio.requestHistory.map((request) => request.path), ['/wallet']);
+
+        final state = container.read(walletStateMachineProvider);
+        expect(state.status, WalletStatus.loaded);
+        expect(state.walletId, 'wallet-existing');
+        expect(state.usdcBalance, 42);
+        expect(state.pendingBalance, 1);
+        expect(state.isCached, isTrue);
+        expect(state.isDegraded, isTrue);
+        expect(state.isStale, isTrue);
+        expect(state.balanceSourceOfTruth, 'local_cache');
+        expect(state.balanceReadStatus, 'cached_degraded');
+        expect(state.balanceWarning, contains('Live balance'));
       },
     );
   });

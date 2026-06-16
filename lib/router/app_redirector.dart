@@ -6,6 +6,7 @@ import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/router/route_guards.dart';
 import 'package:usdc_wallet/services/feature_flags/feature_flags_extensions.dart';
 import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
+import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/state/fsm/index.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart' as kyc_machine;
 import 'package:usdc_wallet/state/user_state_machine.dart';
@@ -20,6 +21,8 @@ class RouterRefreshNotifier extends ChangeNotifier {
     ref
       // Listen to auth state changes.
       ..listen(authProvider, (_, _) => notifyListeners())
+      // Listen to session lock/unlock changes.
+      ..listen(sessionServiceProvider, (_, _) => notifyListeners())
       // Listen to wallet state changes for onboarding redirect.
       ..listen(walletStateMachineProvider, (_, _) => notifyListeners())
       // Listen to user state changes for profile completion redirect.
@@ -50,6 +53,7 @@ String? appRedirect(BuildContext context, GoRouterState state) {
   final authState = container.read(authProvider);
   final userState = container.read(userStateMachineProvider);
   final flags = container.read(featureFlagsProvider);
+  final sessionState = container.read(sessionServiceProvider);
   final appFsmState = container.read(appFsmProvider);
   final kycState = container.read(kyc_machine.kycStateMachineProvider);
 
@@ -74,10 +78,21 @@ String? appRedirect(BuildContext context, GoRouterState state) {
     return null;
   }
 
-  final isLockedState = !EnvironmentConfig.debugSkipPin && authState.isLocked;
+  final isLockedState =
+      !EnvironmentConfig.debugSkipPin &&
+      (authState.isLocked || sessionState.isLocked);
   final lockRedirect = _lockRedirect(location, isLockedState);
   if (lockRedirect != null) {
     return lockRedirect;
+  }
+
+  final unlockedLockScreenRedirect = _unlockedLockScreenRedirect(
+    location: location,
+    isAuthenticated: isAuthenticated,
+    isLockedState: isLockedState,
+  );
+  if (unlockedLockScreenRedirect != null) {
+    return unlockedLockScreenRedirect;
   }
 
   final fsmRedirect = _fsmRedirect(
@@ -148,6 +163,17 @@ String? _lockRedirect(String location, bool isLockedState) {
     return '/session-locked';
   }
   return null;
+}
+
+String? _unlockedLockScreenRedirect({
+  required String location,
+  required bool isAuthenticated,
+  required bool isLockedState,
+}) {
+  if (location != '/session-locked' || isLockedState) {
+    return null;
+  }
+  return isAuthenticated ? '/home' : '/login';
 }
 
 String? _fsmRedirect({

@@ -24,12 +24,16 @@ class _ContactSyncMatch {
     required this.phoneHash,
     required this.userId,
     this.displayName,
+    this.username,
+    this.maskedPhone,
     this.avatarUrl,
   });
 
   final String phoneHash;
   final String userId;
   final String? displayName;
+  final String? username;
+  final String? maskedPhone;
   final String? avatarUrl;
 }
 
@@ -268,11 +272,6 @@ class ContactsService {
       return false;
     }
 
-    if (await FlutterContacts.requestPermission(readonly: true)) {
-      _contactsGrantedByFlutterPlugin = true;
-      return true;
-    }
-
     final requested = await Permission.contacts.request();
     if (_canReadContacts(requested)) {
       _contactsGrantedByFlutterPlugin = true;
@@ -401,15 +400,21 @@ class ContactsService {
   /// Sends hashed phone numbers, receives matches with user info
   Future<List<SyncedContact>> getKoridoContacts(
     Dio dio,
-    List<SyncedContact> allContacts,
-  ) async {
+    List<SyncedContact> allContacts, {
+    String defaultCountryPrefix = '225',
+  }) async {
     final contactHashes = {
       for (final contact in allContacts)
         contact:
             (contact.lookupPhones.isNotEmpty
                     ? contact.lookupPhones
                     : [contact.phone])
-                .map(hashPhone)
+                .map(
+                  (phone) => hashPhone(
+                    phone,
+                    defaultCountryPrefix: defaultCountryPrefix,
+                  ),
+                )
                 .toSet(),
     };
     final hashes = contactHashes.values
@@ -446,6 +451,8 @@ class ContactsService {
             isKoridoUser: true,
             joonaPayUserId: match.userId,
             name: match.displayName ?? contact.name,
+            username: match.username,
+            maskedPhone: match.maskedPhone,
             avatarUrl: match.avatarUrl,
           );
         }
@@ -480,9 +487,22 @@ class ContactsService {
   /// Sync contacts with Korido server
   Future<ContactSyncResult> syncContactsWithKorido(
     Dio dio,
-    List<SyncedContact> contacts,
-  ) async {
-    final hashes = contacts.map((c) => hashPhone(c.phone)).toSet().toList();
+    List<SyncedContact> contacts, {
+    String defaultCountryPrefix = '225',
+  }) async {
+    final hashes = contacts
+        .expand(
+          (contact) => contact.lookupPhones.isNotEmpty
+              ? contact.lookupPhones
+              : [contact.phone],
+        )
+        .where((phone) => phone.trim().isNotEmpty)
+        .map(
+          (phone) =>
+              hashPhone(phone, defaultCountryPrefix: defaultCountryPrefix),
+        )
+        .toSet()
+        .toList();
 
     try {
       final matchCount = await syncPhoneHashes(dio, hashes);
@@ -538,6 +558,11 @@ class ContactsService {
             'photoUrl',
             'profilePhotoUrl',
           ]);
+          final username = _stringField(match, ['username', 'handle']);
+          final maskedPhone = _stringField(match, [
+            'maskedPhone',
+            'masked_phone',
+          ]);
 
           return _ContactSyncMatch(
             phoneHash: _stringField(match, [
@@ -552,6 +577,8 @@ class ContactsService {
               'id',
             ]),
             displayName: displayName.isEmpty ? null : displayName,
+            username: username.isEmpty ? null : username,
+            maskedPhone: maskedPhone.isEmpty ? null : maskedPhone,
             avatarUrl: avatarUrl.isEmpty ? null : avatarUrl,
           );
         })
@@ -638,7 +665,12 @@ class KoridoContactsService {
           final userId = _stringField(user, ['id', 'userId', 'koridoUserId']);
           final username = _stringField(user, ['username', 'handle']);
           final rawPhone = _stringField(user, ['phoneNumber', 'phone']);
-          final maskedPhone = _stringField(user, ['maskedPhone']);
+          final explicitMaskedPhone = _stringField(user, ['maskedPhone']);
+          final maskedPhone = explicitMaskedPhone.isNotEmpty
+              ? explicitMaskedPhone
+              : _isMaskedPhone(rawPhone)
+              ? rawPhone
+              : '';
           final safePhone = _isMaskedPhone(rawPhone) ? '' : rawPhone;
           final name = _stringField(user, [
             'name',
@@ -658,6 +690,7 @@ class KoridoContactsService {
                 ? maskedPhone
                 : 'Korido user',
             phone: safePhone,
+            maskedPhone: maskedPhone.isEmpty ? null : maskedPhone,
             isKoridoUser: user['isKoridoUser'] as bool? ?? true,
             joonaPayUserId: userId,
             username: username.isEmpty ? null : username,
@@ -684,7 +717,7 @@ class KoridoContactsService {
         if (username != null) 'username': username,
       },
     );
-    return domain.Contact.fromJson(response.data as Map<String, dynamic>);
+    return domain.Contact.fromJson(_responseObject(response.data));
   }
 
   /// Update contact
@@ -700,13 +733,13 @@ class KoridoContactsService {
         if (isFavorite != null) 'isFavorite': isFavorite,
       },
     );
-    return domain.Contact.fromJson(response.data as Map<String, dynamic>);
+    return domain.Contact.fromJson(_responseObject(response.data));
   }
 
   /// Toggle favorite status
   Future<domain.Contact> toggleFavorite(String contactId) async {
     final response = await _dio.put('/contacts/$contactId/favorite');
-    return domain.Contact.fromJson(response.data as Map<String, dynamic>);
+    return domain.Contact.fromJson(_responseObject(response.data));
   }
 
   /// Delete contact
@@ -723,28 +756,40 @@ bool _isMaskedPhone(String value) {
       normalized.contains('x');
 }
 
+Map<String, dynamic> _responseObject(Object? payload) {
+  final map = _asMap(payload);
+  final data = map['data'];
+  if (data is Map) {
+    return Map<String, dynamic>.from(data);
+  }
+  return map;
+}
+
 /// Korido Contacts Service Provider
-final joonaPayContactsServiceProvider = Provider<KoridoContactsService>((ref) {
+final koridoContactsServiceProvider = Provider<KoridoContactsService>((ref) {
   return KoridoContactsService(ref.watch(dioProvider));
 });
+
+/// Deprecated alias kept for older screens while the app finishes the rename.
+final joonaPayContactsServiceProvider = koridoContactsServiceProvider;
 
 /// All Korido Contacts Provider
 final joonaPayContactsProvider =
     FutureProvider.autoDispose<List<domain.Contact>>((ref) async {
-      final service = ref.watch(joonaPayContactsServiceProvider);
+      final service = ref.watch(koridoContactsServiceProvider);
       return service.getContacts();
     });
 
 /// Favorite Contacts Provider
 final favoriteContactsProvider =
     FutureProvider.autoDispose<List<domain.Contact>>((ref) async {
-      final service = ref.watch(joonaPayContactsServiceProvider);
+      final service = ref.watch(koridoContactsServiceProvider);
       return service.getFavorites();
     });
 
 /// Recent Korido Contacts Provider
 final recentKoridoContactsProvider =
     FutureProvider.autoDispose<List<domain.Contact>>((ref) async {
-      final service = ref.watch(joonaPayContactsServiceProvider);
+      final service = ref.watch(koridoContactsServiceProvider);
       return service.getRecents();
     });

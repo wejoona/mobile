@@ -588,6 +588,42 @@ abstract class AppLocalizations {
   /// **'Secured wallet'**
   String get wallet_securedWallet;
 
+  /// Wallet balance sync status when the ledger is fresh
+  ///
+  /// In en, this message translates to:
+  /// **'Live balance'**
+  String get wallet_liveBalance;
+
+  /// Wallet balance sync status while refreshing
+  ///
+  /// In en, this message translates to:
+  /// **'Refreshing balance'**
+  String get wallet_refreshingBalance;
+
+  /// Wallet balance sync status when fresh ledger sync is delayed
+  ///
+  /// In en, this message translates to:
+  /// **'Sync delayed'**
+  String get wallet_syncDelayed;
+
+  /// Wallet balance sync status when the wallet is active
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet active'**
+  String get wallet_active;
+
+  /// Wallet balance sync status when balance is ready
+  ///
+  /// In en, this message translates to:
+  /// **'Balance ready'**
+  String get wallet_balanceReady;
+
+  /// Warning shown when the app displays cached wallet balance because live sync is delayed
+  ///
+  /// In en, this message translates to:
+  /// **'Live ledger sync is delayed. Showing the last available wallet balance.'**
+  String get wallet_liveSyncDelayedMessage;
+
   /// Label shown when the user hides wallet balances
   ///
   /// In en, this message translates to:
@@ -2916,6 +2952,60 @@ abstract class AppLocalizations {
   /// **'Updated {time}'**
   String deposit_rateUpdated(String time, DateTime hora);
 
+  /// Exchange rate label for USD deposits
+  ///
+  /// In en, this message translates to:
+  /// **'1 USD = 1 USDC'**
+  String get deposit_rateUsdUsdc;
+
+  /// Exchange rate label from USD to a local currency
+  ///
+  /// In en, this message translates to:
+  /// **'1 USD = {amount} {currency}'**
+  String deposit_rateUsdToCurrency(String amount, String currency);
+
+  /// Deposit minimum and maximum range
+  ///
+  /// In en, this message translates to:
+  /// **'Min: {min} • Max: {max}'**
+  String deposit_limitRange(String min, String max);
+
+  /// Validation error for an amount below the deposit minimum
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum {amount}'**
+  String deposit_minimumAmount(String amount);
+
+  /// Validation error for an amount above the deposit maximum
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum {amount}'**
+  String deposit_maximumAmount(String amount);
+
+  /// Relative timestamp for an exchange rate updated less than one minute ago
+  ///
+  /// In en, this message translates to:
+  /// **'just now'**
+  String get deposit_timeJustNow;
+
+  /// Relative timestamp for an exchange rate updated minutes ago
+  ///
+  /// In en, this message translates to:
+  /// **'{count}m ago'**
+  String deposit_timeMinutesAgo(int count);
+
+  /// Relative timestamp for an exchange rate updated hours ago
+  ///
+  /// In en, this message translates to:
+  /// **'{count}h ago'**
+  String deposit_timeHoursAgo(int count);
+
+  /// Relative timestamp for an exchange rate updated days ago
+  ///
+  /// In en, this message translates to:
+  /// **'{count}d ago'**
+  String deposit_timeDaysAgo(int count);
+
   /// Amount you will receive label
   ///
   /// In en, this message translates to:
@@ -3918,6 +4008,30 @@ abstract class AppLocalizations {
   /// **'Transaction ID'**
   String get transactionDetails_transactionId;
 
+  /// Support reference label
+  ///
+  /// In en, this message translates to:
+  /// **'Support reference'**
+  String get transactionDetails_supportReference;
+
+  /// Provider reference label
+  ///
+  /// In en, this message translates to:
+  /// **'Provider reference'**
+  String get transactionDetails_providerReference;
+
+  /// Ledger reference label
+  ///
+  /// In en, this message translates to:
+  /// **'Ledger reference'**
+  String get transactionDetails_ledgerReference;
+
+  /// Counterparty label
+  ///
+  /// In en, this message translates to:
+  /// **'Counterparty'**
+  String get transactionDetails_counterparty;
+
   /// Transaction date label
   ///
   /// In en, this message translates to:
@@ -4019,6 +4133,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear'**
   String get filters_clear;
+
+  /// Apply filters button with no active filter count
+  ///
+  /// In en, this message translates to:
+  /// **'Apply Filters'**
+  String get filters_apply;
+
+  /// Apply filters button with active filter count
+  ///
+  /// In en, this message translates to:
+  /// **'Apply Filters ({count})'**
+  String filters_applyWithCount(int count);
+
+  /// All option in transaction filters
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get filters_all;
+
+  /// Deposits transaction type filter
+  ///
+  /// In en, this message translates to:
+  /// **'Deposits'**
+  String get filters_deposits;
+
+  /// Withdrawals transaction type filter
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawals'**
+  String get filters_withdrawals;
+
+  /// Received transaction type filter
+  ///
+  /// In en, this message translates to:
+  /// **'Received'**
+  String get filters_received;
+
+  /// Sent transaction type filter
+  ///
+  /// In en, this message translates to:
+  /// **'Sent'**
+  String get filters_sent;
+
+  /// Completed transaction status filter
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get filters_completed;
+
+  /// Pending transaction status filter
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get filters_pending;
+
+  /// Processing transaction status filter
+  ///
+  /// In en, this message translates to:
+  /// **'Processing'**
+  String get filters_processing;
+
+  /// Failed transaction status filter
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get filters_failed;
+
+  /// All time date range filter
+  ///
+  /// In en, this message translates to:
+  /// **'All Time'**
+  String get filters_allTime;
+
+  /// Today date range filter
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get filters_today;
+
+  /// This week date range filter
+  ///
+  /// In en, this message translates to:
+  /// **'This Week'**
+  String get filters_thisWeek;
+
+  /// This month date range filter
+  ///
+  /// In en, this message translates to:
+  /// **'This Month'**
+  String get filters_thisMonth;
+
+  /// Last three months date range filter
+  ///
+  /// In en, this message translates to:
+  /// **'3 Months'**
+  String get filters_last3Months;
+
+  /// Custom date range filter
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get filters_custom;
+
+  /// Placeholder for selecting a date
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get filters_selectDate;
+
+  /// Sort by date option
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get filters_sortDate;
+
+  /// Sort by amount option
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get filters_sortAmount;
+
+  /// Tooltip for descending sort order
+  ///
+  /// In en, this message translates to:
+  /// **'Newest or highest first'**
+  String get filters_descendingFirst;
+
+  /// Tooltip for ascending sort order
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest or lowest first'**
+  String get filters_ascendingFirst;
 
   /// Skip button on welcome slides
   ///
@@ -5783,6 +6029,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Invite to Korido'**
   String get contacts_invite_to_joonapay;
+
+  /// Send money action on a contact card
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get contacts_send;
+
+  /// Invite action on a contact card
+  ///
+  /// In en, this message translates to:
+  /// **'Invite'**
+  String get contacts_invite;
+
+  /// Accessibility label for sending money to a contact
+  ///
+  /// In en, this message translates to:
+  /// **'Send money to {name}'**
+  String contacts_sendMoneyTo(String name);
+
+  /// Accessibility label for inviting a contact to Korido
+  ///
+  /// In en, this message translates to:
+  /// **'Invite {name} to Korido'**
+  String contacts_inviteToKorido(String name);
 
   /// Empty state message
   ///
@@ -12876,6 +13146,12 @@ abstract class AppLocalizations {
   /// **'Delete Category?'**
   String get budget_deleteCategory;
 
+  /// No description provided for @budget_notifySuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll notify you when budget controls are ready.'**
+  String get budget_notifySuccess;
+
   /// No description provided for @budget_tapCategoryToEdit.
   ///
   /// In en, this message translates to:
@@ -13704,6 +13980,12 @@ abstract class AppLocalizations {
   /// **'Withdrawal initiated'**
   String get withdraw_initiated;
 
+  /// No description provided for @withdraw_notifySuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll notify you when this withdrawal rail is ready.'**
+  String get withdraw_notifySuccess;
+
   /// No description provided for @auth_useBiometric.
   ///
   /// In en, this message translates to:
@@ -13992,6 +14274,24 @@ abstract class AppLocalizations {
   /// **'Send code'**
   String get emailVerification_sendCode;
 
+  /// No description provided for @emailVerification_missingEmailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an email first'**
+  String get emailVerification_missingEmailTitle;
+
+  /// No description provided for @emailVerification_missingEmailMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Korido needs an email address on your profile before it can send a verification code.'**
+  String get emailVerification_missingEmailMessage;
+
+  /// No description provided for @emailVerification_addEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Add email'**
+  String get emailVerification_addEmail;
+
   /// No description provided for @emailVerification_successTitle.
   ///
   /// In en, this message translates to:
@@ -14003,6 +14303,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your email address has been verified successfully.'**
   String get emailVerification_successMessage;
+
+  /// No description provided for @subBusiness_transferTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer funds'**
+  String get subBusiness_transferTitle;
+
+  /// No description provided for @subBusiness_transferFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get subBusiness_transferFrom;
+
+  /// No description provided for @subBusiness_transferTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get subBusiness_transferTo;
+
+  /// No description provided for @subBusiness_chooseDestination.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose destination'**
+  String get subBusiness_chooseDestination;
+
+  /// No description provided for @subBusiness_noTransferDestination.
+  ///
+  /// In en, this message translates to:
+  /// **'Create another sub-business before moving funds.'**
+  String get subBusiness_noTransferDestination;
+
+  /// No description provided for @subBusiness_transferAmountHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Funds move between business wallets immediately after confirmation.'**
+  String get subBusiness_transferAmountHelper;
+
+  /// No description provided for @subBusiness_transferNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional note'**
+  String get subBusiness_transferNoteHint;
+
+  /// No description provided for @subBusiness_transferReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer summary'**
+  String get subBusiness_transferReviewTitle;
+
+  /// No description provided for @subBusiness_transferSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Send transfer'**
+  String get subBusiness_transferSubmit;
+
+  /// No description provided for @subBusiness_transferSuccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer complete'**
+  String get subBusiness_transferSuccessTitle;
+
+  /// No description provided for @subBusiness_transferSuccessMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Funds were moved between sub-business wallets.'**
+  String get subBusiness_transferSuccessMessage;
+
+  /// No description provided for @delete_confirmInstruction.
+  ///
+  /// In en, this message translates to:
+  /// **'Type {phrase} to deactivate this account and sign out every registered device.'**
+  String delete_confirmInstruction(String phrase);
 }
 
 class _AppLocalizationsDelegate

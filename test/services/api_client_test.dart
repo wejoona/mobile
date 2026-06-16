@@ -14,22 +14,38 @@ final _authInterceptorTestProvider = Provider<AuthInterceptor>(
 );
 
 class _DeviceBlacklistedAdapter implements HttpClientAdapter {
+  const _DeviceBlacklistedAdapter({this.nestedEnvelope = false});
+
+  final bool nestedEnvelope;
+
   @override
   Future<ResponseBody> fetch(
     RequestOptions options,
     Stream<Uint8List>? requestStream,
     Future<void>? cancelFuture,
-  ) async => ResponseBody.fromString(
-    jsonEncode({
-      'statusCode': 403,
-      'message': 'Access denied. This device has been blocked.',
-      'error': 'DEVICE_BLACKLISTED',
-    }),
-    403,
-    headers: {
-      Headers.contentTypeHeader: [Headers.jsonContentType],
-    },
-  );
+  ) async {
+    final body = nestedEnvelope
+        ? {
+            'success': false,
+            'error': {
+              'code': 'DEVICE_BLACKLISTED',
+              'message': 'Access denied. This device has been blocked.',
+            },
+          }
+        : {
+            'statusCode': 403,
+            'message': 'Access denied. This device has been blocked.',
+            'error': 'DEVICE_BLACKLISTED',
+          };
+
+    return ResponseBody.fromString(
+      jsonEncode(body),
+      403,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
+  }
 
   @override
   void close({bool force = false}) {}
@@ -68,6 +84,46 @@ void main() {
 
         final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
           ..httpClientAdapter = _DeviceBlacklistedAdapter()
+          ..interceptors.add(container.read(_authInterceptorTestProvider));
+
+        await expectLater(
+          dio.get('/wallet'),
+          throwsA(
+            isA<DioException>().having(
+              (error) => error.response?.statusCode,
+              'statusCode',
+              403,
+            ),
+          ),
+        );
+
+        expect(mockStorage.storage[StorageKeys.accessToken], isNull);
+        expect(mockStorage.storage[StorageKeys.refreshToken], isNull);
+        expect(container.read(authSessionInvalidatedProvider), equals(1));
+      },
+    );
+
+    test(
+      'clears local session for nested device blacklist API envelopes',
+      () async {
+        final container = ProviderContainer(
+          overrides: [secureStorageProvider.overrideWithValue(mockStorage)],
+        );
+        addTearDown(container.dispose);
+
+        await mockStorage.write(
+          key: StorageKeys.accessToken,
+          value: 'blocked.access',
+        );
+        await mockStorage.write(
+          key: StorageKeys.refreshToken,
+          value: 'blocked.refresh',
+        );
+
+        final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
+          ..httpClientAdapter = const _DeviceBlacklistedAdapter(
+            nestedEnvelope: true,
+          )
           ..interceptors.add(container.read(_authInterceptorTestProvider));
 
         await expectLater(
@@ -174,6 +230,40 @@ void main() {
         equals('This device has been blocked. Contact Korido support.'),
       );
     });
+
+    test(
+      'should map nested device blacklist envelopes to blocked-device code',
+      () {
+        // Arrange
+        final dioError = DioException(
+          requestOptions: RequestOptions(path: '/wallet/balance'),
+          response: Response(
+            statusCode: 403,
+            data: {
+              'success': false,
+              'error': {
+                'code': 'DEVICE_BLACKLISTED',
+                'message': 'Access denied. This device has been blocked.',
+              },
+            },
+            requestOptions: RequestOptions(path: '/wallet/balance'),
+          ),
+          type: DioExceptionType.badResponse,
+        );
+
+        // Act
+        final exception = ApiException.fromDioError(dioError);
+
+        // Assert
+        expect(exception.statusCode, equals(403));
+        expect(exception.code, equals('DEVICE_BLACKLISTED'));
+        expect(exception.isDeviceBlacklisted, isTrue);
+        expect(
+          exception.message,
+          equals('This device has been blocked. Contact Korido support.'),
+        );
+      },
+    );
 
     test('should map 404 to Not found', () {
       // Arrange

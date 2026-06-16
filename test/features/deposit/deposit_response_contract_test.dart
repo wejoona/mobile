@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/deposit/models/deposit_request.dart';
 import 'package:usdc_wallet/features/deposit/models/deposit_response.dart';
 import 'package:usdc_wallet/features/deposit/models/mobile_money_provider.dart';
+import 'package:usdc_wallet/domain/entities/wallet.dart';
 import 'package:usdc_wallet/services/deposit/deposit_service.dart';
 
 import '../../helpers/test_utils.dart';
@@ -140,6 +141,34 @@ void main() {
         expect(availability.providers.single['id'], 'us_ach');
       },
     );
+
+    test('formats deposit channel fees using backend fee type', () {
+      final percentage = DepositChannel.fromJson({
+        'id': 'orange_money_ci',
+        'name': 'Orange Money',
+        'fee': 1.5,
+        'feeType': 'percentage',
+        'currency': 'XOF',
+      });
+      final fixed = DepositChannel.fromJson({
+        'id': 'ach',
+        'name': 'ACH',
+        'fee': 250,
+        'feeType': 'fixed',
+        'currency': 'XOF',
+      });
+      final free = DepositChannel.fromJson({
+        'id': 'bank',
+        'name': 'Bank',
+        'fee': 0,
+        'feeType': 'fixed',
+        'currency': 'USD',
+      });
+
+      expect(percentage.feeLabel, '1.5% fee');
+      expect(fixed.feeLabel, '250 XOF fee');
+      expect(free.feeLabel, 'Free');
+    });
 
     test(
       'requests deposit channels with region and currency context',

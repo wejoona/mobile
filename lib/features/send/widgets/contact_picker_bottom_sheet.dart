@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:usdc_wallet/config/countries.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -30,8 +29,10 @@ class _ContactPickerBottomSheetState
   List<SyncedContact> _lookupResults = [];
   bool _isLoading = true;
   bool _isLookupLoading = false;
+  bool _lookupFailed = false;
   bool _permissionRequired = false;
   bool _requiresSettings = false;
+  bool _isPermissionActionLoading = false;
   Timer? _lookupDebounce;
 
   @override
@@ -70,24 +71,14 @@ class _ContactPickerBottomSheetState
 
   Future<List<SyncedContact>> _loadDeviceContacts() async {
     final contactsService = ref.read(contactsServiceProvider);
-    var hasPermission = await contactsService.hasContactsPermission();
+    final hasPermission = await contactsService.hasContactsPermission();
     if (!hasPermission) {
-      final status = await Permission.contacts.status;
-      if (!status.isPermanentlyDenied && !status.isRestricted) {
-        final granted = await contactsService.requestContactsPermission();
-        if (granted) {
-          hasPermission = true;
-        }
-      }
-
-      if (hasPermission) {
-        return _readSyncedDeviceContacts(contactsService);
-      }
-
+      final requiresSettings = await contactsService
+          .contactsPermissionRequiresSettings();
       if (mounted) {
         setState(() {
           _permissionRequired = true;
-          _requiresSettings = status.isPermanentlyDenied || status.isRestricted;
+          _requiresSettings = requiresSettings;
           _isLoading = false;
         });
       }
@@ -110,6 +101,7 @@ class _ContactPickerBottomSheetState
       contacts = await contactsService.getKoridoContacts(
         ref.read(dioProvider),
         contacts,
+        defaultCountryPrefix: _defaultCountryPrefix(),
       );
     } on Object {
       // Keep the picker usable even if the API cannot return account matches.
@@ -128,37 +120,65 @@ class _ContactPickerBottomSheetState
   }
 
   Future<void> _requestContactsPermission() async {
-    setState(() => _isLoading = true);
-    final currentStatus = await Permission.contacts.status;
-    if (currentStatus.isPermanentlyDenied || currentStatus.isRestricted) {
+    if (_isPermissionActionLoading) {
+      return;
+    }
+    setState(() => _isPermissionActionLoading = true);
+    final contactsService = ref.read(contactsServiceProvider);
+    final l10n = AppLocalizations.of(context)!;
+
+    try {
+      if (await contactsService.contactsPermissionRequiresSettings()) {
+        if (mounted) {
+          setState(() {
+            _permissionRequired = true;
+            _requiresSettings = true;
+          });
+        }
+        await contactsService.openContactsSettings();
+        return;
+      }
+
+      final granted = await contactsService.requestContactsPermission();
+      if (!mounted) {
+        return;
+      }
+      if (granted) {
+        await _loadContacts();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                _localizedText(
+                  en: 'Contacts are ready',
+                  fr: 'Vos contacts sont prêts',
+                ),
+              ),
+            ),
+          );
+        }
+        return;
+      }
+
+      final requiresSettings = await contactsService
+          .contactsPermissionRequiresSettings();
       if (mounted) {
         setState(() {
           _permissionRequired = true;
-          _requiresSettings = true;
+          _requiresSettings = requiresSettings;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.contacts_permission_denied_message)),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
           _isLoading = false;
+          _isPermissionActionLoading = false;
         });
       }
-      await openAppSettings();
-      return;
     }
-
-    final granted = await ref
-        .read(contactsServiceProvider)
-        .requestContactsPermission();
-    if (!mounted) {
-      return;
-    }
-    if (granted) {
-      await _loadContacts();
-      return;
-    }
-    final nextStatus = await Permission.contacts.status;
-    setState(() {
-      _permissionRequired = true;
-      _requiresSettings =
-          nextStatus.isPermanentlyDenied || nextStatus.isRestricted;
-      _isLoading = false;
-    });
   }
 
   void _sortContacts(List<SyncedContact> contacts) {
@@ -202,18 +222,22 @@ class _ContactPickerBottomSheetState
         setState(() {
           _lookupResults = [];
           _isLookupLoading = false;
+          _lookupFailed = false;
         });
       }
       return;
     }
 
     if (mounted) {
-      setState(() => _isLookupLoading = true);
+      setState(() {
+        _isLookupLoading = true;
+        _lookupFailed = false;
+      });
     }
 
     try {
       final results = await ref
-          .read(joonaPayContactsServiceProvider)
+          .read(koridoContactsServiceProvider)
           .lookupKoridoUsers(trimmed);
       final localPhones = _contacts.map((contact) => contact.phone).toSet();
       final localUserIds = _contacts
@@ -233,6 +257,7 @@ class _ContactPickerBottomSheetState
         setState(() {
           _lookupResults = filteredResults;
           _isLookupLoading = false;
+          _lookupFailed = false;
         });
       }
     } on Object {
@@ -240,6 +265,7 @@ class _ContactPickerBottomSheetState
         setState(() {
           _lookupResults = [];
           _isLookupLoading = false;
+          _lookupFailed = true;
         });
       }
     }
@@ -314,14 +340,10 @@ class _ContactPickerBottomSheetState
                   )
                 : _permissionRequired
                 ? _buildPermissionRequest(colors)
-                : _filteredContacts.isEmpty && _lookupResults.isEmpty
-                ? Center(
-                    child: AppText(
-                      l10n.send_noContactsFound,
-                      variant: AppTextVariant.bodyMedium,
-                      color: colors.textSecondary,
-                    ),
-                  )
+                : _filteredContacts.isEmpty &&
+                      _lookupResults.isEmpty &&
+                      !_isLookupLoading
+                ? _buildEmptyState(colors)
                 : ListView(
                     padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
                     children: [
@@ -338,6 +360,59 @@ class _ContactPickerBottomSheetState
                   ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(ThemeColors colors) {
+    final query = _searchController.text.trim();
+    final isSearchingKorido = query.length >= 3;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              _lookupFailed
+                  ? Icons.cloud_off_outlined
+                  : Icons.person_search_outlined,
+              color: colors.textTertiary,
+              size: 34,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            AppText(
+              _lookupFailed
+                  ? _localizedText(
+                      en: 'Korido search is unavailable',
+                      fr: 'La recherche Korido est indisponible',
+                    )
+                  : isSearchingKorido
+                  ? _localizedText(
+                      en: 'No Korido account found',
+                      fr: 'Aucun compte Korido trouvé',
+                    )
+                  : AppLocalizations.of(context)!.send_noContactsFound,
+              variant: AppTextVariant.bodyMedium,
+              color: colors.textPrimary,
+              textAlign: TextAlign.center,
+              fontWeight: FontWeight.w600,
+            ),
+            if (_lookupFailed) ...[
+              const SizedBox(height: AppSpacing.xs),
+              AppText(
+                _localizedText(
+                  en: 'Try again in a moment, or enter the recipient manually.',
+                  fr: 'Réessayez dans un instant ou saisissez le destinataire manuellement.',
+                ),
+                variant: AppTextVariant.bodySmall,
+                color: colors.textSecondary,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -391,7 +466,10 @@ class _ContactPickerBottomSheetState
                     ? Icons.settings_outlined
                     : Icons.person_search_rounded,
                 isFullWidth: true,
-                onPressed: () => unawaited(_requestContactsPermission()),
+                isLoading: _isPermissionActionLoading,
+                onPressed: _isPermissionActionLoading
+                    ? null
+                    : () => unawaited(_requestContactsPermission()),
               ),
             ],
           ),

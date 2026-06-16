@@ -5,8 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// Pending Transfer Model
 class PendingTransfer {
   final String id;
+  final String? recipientId;
   final String recipientPhone;
   final String? recipientName;
+  final String? recipientUsername;
   final double amount;
   final String? description;
   final DateTime timestamp;
@@ -21,8 +23,10 @@ class PendingTransfer {
 
   const PendingTransfer({
     required this.id,
+    this.recipientId,
     required this.recipientPhone,
     this.recipientName,
+    this.recipientUsername,
     required this.amount,
     this.description,
     required this.timestamp,
@@ -32,10 +36,35 @@ class PendingTransfer {
     this.idempotencyKey,
   });
 
+  bool get canReplayWithAuthorization =>
+      pinToken != null &&
+      pinToken!.isNotEmpty &&
+      idempotencyKey != null &&
+      idempotencyKey!.isNotEmpty;
+
+  bool get hasRecipientIdentifier =>
+      recipientId?.trim().isNotEmpty == true ||
+      recipientPhone.trim().isNotEmpty ||
+      recipientUsername?.trim().isNotEmpty == true;
+
+  String get displayRecipientIdentifier {
+    final phone = recipientPhone.trim();
+    if (phone.isNotEmpty) return phone;
+
+    final username = recipientUsername?.trim();
+    if (username != null && username.isNotEmpty) {
+      return username.startsWith('@') ? username : '@$username';
+    }
+
+    return recipientId ?? '';
+  }
+
   Map<String, dynamic> toJson() => {
     'id': id,
+    'recipientId': recipientId,
     'recipientPhone': recipientPhone,
     'recipientName': recipientName,
+    'recipientUsername': recipientUsername,
     'amount': amount,
     'description': description,
     'timestamp': timestamp.toIso8601String(),
@@ -46,8 +75,10 @@ class PendingTransfer {
   factory PendingTransfer.fromJson(Map<String, dynamic> json) {
     return PendingTransfer(
       id: json['id'] as String,
-      recipientPhone: json['recipientPhone'] as String,
+      recipientId: json['recipientId'] as String?,
+      recipientPhone: json['recipientPhone'] as String? ?? '',
       recipientName: json['recipientName'] as String?,
+      recipientUsername: json['recipientUsername'] as String?,
       amount: (json['amount'] as num).toDouble(),
       description: json['description'] as String?,
       timestamp: DateTime.parse(json['timestamp'] as String),
@@ -63,25 +94,32 @@ class PendingTransfer {
 
   PendingTransfer copyWith({
     String? id,
+    String? recipientId,
     String? recipientPhone,
     String? recipientName,
+    String? recipientUsername,
     double? amount,
     String? description,
     DateTime? timestamp,
     TransferStatus? status,
     String? errorMessage,
+    bool clearErrorMessage = false,
     String? pinToken,
     String? idempotencyKey,
   }) {
     return PendingTransfer(
       id: id ?? this.id,
+      recipientId: recipientId ?? this.recipientId,
       recipientPhone: recipientPhone ?? this.recipientPhone,
       recipientName: recipientName ?? this.recipientName,
+      recipientUsername: recipientUsername ?? this.recipientUsername,
       amount: amount ?? this.amount,
       description: description ?? this.description,
       timestamp: timestamp ?? this.timestamp,
       status: status ?? this.status,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: clearErrorMessage
+          ? null
+          : errorMessage ?? this.errorMessage,
       pinToken: pinToken ?? this.pinToken,
       idempotencyKey: idempotencyKey ?? this.idempotencyKey,
     );
@@ -179,6 +217,7 @@ class PendingTransferQueue {
     String transferId,
     TransferStatus status, {
     String? errorMessage,
+    bool clearErrorMessage = false,
   }) async {
     final queue = getQueue();
     final index = queue.indexWhere((t) => t.id == transferId);
@@ -187,6 +226,7 @@ class PendingTransferQueue {
       queue[index] = queue[index].copyWith(
         status: status,
         errorMessage: errorMessage,
+        clearErrorMessage: clearErrorMessage,
       );
       await _saveQueue(queue);
     }
@@ -228,9 +268,7 @@ class PendingTransferQueue {
       const Duration(minutes: 2),
     );
     return getQueue().where((t) {
-      final hasReplayAuthorization =
-          t.pinToken != null && t.idempotencyKey != null;
-      if (!hasReplayAuthorization) return false;
+      if (!t.canReplayWithAuthorization) return false;
       return t.status == TransferStatus.pending ||
           t.status == TransferStatus.processing &&
               t.timestamp.isBefore(staleProcessingCutoff);

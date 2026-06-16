@@ -41,7 +41,7 @@ void main() {
     );
   });
 
-  testWidgets('terms acceptance sentence is only shown during sign-up', (
+  testWidgets('terms acceptance stays out of returning-user login', (
     tester,
   ) async {
     await _pumpLoginView(tester);
@@ -53,9 +53,7 @@ void main() {
     await tester.tap(find.text('Sign up'));
     await tester.pumpAndSettle();
 
-    expect(find.text('By continuing, you agree to our'), findsOneWidget);
-    expect(find.text('Terms of Service'), findsOneWidget);
-    expect(find.text('Privacy Policy'), findsOneWidget);
+    expect(find.byType(LoginView), findsNothing);
   });
 }
 

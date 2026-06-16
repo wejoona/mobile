@@ -13,11 +13,13 @@ class NotificationTile extends StatelessWidget {
     super.key,
     this.onTap,
     this.onDismiss,
+    this.isBusy = false,
   });
 
   final AppNotification notification;
   final VoidCallback? onTap;
   final VoidCallback? onDismiss;
+  final bool isBusy;
 
   IconData get _icon => switch (notification.type) {
     NotificationType.transfer ||
@@ -52,6 +54,11 @@ class NotificationTile extends StatelessWidget {
   };
 
   _NotificationTone _tone(ThemeColors colors) {
+    final severityTone = _severityTone(colors);
+    if (severityTone != null) {
+      return severityTone;
+    }
+
     switch (notification.type) {
       case NotificationType.transactionComplete:
       case NotificationType.transfer:
@@ -115,6 +122,31 @@ class NotificationTile extends StatelessWidget {
     }
   }
 
+  _NotificationTone? _severityTone(ThemeColors colors) {
+    switch (notification.severity) {
+      case 'critical':
+        return _NotificationTone(
+          accent: colors.error,
+          background: colors.errorBg,
+          foreground: colors.errorText,
+        );
+      case 'warning':
+        return _NotificationTone(
+          accent: colors.warning,
+          background: colors.warningBg,
+          foreground: colors.warningText,
+        );
+      case 'success':
+        return _NotificationTone(
+          accent: colors.success,
+          background: colors.successBg,
+          foreground: colors.successText,
+        );
+      default:
+        return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
@@ -138,7 +170,7 @@ class NotificationTile extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.circular(AppRadius.md),
-            onTap: onTap,
+            onTap: isBusy ? null : onTap,
             child: Container(
               decoration: BoxDecoration(
                 color: unread ? tone.background : colors.container,
@@ -189,7 +221,25 @@ class NotificationTile extends StatelessWidget {
                                   color: tone.accent.withValues(alpha: 0.22),
                                 ),
                               ),
-                              child: Icon(_icon, color: tone.accent, size: 21),
+                              child: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 160),
+                                child: isBusy
+                                    ? SizedBox(
+                                        key: const ValueKey('busy'),
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: tone.accent,
+                                        ),
+                                      )
+                                    : Icon(
+                                        _icon,
+                                        key: const ValueKey('icon'),
+                                        color: tone.accent,
+                                        size: 21,
+                                      ),
+                              ),
                             ),
                             const SizedBox(width: AppSpacing.md),
                             Expanded(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/features/settings/providers/security_settings_provider.dart';
 import 'package:usdc_wallet/features/settings/widgets/settings_section.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
@@ -45,7 +46,9 @@ class SecuritySettingsView extends ConsumerWidget {
                 SettingsItem(
                   leading: const Icon(Icons.timer_rounded),
                   title: l10n.security_autoLock,
-                  subtitle: l10n.security_autoLockMinutes(settings.autoLockMinutes),
+                  subtitle: l10n.security_autoLockMinutes(
+                    settings.autoLockMinutes,
+                  ),
                   onTap: () => _showAutoLockPicker(context, ref),
                 ),
               ],
@@ -80,12 +83,12 @@ class SecuritySettingsView extends ConsumerWidget {
                 SettingsItem(
                   leading: const Icon(Icons.key_rounded),
                   title: l10n.security_changePin,
-                  onTap: () {},
+                  onTap: () => context.push('/settings/pin'),
                 ),
                 SettingsItem(
                   leading: const Icon(Icons.devices_rounded),
                   title: l10n.security_manageDevices,
-                  onTap: () {},
+                  onTap: () => context.push('/settings/devices'),
                 ),
               ],
             ),

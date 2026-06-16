@@ -85,6 +85,44 @@ void main() {
     );
   });
 
+  test('reset PIN unlock does not depend on stale locked route', () {
+    final source = File(
+      'lib/features/pin/views/reset_pin_view.dart',
+    ).readAsStringSync();
+
+    final unlockBody = _methodBody(source, '_unlockAfterReset');
+
+    expect(unlockBody, contains('unlockAfterAccountRecovery()'));
+    expect(
+      unlockBody,
+      contains('authState.isAuthenticated'),
+      reason: 'trusted PIN reset should transition home once auth is active',
+    );
+    expect(
+      unlockBody,
+      contains('!sessionState.isLocked'),
+      reason: 'trusted PIN reset should clear the session lock state',
+    );
+    expect(
+      unlockBody,
+      contains('!authState.isLocked'),
+      reason: 'trusted PIN reset must also clear the auth lock state',
+    );
+    expect(
+      unlockBody,
+      isNot(contains('currentRoute')),
+      reason: 'trusted PIN reset should not fail because a lock route is stale',
+    );
+
+    final submitBody = _methodBody(source, '_submitReset');
+    expect(
+      submitBody,
+      contains('pinStateProvider.notifier'),
+      reason:
+          'trusted PIN reset should update in-memory PIN state, not only storage',
+    );
+  });
+
   test('session lock screen restores PIN and biometric if unlock stalls', () {
     final source = File(
       'lib/features/fsm_states/views/session_locked_view.dart',
@@ -95,9 +133,38 @@ void main() {
 
     expect(unlockBody, contains('Duration(seconds: 5)'));
     expect(unlockBody, contains('_restoreUnlockControls()'));
+    expect(source, contains('WidgetsBinding.instance.addObserver(this)'));
+    expect(source, contains('didChangeAppLifecycleState'));
+    expect(source, contains('biometric_usePinInstead'));
     expect(restoreBody, contains('_isUnlocking = false'));
     expect(restoreBody, contains("_pin = ''"));
     expect(restoreBody, contains('_checkBiometric()'));
+  });
+
+  test('stale scheduled lock navigation is ignored after unlock', () {
+    final source = File(
+      'lib/services/session/session_manager.dart',
+    ).readAsStringSync();
+
+    final showLockBody = _methodBody(source, '_showLockScreen');
+
+    expect(showLockBody, contains('ref.read(sessionServiceProvider)'));
+    expect(showLockBody, isNot(contains('!auth.isLocked')));
+    expect(
+      showLockBody,
+      contains('!session.isLocked'),
+      reason: 'session lock state is authoritative for lock navigation',
+    );
+    expect(showLockBody, contains("'/session-locked'"));
+
+    final redirectorSource = File(
+      'lib/router/app_redirector.dart',
+    ).readAsStringSync();
+    expect(redirectorSource, contains('sessionServiceProvider'));
+    expect(
+      redirectorSource,
+      contains('authState.isLocked || sessionState.isLocked'),
+    );
   });
 
   test('session refresh accepts the backend response envelope', () {

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
 import 'package:usdc_wallet/services/pin/pin_service.dart';
+import 'package:usdc_wallet/services/legal/legal_documents_service.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
@@ -116,7 +117,10 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     state = const OnboardingState(isLoading: false);
   }
 
-  Future<void> submitPhoneNumber([String? phone]) async {
+  Future<void> submitPhoneNumber({
+    String? phone,
+    bool acceptedTerms = false,
+  }) async {
     final phoneNumber = _normalizePhone(phone ?? state.phoneNumber);
     final countryCode = state.countryCode ?? 'CI';
 
@@ -136,9 +140,18 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     );
 
     try {
+      final legalDocuments = await ref
+          .read(legalDocumentsServiceProvider)
+          .getAllDocuments();
       await ref
           .read(auth.authProvider.notifier)
-          .register(phoneNumber, countryCode);
+          .register(
+            phoneNumber,
+            countryCode,
+            acceptedTerms: acceptedTerms,
+            termsVersion: legalDocuments.$1.version,
+            privacyVersion: legalDocuments.$2.version,
+          );
       final authState = ref.read(auth.authProvider);
       if (authState.status == auth.AuthStatus.otpSent) {
         state = state.copyWith(isLoading: false, clearError: true);
@@ -281,7 +294,7 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
   }
 
   Future<void> resendOtp() async {
-    await submitPhoneNumber();
+    await submitPhoneNumber(acceptedTerms: true);
     if (state.error == null) {
       state = state.copyWith(otpResendCountdown: 60);
     }

@@ -22,7 +22,8 @@ class SessionLockedView extends ConsumerStatefulWidget {
   ConsumerState<SessionLockedView> createState() => _SessionLockedViewState();
 }
 
-class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
+class _SessionLockedViewState extends ConsumerState<SessionLockedView>
+    with WidgetsBindingObserver {
   String _pin = '';
   bool _hasError = false;
   bool _biometricEnabled = false;
@@ -33,7 +34,21 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     unawaited(_checkBiometric());
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && !_isUnlocking) {
+      unawaited(_checkBiometric());
+    }
   }
 
   Future<void> _checkBiometric() async {
@@ -141,6 +156,13 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
                       l10n.pin_unlocked,
                       variant: AppTextVariant.titleMedium,
                       color: colors.textPrimary,
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                    AppButton(
+                      label: l10n.biometric_usePinInstead,
+                      icon: Icons.pin_rounded,
+                      onPressed: _restoreUnlockControls,
+                      variant: AppButtonVariant.secondary,
                     ),
                   ],
                 ),

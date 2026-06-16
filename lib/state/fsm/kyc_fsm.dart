@@ -176,10 +176,7 @@ class KycInProgress extends KycState {
 
 /// KYC submitted, awaiting review
 class KycPending extends KycState {
-  const KycPending({
-    required this.targetTier,
-    required this.submittedAt,
-  });
+  const KycPending({required this.targetTier, required this.submittedAt});
 
   final KycTier targetTier;
   final DateTime submittedAt;
@@ -231,10 +228,7 @@ class KycRejected extends KycState {
 
 /// KYC documents expired
 class KycExpired extends KycState {
-  const KycExpired({
-    required this.previousTier,
-    required this.expiredAt,
-  });
+  const KycExpired({required this.previousTier, required this.expiredAt});
 
   final KycTier previousTier;
   final DateTime expiredAt;
@@ -513,10 +507,7 @@ class KycFsm extends FsmDefinition<KycState, KycEvent> {
     };
   }
 
-  TransitionResult<KycState> _handleInitial(
-    KycInitial state,
-    KycEvent event,
-  ) {
+  TransitionResult<KycState> _handleInitial(KycInitial state, KycEvent event) {
     if (event is KycFetch) {
       return TransitionSuccess(
         const KycLoading(),
@@ -525,76 +516,14 @@ class KycFsm extends FsmDefinition<KycState, KycEvent> {
     }
     // Also handle KycStatusLoaded in initial state (e.g., from auth response)
     if (event is KycStatusLoaded) {
-      return switch (event.status) {
-        'none' => const TransitionSuccess(KycNone()),
-        'pending' => TransitionSuccess(
-            KycPending(
-              targetTier: event.tier,
-              submittedAt: DateTime.now(),
-            ),
-          ),
-        'verified' => TransitionSuccess(
-            KycVerified(
-              tier: event.tier,
-              verifiedAt: event.verifiedAt ?? DateTime.now(),
-              nextTier: event.tier < KycTier.tier2 ? KycTier.tier2 : null,
-            ),
-          ),
-        'rejected' => TransitionSuccess(
-            KycRejected(
-              targetTier: event.tier,
-              reason: event.rejectionReason ?? 'Unknown reason',
-              rejectedAt: DateTime.now(),
-            ),
-          ),
-        _ => const TransitionSuccess(KycNone()),
-      };
+      return _stateFromLoadedStatus(event);
     }
     return const TransitionNotApplicable();
   }
 
-  TransitionResult<KycState> _handleLoading(
-    KycLoading state,
-    KycEvent event,
-  ) {
+  TransitionResult<KycState> _handleLoading(KycLoading state, KycEvent event) {
     if (event is KycStatusLoaded) {
-      return switch (event.status) {
-        'none' => const TransitionSuccess(KycNone()),
-        'pending' => TransitionSuccess(
-            KycPending(
-              targetTier: event.tier,
-              submittedAt: DateTime.now(),
-            ),
-          ),
-        'verified' => TransitionSuccess(
-            KycVerified(
-              tier: event.tier,
-              verifiedAt: event.verifiedAt ?? DateTime.now(),
-              nextTier: event.tier < KycTier.tier2 ? KycTier.tier2 : null,
-            ),
-          ),
-        'rejected' => TransitionSuccess(
-            KycRejected(
-              targetTier: event.tier,
-              reason: event.rejectionReason ?? 'Unknown reason',
-              rejectedAt: DateTime.now(),
-            ),
-          ),
-        'expired' => TransitionSuccess(
-            KycExpired(
-              previousTier: event.tier,
-              expiredAt: DateTime.now(),
-            ),
-          ),
-        'manual_review' => TransitionSuccess(
-            KycManualReview(
-              targetTier: event.tier,
-              reason: event.rejectionReason ?? 'Additional verification required',
-              reviewStartedAt: DateTime.now(),
-            ),
-          ),
-        _ => const TransitionSuccess(KycNone()),
-      };
+      return _stateFromLoadedStatus(event);
     }
     if (event is KycFailed) {
       return TransitionSuccess(
@@ -620,33 +549,43 @@ class KycFsm extends FsmDefinition<KycState, KycEvent> {
     }
     // Handle status updates (e.g., after KYC submission)
     if (event is KycStatusLoaded) {
-      return switch (event.status) {
-        'none' => const TransitionSuccess(KycNone()),
-        'pending' => TransitionSuccess(
-            KycPending(
-              targetTier: event.tier,
-              submittedAt: DateTime.now(),
-            ),
-          ),
-        'verified' => TransitionSuccess(
-            KycVerified(
-              tier: event.tier,
-              verifiedAt: event.verifiedAt ?? DateTime.now(),
-              nextTier: event.tier < KycTier.tier2 ? KycTier.tier2 : null,
-            ),
-          ),
-        'rejected' => TransitionSuccess(
-            KycRejected(
-              targetTier: event.tier,
-              reason: event.rejectionReason ?? 'Unknown reason',
-              rejectedAt: DateTime.now(),
-            ),
-          ),
-        _ => const TransitionSuccess(KycNone()),
-      };
+      return _stateFromLoadedStatus(event);
     }
     return const TransitionNotApplicable();
   }
+
+  TransitionResult<KycState> _stateFromLoadedStatus(KycStatusLoaded event) =>
+      switch (event.status) {
+        'none' => const TransitionSuccess(KycNone()),
+        'pending' => TransitionSuccess(
+          KycPending(targetTier: event.tier, submittedAt: DateTime.now()),
+        ),
+        'verified' => TransitionSuccess(
+          KycVerified(
+            tier: event.tier,
+            verifiedAt: event.verifiedAt ?? DateTime.now(),
+            nextTier: event.tier < KycTier.tier2 ? KycTier.tier2 : null,
+          ),
+        ),
+        'rejected' => TransitionSuccess(
+          KycRejected(
+            targetTier: event.tier,
+            reason: event.rejectionReason ?? 'Unknown reason',
+            rejectedAt: DateTime.now(),
+          ),
+        ),
+        'expired' => TransitionSuccess(
+          KycExpired(previousTier: event.tier, expiredAt: DateTime.now()),
+        ),
+        'manual_review' => TransitionSuccess(
+          KycManualReview(
+            targetTier: event.tier,
+            reason: event.rejectionReason ?? 'Additional verification required',
+            reviewStartedAt: DateTime.now(),
+          ),
+        ),
+        _ => const TransitionSuccess(KycNone()),
+      };
 
   TransitionResult<KycState> _handleInProgress(
     KycInProgress state,
@@ -693,13 +632,13 @@ class KycFsm extends FsmDefinition<KycState, KycEvent> {
     }
     if (event is KycSubmitted) {
       return TransitionSuccess(
-        KycPending(
-          targetTier: state.targetTier,
-          submittedAt: DateTime.now(),
-        ),
+        KycPending(targetTier: state.targetTier, submittedAt: DateTime.now()),
         effects: [
           const NavigateEffect('/kyc/submitted'),
-          const NotifyEffect('KYC submitted for review', type: NotifyType.success),
+          const NotifyEffect(
+            'KYC submitted for review',
+            type: NotifyType.success,
+          ),
         ],
       );
     }
@@ -710,18 +649,13 @@ class KycFsm extends FsmDefinition<KycState, KycEvent> {
           reason: event.reason,
           reviewStartedAt: DateTime.now(),
         ),
-        effects: [
-          NotifyEffect(event.reason, type: NotifyType.warning),
-        ],
+        effects: [NotifyEffect(event.reason, type: NotifyType.warning)],
       );
     }
     return const TransitionNotApplicable();
   }
 
-  TransitionResult<KycState> _handlePending(
-    KycPending state,
-    KycEvent event,
-  ) {
+  TransitionResult<KycState> _handlePending(KycPending state, KycEvent event) {
     if (event is KycApproved) {
       return TransitionSuccess(
         KycVerified(
@@ -753,9 +687,7 @@ class KycFsm extends FsmDefinition<KycState, KycEvent> {
           reason: event.reason,
           reviewStartedAt: DateTime.now(),
         ),
-        effects: [
-          NotifyEffect(event.reason, type: NotifyType.warning),
-        ],
+        effects: [NotifyEffect(event.reason, type: NotifyType.warning)],
       );
     }
     if (event is KycFetch) {
@@ -783,12 +715,12 @@ class KycFsm extends FsmDefinition<KycState, KycEvent> {
     }
     if (event is KycExpiredEvent) {
       return TransitionSuccess(
-        KycExpired(
-          previousTier: state.tier,
-          expiredAt: DateTime.now(),
-        ),
+        KycExpired(previousTier: state.tier, expiredAt: DateTime.now()),
         effects: [
-          const NotifyEffect('KYC expired. Please renew your documents.', type: NotifyType.warning),
+          const NotifyEffect(
+            'KYC expired. Please renew your documents.',
+            type: NotifyType.warning,
+          ),
         ],
       );
     }
@@ -817,19 +749,14 @@ class KycFsm extends FsmDefinition<KycState, KycEvent> {
     return const TransitionNotApplicable();
   }
 
-  TransitionResult<KycState> _handleExpired(
-    KycExpired state,
-    KycEvent event,
-  ) {
+  TransitionResult<KycState> _handleExpired(KycExpired state, KycEvent event) {
     if (event is KycRenew) {
       return TransitionSuccess(
         KycInProgress(
           targetTier: state.previousTier,
           currentStep: KycStep.documentCapture, // Start from documents
         ),
-        effects: [
-          const NavigateEffect('/kyc/renew'),
-        ],
+        effects: [const NavigateEffect('/kyc/renew')],
       );
     }
     if (event is KycFetch) {
@@ -933,13 +860,13 @@ class KycFsm extends FsmDefinition<KycState, KycEvent> {
     }
     if (event is KycSubmitted) {
       return TransitionSuccess(
-        KycPending(
-          targetTier: state.targetTier,
-          submittedAt: DateTime.now(),
-        ),
+        KycPending(targetTier: state.targetTier, submittedAt: DateTime.now()),
         effects: [
           const NavigateEffect('/kyc/submitted'),
-          const NotifyEffect('KYC upgrade submitted for review', type: NotifyType.success),
+          const NotifyEffect(
+            'KYC upgrade submitted for review',
+            type: NotifyType.success,
+          ),
         ],
       );
     }

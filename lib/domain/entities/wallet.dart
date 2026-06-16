@@ -74,25 +74,38 @@ class WalletBalance {
       available: _walletAmount(json, const [
         'availableDecimal',
         'available_decimal',
+        'availableBalanceDecimal',
+        'available_balance_decimal',
         'balanceDecimal',
         'balance_decimal',
         'available',
+        'availableBalance',
+        'available_balance',
         'balance',
       ]),
       pending: _walletAmount(json, const [
         'pendingDecimal',
         'pending_decimal',
+        'pendingBalanceDecimal',
+        'pending_balance_decimal',
         'pending',
         'pendingBalance',
+        'pending_balance',
       ]),
       total: _walletAmount(json, const [
         'totalDecimal',
         'total_decimal',
+        'totalBalanceDecimal',
+        'total_balance_decimal',
         'balanceDecimal',
         'balance_decimal',
         'total',
+        'totalBalance',
+        'total_balance',
         'balance',
         'available',
+        'availableBalance',
+        'available_balance',
       ]),
     );
   }
@@ -102,7 +115,10 @@ double _walletAmount(Map<String, dynamic> json, List<String> keys) {
   for (final key in keys) {
     final value = json[key];
     if (value is num) return value.toDouble();
-    if (value is String) return double.tryParse(value) ?? 0;
+    if (value is String) {
+      final parsed = double.tryParse(value.trim());
+      if (parsed != null) return parsed;
+    }
   }
   return 0;
 }
@@ -133,6 +149,15 @@ class DepositChannel {
     required this.currency,
   });
 
+  String get feeLabel {
+    if (fee <= 0) return 'Free';
+    final normalizedFeeType = feeType.toLowerCase();
+    if (normalizedFeeType == 'percentage') {
+      return '${_formatCompactAmount(fee)}% fee';
+    }
+    return '${_formatCompactAmount(fee)} $currency fee';
+  }
+
   factory DepositChannel.fromJson(Map<String, dynamic> json) {
     final supportedCurrencies = json['supportedCurrencies'];
     final currency =
@@ -156,6 +181,16 @@ class DepositChannel {
       currency: currency,
     );
   }
+}
+
+String _formatCompactAmount(double value) {
+  if (value == value.roundToDouble()) {
+    return value.toStringAsFixed(0);
+  }
+  return value
+      .toStringAsFixed(2)
+      .replaceFirst(RegExp(r'0+$'), '')
+      .replaceFirst(RegExp(r'\.$'), '');
 }
 
 /// Exchange Rate

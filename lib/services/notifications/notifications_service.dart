@@ -1,13 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Notifications Service - mirrors backend NotificationsController
 class NotificationsService {
-  final Dio _dio;
-
   NotificationsService(this._dio);
+
+  final Dio _dio;
 
   /// GET /notifications
   Future<List<AppNotification>> getNotifications({
@@ -22,7 +22,8 @@ class NotificationsService {
       final data = _notificationItems(response.data);
 
       return data
-          .map((e) => AppNotification.fromJson(e as Map<String, dynamic>))
+          .whereType<Map>()
+          .map((e) => AppNotification.fromJson(Map<String, dynamic>.from(e)))
           .toList();
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -69,7 +70,7 @@ class NotificationsService {
     }
   }
 
-  /// POST /notifications/device-token - FCM/APNs token registration.
+  /// POST /notifications/push/token - FCM/APNs token registration.
   Future<void> registerFcmToken({
     required String token,
     required String platform,
@@ -80,7 +81,7 @@ class NotificationsService {
   }) async {
     try {
       await _dio.post(
-        '/notifications/device-token',
+        '/notifications/push/token',
         data: {
           'token': token,
           'platform': platform,
@@ -97,12 +98,10 @@ class NotificationsService {
     }
   }
 
-  /// DELETE /notifications/device-token/:token - Remove FCM/APNs token
+  /// DELETE /notifications/push/token - Remove FCM/APNs token
   Future<void> removeFcmToken(String token) async {
     try {
-      await _dio.delete(
-        '/notifications/device-token/${Uri.encodeComponent(token)}',
-      );
+      await _dio.delete('/notifications/push/token', data: {'token': token});
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -130,9 +129,9 @@ class NotificationsService {
 }
 
 /// Notifications Service Provider
-final notificationsServiceProvider = Provider<NotificationsService>((ref) {
-  return NotificationsService(ref.watch(dioProvider));
-});
+final notificationsServiceProvider = Provider<NotificationsService>(
+  (ref) => NotificationsService(ref.watch(dioProvider)),
+);
 
 List<dynamic> _notificationItems(Object? raw) {
   if (raw is List) {

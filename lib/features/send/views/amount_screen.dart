@@ -159,7 +159,7 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                               children: [
                                 Icon(
                                   Icons.account_balance_wallet_outlined,
-                                  color: colors.infoText,
+                                  color: colors.gold,
                                   size: 20,
                                 ),
                                 const SizedBox(width: AppSpacing.sm),
@@ -439,21 +439,22 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
     final limitsState = ref.read(limitsProvider);
     if (limitsState.limits != null) {
       final limits = limitsState.limits!;
-      if (limits.isDailyAtLimit) {
-        return '${l10n.limits_dailyLimitReached} ${formatUsdc(limits.dailyLimit)}';
-      }
-      if (limits.singleTransactionLimit > 0 &&
-          amount > limits.singleTransactionLimit) {
-        return '${localizedSendCopy(context, en: 'Maximum per transfer', fr: 'Maximum par transfert')}: ${formatUsdc(limits.singleTransactionLimit)}';
-      }
-      if (amount > limits.dailyRemaining) {
-        return '${l10n.limits_remaining}: ${formatUsdc(limits.dailyRemaining)}';
-      }
-      if (limits.isMonthlyAtLimit) {
-        return '${l10n.limits_monthlyLimitReached} ${formatUsdc(limits.monthlyLimit)}';
-      }
-      if (amount > limits.monthlyRemaining) {
-        return '${l10n.limits_remaining}: ${formatUsdc(limits.monthlyRemaining)}';
+      final hit = limits.limitHitByFor(TransactionLimitOperation.send, amount);
+      switch (hit) {
+        case 'single_transaction':
+          return '${localizedSendCopy(context, en: 'Maximum per transfer', fr: 'Maximum par transfert')}: ${formatUsdc(limits.singleTransactionLimit)}';
+        case 'daily':
+          if (limits.isDailyAtLimitFor(TransactionLimitOperation.send)) {
+            return '${l10n.limits_dailyLimitReached} ${formatUsdc(limits.dailyLimitFor(TransactionLimitOperation.send))}';
+          }
+          return '${l10n.limits_remaining}: ${formatUsdc(limits.dailyRemainingFor(TransactionLimitOperation.send))}';
+        case 'monthly':
+          if (limits.isMonthlyAtLimit) {
+            return '${l10n.limits_monthlyLimitReached} ${formatUsdc(limits.monthlyLimit)}';
+          }
+          return '${l10n.limits_remaining}: ${formatUsdc(limits.monthlyRemaining)}';
+        default:
+          break;
       }
     }
 
@@ -467,10 +468,8 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
         ? state.availableBalance
         : [
             state.availableBalance,
-            if (limits.singleTransactionLimit > 0)
-              limits.singleTransactionLimit,
-            if (limits.dailyRemaining > 0) limits.dailyRemaining,
-            if (limits.monthlyRemaining > 0) limits.monthlyRemaining,
+            if (limits.effectiveMaxFor(TransactionLimitOperation.send) > 0)
+              limits.effectiveMaxFor(TransactionLimitOperation.send),
           ].reduce((a, b) => a < b ? a : b);
     _amountController.text = maxAmount.toStringAsFixed(2);
     _updateDraftAmount(_amountController.text);

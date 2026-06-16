@@ -7,8 +7,10 @@ import 'package:usdc_wallet/domain/entities/expense.dart';
 import 'package:usdc_wallet/domain/entities/notification.dart';
 import 'package:usdc_wallet/domain/entities/notification_preferences.dart';
 import 'package:usdc_wallet/domain/entities/transaction.dart' as wallet_tx;
+import 'package:usdc_wallet/domain/entities/user.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
 import 'package:usdc_wallet/features/notifications/providers/notification_count_provider.dart'
     as notification_count;
 import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart'
@@ -16,11 +18,13 @@ import 'package:usdc_wallet/features/notifications/providers/notifications_provi
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 import 'package:usdc_wallet/features/payment_links/repositories/payment_links_repository.dart';
 import 'package:usdc_wallet/features/payment_links/providers/pay_link_provider.dart';
+import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
 import 'package:usdc_wallet/features/qr_payment/models/qr_data.dart';
 import 'package:usdc_wallet/features/qr_payment/providers/qr_payment_provider.dart';
 import 'package:usdc_wallet/features/settings/repositories/devices_repository.dart';
 import 'package:usdc_wallet/features/settings/repositories/sessions_repository.dart';
 import 'package:usdc_wallet/features/send/providers/send_provider.dart';
+import 'package:usdc_wallet/features/wallet/providers/wallet_actions_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/transaction_stats_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/withdraw_provider.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
@@ -51,6 +55,45 @@ class _CountryUserStateMachine extends UserStateMachine {
 
   @override
   UserState build() => UserState(countryCode: countryCode);
+}
+
+class _IdentityUserStateMachine extends UserStateMachine {
+  _IdentityUserStateMachine({required this.userId, required this.phone});
+
+  final String userId;
+  final String phone;
+
+  @override
+  UserState build() => UserState(
+    status: AuthStatus.authenticated,
+    userId: userId,
+    phone: phone,
+    countryCode: 'CI',
+  );
+}
+
+class _QuietAuthNotifier extends auth.AuthNotifier {
+  @override
+  auth.AuthState build() =>
+      const auth.AuthState(status: auth.AuthStatus.authenticated);
+}
+
+class _AuthWithUserNotifier extends auth.AuthNotifier {
+  @override
+  auth.AuthState build() => auth.AuthState(
+    status: auth.AuthStatus.authenticated,
+    user: User(
+      id: 'user_self',
+      phone: '+2250748805663',
+      username: 'SelfHandle',
+      countryCode: 'CI',
+      isPhoneVerified: true,
+      role: UserRole.user,
+      status: UserStatus.active,
+      createdAt: DateTime.parse('2026-06-04T09:00:00.000Z'),
+      updatedAt: DateTime.parse('2026-06-04T09:00:00.000Z'),
+    ),
+  );
 }
 
 void main() {
@@ -114,6 +157,40 @@ void main() {
         'targetCurrency': 'USD',
         'amount': 1000.0,
         'direction': 'buy',
+      });
+    });
+
+    test('wallet KYC facade uses canonical KYC routes', () async {
+      final dio = MockDio()
+        ..queueResponse({'status': 'pending', 'canResubmit': false})
+        ..queueResponse({'status': 'pending_verification'});
+      final service = WalletService(dio);
+
+      await service.getKycStatus();
+      await service.submitKyc(
+        firstName: 'Ben',
+        lastName: 'Ouattara',
+        dateOfBirth: '1990-01-01',
+        country: 'CI',
+        idType: 'passport',
+        idNumber: 'A1234567',
+      );
+
+      expect(dio.requestHistory.map((request) => request.method), [
+        'GET',
+        'POST',
+      ]);
+      expect(dio.requestHistory.map((request) => request.path), [
+        '/kyc/status',
+        '/kyc/submit',
+      ]);
+      expect(dio.requestHistory.last.data, {
+        'firstName': 'Ben',
+        'lastName': 'Ouattara',
+        'dateOfBirth': '1990-01-01',
+        'country': 'CI',
+        'idType': 'passport',
+        'idNumber': 'A1234567',
       });
     });
 
@@ -216,6 +293,63 @@ void main() {
       },
     );
 
+    test(
+      'wallet balance parser prefers USDC over declared wallet currency',
+      () {
+        final response = WalletBalanceResponse.fromJson({
+          'walletId': 'wallet_1',
+          'walletAddress': '0xabc',
+          'currency': 'USD',
+          'balances': [
+            {'currency': 'USD', 'available': 0, 'pending': 0, 'total': 0},
+            {
+              'currency': 'USDC',
+              'availableDecimal': '31.500000',
+              'pendingDecimal': '0.500000',
+              'totalDecimal': '32.000000',
+            },
+          ],
+        });
+
+        expect(response.availableBalance, 31.5);
+        expect(response.totalBalance, 32);
+      },
+    );
+
+    test('wallet balance parser accepts keyed balance maps', () {
+      final response = WalletBalanceResponse.fromJson({
+        'walletId': 'wallet_1',
+        'walletAddress': '0xabc',
+        'currency': 'USDC',
+        'balances': {
+          'usd': {'available': '0', 'pending': '0', 'total': '0'},
+          'usdc': {
+            'availableDecimal': '42.750000',
+            'pendingDecimal': '1.250000',
+            'totalDecimal': '44.000000',
+          },
+        },
+      });
+
+      expect(response.balances, hasLength(2));
+      expect(response.availableBalance, 42.75);
+      expect(response.totalBalance, 44);
+    });
+
+    test(
+      'home balance keeps rendering cached balance during degraded errors',
+      () {
+        final source = File(
+          'lib/features/wallet/views/wallet_home_screen.dart',
+        ).readAsStringSync();
+
+        expect(
+          source,
+          contains('if (walletState.hasError && !walletState.hasBalanceData)'),
+        );
+      },
+    );
+
     test('withdraw result accepts backend envelope and id aliases', () {
       final result = WithdrawResult.fromJson({
         'data': {
@@ -231,6 +365,119 @@ void main() {
       expect(result.reference, 'yc_ref_123');
       expect(result.instructions, 'Withdrawal submitted');
     });
+
+    test('withdraw fee preview uses backend withdrawal quote', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'amount': 2500,
+          'fee': 125,
+          'totalAmount': 2625,
+          'fiatAmount': 15000,
+          'currency': 'XOF',
+          'providerCode': 'OMCI',
+          'commercialFeeSource': 'commercial_terms',
+        });
+      final container = ProviderContainer(
+        overrides: [dioProvider.overrideWithValue(dio)],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(withdrawProvider.notifier)
+        ..selectMethod(WithdrawMethod.orangeMoney);
+      await notifier.setAmount(25);
+
+      final request = dio.requestHistory.single;
+      expect(request.method, 'POST');
+      expect(request.path, '/withdrawals/quote');
+      expect(request.data, {
+        'amount': 2500,
+        'providerCode': 'OMCI',
+        'currency': 'XOF',
+      });
+      expect(container.read(withdrawProvider).fee, 1.25);
+    });
+
+    test('wallet actions withdrawal fee uses backend options', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'country': 'CI',
+          'currency': 'USDC',
+          'options': [
+            {
+              'id': 'mtn_momo_ci',
+              'type': 'mobile_money',
+              'providerCode': 'MTNCI',
+              'fee': 2,
+              'feeType': 'percentage',
+              'minFee': 1,
+              'maxFee': 100,
+              'enabled': true,
+            },
+          ],
+        });
+      final container = ProviderContainer(
+        overrides: [dioProvider.overrideWithValue(dio)],
+      );
+      addTearDown(container.dispose);
+
+      final fee = await container
+          .read(walletActionsProvider)
+          .estimateFee(amount: 250, type: 'withdrawal', providerCode: 'MTNCI');
+
+      final request = dio.requestHistory.single;
+      expect(request.method, 'GET');
+      expect(request.path, '/wallet/withdraw/options');
+      expect(request.queryParameters, {'country': 'CI'});
+      expect(fee, 5);
+    });
+
+    test(
+      'withdrawal options provider parses backend-owned mobile rails',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'country': 'CI',
+            'currency': 'USDC',
+            'options': [
+              {
+                'id': 'wave_ci',
+                'name': 'Wave CI',
+                'type': 'mobile_money',
+                'providerCode': 'WAVECI',
+                'country': 'CI',
+                'currency': 'USDC',
+                'payoutCurrency': 'XOF',
+                'minAmount': 1,
+                'maxAmount': 5000,
+                'fee': 2,
+                'feeType': 'percentage',
+                'minFee': 1,
+                'maxFee': 100,
+                'estimatedArrival': '5-15 minutes',
+                'enabled': true,
+              },
+            ],
+          });
+        final container = ProviderContainer(
+          overrides: [dioProvider.overrideWithValue(dio)],
+        );
+        addTearDown(container.dispose);
+
+        final options = await container.read(
+          withdrawalOptionsProvider('CI').future,
+        );
+
+        final request = dio.requestHistory.single;
+        expect(request.method, 'GET');
+        expect(request.path, '/wallet/withdraw/options');
+        expect(request.queryParameters, {'country': 'CI'});
+        expect(options, hasLength(1));
+        expect(options.single.name, 'Wave CI');
+        expect(options.single.providerCode, 'WAVECI');
+        expect(options.single.isMobileMoney, isTrue);
+        expect(options.single.payoutCurrency, 'XOF');
+      },
+    );
 
     test('wallet crypto withdraw uses guarded backend route', () async {
       final dio = MockDio()
@@ -445,6 +692,30 @@ void main() {
       expect(notifications.single.isRead, isFalse);
     });
 
+    test('notification list accepts loosely typed JSON maps', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'notifications': <Map<dynamic, dynamic>>[
+            {
+              'id': 'notif_loose',
+              'type': 'transfer_received',
+              'title': 'Payment received',
+              'body': 'You received USDC.',
+              'referenceType': 'transaction',
+              'referenceId': 'txn_loose',
+              'createdAt': '2026-06-04T10:00:00.000Z',
+            },
+          ],
+        });
+      final service = NotificationsService(dio);
+
+      final notifications = await service.getNotifications();
+
+      expect(notifications.single.id, 'notif_loose');
+      expect(notifications.single.transactionId, 'txn_loose');
+      expect(notifications.single.navigationRoute, '/transactions/txn_loose');
+    });
+
     test('notification actions use deployed backend verbs', () async {
       final dio = MockDio()
         ..queueResponse({'success': true})
@@ -512,6 +783,37 @@ void main() {
       },
     );
 
+    test('notifications pull refresh reloads feed and unread count', () {
+      final notificationsViewSource = File(
+        'lib/features/notifications/views/notifications_view.dart',
+      ).readAsStringSync();
+      final refreshBody = RegExp(
+        r'Future<void> _refreshNotifications\(\) async \{([\s\S]*?)\n  \}',
+      ).firstMatch(notificationsViewSource)!.group(1)!;
+
+      expect(
+        notificationsViewSource,
+        isNot(
+          contains(
+            'onRefresh: () => ref.refresh(notificationsProvider.future)',
+          ),
+        ),
+        reason:
+            'pull refresh should go through the shared refresh helper so unread count stays aligned',
+      );
+      expect(
+        RegExp(
+          r'onRefresh: _refreshNotifications',
+        ).allMatches(notificationsViewSource),
+        hasLength(2),
+      );
+      expect(refreshBody, contains('refresh(notificationsProvider.future'));
+      expect(
+        refreshBody,
+        contains('refresh(unreadNotificationCountProvider.future'),
+      );
+    });
+
     test('push token registration uses deployed mobile SDK route', () async {
       final dio = MockDio()..queueResponse({'message': 'ok'});
       final service = NotificationsService(dio);
@@ -527,7 +829,7 @@ void main() {
 
       final request = dio.requestHistory.single;
       expect(request.method, 'POST');
-      expect(request.path, '/notifications/device-token');
+      expect(request.path, '/notifications/push/token');
       expect(request.data, {
         'token': 'fcm-token-1',
         'platform': 'ios',
@@ -536,6 +838,20 @@ void main() {
         'appVersion': '1.0.0',
         'osVersion': 'iOS 26.0',
       });
+    });
+
+    test('runtime push lifecycle uses canonical SDK push routes', () {
+      final source = File(
+        'lib/services/notifications/push_notification_service.dart',
+      ).readAsStringSync();
+
+      expect(source, contains('registerFcmToken('));
+      expect(source, contains('removeFcmToken('));
+      expect(source, isNot(contains("'/notifications/device-token'")));
+      expect(
+        source,
+        isNot(contains("'/notifications/device-token/\${Uri.encodeComponent")),
+      );
     });
 
     test(
@@ -670,6 +986,27 @@ void main() {
       },
     );
 
+    test('notification newsletter interest is best-effort after save', () {
+      final source = File(
+        'lib/features/settings/views/notification_settings_view.dart',
+      ).readAsStringSync();
+
+      expect(source, contains('updatePreferences(_localPrefs!)'));
+      expect(source, contains('unawaited('));
+      expect(source, contains('_syncNewsletterInterest('));
+      expect(
+        source,
+        contains("status: emailMarketing ? 'subscribed' : 'unsubscribed'"),
+      );
+      expect(source, contains("'enabled': emailMarketing"));
+      expect(
+        source,
+        contains('do not roll back'),
+        reason:
+            'newsletter waitlist sync must not make saved notification settings look failed',
+      );
+    });
+
     test('feature subscriptions include feature and source context', () async {
       final dio = MockDio()
         ..queueResponse({
@@ -717,6 +1054,59 @@ void main() {
       expect(subscription.featureKey, 'virtual_card');
       expect(subscription.isActive, isTrue);
     });
+
+    test(
+      'authenticator 2FA is subscribed as backend-enforced, not local-only',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'id': 'sub_2',
+            'featureKey': 'two_factor_auth',
+            'source': 'settings_security',
+            'status': 'subscribed',
+            'metadata': {
+              'requestedFeature': 'backend_enforced_mfa',
+              'requiresBackendEnforcement': true,
+            },
+            'isActive': true,
+          });
+        final service = FeatureSubscriptionService(dio);
+
+        await service.subscribe(
+          const FeatureSubscriptionRequest(
+            featureKey: 'two_factor_auth',
+            source: 'settings_security',
+            phone: '+2250748805663',
+            featureName: 'Authenticator app 2FA',
+            requestedFeature: 'backend_enforced_mfa',
+            countryCode: 'CI',
+            locale: 'fr-CI',
+            platform: 'ios',
+            appVersion: '1.0.0+1',
+            metadata: {
+              'surface': 'settings_security',
+              'currentProtections': [
+                'transaction_pin',
+                'device_biometrics_optional',
+              ],
+              'requiresBackendEnforcement': true,
+            },
+          ),
+        );
+
+        final request = dio.requestHistory.single;
+        final data = Map<String, dynamic>.from(request.data as Map);
+        final metadata = Map<String, dynamic>.from(data['metadata'] as Map);
+        expect(request.method, 'POST');
+        expect(request.path, '/feature-subscriptions');
+        expect(data['featureKey'], 'two_factor_auth');
+        expect(data['source'], 'settings_security');
+        expect(data['requestedFeature'], 'backend_enforced_mfa');
+        expect(metadata, containsPair('requiresBackendEnforcement', true));
+        expect(metadata, isNot(contains('totpSecret')));
+        expect(metadata, isNot(contains('enabledLocally')));
+      },
+    );
 
     test(
       'feature subscription service accepts backend data envelope',
@@ -913,6 +1303,8 @@ void main() {
           scannedData: QrPaymentData(
             type: 'merchant',
             merchantId: 'merchant_1',
+            merchantMcc: '5812',
+            merchantCategory: 'restaurant',
           ),
           rawData: qrData,
           pinToken: 'pin_token',
@@ -925,6 +1317,84 @@ void main() {
         expect(dio.requestHistory.single.data, {
           'qrData': qrData,
           'amount': 12.5,
+          'merchantId': 'merchant_1',
+          'merchantMcc': '5812',
+          'merchantCategory': 'restaurant',
+        });
+      },
+    );
+
+    test(
+      'merchant service preserves MCC in profile and receipt contracts',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'merchantId': 'merchant_1',
+            'businessName': 'Cafe Abidjan SARL',
+            'displayName': 'Cafe Abidjan',
+            'category': 'restaurant',
+            'mcc': '5812',
+            'country': 'CI',
+            'walletId': 'wallet_1',
+            'qrCode': 'joonapay://pay?v=1&t=static&m=merchant_1',
+            'isVerified': true,
+            'feePercent': 1.5,
+            'dailyLimit': 10000,
+            'monthlyLimit': 100000,
+            'dailyVolume': 125,
+            'monthlyVolume': 900,
+            'remainingDailyLimit': 9875,
+            'remainingMonthlyLimit': 99100,
+            'totalTransactions': 12,
+            'status': 'active',
+            'createdAt': '2026-06-14T09:00:00.000Z',
+            'updatedAt': '2026-06-14T09:00:00.000Z',
+          })
+          ..queueResponse({
+            'paymentId': 'pay_1',
+            'reference': 'MP-1',
+            'merchantId': 'merchant_1',
+            'merchantName': 'Cafe Abidjan',
+            'amount': 12.5,
+            'fee': 0.19,
+            'netAmount': 12.31,
+            'currency': 'USDC',
+            'status': 'completed',
+            'createdAt': '2026-06-14T09:05:00.000Z',
+            'receipt': {
+              'transactionId': 'pay_1',
+              'merchantName': 'Cafe Abidjan',
+              'merchantCategory': 'restaurant',
+              'merchantMcc': '5812',
+              'amount': 12.5,
+              'fee': 0.19,
+              'total': 12.5,
+              'timestamp': '2026-06-14T09:05:00.000Z',
+              'reference': 'MP-1',
+            },
+          });
+
+        final service = MerchantService(dio);
+        final merchant = await service.getMyMerchant();
+        final payment = await service.processPayment(
+          qrData: merchant.qrCode,
+          pinToken: 'pin_token',
+          idempotencyKey: 'idem_merchant',
+          amount: 12.5,
+          merchantId: merchant.merchantId,
+          merchantMcc: merchant.mcc,
+          merchantCategory: merchant.category,
+        );
+
+        expect(merchant.mcc, '5812');
+        expect(payment.receipt.merchantMcc, '5812');
+        expect(dio.requestHistory[1].path, '/merchants/pay');
+        expect(dio.requestHistory[1].data, {
+          'qrData': merchant.qrCode,
+          'amount': 12.5,
+          'merchantId': 'merchant_1',
+          'merchantMcc': '5812',
+          'merchantCategory': 'restaurant',
         });
       },
     );
@@ -1116,6 +1586,30 @@ void main() {
     });
 
     test(
+      'transaction parser preserves backend support and provider references',
+      () {
+        final transaction = wallet_tx.Transaction.fromJson({
+          'id': 'tx_refs',
+          'walletId': 'wallet_1',
+          'type': 'deposit',
+          'status': 'completed',
+          'amountDecimal': '42.500000',
+          'currency': 'USDC',
+          'externalReference': 'yc_dep_123',
+          'supportReference': 'SUP-123',
+          'ledgerReference': 'blnk_tx_456',
+          'providerReference': 'yc_ref_789',
+          'createdAt': '2026-06-04T12:00:00.000Z',
+        });
+
+        expect(transaction.reference, 'yc_dep_123');
+        expect(transaction.supportReference, 'SUP-123');
+        expect(transaction.ledgerReference, 'blnk_tx_456');
+        expect(transaction.providerReference, 'yc_ref_789');
+      },
+    );
+
+    test(
       'transaction parser normalizes backend status and transfer aliases',
       () {
         final settledTransfer = wallet_tx.Transaction.fromJson({
@@ -1128,7 +1622,8 @@ void main() {
           'direction': 'DEBIT',
           'reference': 'INT-TXSETTLED',
           'note': 'Lunch',
-          'toPhone': '+2250748805663',
+          'counterpartyName': 'Awa Korido',
+          'counterpartyPhone': '+2250748805663',
           'createdAt': '2026-06-04T12:00:00.000Z',
         });
         final failedTransfer = wallet_tx.Transaction.fromJson({
@@ -1147,6 +1642,10 @@ void main() {
         expect(settledTransfer.isDebit, isTrue);
         expect(settledTransfer.reference, 'INT-TXSETTLED');
         expect(settledTransfer.description, 'Lunch');
+        expect(settledTransfer.counterpartyName, 'Awa Korido');
+        expect(settledTransfer.counterpartyPhone, '+2250748805663');
+        expect(settledTransfer.displayCounterpartyName, 'Awa Korido');
+        expect(settledTransfer.displayCounterpartyPhone, '+2250748805663');
         expect(settledTransfer.recipientPhone, '+2250748805663');
         expect(failedTransfer.type, TransactionType.transferInternal);
         expect(failedTransfer.status, TransactionStatus.failed);
@@ -1419,18 +1918,17 @@ void main() {
     );
 
     test(
-      'session repository revokes all sessions through sessions API',
+      'session repository delegates logout-all to auth token invalidation API',
       () async {
         final dio = MockDio()..queueResponse({'success': true});
         final repository = SessionsRepository(dio);
 
         await repository.logoutAllDevices();
 
-        expect(dio.requestHistory.single.method, 'DELETE');
-        expect(dio.requestHistory.single.path, '/sessions');
-        expect(dio.requestHistory.single.data, {
-          'reason': 'user_logout_all_devices',
-        });
+        expect(dio.requestHistory, hasLength(1));
+        expect(dio.requestHistory.single.method, 'POST');
+        expect(dio.requestHistory.single.path, '/auth/logout-all');
+        expect(dio.requestHistory.single.data, const <String, dynamic>{});
       },
     );
 
@@ -1505,6 +2003,66 @@ void main() {
       },
     );
 
+    test('contact list sync uses the active market phone prefix', () async {
+      final service = ContactsService(MockSecureStorage());
+      final phoneHash = service.hashPhone(
+        '(415) 555-0101',
+        defaultCountryPrefix: '1',
+      );
+      final contact = SyncedContact(
+        id: 'local_us',
+        name: 'Awa US',
+        phone: '(415) 555-0101',
+      );
+      final dio = MockDio()
+        ..queueResponse({
+          'matches': [
+            {
+              'phoneHash': phoneHash,
+              'userId': 'user_us',
+              'displayName': 'Awa US',
+            },
+          ],
+        });
+
+      final contacts = await service.getKoridoContacts(dio, [
+        contact,
+      ], defaultCountryPrefix: '1');
+
+      expect(dio.requestHistory.single.path, '/contacts/sync');
+      expect(dio.requestHistory.single.data, {
+        'phoneHashes': [phoneHash],
+      });
+      expect(contacts.single.isKoridoUser, isTrue);
+      expect(contacts.single.joonaPayUserId, 'user_us');
+    });
+
+    test('contact sync summary checks secondary saved phone numbers', () async {
+      final service = ContactsService(MockSecureStorage());
+      final primaryHash = service.hashPhone('+2250101010101');
+      final koridoHash = service.hashPhone('+2250748805663');
+      final contact = SyncedContact(
+        id: 'local_1',
+        name: 'Awa Local',
+        phone: '+2250101010101',
+        lookupPhones: const ['+2250101010101', '+2250748805663'],
+      );
+      final dio = MockDio()
+        ..queueResponse({
+          'matches': [
+            {'phoneHash': koridoHash, 'userId': 'user_1'},
+          ],
+        });
+
+      final result = await service.syncContactsWithKorido(dio, [contact]);
+
+      expect(result.success, isTrue);
+      expect(result.joonaPayUsersFound, 1);
+      expect(dio.requestHistory.single.path, '/contacts/sync');
+      final body = dio.requestHistory.single.data as Map<String, dynamic>;
+      expect(body['phoneHashes'], unorderedEquals([primaryHash, koridoHash]));
+    });
+
     test(
       'contact sync batches large phone books for backend max size',
       () async {
@@ -1575,8 +2133,9 @@ void main() {
               'matches': [
                 {
                   'phoneHash': phoneHash,
-                  'userId': 'user_123',
-                  'displayName': 'Awa Korido',
+                  'koridoUserId': 'user_123',
+                  'firstName': 'Awa',
+                  'lastName': 'Korido',
                 },
               ],
             },
@@ -1645,6 +2204,88 @@ void main() {
     );
 
     test(
+      'send recipient validation rejects current user before lookup',
+      () async {
+        final contactsService = ContactsService(MockSecureStorage());
+        final dio = MockDio();
+        final container = ProviderContainer(
+          overrides: [
+            dioProvider.overrideWithValue(dio),
+            contactsServiceProvider.overrideWithValue(contactsService),
+            userStateMachineProvider.overrideWith(
+              () => _IdentityUserStateMachine(
+                userId: 'user_self',
+                phone: '+2250748805663',
+              ),
+            ),
+            auth.authProvider.overrideWith(_QuietAuthNotifier.new),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await container
+            .read(sendMoneyProvider.notifier)
+            .setRecipient('+2250748805663');
+
+        final state = container.read(sendMoneyProvider);
+        expect(dio.requestHistory, isEmpty);
+        expect(state.recipient, isNull);
+        expect(state.error, 'recipient_is_current_user');
+      },
+    );
+
+    test('known Korido recipient rejects current user identity', () async {
+      final container = ProviderContainer(
+        overrides: [
+          userStateMachineProvider.overrideWith(
+            () => _IdentityUserStateMachine(
+              userId: 'user_self',
+              phone: '+2250748805663',
+            ),
+          ),
+          auth.authProvider.overrideWith(_QuietAuthNotifier.new),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container
+          .read(sendMoneyProvider.notifier)
+          .setKnownKoridoRecipient(
+            phoneNumber: '+2250700000000',
+            userId: 'user_self',
+            username: 'self',
+            name: 'My account',
+          );
+
+      final state = container.read(sendMoneyProvider);
+      expect(state.recipient, isNull);
+      expect(state.error, 'recipient_is_current_user');
+    });
+
+    test(
+      'known Korido recipient rejects current username case-insensitively',
+      () async {
+        final container = ProviderContainer(
+          overrides: [
+            auth.authProvider.overrideWith(_AuthWithUserNotifier.new),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await container
+            .read(sendMoneyProvider.notifier)
+            .setKnownKoridoRecipient(
+              username: '@selfhandle',
+              name: 'My account',
+            );
+
+        final state = container.read(sendMoneyProvider);
+        expect(state.recipient, isNull);
+        expect(state.error, 'recipient_is_current_user');
+      },
+    );
+
+    test(
       'send recipient validation fails closed when contact sync is unavailable',
       () async {
         final contactsService = ContactsService(MockSecureStorage());
@@ -1699,19 +2340,28 @@ void main() {
         getDeviceContactsBody,
         isNot(contains('Permission.contacts.request')),
       );
-      expect(syncContactsBody, contains('Permission.contacts.status'));
+      expect(
+        syncContactsBody,
+        contains('contactsService.hasContactsPermission'),
+      );
       expect(syncContactsBody, contains('defaultCountryPrefix'));
       expect(syncContactsBody, contains('syncPhoneHashes'));
       expect(syncContactsBody, isNot(contains('await requestPermission')));
       expect(syncContactsBody, isNot(contains('Permission.contacts.request')));
+      expect(syncContactsBody, isNot(contains('Permission.contacts.status')));
       expect(
         requestPermissionBody,
         contains('contactsService.requestContactsPermission'),
       );
       expect(
         requestPermissionBody,
+        contains('contactsPermissionRequiresSettings'),
+      );
+      expect(
+        requestPermissionBody,
         isNot(contains('Permission.contacts.request')),
       );
+      expect(contactSyncProviderSource, isNot(contains('permission_handler')));
 
       final contactActionsSource = File(
         'lib/features/contacts/providers/contacts_provider.dart',
@@ -1721,6 +2371,17 @@ void main() {
         contains('defaultCountryPrefix: _defaultCountryPrefix'),
         reason:
             'manual contact sync must hash local numbers with the active market prefix',
+      );
+
+      final contactsListSource = File(
+        'lib/features/contacts/views/contacts_list_screen.dart',
+      ).readAsStringSync();
+      expect(contactsListSource, contains('syncContacts()'));
+      expect(
+        contactsListSource,
+        isNot(contains('_requestPermissionAndSync(showSettingsDialog: false)')),
+        reason:
+            'screen entry should show the permission card; the OS prompt belongs to the explicit Allow action',
       );
     });
 
@@ -1752,31 +2413,37 @@ void main() {
       expect(users.single.avatarUrl, 'https://cdn.example/avatar.png');
     });
 
-    test('contact lookup keeps masked backend users discoverable', () async {
-      final dio = MockDio()
-        ..queueResponse({
-          'users': [
-            {
-              'userId': 'user_masked',
-              'displayName': 'Awa Masked',
-              'phone': '+22507****63',
-              'avatarUrl': null,
-              'isKoridoUser': true,
-            },
-          ],
-          'total': 1,
-        });
-      final service = KoridoContactsService(dio);
+    test(
+      'contact lookup keeps masked backend users selectable by id',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'users': [
+              {
+                'userId': 'user_masked',
+                'displayName': 'Awa Masked',
+                'phone': '+22507****63',
+                'avatarUrl': null,
+                'isKoridoUser': true,
+              },
+            ],
+            'total': 1,
+          });
+        final service = KoridoContactsService(dio);
 
-      final users = await service.lookupKoridoUsers('awa');
+        final users = await service.lookupKoridoUsers('awa');
 
-      expect(dio.requestHistory.single.path, '/contacts/lookup');
-      expect(users.single.id, 'user_masked');
-      expect(users.single.joonaPayUserId, 'user_masked');
-      expect(users.single.name, 'Awa Masked');
-      expect(users.single.phone, isEmpty);
-      expect(users.single.isKoridoUser, isTrue);
-    });
+        expect(dio.requestHistory.single.path, '/contacts/lookup');
+        expect(users.single.id, 'user_masked');
+        expect(users.single.joonaPayUserId, 'user_masked');
+        expect(users.single.name, 'Awa Masked');
+        expect(users.single.phone, isEmpty);
+        expect(users.single.maskedPhone, '+22507****63');
+        expect(users.single.displayIdentifier, '+22507****63');
+        expect(users.single.canSendInKorido, isTrue);
+        expect(users.single.isKoridoUser, isTrue);
+      },
+    );
 
     test('post-transaction refresh invalidates recipient lists', () {
       final realtimeSource = File(

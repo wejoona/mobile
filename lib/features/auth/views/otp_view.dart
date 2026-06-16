@@ -102,6 +102,11 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
     final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authProvider);
     final isBusy = authState.isLoading || _isSubmittingOtp;
+    final otpCueLabel = _localizedOtpCopy(
+      context,
+      en: 'Code accepted. Securing your session...',
+      fr: 'Code accepté. Sécurisation de la session...',
+    );
     // Biometric quick-login: show fingerprint button if both available and enabled
     final biometricAvailable =
         ref.watch(biometricAvailableProvider).value ?? false;
@@ -135,131 +140,131 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
     return Scaffold(
       backgroundColor: colors.canvas,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.screenPadding,
-          ),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: IntrinsicHeight(
-                    child: Column(
-                      children: [
-                        const SizedBox(height: AppSpacing.lg),
-                        AuthTopBar(onBack: () => context.pop()),
-                        const SizedBox(height: AppSpacing.xl),
-                        AuthScreenHeader(
-                          appName: l10n.appName,
-                          title: l10n.auth_secureLogin,
-                          subtitle: l10n.auth_otpMessage(
-                            authState.phone ?? "your phone",
-                          ),
-                        ),
-
-                        // SMS autofill indicator
-                        if (_isListeningForSms)
-                          Padding(
-                            padding: const EdgeInsets.only(top: AppSpacing.sm),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.sms,
-                                  size: 16,
-                                  color: colors.gold.withValues(alpha: 0.7),
-                                ),
-                                const SizedBox(width: AppSpacing.xs),
-                                AppText(
-                                  l10n.auth_waitingForSms,
-                                  variant: AppTextVariant.bodySmall,
-                                  color: colors.gold.withValues(alpha: 0.7),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                        const SizedBox(height: AppSpacing.xxxl),
-
-                        // PIN Dots
-                        PinDots(
-                          length: 6,
-                          filled: _otp.length,
-                          error: _hasError,
-                        ),
-
-                        if (isBusy) ...[
-                          const SizedBox(height: AppSpacing.lg),
-                          AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 180),
-                            child: OtpProgressCue(
-                              label: _localizedOtpCopy(
-                                context,
-                                en: 'Code accepted. Securing your session...',
-                                fr: 'Code accepté. Sécurisation de la session...',
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.screenPadding,
+              ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: IntrinsicHeight(
+                        child: Column(
+                          children: [
+                            const SizedBox(height: AppSpacing.lg),
+                            AuthTopBar(onBack: () => context.pop()),
+                            const SizedBox(height: AppSpacing.xl),
+                            AuthScreenHeader(
+                              appName: l10n.appName,
+                              title: l10n.auth_secureLogin,
+                              subtitle: l10n.auth_otpMessage(
+                                authState.phone ?? "your phone",
                               ),
                             ),
-                          ),
-                        ],
 
-                        const Spacer(flex: 1),
+                            // SMS autofill indicator
+                            if (_isListeningForSms)
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  top: AppSpacing.sm,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.sms,
+                                      size: 16,
+                                      color: colors.gold.withValues(alpha: 0.7),
+                                    ),
+                                    const SizedBox(width: AppSpacing.xs),
+                                    AppText(
+                                      l10n.auth_waitingForSms,
+                                      variant: AppTextVariant.bodySmall,
+                                      color: colors.gold.withValues(alpha: 0.7),
+                                    ),
+                                  ],
+                                ),
+                              ),
 
-                        // PIN Pad — no biometric on OTP screen
-                        KeyboardListener(
-                          focusNode: _keyboardFocusNode,
-                          autofocus: true,
-                          onKeyEvent: _handleKeyEvent,
-                          child: PinPad(
-                            onDigitPressed: (digit) => _onDigitPressed(digit),
-                            onDeletePressed: _onDeletePressed,
-                            showBiometric: false,
-                          ),
-                        ),
+                            const SizedBox(height: AppSpacing.xxxl),
 
-                        const SizedBox(height: AppSpacing.xxl),
-
-                        // Resend code with timer
-                        _buildResendButton(colors, authState, l10n),
-
-                        if (EnvironmentConfig.showDevOtpShortcut) ...[
-                          const SizedBox(height: AppSpacing.sm),
-                          AppButton(
-                            label: 'Use dev OTP',
-                            onPressed: isBusy
-                                ? null
-                                : () {
-                                    setState(() => _otp = '123456');
-                                    unawaited(_verifyOtp());
-                                  },
-                            variant: AppButtonVariant.ghost,
-                          ),
-                        ],
-
-                        // Biometric quick-login option
-                        if (showBiometricOption) ...[
-                          const SizedBox(height: AppSpacing.lg),
-                          TextButton.icon(
-                            onPressed: isBusy
-                                ? null
-                                : _authenticateWithBiometric,
-                            icon: Icon(Icons.fingerprint, color: colors.gold),
-                            label: AppText(
-                              l10n.auth_useBiometric,
-                              variant: AppTextVariant.bodyMedium,
-                              color: colors.gold,
+                            // PIN Dots
+                            PinDots(
+                              length: 6,
+                              filled: _otp.length,
+                              error: _hasError,
                             ),
-                          ),
-                        ],
 
-                        const SizedBox(height: AppSpacing.lg),
-                      ],
+                            const Spacer(flex: 1),
+
+                            // PIN Pad — no biometric on OTP screen
+                            KeyboardListener(
+                              focusNode: _keyboardFocusNode,
+                              autofocus: true,
+                              onKeyEvent: _handleKeyEvent,
+                              child: PinPad(
+                                onDigitPressed: (digit) =>
+                                    _onDigitPressed(digit),
+                                onDeletePressed: _onDeletePressed,
+                                showBiometric: false,
+                              ),
+                            ),
+
+                            const SizedBox(height: AppSpacing.xxl),
+
+                            // Resend code with timer
+                            _buildResendButton(colors, authState, l10n),
+
+                            if (EnvironmentConfig.showDevOtpShortcut) ...[
+                              const SizedBox(height: AppSpacing.sm),
+                              AppButton(
+                                label: 'Use dev OTP',
+                                onPressed: isBusy
+                                    ? null
+                                    : () {
+                                        setState(() => _otp = '123456');
+                                        unawaited(_verifyOtp());
+                                      },
+                                variant: AppButtonVariant.ghost,
+                              ),
+                            ],
+
+                            // Biometric quick-login option
+                            if (showBiometricOption) ...[
+                              const SizedBox(height: AppSpacing.lg),
+                              TextButton.icon(
+                                onPressed: isBusy
+                                    ? null
+                                    : _authenticateWithBiometric,
+                                icon: Icon(
+                                  Icons.fingerprint,
+                                  color: colors.gold,
+                                ),
+                                label: AppText(
+                                  l10n.auth_useBiometric,
+                                  variant: AppTextVariant.bodyMedium,
+                                  color: colors.gold,
+                                ),
+                              ),
+                            ],
+
+                            const SizedBox(height: AppSpacing.lg),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              );
-            },
-          ),
+                  );
+                },
+              ),
+            ),
+            OtpVerificationOverlay(visible: isBusy, label: otpCueLabel),
+          ],
         ),
       ),
     );
@@ -393,7 +398,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
     if (submittedAt == null) {
       return;
     }
-    const minimumCueDuration = Duration(milliseconds: 1200);
+    const minimumCueDuration = Duration(milliseconds: 1600);
     final elapsed = DateTime.now().difference(submittedAt);
     if (elapsed < minimumCueDuration) {
       await Future<void>.delayed(minimumCueDuration - elapsed);

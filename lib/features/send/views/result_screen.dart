@@ -127,11 +127,11 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     bool isSuccess,
   ) => Column(
     children: [
-      const SizedBox(height: AppSpacing.sm),
+      const SizedBox(height: AppSpacing.xs),
       ScaleTransition(
         scale: _scaleAnimation,
         child: Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.all(AppSpacing.sm),
           decoration: BoxDecoration(
             color: Color.alphaBlend(
               (isSuccess ? colors.success : colors.error).withValues(
@@ -148,18 +148,18 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
           ),
           child: Icon(
             isSuccess ? Icons.check_circle : Icons.error,
-            size: 44,
+            size: 36,
             color: isSuccess ? colors.success : colors.error,
           ),
         ),
       ),
-      const SizedBox(height: AppSpacing.lg),
+      const SizedBox(height: AppSpacing.md),
       AppText(
         isSuccess ? l10n.send_transferSuccess : l10n.send_transferFailed,
         variant: AppTextVariant.titleLarge,
         textAlign: TextAlign.center,
       ),
-      const SizedBox(height: AppSpacing.sm),
+      const SizedBox(height: AppSpacing.xs),
       if (isSuccess)
         AppText(
           l10n.send_transferSuccessMessage,
@@ -172,11 +172,11 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
           color: colors.error,
           textAlign: TextAlign.center,
         ),
-      const SizedBox(height: AppSpacing.lg),
+      const SizedBox(height: AppSpacing.md),
       if (isSuccess && state.result != null) ...[
         AppCard(
           variant: AppCardVariant.elevated,
-          padding: const EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
             children: [
               AppText(
@@ -193,7 +193,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                   color: colors.gold,
                 ),
               ),
-              const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.sm),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -222,53 +222,54 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                   color: colors.textSecondary,
                 ),
               ],
-              const SizedBox(height: AppSpacing.sm),
-              Divider(color: colors.borderSubtle),
-              const SizedBox(height: AppSpacing.sm),
-              Row(
-                children: [
-                  Expanded(
-                    child: SendDetailRow(
-                      label: l10n.send_date,
-                      value: Formatters.formatDateTime(state.result!.createdAt),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  IconButton(
-                    tooltip: l10n.common_copy,
-                    icon: Icon(
-                      Icons.copy_rounded,
-                      size: 18,
-                      color: colors.infoText,
-                    ),
-                    onPressed: () => _copyToClipboard(state.result!.reference),
-                  ),
-                ],
-              ),
               const SizedBox(height: AppSpacing.xs),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-                decoration: BoxDecoration(
-                  color: colors.container,
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                  border: Border.all(color: colors.borderSubtle),
-                ),
-                child: AppText(
-                  state.result!.reference,
-                  variant: AppTextVariant.bodySmall,
-                  color: colors.textSecondary,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+              Divider(color: colors.borderSubtle),
+              const SizedBox(height: AppSpacing.xs),
+              SendDetailRow(
+                label: l10n.send_date,
+                value: Formatters.formatDateTime(state.result!.createdAt),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              SendDetailRow(
+                label: l10n.send_reference,
+                value: '',
+                valueWidget: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Flexible(
+                      child: AppText(
+                        _truncateReference(state.result!.reference),
+                        variant: AppTextVariant.bodyMedium,
+                        color: colors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                        textAlign: TextAlign.right,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.xs),
+                    IconButton(
+                      tooltip: l10n.common_copy,
+                      visualDensity: VisualDensity.compact,
+                      constraints: const BoxConstraints.tightFor(
+                        width: 32,
+                        height: 32,
+                      ),
+                      icon: Icon(
+                        Icons.copy_rounded,
+                        size: 17,
+                        color: colors.gold,
+                      ),
+                      onPressed: () =>
+                          _copyToClipboard(state.result!.reference),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: AppSpacing.xs),
       ],
       if (!isSuccess) ...[
         const SizedBox(height: AppSpacing.md),
@@ -348,6 +349,13 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
         tone: AppSnackTone.success,
       );
     }
+  }
+
+  String _truncateReference(String reference) {
+    if (reference.length <= 18) {
+      return reference;
+    }
+    return '${reference.substring(0, 8)}...${reference.substring(reference.length - 6)}';
   }
 
   Future<void> _handleSaveBeneficiary() async {

@@ -90,10 +90,15 @@ class TransactionDetailSheet extends StatelessWidget {
                             label: 'Fee',
                             value: '\$${transaction.fee!.toStringAsFixed(2)}',
                           ),
-                        if (transaction.recipientPhone != null)
+                        if (transaction.displayCounterpartyName != null)
                           InfoRow(
                             label: 'Recipient',
-                            value: transaction.recipientPhone!,
+                            value: transaction.displayCounterpartyName!,
+                          ),
+                        if (transaction.displayCounterpartyPhone != null)
+                          InfoRow(
+                            label: 'Phone',
+                            value: transaction.displayCounterpartyPhone!,
                           ),
                         if (transaction.description != null)
                           InfoRow(
@@ -130,7 +135,10 @@ class TransactionDetailSheet extends StatelessWidget {
                           transactionId: transaction.id,
                           amount: transaction.amount,
                           currency: transaction.currency,
-                          recipientName: transaction.recipientPhone ?? 'N/A',
+                          recipientName:
+                              transaction.displayCounterpartyName ??
+                              transaction.displayCounterpartyPhone ??
+                              'N/A',
                           date: transaction.createdAt,
                           note: transaction.description,
                         ),

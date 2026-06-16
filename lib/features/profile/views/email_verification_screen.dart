@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
@@ -32,6 +33,8 @@ class _EmailVerificationScreenState
   bool _isCheckingStatus = true;
   bool _hasPendingCode = false;
   bool _isResending = false;
+  bool _autoRequestedCode = false;
+  bool _deliveryWarning = false;
   String? _errorMessage;
   String? _resendMessage;
   int _resendCountdown = 0;
@@ -48,21 +51,30 @@ class _EmailVerificationScreenState
       final status = await ref.read(userServiceProvider).getEmailStatus();
       final verified = status['verified'] == true;
       final pendingVerification = status['pendingVerification'] == true;
+      final expiresIn = _readExpiresIn(status['expiresIn']);
+      final email = (status['email'] as String?)?.trim();
+      final shouldAutoRequestCode =
+          !verified &&
+          !pendingVerification &&
+          email != null &&
+          email.isNotEmpty &&
+          !_autoRequestedCode;
 
       if (!mounted) return;
       if (verified) {
-        ref
-            .read(userStateMachineProvider.notifier)
-            .updateProfile(emailVerified: true);
+        await _markEmailVerified();
+        if (!mounted) return;
       }
       setState(() {
         _isCheckingStatus = false;
         _isSuccess = verified;
         _hasPendingCode = pendingVerification;
-        _resendCountdown = pendingVerification ? 60 : 0;
       });
       if (pendingVerification) {
-        _startResendCountdown();
+        _startResendCountdown(expiresIn);
+      } else if (shouldAutoRequestCode) {
+        _autoRequestedCode = true;
+        unawaited(_resend());
       }
     } on Object catch (_) {
       if (!mounted) return;
@@ -87,9 +99,12 @@ class _EmailVerificationScreenState
     super.dispose();
   }
 
-  void _startResendCountdown() {
-    _resendCountdown = 60;
+  void _startResendCountdown([int seconds = 60]) {
+    _resendCountdown = seconds.clamp(0, 30 * 60);
     _resendTimer?.cancel();
+    if (_resendCountdown <= 0) {
+      return;
+    }
     _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
         timer.cancel();
@@ -125,10 +140,7 @@ class _EmailVerificationScreenState
         _isSuccess = true;
       });
 
-      // Update user state
-      ref
-          .read(userStateMachineProvider.notifier)
-          .updateProfile(emailVerified: true);
+      await _markEmailVerified();
 
       // Pop back after a short delay
       await Future.delayed(const Duration(seconds: 2));
@@ -158,6 +170,7 @@ class _EmailVerificationScreenState
     setState(() {
       _isResending = true;
       _resendMessage = null;
+      _deliveryWarning = false;
     });
     try {
       final userService = ref.read(userServiceProvider);
@@ -172,29 +185,42 @@ class _EmailVerificationScreenState
           _resendMessage =
               result.message ?? l10n.emailVerification_alreadyVerified;
         });
-        ref
-            .read(userStateMachineProvider.notifier)
-            .updateProfile(emailVerified: true);
+        await _markEmailVerified();
         return;
       }
 
       setState(() {
         _isResending = false;
         _hasPendingCode = true;
+        _deliveryWarning = !result.sent;
         _resendMessage = _emailCodeSentMessage(
           result,
           AppLocalizations.of(context)!,
         );
       });
-      _startResendCountdown();
+      _startResendCountdown(result.expiresIn);
     } on Object catch (_) {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       setState(() {
         _isResending = false;
+        _deliveryWarning = true;
         _resendMessage = l10n.emailVerification_resendFailed;
       });
     }
+  }
+
+  int _readExpiresIn(Object? value) {
+    if (value is int) {
+      return value;
+    }
+    if (value is num) {
+      return value.toInt();
+    }
+    if (value is String) {
+      return int.tryParse(value) ?? 60;
+    }
+    return 60;
   }
 
   void _handleOtpChange(String value, int index) {
@@ -202,6 +228,21 @@ class _EmailVerificationScreenState
       _hasError = false;
       _errorMessage = null;
     });
+
+    final digits = value.replaceAll(RegExp(r'\D'), '');
+    if (digits.length > 1) {
+      for (var i = 0; i < _controllers.length; i++) {
+        _controllers[i].text = i < digits.length ? digits[i] : '';
+      }
+      final focusIndex = digits.length >= _controllers.length
+          ? _controllers.length - 1
+          : digits.length;
+      _focusNodes[focusIndex].requestFocus();
+      if (_otp.length == 6) {
+        unawaited(_submit());
+      }
+      return;
+    }
 
     if (value.isNotEmpty) {
       if (index < 5) {
@@ -222,7 +263,23 @@ class _EmailVerificationScreenState
     if (debugCode != null && debugCode.isNotEmpty) {
       return l10n.emailVerification_codeSentDebug(debugCode);
     }
+    if (!result.sent && result.message != null && result.message!.isNotEmpty) {
+      return result.message!;
+    }
     return l10n.emailVerification_codeSent;
+  }
+
+  Future<void> _markEmailVerified() async {
+    ref
+        .read(userStateMachineProvider.notifier)
+        .updateProfile(emailVerified: true);
+
+    try {
+      await ref.read(profileProvider.notifier).loadProfile();
+    } on Object {
+      // The local verification state is already correct; the next profile
+      // refresh will retry if this network sync fails.
+    }
   }
 
   @override
@@ -234,6 +291,10 @@ class _EmailVerificationScreenState
 
     if (_isSuccess) {
       return _buildSuccessView(colors);
+    }
+
+    if (!_isCheckingStatus && email.trim().isEmpty) {
+      return _buildMissingEmailView(colors, l10n);
     }
 
     return Scaffold(
@@ -357,20 +418,27 @@ class _EmailVerificationScreenState
 
               if (_resendMessage != null) ...[
                 const SizedBox(height: AppSpacing.md),
-                Center(
-                  child: AppText(
-                    _resendMessage!,
-                    variant: AppTextVariant.bodySmall,
-                    color:
-                        _resendMessage ==
-                                l10n.emailVerification_statusLoadFailed ||
-                            _resendMessage ==
-                                l10n.emailVerification_resendFailed
-                        ? colors.errorText
-                        : colors.textSecondary,
-                    textAlign: TextAlign.center,
+                if (_deliveryWarning)
+                  InfoCallout(
+                    icon: Icons.warning_amber_rounded,
+                    title: _resendMessage!,
+                    tone: InfoCalloutTone.warning,
+                  )
+                else
+                  Center(
+                    child: AppText(
+                      _resendMessage!,
+                      variant: AppTextVariant.bodySmall,
+                      color:
+                          _resendMessage ==
+                                  l10n.emailVerification_statusLoadFailed ||
+                              _resendMessage ==
+                                  l10n.emailVerification_resendFailed
+                          ? colors.errorText
+                          : colors.textSecondary,
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                ),
               ],
 
               const Spacer(),
@@ -414,7 +482,7 @@ class _EmailVerificationScreenState
             autofillHints: index == 0
                 ? const [AutofillHints.oneTimeCode]
                 : null,
-            maxLength: 1,
+            maxLength: index == 0 ? 6 : 1,
             style: AppTypography.headlineMedium.copyWith(
               color: colors.textPrimary,
             ),
@@ -463,6 +531,71 @@ class _EmailVerificationScreenState
               textAlign: TextAlign.center,
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMissingEmailView(ThemeColors colors, AppLocalizations l10n) {
+    return Scaffold(
+      backgroundColor: colors.canvas,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: colors.textPrimary),
+          onPressed: () => context.pop(),
+        ),
+        title: AppText(
+          l10n.emailVerification_title,
+          variant: AppTextVariant.titleLarge,
+          color: colors.textPrimary,
+        ),
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Spacer(),
+              Center(
+                child: Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: colors.goldSubtle,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.alternate_email_rounded,
+                    color: colors.gold,
+                    size: 34,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              AppText(
+                l10n.emailVerification_missingEmailTitle,
+                variant: AppTextVariant.headlineSmall,
+                color: colors.textPrimary,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              AppText(
+                l10n.emailVerification_missingEmailMessage,
+                variant: AppTextVariant.bodyMedium,
+                color: colors.textSecondary,
+                textAlign: TextAlign.center,
+              ),
+              const Spacer(),
+              AppButton(
+                label: l10n.emailVerification_addEmail,
+                icon: Icons.edit_rounded,
+                onPressed: () => context.go('/settings/profile/edit'),
+                isFullWidth: true,
+              ),
+            ],
+          ),
         ),
       ),
     );

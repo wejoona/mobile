@@ -118,7 +118,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
               isFullWidth: true,
             ),
           ],
-          if (status == KycStatus.submitted) ...[
+          if (status.isInReview) ...[
             SizedBox(height: AppSpacing.lg),
             AppButton(
               label: l10n.common_continue,
@@ -145,6 +145,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
         color = colors.gold;
         break;
       case KycStatus.submitted:
+      case KycStatus.manualReview:
         icon = Icons.hourglass_empty;
         color = colors.warning;
         break;
@@ -176,6 +177,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
       case KycStatus.documentsPending:
         return l10n.kyc_status_pending_title;
       case KycStatus.submitted:
+      case KycStatus.manualReview:
         return l10n.kyc_status_submitted_title;
       case KycStatus.verified:
         return l10n.kyc_status_approved_title;
@@ -193,6 +195,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
       case KycStatus.documentsPending:
         return l10n.kyc_status_pending_description;
       case KycStatus.submitted:
+      case KycStatus.manualReview:
         return l10n.kyc_status_submitted_description;
       case KycStatus.verified:
         return l10n.kyc_status_approved_description;

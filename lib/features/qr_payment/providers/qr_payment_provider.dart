@@ -156,7 +156,14 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
           }
           await dio.post(
             '/merchants/pay',
-            data: {'qrData': qrData, 'amount': transferAmount},
+            data: {
+              'qrData': qrData,
+              'amount': transferAmount,
+              if (data.merchantId != null) 'merchantId': data.merchantId,
+              if (data.merchantMcc != null) 'merchantMcc': data.merchantMcc,
+              if (data.merchantCategory != null)
+                'merchantCategory': data.merchantCategory,
+            },
             options: options,
           );
           break;

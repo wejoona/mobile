@@ -2,17 +2,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Configuration des certificats épinglés par environnement.
 class CertificatePinningConfig {
-  final String host;
-  final List<String> sha256Pins;
-  final bool includeSubdomains;
-  final DateTime? expiresAt;
-
   const CertificatePinningConfig({
     required this.host,
     required this.sha256Pins,
     this.includeSubdomains = true,
     this.expiresAt,
   });
+
+  final String host;
+  final List<String> sha256Pins;
+  final bool includeSubdomains;
+  final DateTime? expiresAt;
 
   bool get isExpired => expiresAt != null && DateTime.now().isAfter(expiresAt!);
 }
@@ -39,16 +39,12 @@ class CertificatePinRegistry {
     ),
   ];
 
-  static const List<CertificatePinningConfig> stagingPins = [
-    CertificatePinningConfig(
-      host: 'api-staging.korido.app',
-      sha256Pins: ['CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC='],
-    ),
-  ];
+  /// Staging is intentionally unpinned until a stable staging API certificate
+  /// exists. Production pinning remains enforced through [productionPins].
+  static const List<CertificatePinningConfig> stagingPins = [];
 
-  static List<CertificatePinningConfig> getPins({required bool isProduction}) {
-    return isProduction ? productionPins : stagingPins;
-  }
+  static List<CertificatePinningConfig> getPins({required bool isProduction}) =>
+      isProduction ? productionPins : stagingPins;
 
   static bool validatePin(
     String host,
@@ -57,12 +53,13 @@ class CertificatePinRegistry {
   }) {
     final pins = getPins(isProduction: isProduction);
     final config = pins.where((p) => host.endsWith(p.host)).firstOrNull;
-    if (config == null || config.isExpired)
+    if (config == null || config.isExpired) {
       return true; // Pas de pin = accepter
+    }
     return config.sha256Pins.contains(pinHash);
   }
 }
 
-final certificatePinRegistryProvider = Provider<CertificatePinRegistry>((ref) {
-  return CertificatePinRegistry();
-});
+final certificatePinRegistryProvider = Provider<CertificatePinRegistry>(
+  (ref) => CertificatePinRegistry(),
+);

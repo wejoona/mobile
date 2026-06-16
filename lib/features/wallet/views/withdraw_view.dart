@@ -110,6 +110,27 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     } else {
       setState(() => _amountError = null);
     }
+    _refreshWithdrawalQuotePreview();
+  }
+
+  void _refreshWithdrawalQuotePreview() {
+    final amount = double.tryParse(_amountController.text);
+    if (amount == null || amount <= 0) return;
+    final selectedCountry = _effectiveCountry(ref, watch: false);
+    if (_selectedMethod != WithdrawMethod.mobileMoney ||
+        !_hasMobileMoneyOptions(selectedCountry, watch: false)) {
+      return;
+    }
+    final localDigits = _localPhoneDigits(selectedCountry);
+    final mobileMoneyMethod = _methodForMobileNumber(
+      localDigits,
+      selectedCountry,
+      watch: false,
+    );
+    if (mobileMoneyMethod == null) return;
+    final notifier = ref.read(withdraw_api.withdrawProvider.notifier)
+      ..selectMethod(mobileMoneyMethod);
+    unawaited(notifier.setAmount(amount));
   }
 
   bool _canSubmit() {
@@ -121,9 +142,10 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     switch (_selectedMethod!) {
       case WithdrawMethod.mobileMoney:
         final country = _effectiveCountry(ref);
-        if (country.code != 'CI') return true;
+        if (!_hasMobileMoneyOptions(country)) return true;
         final localDigits = _localPhoneDigits(country);
-        return country.code == 'CI' && country.isValidLength(localDigits);
+        return country.isValidLength(localDigits) &&
+            _methodForMobileNumber(localDigits, country) != null;
       case WithdrawMethod.bankTransfer:
         return _accountNumberController.text.isNotEmpty &&
             _bankNameController.text.isNotEmpty;
@@ -146,7 +168,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
       return;
     }
     if (_selectedMethod == WithdrawMethod.mobileMoney &&
-        selectedCountry.code != 'CI') {
+        !_hasMobileMoneyOptions(selectedCountry, watch: false)) {
       await _subscribeToWithdrawalAvailability(
         featureKey: _withdrawalFeatureKey(selectedCountry, _selectedMethod!),
         requestedFeature: 'mobile_money',
@@ -159,15 +181,13 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
         ? _localPhoneDigits(selectedCountry)
         : '';
     final mobileMoneyMethod = _selectedMethod == WithdrawMethod.mobileMoney
-        ? _methodForCiMobileNumber(localDigits)
+        ? _methodForMobileNumber(localDigits, selectedCountry, watch: false)
         : null;
     if (_selectedMethod == WithdrawMethod.mobileMoney &&
         mobileMoneyMethod == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text(
-            'This mobile money number is not supported yet. Use Orange, MTN, or Moov CI.',
-          ),
+          content: Text(_unsupportedMobileMoneyMessage(selectedCountry)),
           backgroundColor: context.colors.error,
         ),
       );
@@ -340,18 +360,68 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
         : digitsOnly;
   }
 
-  withdraw_api.WithdrawMethod? _methodForCiMobileNumber(String localDigits) {
+  withdraw_api.WithdrawMethod? _methodForMobileNumber(
+    String localDigits,
+    CountryConfig country, {
+    bool watch = true,
+  }) {
+    final providerCode = _providerCodeForMobileNumber(localDigits, country);
+    if (providerCode == null) return null;
+
+    final options = _mobileMoneyOptions(country, watch: watch);
+    if (options.isNotEmpty &&
+        !options.any(
+          (option) =>
+              option.enabled &&
+              option.providerCode?.toUpperCase() == providerCode,
+        )) {
+      return null;
+    }
+
+    return _methodForProviderCode(providerCode);
+  }
+
+  String? _providerCodeForMobileNumber(
+    String localDigits,
+    CountryConfig country,
+  ) {
+    if (country.code.toUpperCase() != 'CI') {
+      return null;
+    }
     if (localDigits.startsWith('07')) {
-      return withdraw_api.WithdrawMethod.orangeMoney;
+      return 'OMCI';
     }
     if (localDigits.startsWith('05')) {
-      return withdraw_api.WithdrawMethod.mtnMomo;
+      return 'MTNCI';
     }
     if (localDigits.startsWith('01')) {
-      return withdraw_api.WithdrawMethod.moovMoney;
+      return 'MOOVCI';
     }
     if (localDigits.startsWith('27')) {
-      return withdraw_api.WithdrawMethod.wave;
+      return 'WAVECI';
+    }
+    return null;
+  }
+
+  String _unsupportedMobileMoneyMessage(CountryConfig country) {
+    final options = _mobileMoneyOptions(country, watch: false);
+    final availableRails = options.map((option) => option.name).join(', ');
+    if (availableRails.isNotEmpty) {
+      return 'This ${country.name} mobile money number is not supported yet. Available rails: $availableRails.';
+    }
+    return 'Mobile money withdrawals are not available for ${country.name} yet.';
+  }
+
+  withdraw_api.WithdrawMethod? _methodForProviderCode(String providerCode) {
+    switch (providerCode.toUpperCase()) {
+      case 'OMCI':
+        return withdraw_api.WithdrawMethod.orangeMoney;
+      case 'MTNCI':
+        return withdraw_api.WithdrawMethod.mtnMomo;
+      case 'MOOVCI':
+        return withdraw_api.WithdrawMethod.moovMoney;
+      case 'WAVECI':
+        return withdraw_api.WithdrawMethod.wave;
     }
     return null;
   }
@@ -361,7 +431,26 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     if (method == null) return false;
     if (method == WithdrawMethod.crypto) return false;
     if (method != WithdrawMethod.mobileMoney) return true;
-    return _effectiveCountry(ref).code != 'CI';
+    return !_hasMobileMoneyOptions(_effectiveCountry(ref), watch: false);
+  }
+
+  List<withdraw_api.WithdrawalOption> _mobileMoneyOptions(
+    CountryConfig country, {
+    bool watch = true,
+  }) {
+    final asyncOptions = watch
+        ? ref.watch(withdraw_api.withdrawalOptionsProvider(country.code))
+        : ref.read(withdraw_api.withdrawalOptionsProvider(country.code));
+    return asyncOptions.maybeWhen(
+      data: (options) => options
+          .where((option) => option.isMobileMoney && option.enabled)
+          .toList(growable: false),
+      orElse: () => const [],
+    );
+  }
+
+  bool _hasMobileMoneyOptions(CountryConfig country, {bool watch = true}) {
+    return _mobileMoneyOptions(country, watch: watch).isNotEmpty;
   }
 
   Future<void> _subscribeToWithdrawalAvailability({
@@ -395,7 +484,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
           );
       if (!mounted) return;
       context.showSnack(
-        AppLocalizations.of(context)!.deposit_notifySuccess,
+        AppLocalizations.of(context)!.withdraw_notifySuccess,
         tone: AppSnackTone.success,
       );
     } catch (e) {
@@ -489,7 +578,11 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
                 child: _MethodCard(
                   method: method,
                   isSelected: _selectedMethod == method,
-                  onTap: () => setState(() => _selectedMethod = method),
+                  onTap: () {
+                    ref.read(withdraw_api.withdrawProvider.notifier).reset();
+                    setState(() => _selectedMethod = method);
+                    _refreshWithdrawalQuotePreview();
+                  },
                   colors: colors,
                   l10n: l10n,
                 ),
@@ -500,6 +593,16 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
 
             // Method-specific fields
             if (_selectedMethod != null) _buildMethodFields(colors, l10n),
+
+            if (_selectedMethod == WithdrawMethod.mobileMoney &&
+                withdrawState.fee > 0) ...[
+              const SizedBox(height: AppSpacing.md),
+              _WithdrawalFeePreview(
+                amount: withdrawState.amount ?? 0,
+                fee: withdrawState.fee,
+                colors: colors,
+              ),
+            ],
 
             const SizedBox(height: AppSpacing.xxl),
 
@@ -662,7 +765,15 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
 
   Widget _buildMobileMoneyFields(ThemeColors colors, AppLocalizations l10n) {
     final selectedCountry = _effectiveCountry(ref);
-    final isMobileMoneyAvailable = selectedCountry.code == 'CI';
+    final optionsState = ref.watch(
+      withdraw_api.withdrawalOptionsProvider(selectedCountry.code),
+    );
+    final isLoadingOptions = optionsState.isLoading;
+    final mobileMoneyOptions = _mobileMoneyOptions(selectedCountry);
+    final isMobileMoneyAvailable = mobileMoneyOptions.isNotEmpty;
+    final optionNames = mobileMoneyOptions
+        .map((option) => option.name)
+        .join(', ');
 
     return AppCard(
       variant: AppCardVariant.elevated,
@@ -709,16 +820,33 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
                   variant: AppInputVariant.phone,
                   hint: selectedCountry.phoneFormat ?? '07 00 00 00 00',
                   keyboardType: TextInputType.phone,
-                  enabled: isMobileMoneyAvailable,
-                  onChanged: (_) => setState(() {}),
+                  enabled: isMobileMoneyAvailable && !isLoadingOptions,
+                  onChanged: (_) {
+                    setState(() {});
+                    _refreshWithdrawalQuotePreview();
+                  },
                 ),
               ),
             ],
           ),
-          if (!isMobileMoneyAvailable) ...[
+          if (isLoadingOptions) ...[
             const SizedBox(height: AppSpacing.md),
             AppText(
-              "Mobile money withdrawals are currently available for Côte d'Ivoire accounts.",
+              'Checking available withdrawal rails...',
+              variant: AppTextVariant.bodySmall,
+              color: colors.textSecondary,
+            ),
+          ] else if (!isMobileMoneyAvailable) ...[
+            const SizedBox(height: AppSpacing.md),
+            AppText(
+              'Mobile money withdrawals are not available for ${selectedCountry.name} yet.',
+              variant: AppTextVariant.bodySmall,
+              color: colors.textSecondary,
+            ),
+          ] else if (optionNames.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.md),
+            AppText(
+              'Available rails: $optionNames',
               variant: AppTextVariant.bodySmall,
               color: colors.textSecondary,
             ),
@@ -876,6 +1004,89 @@ class _MethodCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _WithdrawalFeePreview extends StatelessWidget {
+  const _WithdrawalFeePreview({
+    required this.amount,
+    required this.fee,
+    required this.colors,
+  });
+
+  final double amount;
+  final double fee;
+  final ThemeColors colors;
+
+  @override
+  Widget build(BuildContext context) {
+    final total = amount + fee;
+
+    return AppCard(
+      variant: AppCardVariant.subtle,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Column(
+        children: [
+          _FeePreviewRow(
+            label: AppStrings.amount,
+            value: '\$${amount.toStringAsFixed(2)}',
+            colors: colors,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          _FeePreviewRow(
+            label: AppStrings.fee,
+            value: '\$${fee.toStringAsFixed(2)}',
+            colors: colors,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Divider(color: colors.borderSubtle, height: 1),
+          const SizedBox(height: AppSpacing.sm),
+          _FeePreviewRow(
+            label: AppStrings.total,
+            value: '\$${total.toStringAsFixed(2)}',
+            colors: colors,
+            emphasized: true,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeePreviewRow extends StatelessWidget {
+  const _FeePreviewRow({
+    required this.label,
+    required this.value,
+    required this.colors,
+    this.emphasized = false,
+  });
+
+  final String label;
+  final String value;
+  final ThemeColors colors;
+  final bool emphasized;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        AppText(
+          label,
+          variant: emphasized
+              ? AppTextVariant.titleSmall
+              : AppTextVariant.bodySmall,
+          color: emphasized ? colors.textPrimary : colors.textSecondary,
+        ),
+        AppText(
+          value,
+          variant: emphasized
+              ? AppTextVariant.titleSmall
+              : AppTextVariant.bodySmall,
+          color: emphasized ? context.colors.gold : colors.textPrimary,
+        ),
+      ],
     );
   }
 }

@@ -748,7 +748,7 @@ class _ChannelOption extends StatelessWidget {
               ),
             ),
             AppText(
-              '${channel.fee}% fee',
+              channel.feeLabel,
               variant: AppTextVariant.bodySmall,
               color: colors.textTertiary,
             ),

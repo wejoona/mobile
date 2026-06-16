@@ -5,6 +5,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
 import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Contact Card Widget
 ///
@@ -75,11 +76,12 @@ class ContactCard extends StatelessWidget {
                         ],
                       ),
                       SizedBox(height: AppSpacing.xs),
-                      AppText(
-                        contact.phone,
-                        variant: AppTextVariant.bodySmall,
-                        color: colors.textSecondary,
-                      ),
+                      if (contact.displayIdentifier != null)
+                        AppText(
+                          contact.displayIdentifier!,
+                          variant: AppTextVariant.bodySmall,
+                          color: colors.textSecondary,
+                        ),
                     ],
                   ),
                 ),
@@ -88,9 +90,9 @@ class ContactCard extends StatelessWidget {
 
                 // Action button
                 if (contact.isKoridoUser && onSend != null)
-                  _buildSendButton(onSend!, colors)
+                  _buildSendButton(context, onSend!, colors)
                 else if (!contact.isKoridoUser && onInvite != null)
-                  _buildInviteButton(onInvite!, colors),
+                  _buildInviteButton(context, onInvite!, colors),
               ],
             ),
           ),
@@ -123,10 +125,15 @@ class ContactCard extends StatelessWidget {
     );
   }
 
-  Widget _buildSendButton(VoidCallback onPressed, ThemeColors colors) {
+  Widget _buildSendButton(
+    BuildContext context,
+    VoidCallback onPressed,
+    ThemeColors colors,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
     return Semantics(
       button: true,
-      label: 'Send money to ${contact.name}',
+      label: l10n.contacts_sendMoneyTo(contact.name),
       child: InkWell(
         onTap: onPressed,
         borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -149,7 +156,7 @@ class ContactCard extends StatelessWidget {
               Icon(Icons.send, size: 16, color: colors.onGold),
               SizedBox(width: AppSpacing.xs),
               AppText(
-                'Send',
+                l10n.contacts_send,
                 variant: AppTextVariant.bodySmall,
                 color: colors.onGold,
                 fontWeight: FontWeight.w600,
@@ -161,10 +168,15 @@ class ContactCard extends StatelessWidget {
     );
   }
 
-  Widget _buildInviteButton(VoidCallback onPressed, ThemeColors colors) {
+  Widget _buildInviteButton(
+    BuildContext context,
+    VoidCallback onPressed,
+    ThemeColors colors,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
     return Semantics(
       button: true,
-      label: 'Invite ${contact.name} to Korido',
+      label: l10n.contacts_inviteToKorido(contact.name),
       child: InkWell(
         onTap: onPressed,
         borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -179,7 +191,7 @@ class ContactCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppRadius.sm),
           ),
           child: AppText(
-            'Invite',
+            l10n.contacts_invite,
             variant: AppTextVariant.bodySmall,
             color: colors.gold,
             fontWeight: FontWeight.w600,

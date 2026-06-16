@@ -18,11 +18,7 @@ import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// KYC Document Type
-enum KycDocumentType {
-  nationalId,
-  passport,
-  driversLicense,
-}
+enum KycDocumentType { nationalId, passport, driversLicense }
 
 extension KycDocumentTypeExt on KycDocumentType {
   String get label {
@@ -108,7 +104,9 @@ class _KycViewState extends ConsumerState<KycView> {
 
         // Set default country based on user's country code
         setState(() {
-          _selectedCountry = SupportedCountries.findByCodeIncludingDisabled(userState.countryCode);
+          _selectedCountry = SupportedCountries.findByCodeIncludingDisabled(
+            userState.countryCode,
+          );
           _selectedCountry ??= SupportedCountries.defaultCountry;
         });
       }
@@ -134,7 +132,7 @@ class _KycViewState extends ConsumerState<KycView> {
     }
 
     // If submitted/pending review, show pending status
-    if (userState.kycStatus == KycStatus.submitted ||
+    if (userState.kycStatus.isInReview ||
         userState.kycStatus == KycStatus.pending) {
       return _buildPendingView(colors);
     }
@@ -202,9 +200,7 @@ class _KycViewState extends ConsumerState<KycView> {
           width: 32,
           height: 32,
           decoration: BoxDecoration(
-            color: isCompleted || isCurrent
-                ? colors.gold
-                : colors.elevated,
+            color: isCompleted || isCurrent ? colors.gold : colors.elevated,
             shape: BoxShape.circle,
             border: Border.all(
               color: isCurrent ? colors.gold : Colors.transparent,
@@ -366,15 +362,17 @@ class _KycViewState extends ConsumerState<KycView> {
           color: colors.textSecondary,
         ),
         const SizedBox(height: AppSpacing.xxl),
-        ...KycDocumentType.values.map((type) => Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.md),
-              child: _DocumentTypeCard(
-                type: type,
-                isSelected: _selectedDocType == type,
-                onTap: () => setState(() => _selectedDocType = type),
-                colors: colors,
-              ),
-            )),
+        ...KycDocumentType.values.map(
+          (type) => Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.md),
+            child: _DocumentTypeCard(
+              type: type,
+              isSelected: _selectedDocType == type,
+              onTap: () => setState(() => _selectedDocType = type),
+              colors: colors,
+            ),
+          ),
+        ),
         const SizedBox(height: AppSpacing.lg),
         // Info
         AppCard(
@@ -655,7 +653,9 @@ class _KycViewState extends ConsumerState<KycView> {
           value: _dateOfBirth != null
               ? DateFormat('MMM dd, yyyy').format(_dateOfBirth!)
               : 'Not set',
-          valueColor: _dateOfBirth != null ? colors.textPrimary : context.colors.error,
+          valueColor: _dateOfBirth != null
+              ? colors.textPrimary
+              : context.colors.error,
           colors: colors,
         ),
         _ReviewItem(
@@ -701,21 +701,27 @@ class _KycViewState extends ConsumerState<KycView> {
           icon: Icons.photo,
           label: 'Front Photo',
           value: _frontUploaded ? 'Uploaded' : 'Missing',
-          valueColor: _frontUploaded ? context.colors.success : context.colors.error,
+          valueColor: _frontUploaded
+              ? context.colors.success
+              : context.colors.error,
           colors: colors,
         ),
         _ReviewItem(
           icon: Icons.photo,
           label: 'Back Photo',
           value: _backUploaded ? 'Uploaded' : 'Missing',
-          valueColor: _backUploaded ? context.colors.success : context.colors.error,
+          valueColor: _backUploaded
+              ? context.colors.success
+              : context.colors.error,
           colors: colors,
         ),
         _ReviewItem(
           icon: Icons.face,
           label: 'Selfie',
           value: _selfieUploaded ? 'Uploaded' : 'Missing',
-          valueColor: _selfieUploaded ? context.colors.success : context.colors.error,
+          valueColor: _selfieUploaded
+              ? context.colors.success
+              : context.colors.error,
           colors: colors,
         ),
 
@@ -733,9 +739,18 @@ class _KycViewState extends ConsumerState<KycView> {
                 color: colors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.md),
-              _DisclaimerItem(text: 'The information provided is accurate', colors: colors),
-              _DisclaimerItem(text: 'The documents belong to you', colors: colors),
-              _DisclaimerItem(text: 'You agree to our Terms of Service', colors: colors),
+              _DisclaimerItem(
+                text: 'The information provided is accurate',
+                colors: colors,
+              ),
+              _DisclaimerItem(
+                text: 'The documents belong to you',
+                colors: colors,
+              ),
+              _DisclaimerItem(
+                text: 'You agree to our Terms of Service',
+                colors: colors,
+              ),
             ],
           ),
         ),
@@ -778,9 +793,7 @@ class _KycViewState extends ConsumerState<KycView> {
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
       decoration: BoxDecoration(
         color: colors.container,
-        border: Border(
-          top: BorderSide(color: colors.borderSubtle),
-        ),
+        border: Border(top: BorderSide(color: colors.borderSubtle)),
       ),
       child: SafeArea(
         top: false,
@@ -827,7 +840,10 @@ class _KycViewState extends ConsumerState<KycView> {
       case 3:
         return _livenessCheckPassed && _selfieUploaded;
       case 4:
-        return _frontUploaded && _backUploaded && _selfieUploaded && _livenessCheckPassed;
+        return _frontUploaded &&
+            _backUploaded &&
+            _selfieUploaded &&
+            _livenessCheckPassed;
       default:
         return false;
     }
@@ -845,9 +861,7 @@ class _KycViewState extends ConsumerState<KycView> {
       child: AbsorbPointer(
         child: AppInput(
           label: 'Country',
-          controller: TextEditingController(
-            text: _selectedCountry?.name ?? '',
-          ),
+          controller: TextEditingController(text: _selectedCountry?.name ?? ''),
           hint: 'Select your country',
           suffixIcon: Icons.arrow_drop_down,
         ),
@@ -943,7 +957,8 @@ class _KycViewState extends ConsumerState<KycView> {
                   shrinkWrap: true,
                   itemCount: SupportedCountries.allIncludingDisabled.length,
                   itemBuilder: (context, index) {
-                    final country = SupportedCountries.allIncludingDisabled[index];
+                    final country =
+                        SupportedCountries.allIncludingDisabled[index];
                     final isSelected = _selectedCountry?.code == country.code;
 
                     return ListTile(
@@ -1085,7 +1100,8 @@ class _KycViewState extends ConsumerState<KycView> {
     );
 
     final faceScore = result?.faceMatchScore ?? 1.0;
-    final passed = result != null &&
+    final passed =
+        result != null &&
         result.isLive &&
         result.confidence >= 0.50 &&
         faceScore >= 0.50;
@@ -1099,7 +1115,9 @@ class _KycViewState extends ConsumerState<KycView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.kyc_livenessCheckPassed),
+            content: Text(
+              AppLocalizations.of(context)!.kyc_livenessCheckPassed,
+            ),
             backgroundColor: context.colors.success,
           ),
         );
@@ -1108,7 +1126,11 @@ class _KycViewState extends ConsumerState<KycView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.kyc_livenessCheckFailed(result.failureReason ?? '')),
+            content: Text(
+              AppLocalizations.of(
+                context,
+              )!.kyc_livenessCheckFailed(result.failureReason ?? ''),
+            ),
             backgroundColor: context.colors.error,
           ),
         );
@@ -1121,7 +1143,9 @@ class _KycViewState extends ConsumerState<KycView> {
     if (!_livenessCheckPassed) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.kyc_completeLivenessFirst),
+          content: Text(
+            AppLocalizations.of(context)!.kyc_completeLivenessFirst,
+          ),
           backgroundColor: context.colors.warning,
         ),
       );
@@ -1180,9 +1204,7 @@ class _KycViewState extends ConsumerState<KycView> {
     final response = await dio.post(
       '/kyc/documents',
       data: formData,
-      options: Options(
-        contentType: 'multipart/form-data',
-      ),
+      options: Options(contentType: 'multipart/form-data'),
     );
 
     // ignore: avoid_dynamic_calls
@@ -1213,9 +1235,9 @@ class _KycViewState extends ConsumerState<KycView> {
         await _submitKycData();
 
         // Update local status
-        ref.read(userStateMachineProvider.notifier).updateProfile(
-              kycStatus: KycStatus.pending,
-            );
+        ref
+            .read(userStateMachineProvider.notifier)
+            .updateProfile(kycStatus: KycStatus.pending);
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1258,18 +1280,21 @@ class _KycViewState extends ConsumerState<KycView> {
     // Format date of birth as ISO 8601 (YYYY-MM-DD)
     final formattedDob = DateFormat('yyyy-MM-dd').format(_dateOfBirth!);
 
-    await dio.post('/wallet/kyc/submit', data: {
-      'firstName': _firstNameController.text.trim(),
-      'lastName': _lastNameController.text.trim(),
-      'dateOfBirth': formattedDob,
-      'country': _selectedCountry!.code,
-      'idType': _selectedIdType,
-      'idNumber': _idNumberController.text.trim(),
-      'documentFrontKey': _frontDocKey,
-      'documentBackKey': _backDocKey,
-      'selfieKey': _selfieDocKey,
-      if (_livenessSessionId != null) 'livenessSessionId': _livenessSessionId,
-    });
+    await dio.post(
+      '/wallet/kyc/submit',
+      data: {
+        'firstName': _firstNameController.text.trim(),
+        'lastName': _lastNameController.text.trim(),
+        'dateOfBirth': formattedDob,
+        'country': _selectedCountry!.code,
+        'idType': _selectedIdType,
+        'idNumber': _idNumberController.text.trim(),
+        'documentFrontKey': _frontDocKey,
+        'documentBackKey': _backDocKey,
+        'selfieKey': _selfieDocKey,
+        if (_livenessSessionId != null) 'livenessSessionId': _livenessSessionId,
+      },
+    );
   }
 
   Widget _buildVerifiedView(ThemeColors colors) {
@@ -1432,8 +1457,7 @@ class _DocumentTypeCard extends StatelessWidget {
                 color: isSelected ? colors.gold : colors.textPrimary,
               ),
             ),
-            if (isSelected)
-              Icon(Icons.check_circle, color: colors.gold),
+            if (isSelected) Icon(Icons.check_circle, color: colors.gold),
           ],
         ),
       ),
@@ -1495,7 +1519,9 @@ class _UploadCard extends StatelessWidget {
                     )
                   : Icon(
                       isUploaded ? Icons.check : Icons.add_a_photo,
-                      color: isUploaded ? context.colors.success : colors.textTertiary,
+                      color: isUploaded
+                          ? context.colors.success
+                          : colors.textTertiary,
                       size: 28,
                     ),
             ),
@@ -1513,7 +1539,9 @@ class _UploadCard extends StatelessWidget {
                   AppText(
                     isUploaded ? 'Tap to change' : description,
                     variant: AppTextVariant.bodySmall,
-                    color: isUploaded ? context.colors.success : colors.textSecondary,
+                    color: isUploaded
+                        ? context.colors.success
+                        : colors.textSecondary,
                   ),
                 ],
               ),
@@ -1556,11 +1584,7 @@ class _SourceOption extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              color: colors.gold,
-              size: 40,
-            ),
+            Icon(icon, color: colors.gold, size: 40),
             const SizedBox(height: AppSpacing.sm),
             AppText(
               label,
@@ -1616,10 +1640,7 @@ class _ReviewItem extends StatelessWidget {
 }
 
 class _DisclaimerItem extends StatelessWidget {
-  const _DisclaimerItem({
-    required this.text,
-    required this.colors,
-  });
+  const _DisclaimerItem({required this.text, required this.colors});
 
   final String text;
   final ThemeColors colors;

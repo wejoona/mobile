@@ -195,7 +195,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
           ),
           const SizedBox(height: AppSpacing.sm),
           AppText(
-            _formatLimit(currentBenefits.limits.dailyLimit, 'XOF'),
+            _formatLimit(currentBenefits.limits.dailyLimit, 'USDC'),
             variant: AppTextVariant.moneyMedium,
           ),
           AppText(
@@ -266,19 +266,19 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
                 _buildLimitRow(
                   Icons.today,
                   l10n.kyc_upgrade_dailyLimit,
-                  _formatLimit(tier.limits.dailyLimit, 'XOF'),
+                  _formatLimit(tier.limits.dailyLimit, 'USDC'),
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 _buildLimitRow(
                   Icons.calendar_month,
                   l10n.kyc_upgrade_monthlyLimit,
-                  _formatLimit(tier.limits.monthlyLimit, 'XOF'),
+                  _formatLimit(tier.limits.monthlyLimit, 'USDC'),
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 _buildLimitRow(
                   Icons.swap_horiz,
                   l10n.kyc_upgrade_perTransaction,
-                  _formatLimit(tier.limits.perTransactionLimit, 'XOF'),
+                  _formatLimit(tier.limits.perTransactionLimit, 'USDC'),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Wrap(

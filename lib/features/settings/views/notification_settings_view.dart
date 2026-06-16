@@ -1,12 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/domain/entities/notification_preferences.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/settings/providers/notification_preferences_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/router/navigation_extensions.dart';
+import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
 
 class NotificationSettingsView extends ConsumerStatefulWidget {
   const NotificationSettingsView({super.key});
@@ -47,12 +50,14 @@ class _NotificationSettingsViewState
     );
   }
 
-  Widget _buildBody(NotificationPreferencesState state, AppLocalizations l10n, ThemeColors colors) {
+  Widget _buildBody(
+    NotificationPreferencesState state,
+    AppLocalizations l10n,
+    ThemeColors colors,
+  ) {
     // Show loading state
     if (state.isLoading) {
-      return Center(
-        child: CircularProgressIndicator(color: colors.gold),
-      );
+      return Center(child: CircularProgressIndicator(color: colors.gold));
     }
 
     // Show error state
@@ -112,9 +117,8 @@ class _NotificationSettingsViewState
                   title: l10n.notifications_security,
                   subtitle: l10n.notifications_securityDescription,
                   value: prefs.pushSecurity,
-                  onChanged: (value) => _updateLocalState(
-                    prefs.copyWith(pushSecurity: value),
-                  ),
+                  onChanged: (value) =>
+                      _updateLocalState(prefs.copyWith(pushSecurity: value)),
                 ),
                 _buildSettingTile(
                   l10n: l10n,
@@ -122,9 +126,8 @@ class _NotificationSettingsViewState
                   title: l10n.notifications_marketing,
                   subtitle: l10n.notifications_marketingDescription,
                   value: prefs.pushMarketing,
-                  onChanged: (value) => _updateLocalState(
-                    prefs.copyWith(pushMarketing: value),
-                  ),
+                  onChanged: (value) =>
+                      _updateLocalState(prefs.copyWith(pushMarketing: value)),
                 ),
               ],
 
@@ -140,10 +143,10 @@ class _NotificationSettingsViewState
                 onChanged: (value) => _updateLocalState(
                   prefs.copyWith(
                     emailEnabled: value,
-                    emailTransactions:
-                        value ? prefs.emailTransactions : false,
-                    emailMonthlyStatement:
-                        value ? prefs.emailMonthlyStatement : false,
+                    emailTransactions: value ? prefs.emailTransactions : false,
+                    emailMonthlyStatement: value
+                        ? prefs.emailMonthlyStatement
+                        : false,
                     emailMarketing: value ? prefs.emailMarketing : false,
                   ),
                 ),
@@ -175,9 +178,8 @@ class _NotificationSettingsViewState
                   title: l10n.notifications_newsletter,
                   subtitle: l10n.notifications_newsletterDescription,
                   value: prefs.emailMarketing,
-                  onChanged: (value) => _updateLocalState(
-                    prefs.copyWith(emailMarketing: value),
-                  ),
+                  onChanged: (value) =>
+                      _updateLocalState(prefs.copyWith(emailMarketing: value)),
                 ),
               ],
 
@@ -205,9 +207,8 @@ class _NotificationSettingsViewState
                   title: l10n.notifications_smsTransactions,
                   subtitle: l10n.notifications_smsTransactionsDescription,
                   value: prefs.smsTransactions,
-                  onChanged: (value) => _updateLocalState(
-                    prefs.copyWith(smsTransactions: value),
-                  ),
+                  onChanged: (value) =>
+                      _updateLocalState(prefs.copyWith(smsTransactions: value)),
                 ),
                 _buildSettingTile(
                   l10n: l10n,
@@ -228,8 +229,11 @@ class _NotificationSettingsViewState
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.info_outline,
-                        color: context.colors.info, size: 20),
+                    Icon(
+                      Icons.info_outline,
+                      color: context.colors.info,
+                      size: 20,
+                    ),
                     SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: AppText(
@@ -258,17 +262,16 @@ class _NotificationSettingsViewState
           ),
         ),
         // Show saving overlay
-        if (isSaving)
-          Positioned.fill(
-            child: Container(
-              color: Colors.black26,
-            ),
-          ),
+        if (isSaving) Positioned.fill(child: Container(color: Colors.black26)),
       ],
     );
   }
 
-  Widget _buildErrorState(String error, AppLocalizations l10n, ThemeColors colors) {
+  Widget _buildErrorState(
+    String error,
+    AppLocalizations l10n,
+    ThemeColors colors,
+  ) {
     return Center(
       child: Padding(
         padding: EdgeInsets.all(AppSpacing.md),
@@ -342,10 +345,7 @@ class _NotificationSettingsViewState
               color: colors.textPrimary,
             ),
           ),
-          AppToggle(
-            value: enabled,
-            onChanged: onChanged,
-          ),
+          AppToggle(value: enabled, onChanged: onChanged),
         ],
       ),
     );
@@ -432,11 +432,20 @@ class _NotificationSettingsViewState
     if (_localPrefs == null) return;
 
     setState(() => _isSaving = true);
+    final authState = ref.read(authProvider);
 
     try {
       final success = await ref
           .read(notificationPreferencesProvider.notifier)
           .updatePreferences(_localPrefs!);
+      if (success) {
+        unawaited(
+          _syncNewsletterInterest(
+            authState: authState,
+            emailMarketing: _localPrefs!.emailMarketing,
+          ),
+        );
+      }
 
       if (mounted) {
         if (success) {
@@ -475,6 +484,40 @@ class _NotificationSettingsViewState
           ),
         );
       }
+    }
+  }
+
+  Future<void> _syncNewsletterInterest({
+    required AuthState authState,
+    required bool emailMarketing,
+  }) async {
+    final user = authState.user;
+    try {
+      await ref
+          .read(featureSubscriptionServiceProvider)
+          .subscribe(
+            FeatureSubscriptionRequest(
+              featureKey: 'product_newsletter',
+              source: 'notification_settings',
+              status: emailMarketing ? 'subscribed' : 'unsubscribed',
+              phone: user?.phone ?? authState.phone,
+              email: user?.email,
+              featureName: 'Korido newsletter',
+              requestedFeature: 'product_newsletter',
+              countryCode: user?.countryCode,
+              locale: user?.preferredLocale,
+              metadata: {
+                'surface': 'notification_settings',
+                'channel': 'email',
+                'preference': 'emailMarketing',
+                'enabled': emailMarketing,
+              },
+            ),
+          );
+    } on Object {
+      // Newsletter interest is a secondary backoffice signal. The user's
+      // notification preferences were already saved, so do not roll back the
+      // screen or show a false save failure if this side effect is unavailable.
     }
   }
 

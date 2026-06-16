@@ -9,6 +9,8 @@ class QrPaymentData {
   final String? type;
   final String? recipient;
   final String? merchantId;
+  final String? merchantMcc;
+  final String? merchantCategory;
   final String? reference;
   final String? paymentLinkId;
 
@@ -22,6 +24,8 @@ class QrPaymentData {
     this.type,
     this.recipient,
     this.merchantId,
+    this.merchantMcc,
+    this.merchantCategory,
     this.reference,
     this.paymentLinkId,
   });
@@ -36,15 +40,26 @@ class QrPaymentData {
     type: json['type'] as String?,
     recipient: json['recipient'] as String?,
     merchantId: json['merchantId'] as String?,
+    merchantMcc: json['merchantMcc'] as String? ?? json['mcc'] as String?,
+    merchantCategory: json['merchantCategory'] as String?,
     reference: json['reference'] as String?,
     paymentLinkId: json['paymentLinkId'] as String?,
   );
 
   Map<String, dynamic> toJson() => {
-    'userId': userId, 'phone': phone, 'displayName': displayName,
-    'amount': amount, 'note': note, 'address': walletAddress,
-    'type': type, 'recipient': recipient, 'merchantId': merchantId,
-    'reference': reference, 'paymentLinkId': paymentLinkId,
+    'userId': userId,
+    'phone': phone,
+    'displayName': displayName,
+    'amount': amount,
+    'note': note,
+    'address': walletAddress,
+    'type': type,
+    'recipient': recipient,
+    'merchantId': merchantId,
+    'merchantMcc': merchantMcc,
+    'merchantCategory': merchantCategory,
+    'reference': reference,
+    'paymentLinkId': paymentLinkId,
   };
 
   /// Encode as JSON string for QR code.
@@ -60,7 +75,9 @@ class QrPaymentData {
       if (walletAddress != null) 'address': walletAddress,
     };
     // Simple JSON encoding — in production, consider signing this
-    return Uri.encodeFull('korido://pay?data=${Uri.encodeComponent(_mapToString(data))}');
+    return Uri.encodeFull(
+      'korido://pay?data=${Uri.encodeComponent(_mapToString(data))}',
+    );
   }
 
   /// Decode from scanned QR string.
@@ -94,8 +111,6 @@ class QrPaymentData {
   }
 
   static String _mapToString(Map<String, dynamic> map) {
-    return map.entries
-        .map((e) => '${e.key}=${e.value}')
-        .join('&');
+    return map.entries.map((e) => '${e.key}=${e.value}').join('&');
   }
 }

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 import 'package:usdc_wallet/core/utils/amount_conversion.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
@@ -18,6 +19,72 @@ enum WithdrawMethod {
   final String prefix;
   final String? providerCode;
   const WithdrawMethod(this.label, this.prefix, this.providerCode);
+}
+
+/// Backend-owned withdrawal rail returned by `/wallet/withdraw/options`.
+class WithdrawalOption {
+  const WithdrawalOption({
+    required this.id,
+    required this.name,
+    required this.type,
+    required this.enabled,
+    this.providerCode,
+    this.country,
+    this.currency,
+    this.payoutCurrency,
+    this.minAmount,
+    this.maxAmount,
+    this.fee,
+    this.feeType,
+    this.minFee,
+    this.maxFee,
+    this.estimatedArrival,
+  });
+
+  final String id;
+  final String name;
+  final String type;
+  final bool enabled;
+  final String? providerCode;
+  final String? country;
+  final String? currency;
+  final String? payoutCurrency;
+  final double? minAmount;
+  final double? maxAmount;
+  final double? fee;
+  final String? feeType;
+  final double? minFee;
+  final double? maxFee;
+  final String? estimatedArrival;
+
+  bool get isMobileMoney =>
+      type.toLowerCase() == 'mobile_money' && providerCode != null;
+
+  factory WithdrawalOption.fromJson(Map<String, dynamic> json) {
+    return WithdrawalOption(
+      id: _readString(json, const ['id']) ?? '',
+      name: _readString(json, const ['name']) ?? 'Withdrawal rail',
+      type: _readString(json, const ['type']) ?? '',
+      providerCode: _readString(json, const ['providerCode', 'provider_code']),
+      country: _readString(json, const ['country']),
+      currency: _readString(json, const ['currency']),
+      payoutCurrency: _readString(json, const [
+        'payoutCurrency',
+        'payout_currency',
+      ]),
+      minAmount: _readDouble(json, const ['minAmount', 'min_amount']),
+      maxAmount: _readDouble(json, const ['maxAmount', 'max_amount']),
+      fee: _readDouble(json, const ['fee']),
+      feeType: _readString(json, const ['feeType', 'fee_type']),
+      minFee: _readDouble(json, const ['minFee', 'min_fee']),
+      maxFee: _readDouble(json, const ['maxFee', 'max_fee']),
+      estimatedArrival: _readString(json, const [
+        'estimatedArrival',
+        'estimated_arrival',
+      ]),
+      enabled: _readBool(json, const ['enabled', 'available']) ?? true,
+    );
+  }
 }
 
 /// Withdrawal state.
@@ -110,12 +177,32 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
   void setPhoneNumber(String phone) =>
       state = state.copyWith(phoneNumber: phone);
 
-  /// Estimate fees locally until the API exposes a withdrawal quote endpoint.
+  /// Quote fees from the same backend commercial terms path used for submission.
   Future<void> setAmount(double amount) async {
-    final fee = state.method == WithdrawMethod.bankTransfer
-        ? 2.0
-        : amount * 0.005;
-    state = state.copyWith(amount: amount, fee: fee);
+    state = state.copyWith(amount: amount, fee: 0, error: null);
+    final method = state.method;
+    if (amount <= 0 || method == null) return;
+    final providerCode = method.providerCode;
+    if (providerCode == null) {
+      state = state.copyWith(
+        error: 'Bank transfer withdrawals are not available yet.',
+      );
+      return;
+    }
+
+    try {
+      final fee = await _estimateMobileMoneyFee(
+        amount: amount,
+        providerCode: providerCode,
+      );
+      state = state.copyWith(amount: amount, fee: fee, error: null);
+    } catch (e) {
+      state = state.copyWith(
+        amount: amount,
+        fee: 0,
+        error: 'Unable to estimate withdrawal fee. Please try again.',
+      );
+    }
   }
 
   /// Fix #8: Wire to real /withdrawals/initiate endpoint.
@@ -172,11 +259,59 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
   }
 
   void reset() => state = const WithdrawState();
+
+  Future<double> _estimateMobileMoneyFee({
+    required double amount,
+    required String providerCode,
+  }) async {
+    final dio = ref.read(dioProvider);
+    final response = await dio.post(
+      ApiEndpoints.withdrawQuote,
+      data: {
+        'amount': toCents(amount),
+        'providerCode': providerCode,
+        'currency': 'XOF',
+      },
+    );
+    final payload = _unwrapPayload(
+      Map<String, dynamic>.from(response.data as Map),
+    );
+    final feeCents = _readDouble(payload, const ['fee', 'feeCents']);
+    if (feeCents == null) {
+      throw StateError('Withdrawal quote response did not include a fee.');
+    }
+    return feeCents / 100;
+  }
 }
 
 final withdrawProvider = NotifierProvider<WithdrawNotifier, WithdrawState>(
   WithdrawNotifier.new,
 );
+
+final withdrawalOptionsProvider =
+    FutureProvider.family<List<WithdrawalOption>, String>((ref, country) async {
+      final dio = ref.read(dioProvider);
+      final response = await dio.get(
+        '/wallet/withdraw/options',
+        queryParameters: {'country': country},
+      );
+      final payload = response.data is Map
+          ? Map<String, dynamic>.from(response.data as Map)
+          : <String, dynamic>{};
+      final options = _readList(_unwrapPayload(payload), const [
+        'options',
+        'withdrawalOptions',
+        'rails',
+      ]);
+      return options
+          .whereType<Map>()
+          .map(
+            (item) =>
+                WithdrawalOption.fromJson(Map<String, dynamic>.from(item)),
+          )
+          .where((option) => option.id.isNotEmpty)
+          .toList(growable: false);
+    });
 
 Map<String, dynamic> _unwrapPayload(Map<String, dynamic> json) {
   final data = json['data'];
@@ -197,4 +332,41 @@ String? _readString(Map<String, dynamic> json, List<String> keys) {
     if (stringValue.isNotEmpty) return stringValue;
   }
   return null;
+}
+
+bool? _readBool(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is bool) return value;
+    if (value is String) {
+      final normalized = value.trim().toLowerCase();
+      if (normalized == 'true' || normalized == '1' || normalized == 'yes') {
+        return true;
+      }
+      if (normalized == 'false' || normalized == '0' || normalized == 'no') {
+        return false;
+      }
+    }
+  }
+  return null;
+}
+
+double? _readDouble(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is num) return value.toDouble();
+    if (value is String) {
+      final parsed = double.tryParse(value);
+      if (parsed != null) return parsed;
+    }
+  }
+  return null;
+}
+
+List<dynamic> _readList(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is List) return value;
+  }
+  return const [];
 }

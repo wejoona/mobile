@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/config/countries.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/contacts/contacts_service.dart';
@@ -132,6 +133,15 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
   Future<void> setRecipient(String phoneNumber, {String? name}) async {
     state = state.copyWith(isLoading: true, error: null, clearRecipient: true);
     try {
+      if (_isCurrentUserPhone(phoneNumber)) {
+        state = state.copyWith(
+          isLoading: false,
+          clearRecipient: true,
+          error: 'recipient_is_current_user',
+        );
+        return;
+      }
+
       final dio = ref.read(dioProvider);
       final contactsService = ref.read(contactsServiceProvider);
       final phoneHash = contactsService.hashPhone(
@@ -158,14 +168,18 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
         return;
       }
 
-      String? userId;
       String? displayName = name;
       final match = matches.first;
-      userId = match['userId'] as String?;
+      final userId = _stringValue(match, const [
+        'userId',
+        'koridoUserId',
+        'joonaPayUserId',
+        'id',
+      ]);
       displayName =
           displayName ??
-          (match['displayName'] as String?) ??
-          (match['name'] as String?);
+          _displayNameValue(match) ??
+          _stringValue(match, const ['username', 'handle']);
 
       final recipient = RecipientInfo(
         phoneNumber: phoneNumber,
@@ -174,6 +188,14 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
         username: _stringValue(match, const ['username', 'handle']),
         isKoridoUser: isKoridoUser,
       );
+      if (_isCurrentUserRecipient(recipient)) {
+        state = state.copyWith(
+          isLoading: false,
+          clearRecipient: true,
+          error: 'recipient_is_current_user',
+        );
+        return;
+      }
 
       state = state.copyWith(isLoading: false, recipient: recipient);
     } on DioException {
@@ -200,6 +222,7 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
     final normalizedPhone = phoneNumber?.trim() ?? '';
     final normalizedUsername = _normalizeUsername(username);
     if (normalizedPhone.isEmpty &&
+        (userId == null || userId.trim().isEmpty) &&
         (normalizedUsername == null || normalizedUsername.isEmpty)) {
       state = state.copyWith(
         clearRecipient: true,
@@ -208,17 +231,23 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       return;
     }
 
-    state = state.copyWith(
-      isLoading: false,
-      error: null,
-      recipient: RecipientInfo(
-        phoneNumber: normalizedPhone,
-        name: name,
-        userId: userId,
-        username: normalizedUsername,
-        isKoridoUser: true,
-      ),
+    final recipient = RecipientInfo(
+      phoneNumber: normalizedPhone,
+      name: name,
+      userId: userId,
+      username: normalizedUsername,
+      isKoridoUser: true,
     );
+    if (_isCurrentUserRecipient(recipient)) {
+      state = state.copyWith(
+        isLoading: false,
+        clearRecipient: true,
+        error: 'recipient_is_current_user',
+      );
+      return;
+    }
+
+    state = state.copyWith(isLoading: false, error: null, recipient: recipient);
   }
 
   /// Set transfer amount
@@ -236,15 +265,19 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
   /// Restore a queued offline transfer as a draft that requires fresh PIN auth.
   Future<void> resumePendingTransfer({
     required String transferId,
+    String? recipientId,
     required String recipientPhone,
     required double amount,
     String? recipientName,
+    String? recipientUsername,
     String? note,
   }) async {
     state = SendMoneyState(
       recipient: RecipientInfo(
         phoneNumber: recipientPhone,
         name: recipientName,
+        userId: recipientId,
+        username: recipientUsername,
         isKoridoUser: true,
       ),
       amount: amount,
@@ -319,6 +352,12 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       return false;
     }
 
+    if (_isCurrentUserRecipient(state.recipient!)) {
+      state = state.copyWith(error: 'recipient_is_current_user');
+      await hapticService.warning();
+      return false;
+    }
+
     // Prevent double-submit
     if (state.isSubmitting) return false;
 
@@ -333,6 +372,7 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
           state.recipient!.username ??
           state.recipient!.phoneNumber;
       final result = await transfersService.createInternalTransfer(
+        recipientId: state.recipient!.userId,
         recipientPhone: state.recipient!.phoneNumber.isNotEmpty
             ? state.recipient!.phoneNumber
             : null,
@@ -410,8 +450,49 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
     if (trimmed == null || trimmed.isEmpty) {
       return null;
     }
-    return trimmed.startsWith('@') ? trimmed.substring(1) : trimmed;
+    final withoutPrefix = trimmed.startsWith('@')
+        ? trimmed.substring(1)
+        : trimmed;
+    return withoutPrefix.toLowerCase();
   }
+
+  bool _isCurrentUserRecipient(RecipientInfo recipient) {
+    final authState = ref.read(authProvider);
+    final userState = ref.read(userStateMachineProvider);
+    final currentUserId = authState.user?.id ?? userState.userId;
+    final currentPhone = authState.user?.phone ?? userState.phone;
+    final currentUsername = _normalizeUsername(authState.user?.username);
+
+    final recipientUserId = recipient.userId?.trim();
+    if (recipientUserId != null &&
+        recipientUserId.isNotEmpty &&
+        currentUserId != null &&
+        recipientUserId == currentUserId) {
+      return true;
+    }
+
+    if (_isCurrentUserPhone(
+      recipient.phoneNumber,
+      currentPhone: currentPhone,
+    )) {
+      return true;
+    }
+
+    final recipientUsername = _normalizeUsername(recipient.username);
+    return recipientUsername != null &&
+        currentUsername != null &&
+        recipientUsername.toLowerCase() == currentUsername.toLowerCase();
+  }
+
+  bool _isCurrentUserPhone(String phoneNumber, {String? currentPhone}) {
+    final phone = currentPhone ?? ref.read(userStateMachineProvider).phone;
+    if (phone == null || phone.trim().isEmpty) {
+      return false;
+    }
+    return _phoneDigits(phoneNumber) == _phoneDigits(phone);
+  }
+
+  String _phoneDigits(String value) => value.replaceAll(RegExp(r'\D'), '');
 }
 
 List<Map<String, dynamic>> _extractContactSyncMatches(Object? payload) {
@@ -467,6 +548,18 @@ List<RecentRecipient> _extractRecentRecipients(Object? payload) {
     return RecentRecipient(
       phoneNumber: phone ?? '',
       name: name ?? '',
+      userId: _stringValue(map, const [
+        'userId',
+        'recipientId',
+        'contactUserId',
+        'koridoUserId',
+        'joonaPayUserId',
+      ]),
+      username: _stringValue(map, const [
+        'username',
+        'recipientUsername',
+        'handle',
+      ]),
       lastTransferDate: _parseDate(dateValue) ?? DateTime.now(),
       lastAmount: _numValue(map, const ['lastAmount', 'amount']) ?? 0.0,
       isKoridoUser:
@@ -486,6 +579,21 @@ String? _stringValue(Map<String, dynamic> map, List<String> keys) {
     if (value is String && value.isNotEmpty) return value;
   }
   return null;
+}
+
+String? _displayNameValue(Map<String, dynamic> map) {
+  final explicit = _stringValue(map, const ['displayName', 'name']);
+  if (explicit != null) {
+    return explicit;
+  }
+
+  final first = _stringValue(map, const ['firstName', 'first_name']);
+  final last = _stringValue(map, const ['lastName', 'last_name']);
+  final fullName = [
+    first,
+    last,
+  ].where((part) => part != null && part.trim().isNotEmpty).join(' ').trim();
+  return fullName.isEmpty ? null : fullName;
 }
 
 double? _numValue(Map<String, dynamic> map, List<String> keys) {

@@ -62,16 +62,50 @@ class ProfilePictureService {
     }
   }
 
+  /// Recover an image selected before Android killed the activity under memory pressure.
+  Future<File?> retrieveLostImage() async {
+    if (!Platform.isAndroid) {
+      return null;
+    }
+
+    try {
+      final response = await _picker.retrieveLostData();
+      if (response.isEmpty) {
+        return null;
+      }
+
+      if (response.exception != null) {
+        throw response.exception!;
+      }
+
+      final files = response.files;
+      final image = files != null && files.isNotEmpty
+          ? files.first
+          : response.file;
+      if (image == null) {
+        return null;
+      }
+
+      _logger.info('Recovered lost profile image: ${image.path}');
+      return File(image.path);
+    } on Object catch (e) {
+      _logger.error('Error recovering lost profile image: $e');
+      rethrow;
+    }
+  }
+
   /// Upload avatar to backend.
   Future<AvatarUploadResult> uploadAvatar(
     File imageFile, {
     required void Function(double) onProgress,
+    required AvatarDeviceFaceCheck faceCheck,
   }) async {
     try {
       _logger.info('Uploading avatar: ${imageFile.path}');
 
       final fileName = imageFile.path.split('/').last;
       final formData = FormData.fromMap({
+        avatarDeviceFaceCheckField: faceCheck.token,
         'avatar': await avatarMultipartFile(imageFile, filename: fileName),
       });
 
@@ -112,8 +146,49 @@ class ProfilePictureService {
   /// Uses flutter_image_compress for real compression.
   /// Target: max 500KB, 80% quality, max 1024px dimension.
   Future<File> compressImage(File file, {int maxSizeBytes = 500 * 1024}) async {
+    return _compressImage(
+      file,
+      maxSizeBytes: maxSizeBytes,
+      minWidth: 1024,
+      minHeight: 1024,
+      firstQuality: 80,
+      retryWidth: 800,
+      retryHeight: 800,
+      retryQuality: 60,
+    );
+  }
+
+  /// Prepare a smaller JPEG for on-device face detection on lower-end phones.
+  Future<File> prepareForFaceDetection(File file) async {
+    return _compressImage(
+      file,
+      maxSizeBytes: 220 * 1024,
+      minWidth: 720,
+      minHeight: 720,
+      firstQuality: 68,
+      retryWidth: 560,
+      retryHeight: 560,
+      retryQuality: 54,
+      outputPrefix: 'face_check',
+      forceJpeg: true,
+    );
+  }
+
+  Future<File> _compressImage(
+    File file, {
+    required int maxSizeBytes,
+    required int minWidth,
+    required int minHeight,
+    required int firstQuality,
+    required int retryWidth,
+    required int retryHeight,
+    required int retryQuality,
+    String outputPrefix = 'compressed',
+    bool forceJpeg = false,
+  }) async {
     final fileSize = await file.length();
-    final shouldConvertToJpeg = !_hasUploadFriendlyExtension(file.path);
+    final shouldConvertToJpeg =
+        forceJpeg || !_hasUploadFriendlyExtension(file.path);
 
     if (fileSize <= maxSizeBytes && !shouldConvertToJpeg) {
       _logger.info('Image size OK: $fileSize bytes');
@@ -127,9 +202,9 @@ class ProfilePictureService {
     try {
       final result = await FlutterImageCompress.compressWithFile(
         file.absolute.path,
-        minWidth: 1024,
-        minHeight: 1024,
-        quality: 80,
+        minWidth: minWidth,
+        minHeight: minHeight,
+        quality: firstQuality,
         format: CompressFormat.jpeg,
       );
 
@@ -140,23 +215,25 @@ class ProfilePictureService {
 
       // If still too large, try lower quality
       if (result.length > maxSizeBytes) {
-        _logger.info('Still ${result.length} bytes, retrying at 60% quality');
+        _logger.info(
+          'Still ${result.length} bytes, retrying at $retryQuality% quality',
+        );
         final retry = await FlutterImageCompress.compressWithFile(
           file.absolute.path,
-          minWidth: 800,
-          minHeight: 800,
-          quality: 60,
+          minWidth: retryWidth,
+          minHeight: retryHeight,
+          quality: retryQuality,
           format: CompressFormat.jpeg,
         );
         if (retry != null && retry.length < result.length) {
-          final outPath = _compressedJpegPath(file);
+          final outPath = _compressedJpegPath(file, prefix: outputPrefix);
           final outFile = File(outPath)..writeAsBytesSync(retry);
           _logger.info('Compressed to ${retry.length} bytes');
           return outFile;
         }
       }
 
-      final outPath = _compressedJpegPath(file);
+      final outPath = _compressedJpegPath(file, prefix: outputPrefix);
       final outFile = File(outPath)..writeAsBytesSync(result);
       _logger.info('Compressed to ${result.length} bytes');
       return outFile;
@@ -174,11 +251,11 @@ class ProfilePictureService {
         extension == 'webp';
   }
 
-  String _compressedJpegPath(File file) {
+  String _compressedJpegPath(File file, {required String prefix}) {
     final name = file.uri.pathSegments.last;
     final dotIndex = name.lastIndexOf('.');
     final baseName = dotIndex > 0 ? name.substring(0, dotIndex) : name;
-    return '${file.parent.path}/compressed_$baseName.jpg';
+    return '${file.parent.path}/${prefix}_$baseName.jpg';
   }
 }
 
@@ -191,18 +268,19 @@ Map<String, dynamic> _readPayload(Object? raw) {
     final map = Map<String, dynamic>.from(raw);
     final data = map['data'];
     if (data is Map) {
-      final dataMap = Map<String, dynamic>.from(data);
-      final user = dataMap['user'];
-      if (user is Map) {
-        return Map<String, dynamic>.from(user);
-      }
-      return dataMap;
+      return _unwrapKnownPayload(Map<String, dynamic>.from(data));
     }
-    final user = map['user'];
-    if (user is Map) {
-      return Map<String, dynamic>.from(user);
-    }
-    return map;
+    return _unwrapKnownPayload(map);
   }
   return const {};
+}
+
+Map<String, dynamic> _unwrapKnownPayload(Map<String, dynamic> map) {
+  for (final key in const ['user', 'profile', 'avatar']) {
+    final nested = map[key];
+    if (nested is Map) {
+      return {...map, ...Map<String, dynamic>.from(nested)};
+    }
+  }
+  return map;
 }

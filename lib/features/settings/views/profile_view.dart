@@ -263,6 +263,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
       case KycStatus.documentsPending:
         return l10n.profile_kycPending;
       case KycStatus.submitted:
+      case KycStatus.manualReview:
         return l10n.profile_kycPending;
       case KycStatus.verified:
         return l10n.profile_kycVerified;
@@ -280,6 +281,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
       case KycStatus.pending:
       case KycStatus.documentsPending:
       case KycStatus.submitted:
+      case KycStatus.manualReview:
       case KycStatus.additionalInfoNeeded:
         return context.colors.warning;
       case KycStatus.verified:

@@ -15,6 +15,7 @@ import 'package:usdc_wallet/features/send/widgets/recent_recipient_card.dart';
 import 'package:usdc_wallet/features/send/widgets/send_flow_visuals.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/contacts/contacts_service.dart';
+import 'package:usdc_wallet/state/user_state_machine.dart';
 
 class RecipientScreen extends ConsumerStatefulWidget {
   const RecipientScreen({
@@ -71,14 +72,16 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     super.initState();
     final initialPhone = widget.initialPhone?.trim();
     final initialUsername = widget.initialUsername?.trim();
+    final initialRecipientId = widget.initialRecipientId?.trim();
     if (initialPhone != null && initialPhone.isNotEmpty) {
       final isKnownKorido =
-          initialUsername != null && initialUsername.isNotEmpty;
+          (initialUsername != null && initialUsername.isNotEmpty) ||
+          (initialRecipientId != null && initialRecipientId.isNotEmpty);
       _setRecipientFields(
         initialPhone,
         widget.initialName,
         username: initialUsername,
-        userId: widget.initialRecipientId,
+        userId: initialRecipientId,
         isKnownKorido: isKnownKorido,
       );
       _lookupCurrentRecipientIfNeeded(isKnownKorido: isKnownKorido);
@@ -88,6 +91,13 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
         widget.initialName,
         username: initialUsername,
         userId: widget.initialRecipientId,
+        isKnownKorido: true,
+      );
+    } else if (initialRecipientId != null && initialRecipientId.isNotEmpty) {
+      _setRecipientFields(
+        '',
+        widget.initialName,
+        userId: initialRecipientId,
         isKnownKorido: true,
       );
     }
@@ -114,23 +124,27 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(sendMoneyProvider);
     final authState = ref.watch(authProvider);
+    final userState = ref.watch(userStateMachineProvider);
     final colors = context.colors;
     final isCompletePhone =
         _phoneController.text.length == _selectedLocalLength;
-    final myPhone = authState.user?.phone ?? authState.phone;
+    final myPhone = authState.user?.phone ?? authState.phone ?? userState.phone;
     final hasUsernameRecipient = _hasUsernameRecipient;
+    final hasUserIdRecipient = _hasUserIdRecipient;
+    final myUsername = _normalizeUsername(authState.user?.username);
     final isSelfSelectedAccount =
         (_selectedRecipientUserId != null &&
-            _selectedRecipientUserId == authState.user?.id) ||
+            _selectedRecipientUserId ==
+                (authState.user?.id ?? userState.userId)) ||
         (_selectedRecipientUsername != null &&
-            authState.user?.username != null &&
-            _selectedRecipientUsername == authState.user?.username);
+            myUsername != null &&
+            _selectedRecipientUsername == myUsername);
     final isSelfRecipient =
         (isCompletePhone && _samePhone(_typedPhoneNumber, myPhone)) ||
         isSelfSelectedAccount;
     final hasSelectableRecipient =
         _selectedRecipientKnownKorido &&
-        (isCompletePhone || hasUsernameRecipient);
+        (isCompletePhone || hasUsernameRecipient || hasUserIdRecipient);
     final canContinue =
         hasSelectableRecipient &&
         !_isRecipientLookupLoading &&
@@ -375,6 +389,8 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
                           onTap: () => _selectRecipient(
                             recipient.phoneNumber,
                             recipient.name,
+                            username: recipient.username,
+                            userId: recipient.userId,
                             isKnownKorido: recipient.isKoridoUser,
                           ),
                         ),
@@ -420,21 +436,6 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
       return;
     }
 
-    final contactsService = ref.read(contactsServiceProvider);
-    var hasPermission = await contactsService.hasContactsPermission();
-    if (!hasPermission) {
-      hasPermission = await contactsService.requestContactsPermission();
-    }
-
-    if (!mounted) {
-      return;
-    }
-
-    if (!hasPermission) {
-      await _showContactsPermissionDialog();
-      return;
-    }
-
     final contact = await showModalBottomSheet<SyncedContact>(
       context: context,
       isScrollControlled: true,
@@ -451,44 +452,6 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
         isKnownKorido: contact.isKoridoUser,
       );
     }
-  }
-
-  Future<void> _showContactsPermissionDialog() async {
-    final l10n = AppLocalizations.of(context)!;
-    final contactsService = ref.read(contactsServiceProvider);
-    final requiresSettings = await contactsService
-        .contactsPermissionRequiresSettings();
-    if (!mounted) {
-      return;
-    }
-
-    if (requiresSettings) {
-      final shouldOpen = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text(l10n.send_contactsPermissionSettingsTitle),
-          content: Text(l10n.send_contactsPermissionSettingsMessage),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: Text(l10n.action_cancel),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: Text(l10n.action_open_settings),
-            ),
-          ],
-        ),
-      );
-      if (shouldOpen ?? false) {
-        await contactsService.openContactsSettings();
-      }
-      return;
-    }
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(l10n.send_contactsPermissionDenied)));
   }
 
   Future<void> _selectFromBeneficiaries() async {
@@ -568,7 +531,8 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     });
 
     final authState = ref.read(authProvider);
-    final myPhone = authState.user?.phone ?? authState.phone;
+    final userState = ref.read(userStateMachineProvider);
+    final myPhone = authState.user?.phone ?? authState.phone ?? userState.phone;
     if (value.length != _selectedLocalLength ||
         _samePhone(_typedPhoneNumber, myPhone)) {
       return;
@@ -586,7 +550,8 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     }
 
     final authState = ref.read(authProvider);
-    final myPhone = authState.user?.phone ?? authState.phone;
+    final userState = ref.read(userStateMachineProvider);
+    final myPhone = authState.user?.phone ?? authState.phone ?? userState.phone;
     if (_samePhone(_typedPhoneNumber, myPhone)) {
       return;
     }
@@ -600,7 +565,8 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
 
   Future<void> _lookupTypedRecipient(String phoneNumber) async {
     final authState = ref.read(authProvider);
-    final myPhone = authState.user?.phone ?? authState.phone;
+    final userState = ref.read(userStateMachineProvider);
+    final myPhone = authState.user?.phone ?? authState.phone ?? userState.phone;
     if (_samePhone(phoneNumber, myPhone)) {
       return;
     }
@@ -615,7 +581,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     });
     try {
       final matches = await ref
-          .read(joonaPayContactsServiceProvider)
+          .read(koridoContactsServiceProvider)
           .lookupKoridoUsers(phoneNumber);
       if (!mounted ||
           '$_selectedCountryCode${_phoneController.text}' != phoneNumber) {
@@ -659,7 +625,10 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
 
   Future<void> _handleContinue() async {
     final hasUsernameRecipient = _hasUsernameRecipient;
-    if (!hasUsernameRecipient && !_formKey.currentState!.validate()) {
+    final hasUserIdRecipient = _hasUserIdRecipient;
+    if (!hasUsernameRecipient &&
+        !hasUserIdRecipient &&
+        !_formKey.currentState!.validate()) {
       return;
     }
 
@@ -667,13 +636,17 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     try {
       final phoneNumber = '$_selectedCountryCode${_phoneController.text}';
       final authState = ref.read(authProvider);
-      final myPhone = authState.user?.phone ?? authState.phone;
+      final userState = ref.read(userStateMachineProvider);
+      final myPhone =
+          authState.user?.phone ?? authState.phone ?? userState.phone;
       final sameUserId =
           _selectedRecipientUserId != null &&
-          _selectedRecipientUserId == authState.user?.id;
+          _selectedRecipientUserId == (authState.user?.id ?? userState.userId);
+      final myUsername = _normalizeUsername(authState.user?.username);
       final sameUsername =
           _selectedRecipientUsername != null &&
-          _selectedRecipientUsername == authState.user?.username;
+          myUsername != null &&
+          _selectedRecipientUsername == myUsername;
       if ((!hasUsernameRecipient && _samePhone(phoneNumber, myPhone)) ||
           sameUserId ||
           sameUsername) {
@@ -695,7 +668,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
         return;
       }
 
-      if (hasUsernameRecipient) {
+      if (hasUsernameRecipient || hasUserIdRecipient) {
         await ref
             .read(sendMoneyProvider.notifier)
             .setKnownKoridoRecipient(
@@ -717,17 +690,9 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
         if (!mounted) {
           return;
         }
+        final snack = _recipientErrorSnack(sendState.error!);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              localizedSendCopy(
-                context,
-                en: 'We could not verify this Korido account. Please try again.',
-                fr: 'Nous n’avons pas pu vérifier ce compte Korido. Veuillez réessayer.',
-              ),
-            ),
-            backgroundColor: context.colors.error,
-          ),
+          SnackBar(content: Text(snack.message), backgroundColor: snack.color),
         );
         return;
       }
@@ -765,10 +730,20 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
   bool get _hasUsernameRecipient =>
       _selectedRecipientUsername?.trim().isNotEmpty ?? false;
 
+  bool get _hasUserIdRecipient =>
+      _selectedRecipientUserId?.trim().isNotEmpty ?? false;
+
   String get _selectedRecipientSubtitle {
     final label = _selectedRecipientName ?? '';
     final handle = _selectedRecipientUsername;
     if (handle == null || handle.isEmpty) {
+      if (label.isEmpty && _hasUserIdRecipient) {
+        return localizedSendCopy(
+          context,
+          en: 'Verified Korido account',
+          fr: 'Compte Korido vérifié',
+        );
+      }
       return label;
     }
     final displayHandle = handle.startsWith('@') ? handle : '@$handle';
@@ -783,7 +758,10 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     if (trimmed == null || trimmed.isEmpty) {
       return null;
     }
-    return trimmed.startsWith('@') ? trimmed.substring(1) : trimmed;
+    final withoutPrefix = trimmed.startsWith('@')
+        ? trimmed.substring(1)
+        : trimmed;
+    return withoutPrefix.toLowerCase();
   }
 
   bool _samePhone(String candidate, String? currentUserPhone) {
@@ -794,4 +772,62 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
   }
 
   String _phoneDigits(String value) => value.replaceAll(RegExp(r'\D'), '');
+
+  _RecipientSnack _recipientErrorSnack(String errorCode) {
+    final colors = context.colors;
+    switch (errorCode) {
+      case 'recipient_is_current_user':
+        return _RecipientSnack(
+          localizedSendCopy(
+            context,
+            en: 'You cannot send money to your own Korido account.',
+            fr: 'Vous ne pouvez pas envoyer de l’argent à votre propre compte Korido.',
+          ),
+          colors.warning,
+        );
+      case 'recipient_not_korido_user':
+        return _RecipientSnack(
+          localizedSendCopy(
+            context,
+            en: 'No Korido account was found for this recipient.',
+            fr: 'Aucun compte Korido n’a été trouvé pour ce destinataire.',
+          ),
+          colors.warning,
+        );
+      case 'recipient_lookup_unavailable':
+        return _RecipientSnack(
+          localizedSendCopy(
+            context,
+            en: 'Korido account lookup is unavailable. Check your connection and try again.',
+            fr: 'La vérification du compte Korido est indisponible. Vérifiez votre connexion puis réessayez.',
+          ),
+          colors.error,
+        );
+      case 'recipient_identifier_required':
+        return _RecipientSnack(
+          localizedSendCopy(
+            context,
+            en: 'Choose a Korido contact or enter a complete phone number.',
+            fr: 'Choisissez un contact Korido ou saisissez un numéro complet.',
+          ),
+          colors.warning,
+        );
+      default:
+        return _RecipientSnack(
+          localizedSendCopy(
+            context,
+            en: 'We could not verify this Korido account. Please try again.',
+            fr: 'Nous n’avons pas pu vérifier ce compte Korido. Veuillez réessayer.',
+          ),
+          colors.error,
+        );
+    }
+  }
+}
+
+class _RecipientSnack {
+  const _RecipientSnack(this.message, this.color);
+
+  final String message;
+  final Color color;
 }

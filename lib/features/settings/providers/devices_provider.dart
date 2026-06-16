@@ -18,9 +18,10 @@ final devicesProvider = FutureProvider<List<Device>>((ref) async {
   try {
     return await repository.getDevices();
   } on ApiException catch (e) {
-    if (e.statusCode == 401) {
-      ref.read(authProvider.notifier).setLocked();
-      return const <Device>[];
+    if (e.isDeviceBlacklisted) {
+      await ref.read(authProvider.notifier).clearLocalSession();
+    } else if (e.statusCode == 401) {
+      await ref.read(authProvider.notifier).setLocked();
     }
     rethrow;
   }
@@ -103,16 +104,24 @@ final deviceActionsProvider = Provider<DeviceActions>((ref) {
 /// Adapter: wraps raw list into DevicesState for views.
 final devicesStateProvider = Provider<DevicesState>((ref) {
   final async = ref.watch(devicesProvider);
+  final authState = ref.watch(authProvider);
+  final error = async.error;
+  final requiresUnlock =
+      authState.isLocked || (error is ApiException && error.statusCode == 401);
   return DevicesState(
     isLoading: async.isLoading,
-    error: _friendlyDeviceError(async.error),
+    error: requiresUnlock ? null : _friendlyDeviceError(error),
     devices: async.value ?? [],
+    requiresUnlock: requiresUnlock,
   );
 });
 
 String? _friendlyDeviceError(Object? error) {
   if (error == null) return null;
   if (error is ApiException) {
+    if (error.isDeviceBlacklisted) {
+      return error.message;
+    }
     if (error.statusCode == 401) return null;
     if (error.statusCode == 403) {
       return 'You do not have permission to manage devices right now.';

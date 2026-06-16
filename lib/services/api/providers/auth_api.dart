@@ -32,5 +32,6 @@ class AuthApi {
   Future<Response> logout() => _dio.post('/auth/logout');
 
   /// POST /auth/logout-all — invalidate all sessions
-  Future<Response> logoutAll() => _dio.post('/auth/logout-all');
+  Future<Response> logoutAll() =>
+      _dio.post('/auth/logout-all', data: const <String, dynamic>{});
 }

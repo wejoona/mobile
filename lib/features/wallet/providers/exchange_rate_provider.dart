@@ -40,28 +40,25 @@ final exchangeRateProvider = FutureProvider<ExchangeRate>((ref) async {
   final timer = Timer(const Duration(minutes: 10), () => link.close());
   ref.onDispose(() => timer.cancel());
 
-  try {
-    final response = await dio.get(
-      '/wallet/exchange-rate',
-      queryParameters: {
-        'sourceCurrency': 'XOF',
-        'targetCurrency': 'USD',
-        'amount': 10000,
-        'direction': 'buy',
-      },
-    );
-    final data = response.data as Map<String, dynamic>;
-    final rate = data.containsKey('fromCurrency')
-        ? _readDouble(data['rate']) ?? _rateFromAmounts(data) ?? 600.0
-        : _rateFromAmounts(data) ??
-              _readDouble(data['rateDecimal']) ??
-              _readDouble(data['rate']) ??
-              600.0;
-    return ExchangeRate(rate: rate, updatedAt: _updatedAt(data));
-  } catch (_) {
-    // Fallback to BCEAO peg rate (1 USD ≈ 600 XOF)
-    return ExchangeRate(rate: 600.0, updatedAt: DateTime.now());
+  final response = await dio.get(
+    '/wallet/exchange-rate',
+    queryParameters: {
+      'sourceCurrency': 'XOF',
+      'targetCurrency': 'USD',
+      'amount': 10000,
+      'direction': 'buy',
+    },
+  );
+  final data = response.data as Map<String, dynamic>;
+  final rate = data.containsKey('fromCurrency')
+      ? _readDouble(data['rate']) ?? _rateFromAmounts(data)
+      : _rateFromAmounts(data) ??
+            _readDouble(data['rateDecimal']) ??
+            _readDouble(data['rate']);
+  if (rate == null || rate <= 0) {
+    throw const FormatException('Exchange rate response missing rate');
   }
+  return ExchangeRate(rate: rate, updatedAt: _updatedAt(data));
 });
 
 double? _rateFromAmounts(Map<String, dynamic> data) {

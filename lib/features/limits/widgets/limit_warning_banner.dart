@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 class LimitWarningBanner extends StatelessWidget {
   final TransactionLimits limits;
+  final TransactionLimitOperation operation;
   final bool showDailyWarning;
   final bool showMonthlyWarning;
 
   const LimitWarningBanner({
     super.key,
     required this.limits,
+    this.operation = TransactionLimitOperation.send,
     this.showDailyWarning = true,
     this.showMonthlyWarning = true,
   });
@@ -24,17 +25,21 @@ class LimitWarningBanner extends StatelessWidget {
     final colors = context.colors;
 
     // Determine what to show
-    final bool showDaily = showDailyWarning && (limits.isDailyNearLimit || limits.isDailyAtLimit);
-    final bool showMonthly = showMonthlyWarning && (limits.isMonthlyNearLimit || limits.isMonthlyAtLimit);
+    final bool showDaily =
+        showDailyWarning &&
+        (limits.isDailyNearLimitFor(operation) ||
+            limits.isDailyAtLimitFor(operation));
+    final bool showMonthly =
+        showMonthlyWarning &&
+        (limits.isMonthlyNearLimit || limits.isMonthlyAtLimit);
 
     if (!showDaily && !showMonthly) {
       return const SizedBox.shrink();
     }
 
     // Prioritize daily limit warnings
-    final bool isAtLimit = limits.isDailyAtLimit || limits.isMonthlyAtLimit;
-    // ignore: unused_local_variable
-    final bool __isNearLimit = limits.isDailyNearLimit || limits.isMonthlyNearLimit;
+    final bool isAtLimit =
+        limits.isDailyAtLimitFor(operation) || limits.isMonthlyAtLimit;
     final String message = _getMessage(l10n, limits, showDaily, showMonthly);
 
     return GestureDetector(
@@ -65,9 +70,13 @@ class LimitWarningBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AppText(
-                    isAtLimit ? l10n.limits_limitReached : l10n.limits_approachingLimit,
+                    isAtLimit
+                        ? l10n.limits_limitReached
+                        : l10n.limits_approachingLimit,
                     variant: AppTextVariant.labelMedium,
-                    color: isAtLimit ? context.colors.error : context.colors.warning,
+                    color: isAtLimit
+                        ? context.colors.error
+                        : context.colors.warning,
                   ),
                   const SizedBox(height: AppSpacing.xxs),
                   AppText(
@@ -78,26 +87,27 @@ class LimitWarningBanner extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
-              Icons.chevron_right,
-              color: colors.textTertiary,
-              size: 20,
-            ),
+            Icon(Icons.chevron_right, color: colors.textTertiary, size: 20),
           ],
         ),
       ),
     );
   }
 
-  String _getMessage(AppLocalizations l10n, TransactionLimits limits, bool showDaily, bool showMonthly) {
-    if (limits.isDailyAtLimit) {
-      return '${l10n.limits_dailyLimitReached} \$${limits.dailyLimit.toStringAsFixed(0)}';
+  String _getMessage(
+    AppLocalizations l10n,
+    TransactionLimits limits,
+    bool showDaily,
+    bool showMonthly,
+  ) {
+    if (limits.isDailyAtLimitFor(operation)) {
+      return '${l10n.limits_dailyLimitReached} \$${limits.dailyLimitFor(operation).toStringAsFixed(0)}';
     }
     if (limits.isMonthlyAtLimit) {
       return '${l10n.limits_monthlyLimitReached} \$${limits.monthlyLimit.toStringAsFixed(0)}';
     }
-    if (limits.isDailyNearLimit) {
-      return '\$${limits.dailyRemaining.toStringAsFixed(2)} ${l10n.limits_remainingToday}';
+    if (limits.isDailyNearLimitFor(operation)) {
+      return '\$${limits.dailyRemainingFor(operation).toStringAsFixed(2)} ${l10n.limits_remainingToday}';
     }
     if (limits.isMonthlyNearLimit) {
       return '\$${limits.monthlyRemaining.toStringAsFixed(2)} ${l10n.limits_remainingThisMonth}';

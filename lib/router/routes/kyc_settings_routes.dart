@@ -23,6 +23,7 @@ import 'package:usdc_wallet/features/profile/views/email_verification_screen.dar
 import 'package:usdc_wallet/features/referrals/views/referrals_view.dart';
 import 'package:usdc_wallet/features/settings/views/cookie_policy_view.dart';
 import 'package:usdc_wallet/features/settings/views/currency_view.dart';
+import 'package:usdc_wallet/features/settings/views/delete_account_view.dart';
 import 'package:usdc_wallet/features/settings/views/devices_screen.dart';
 import 'package:usdc_wallet/features/settings/views/help_screen.dart';
 import 'package:usdc_wallet/features/settings/views/help_view.dart';
@@ -210,6 +211,13 @@ List<RouteBase> kycSettingsRoutes() => [
     path: '/settings/sessions',
     pageBuilder: (context, state) =>
         AppPageTransitions.fade(state: state, child: const SessionsScreen()),
+  ),
+  GoRoute(
+    path: '/settings/delete-account',
+    pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+      state: state,
+      child: const DeleteAccountView(),
+    ),
   ),
   GoRoute(
     path: '/profile/verify-email',

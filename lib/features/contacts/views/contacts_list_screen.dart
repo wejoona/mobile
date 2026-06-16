@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
@@ -28,12 +27,20 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   String _searchQuery = '';
   List<SyncedContact> _lookupResults = [];
   bool _isLookupLoading = false;
+  bool _lookupFailed = false;
+  bool _isPermissionActionLoading = false;
   Timer? _lookupDebounce;
 
   @override
   void initState() {
     super.initState();
-    unawaited(Future.microtask(_loadContacts));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      unawaited(_routeToPermissionPromptIfNeeded());
+      unawaited(ref.read(contactsProvider.notifier).syncContacts());
+    });
   }
 
   @override
@@ -41,10 +48,6 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
     _lookupDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadContacts() async {
-    await ref.read(contactsProvider.notifier).syncContacts();
   }
 
   void _handleSearchChanged(String value) {
@@ -56,11 +59,15 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
       setState(() {
         _lookupResults = [];
         _isLookupLoading = false;
+        _lookupFailed = false;
       });
       return;
     }
 
-    setState(() => _isLookupLoading = true);
+    setState(() {
+      _isLookupLoading = true;
+      _lookupFailed = false;
+    });
     _lookupDebounce = Timer(
       const Duration(milliseconds: 280),
       () => _lookupKoridoUsers(trimmed),
@@ -70,7 +77,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   Future<void> _lookupKoridoUsers(String query) async {
     try {
       final results = await ref
-          .read(joonaPayContactsServiceProvider)
+          .read(koridoContactsServiceProvider)
           .lookupKoridoUsers(query);
       if (!mounted || _searchController.text.trim() != query) {
         return;
@@ -95,6 +102,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
           return !duplicatePhone && !duplicateUser;
         }).toList();
         _isLookupLoading = false;
+        _lookupFailed = false;
       });
     } on Object {
       if (!mounted || _searchController.text.trim() != query) {
@@ -103,12 +111,37 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
       setState(() {
         _lookupResults = [];
         _isLookupLoading = false;
+        _lookupFailed = true;
       });
     }
   }
 
   Future<void> _manualSync() async {
-    await _requestPermissionAndSync(showSettingsDialog: true);
+    if (_isPermissionActionLoading) {
+      return;
+    }
+    setState(() => _isPermissionActionLoading = true);
+    try {
+      await _requestPermissionAndSync(showSettingsDialog: true);
+    } finally {
+      if (mounted) {
+        setState(() => _isPermissionActionLoading = false);
+      }
+    }
+  }
+
+  Future<void> _routeToPermissionPromptIfNeeded() async {
+    final contactsService = ref.read(contactsServiceProvider);
+    final hasPermission = await contactsService.hasContactsPermission();
+    if (hasPermission || !mounted) {
+      return;
+    }
+
+    final requiresSettings = await contactsService
+        .contactsPermissionRequiresSettings();
+    if (!requiresSettings && mounted) {
+      context.go('/contacts/permission');
+    }
   }
 
   Future<void> _requestPermissionAndSync({
@@ -116,30 +149,37 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   }) async {
     final l10n = AppLocalizations.of(context)!;
     final notifier = ref.read(contactsProvider.notifier);
-    final status = await Permission.contacts.status;
-    if (!status.isGranted && !status.isLimited) {
-      if (status.isPermanentlyDenied || status.isRestricted) {
-        await notifier.syncContacts();
-        if (showSettingsDialog && mounted) {
-          await _showContactsSettingsDialog(l10n);
-        }
-        return;
-      }
-      final granted = await notifier.requestPermission();
-      final nextStatus = await Permission.contacts.status;
-      if (!granted &&
-          showSettingsDialog &&
-          mounted &&
-          _shouldOpenContactsSettings(nextStatus)) {
-        await _showContactsSettingsDialog(l10n);
+    final granted = await notifier.requestPermission();
+    if (granted) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _localizedText(
+                en: 'Contacts are ready',
+                fr: 'Vos contacts sont prêts',
+              ),
+            ),
+          ),
+        );
       }
       return;
     }
-    await notifier.syncContacts();
-  }
 
-  bool _shouldOpenContactsSettings(PermissionStatus status) =>
-      status.isDenied || status.isPermanentlyDenied || status.isRestricted;
+    if (!showSettingsDialog || !mounted) {
+      return;
+    }
+
+    final state = ref.read(contactsProvider);
+    if (state.permissionRequiresSettings) {
+      await _showContactsSettingsDialog(l10n);
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.contacts_permission_denied_message)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -192,7 +232,11 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                   if (state.permissionRequired)
                     Padding(
                       padding: const EdgeInsets.all(AppSpacing.md),
-                      child: _ContactsPermissionCard(onAction: _manualSync),
+                      child: _ContactsPermissionCard(
+                        requiresSettings: state.permissionRequiresSettings,
+                        isLoading: _isPermissionActionLoading,
+                        onAction: _manualSync,
+                      ),
                     ),
 
                   if (!state.permissionRequired)
@@ -287,16 +331,31 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                         ],
 
                         // Empty state
-                        if (filteredContacts.isEmpty && !state.isLoading)
+                        if (filteredContacts.isEmpty &&
+                            !state.isLoading &&
+                            !_isLookupLoading)
                           _ContactsEmptyState(
-                            title: state.permissionRequired
+                            title: _lookupFailed
+                                ? _localizedText(
+                                    en: 'Korido search is unavailable',
+                                    fr: 'La recherche Korido est indisponible',
+                                  )
+                                : state.permissionRequired
                                 ? l10n.contacts_permission_title
                                 : _searchQuery.isNotEmpty
                                 ? l10n.contacts_no_results
                                 : l10n.contacts_empty,
+                            description: _lookupFailed
+                                ? _localizedText(
+                                    en: 'Your contacts are still here. Try again in a moment.',
+                                    fr: 'Vos contacts sont toujours là. Réessayez dans un instant.',
+                                  )
+                                : null,
                             showAction:
                                 state.permissionRequired ||
                                 _searchQuery.isEmpty,
+                            requiresSettings: state.permissionRequiresSettings,
+                            isLoading: _isPermissionActionLoading,
                             onAction: _manualSync,
                           ),
                       ],
@@ -460,8 +519,8 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
         ],
       ),
     );
-    if (shouldOpen == true) {
-      await openAppSettings();
+    if (shouldOpen ?? false) {
+      await ref.read(contactsServiceProvider).openContactsSettings();
     }
   }
 
@@ -483,8 +542,14 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
 }
 
 class _ContactsPermissionCard extends StatelessWidget {
-  const _ContactsPermissionCard({required this.onAction});
+  const _ContactsPermissionCard({
+    required this.requiresSettings,
+    required this.isLoading,
+    required this.onAction,
+  });
 
+  final bool requiresSettings;
+  final bool isLoading;
   final Future<void> Function() onAction;
 
   @override
@@ -527,10 +592,15 @@ class _ContactsPermissionCard extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 AppButton(
-                  label: l10n.contacts_permission_allow,
-                  icon: Icons.person_search_rounded,
+                  label: requiresSettings
+                      ? l10n.action_open_settings
+                      : l10n.contacts_permission_allow,
+                  icon: requiresSettings
+                      ? Icons.settings_outlined
+                      : Icons.person_search_rounded,
                   isFullWidth: true,
-                  onPressed: () => unawaited(onAction()),
+                  isLoading: isLoading,
+                  onPressed: isLoading ? null : () => unawaited(onAction()),
                 ),
               ],
             ),
@@ -544,12 +614,18 @@ class _ContactsPermissionCard extends StatelessWidget {
 class _ContactsEmptyState extends StatelessWidget {
   const _ContactsEmptyState({
     required this.title,
+    this.description,
     required this.showAction,
+    required this.requiresSettings,
+    required this.isLoading,
     required this.onAction,
   });
 
   final String title;
+  final String? description;
   final bool showAction;
+  final bool requiresSettings;
+  final bool isLoading;
   final Future<void> Function() onAction;
 
   @override
@@ -591,7 +667,7 @@ class _ContactsEmptyState extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.sm),
             AppText(
-              l10n.contacts_permission_benefit2_desc,
+              description ?? l10n.contacts_permission_benefit2_desc,
               variant: AppTextVariant.bodyMedium,
               color: colors.textSecondary,
               textAlign: TextAlign.center,
@@ -599,12 +675,15 @@ class _ContactsEmptyState extends StatelessWidget {
             if (showAction) ...[
               const SizedBox(height: AppSpacing.xl),
               AppButton(
-                label: l10n.contacts_permission_allow,
-                icon: Icons.person_search_rounded,
+                label: requiresSettings
+                    ? l10n.action_open_settings
+                    : l10n.contacts_permission_allow,
+                icon: requiresSettings
+                    ? Icons.settings_outlined
+                    : Icons.person_search_rounded,
                 isFullWidth: true,
-                onPressed: () {
-                  unawaited(onAction());
-                },
+                isLoading: isLoading,
+                onPressed: isLoading ? null : () => unawaited(onAction()),
               ),
             ],
           ],

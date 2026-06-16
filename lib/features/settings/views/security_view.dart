@@ -184,7 +184,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               icon: Icons.delete_forever,
               title: l10n.security_deleteAccount,
               subtitle: l10n.security_deleteAccountSubtitle,
-              onTap: () => _confirmDeleteAccount(),
+              onTap: () => context.push('/settings/delete-account'),
               isDanger: true,
             ),
           ],
@@ -667,12 +667,12 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
       orElse: () => false,
     );
 
-    int score = 40; // Base score for having account
-    if (biometricsOn) score += 20;
-    score += 10; // Transaction PIN is mandatory for money movement.
+    int score = 55; // Account, device, session, and backend risk controls.
+    score += 25; // Transaction PIN is mandatory for money movement.
     final prefsState = ref.watch(notificationPreferencesProvider);
     final prefs = prefsState.preferences;
-    if (prefs?.smsSecurity == true || prefs?.pushSecurity == true) score += 5;
+    if (biometricsOn) score += 10;
+    if (prefs?.smsSecurity == true || prefs?.pushSecurity == true) score += 10;
     return score.clamp(0, 100);
   }
 
@@ -691,7 +691,13 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
     );
 
     if (!biometricsOn) return l10n.security_tipEnableBiometrics;
-    return l10n.security_tipEnableNotifications;
+    final prefsState = ref.watch(notificationPreferencesProvider);
+    final prefs = prefsState.preferences;
+    final securityAlertsOn =
+        prefs?.smsSecurity == true || prefs?.pushSecurity == true;
+
+    if (!securityAlertsOn) return l10n.security_tipEnableNotifications;
+    return l10n.security_twoFactorComingSoonSubtitle;
   }
 
   void _confirmLogoutAll() {
@@ -729,19 +735,23 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                 final success = await ref
                     .read(sessionsProvider.notifier)
                     .logoutAllDevices();
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        success
-                            ? l10n.security_logoutAllSuccess
-                            : 'Erreur lors de la déconnexion',
-                      ),
-                      backgroundColor: success
-                          ? context.colors.success
-                          : context.colors.error,
+                if (!mounted || !context.mounted) {
+                  return;
+                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      success
+                          ? l10n.security_logoutAllSuccess
+                          : 'Erreur lors de la déconnexion',
                     ),
-                  );
+                    backgroundColor: success
+                        ? context.colors.success
+                        : context.colors.error,
+                  ),
+                );
+                if (success) {
+                  context.go('/login');
                 }
               },
               variant: AppButtonVariant.danger,
@@ -907,49 +917,6 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
           ],
         ),
       ),
-    );
-  }
-
-  void _confirmDeleteAccount() {
-    final l10n = AppLocalizations.of(context)!;
-    // ignore: unused_local_variable
-    final __colors = context.colors;
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        final dialogColors = dialogContext.colors;
-        return AlertDialog(
-          backgroundColor: dialogColors.container,
-          title: AppText(
-            l10n.security_deleteAccountTitle,
-            variant: AppTextVariant.titleMedium,
-            color: context.colors.error,
-          ),
-          content: AppText(
-            l10n.security_deleteAccountMessage,
-            variant: AppTextVariant.bodyMedium,
-            color: dialogColors.textSecondary,
-          ),
-          actions: [
-            AppButton(
-              label: l10n.action_cancel,
-              onPressed: () => Navigator.pop(dialogContext),
-              variant: AppButtonVariant.ghost,
-              size: AppButtonSize.small,
-            ),
-            AppButton(
-              label: l10n.security_delete,
-              onPressed: () {
-                Navigator.pop(dialogContext);
-                // Would show another confirmation
-              },
-              variant: AppButtonVariant.danger,
-              size: AppButtonSize.small,
-            ),
-          ],
-        );
-      },
     );
   }
 }

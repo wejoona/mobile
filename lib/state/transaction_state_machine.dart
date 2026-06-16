@@ -48,6 +48,7 @@ class TransactionStateMachine extends Notifier<TransactionListState> {
         total: page.total,
         page: 1,
         hasMore: page.hasMore,
+        isCached: false,
       );
 
       // Cache locally for offline access
@@ -129,19 +130,58 @@ class TransactionStateMachine extends Notifier<TransactionListState> {
         total: page.total,
         page: 1,
         hasMore: page.hasMore,
+        isCached: false,
       );
+
+      ref
+          .read(localSyncServiceProvider)
+          .cacheTransactionsFromList(page.transactions);
 
       if (refreshWallet) {
         // Also refresh wallet balance when transactions refresh
         unawaited(ref.read(walletStateMachineProvider.notifier).refresh());
       }
-    } on Object {
+    } on ApiException catch (e) {
       if (!ref.mounted) {
         return;
       }
 
-      state = state.copyWith(status: TransactionListStatus.loaded);
+      _completeFailedRefresh(e.message);
+    } on Object catch (error) {
+      if (!ref.mounted) {
+        return;
+      }
+
+      _completeFailedRefresh(error.toString());
     }
+  }
+
+  void _completeFailedRefresh(String message) {
+    if (state.transactions.isNotEmpty) {
+      state = state.copyWith(
+        status: TransactionListStatus.loaded,
+        isCached: state.isCached,
+      );
+      return;
+    }
+
+    final cached = ref
+        .read(localSyncServiceProvider)
+        .cachedTransactionsToDomain();
+    if (cached.isNotEmpty) {
+      state = state.copyWith(
+        status: TransactionListStatus.loaded,
+        transactions: cached,
+        total: cached.length,
+        page: 1,
+        hasMore: false,
+        isCached: true,
+      );
+      _logger.debug('Loaded ${cached.length} from cache after refresh failure');
+      return;
+    }
+
+    state = state.copyWith(status: TransactionListStatus.error, error: message);
   }
 
   /// Load more transactions (pagination)
@@ -194,6 +234,8 @@ class TransactionStateMachine extends Notifier<TransactionListState> {
           description: tx.description,
           externalReference: tx.externalReference,
           failureReason: tx.failureReason,
+          counterpartyName: tx.counterpartyName,
+          counterpartyPhone: tx.counterpartyPhone,
           recipientPhone: tx.recipientPhone,
           recipientAddress: tx.recipientAddress,
           recipientWalletId: tx.recipientWalletId,

@@ -1,31 +1,62 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:usdc_wallet/router/navigation_extensions.dart';
+import 'package:usdc_wallet/services/user/user_service.dart';
 
-/// Account deletion view — backend endpoint not yet implemented.
-/// Shows "Contact support" flow instead of a broken delete button.
-class DeleteAccountView extends ConsumerWidget {
+const _deleteConfirmationPhrase = 'DELETE';
+
+class DeleteAccountView extends ConsumerStatefulWidget {
   const DeleteAccountView({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DeleteAccountView> createState() => _DeleteAccountViewState();
+}
+
+class _DeleteAccountViewState extends ConsumerState<DeleteAccountView> {
+  final _confirmationController = TextEditingController();
+  bool _isDeleting = false;
+  String? _error;
+
+  bool get _canDelete =>
+      _confirmationController.text.trim().toUpperCase() ==
+          _deleteConfirmationPhrase &&
+      !_isDeleting;
+
+  @override
+  void dispose() {
+    _confirmationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: context.colors.canvas,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.delete_accountTitle,
-          style: AppTextStyle.headingSmall,
+          variant: AppTextVariant.titleLarge,
+          color: colors.textPrimary,
         ),
-        backgroundColor: context.colors.surface,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: colors.gold),
+          onPressed: _isDeleting
+              ? null
+              : () => context.safePop(fallbackRoute: '/settings/security'),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
       body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: const EdgeInsets.all(AppSpacing.screenPadding),
         children: [
           AlertBanner(
             message: l10n.delete_warningMessage,
@@ -34,7 +65,8 @@ class DeleteAccountView extends ConsumerWidget {
           const SizedBox(height: AppSpacing.xxl),
           AppText(
             l10n.delete_consequencesTitle,
-            style: AppTextStyle.labelLarge,
+            variant: AppTextVariant.titleMedium,
+            color: colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.lg),
           _ConsequenceItem(
@@ -54,50 +86,90 @@ class DeleteAccountView extends ConsumerWidget {
             icon: Icons.badge_outlined,
           ),
           const SizedBox(height: AppSpacing.xxxl),
-
-          // Contact support instead of broken delete
-          Icon(Icons.support_agent, size: 48, color: context.colors.gold),
-          const SizedBox(height: AppSpacing.md),
-          AppText(
-            l10n.delete_contactSupportTitle,
-            style: AppTextStyle.headingSmall,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          AppText(
-            l10n.delete_contactSupportDescription,
-            style: AppTextStyle.bodySmall,
-            color: context.colors.textSecondary,
-            textAlign: TextAlign.center,
+          AppCard(
+            variant: AppCardVariant.flat,
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  l10n.security_deleteAccountTitle,
+                  variant: AppTextVariant.titleSmall,
+                  color: colors.textPrimary,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                AppText(
+                  l10n.delete_confirmInstruction(_deleteConfirmationPhrase),
+                  variant: AppTextVariant.bodySmall,
+                  color: colors.textSecondary,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                AppInput(
+                  controller: _confirmationController,
+                  label: _deleteConfirmationPhrase,
+                  hint: _deleteConfirmationPhrase,
+                  enabled: !_isDeleting,
+                  onChanged: (_) => setState(() => _error = null),
+                  error: _error,
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: AppSpacing.xxl),
           AppButton(
-            label: l10n.delete_contactSupportButton,
-            variant: AppButtonVariant.primary,
-            onPressed: () async {
-              final uri = Uri.parse('mailto:support@joonapay.com?subject=Account%20Deletion%20Request');
-              if (await canLaunchUrl(uri)) {
-                await launchUrl(uri);
-              }
-            },
+            label: l10n.security_delete,
+            variant: AppButtonVariant.danger,
+            isLoading: _isDeleting,
+            onPressed: _canDelete ? _deactivateAccount : null,
           ),
           const SizedBox(height: AppSpacing.md),
           AppButton(
             label: l10n.common_cancel,
             variant: AppButtonVariant.ghost,
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: _isDeleting
+                ? null
+                : () => context.safePop(fallbackRoute: '/settings/security'),
           ),
         ],
       ),
     );
   }
+
+  Future<void> _deactivateAccount() async {
+    setState(() {
+      _isDeleting = true;
+      _error = null;
+    });
+
+    try {
+      await ref.read(userServiceProvider).deactivateAccount();
+      if (!mounted) {
+        return;
+      }
+      await ref.read(authProvider.notifier).clearLocalSession();
+      if (!mounted) {
+        return;
+      }
+      context.go('/login');
+    } on Object catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _isDeleting = false;
+        _error = AppLocalizations.of(
+          context,
+        )!.common_errorFormat(error.toString());
+      });
+    }
+  }
 }
 
 class _ConsequenceItem extends StatelessWidget {
+  const _ConsequenceItem({required this.text, required this.icon});
+
   final String text;
   final IconData icon;
-
-  const _ConsequenceItem({required this.text, required this.icon});
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +182,7 @@ class _ConsequenceItem extends StatelessWidget {
           Expanded(
             child: AppText(
               text,
-              style: AppTextStyle.bodyMedium,
+              variant: AppTextVariant.bodyMedium,
               color: context.colors.textSecondary,
             ),
           ),

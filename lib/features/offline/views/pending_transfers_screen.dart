@@ -129,6 +129,15 @@ class PendingTransfersScreen extends ConsumerWidget {
     ThemeColors colors,
     bool isOnline,
   ) {
+    final requiresFreshAuthorization =
+        transfer.status == TransferStatus.needsAuthorization ||
+        transfer.status == TransferStatus.failed &&
+            !transfer.canReplayWithAuthorization;
+    final canRetryFailed =
+        transfer.status == TransferStatus.failed &&
+        transfer.canReplayWithAuthorization &&
+        isOnline;
+
     return AppCard(
       variant: AppCardVariant.elevated,
       child: Column(
@@ -152,9 +161,11 @@ class PendingTransfersScreen extends ConsumerWidget {
           Row(
             children: [
               UserAvatar(
-                firstName: (transfer.recipientName ?? transfer.recipientPhone)
-                    .split(' ')
-                    .first,
+                firstName:
+                    (transfer.recipientName ??
+                            transfer.displayRecipientIdentifier)
+                        .split(' ')
+                        .first,
                 lastName:
                     transfer.recipientName != null &&
                         transfer.recipientName!.split(' ').length > 1
@@ -174,7 +185,7 @@ class PendingTransfersScreen extends ConsumerWidget {
                     ),
                     if (transfer.recipientName != null)
                       AppText(
-                        transfer.recipientPhone,
+                        transfer.displayRecipientIdentifier,
                         variant: AppTextVariant.bodySmall,
                         color: colors.textSecondary,
                       ),
@@ -247,7 +258,7 @@ class PendingTransfersScreen extends ConsumerWidget {
             const SizedBox(height: AppSpacing.md),
             Row(
               children: [
-                if (transfer.status == TransferStatus.failed && isOnline)
+                if (canRetryFailed)
                   Expanded(
                     child: AppButton(
                       label: l10n.offline_retryFailed,
@@ -256,7 +267,7 @@ class PendingTransfersScreen extends ConsumerWidget {
                       size: AppButtonSize.small,
                     ),
                   ),
-                if (transfer.status == TransferStatus.needsAuthorization)
+                if (requiresFreshAuthorization)
                   Expanded(
                     child: AppButton(
                       label: l10n.send_confirmAndSend,
@@ -268,8 +279,7 @@ class PendingTransfersScreen extends ConsumerWidget {
                 if (transfer.status == TransferStatus.pending ||
                     transfer.status == TransferStatus.failed ||
                     transfer.status == TransferStatus.needsAuthorization) ...[
-                  if ((transfer.status == TransferStatus.failed && isOnline) ||
-                      transfer.status == TransferStatus.needsAuthorization)
+                  if (canRetryFailed || requiresFreshAuthorization)
                     const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: AppButton(
@@ -376,8 +386,10 @@ class PendingTransfersScreen extends ConsumerWidget {
         .read(sendMoneyProvider.notifier)
         .resumePendingTransfer(
           transferId: transfer.id,
+          recipientId: transfer.recipientId,
           recipientPhone: transfer.recipientPhone,
           recipientName: transfer.recipientName,
+          recipientUsername: transfer.recipientUsername,
           amount: transfer.amount,
           note: transfer.description,
         );
