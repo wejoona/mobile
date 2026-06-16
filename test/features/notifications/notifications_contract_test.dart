@@ -12,22 +12,22 @@ import '../../helpers/test_utils.dart';
 
 void main() {
   test('notificationsProvider parses backend data envelope', () async {
-    final dio = MockDio();
-    dio.queueResponse({
-      'success': true,
-      'data': [
-        {
-          'id': 'notif-1',
-          'category': 'security',
-          'title': 'New login',
-          'body': 'Your account was accessed from a new device.',
-          'data': {'deviceId': 'device-1'},
-          'readAt': null,
-          'createdAt': DateTime.utc(2026, 6, 2).toIso8601String(),
-        },
-      ],
-      'meta': {'total': 1, 'page': 1, 'limit': 20},
-    });
+    final dio = MockDio()
+      ..queueResponse({
+        'success': true,
+        'data': [
+          {
+            'id': 'notif-1',
+            'category': 'security',
+            'title': 'New login',
+            'body': 'Your account was accessed from a new device.',
+            'data': {'deviceId': 'device-1'},
+            'readAt': null,
+            'createdAt': DateTime.utc(2026, 6, 2).toIso8601String(),
+          },
+        ],
+        'meta': {'total': 1, 'page': 1, 'limit': 20},
+      });
     final container = ProviderContainer(
       overrides: [dioProvider.overrideWithValue(dio)],
     );
@@ -40,7 +40,8 @@ void main() {
     );
     expect(request.path, '/notifications');
     expect(request.queryParameters['limit'], 100);
-    expect(request.queryParameters['page'], 1);
+    expect(request.queryParameters['offset'], 0);
+    expect(request.queryParameters.containsKey('page'), isFalse);
     expect(notifications, hasLength(1));
     expect(notifications.single.type, NotificationType.security);
     expect(notifications.single.isRead, isFalse);
@@ -50,8 +51,7 @@ void main() {
   test(
     'notification providers preserve last-known backend feed on failure',
     () async {
-      final dio = MockDio();
-      dio
+      final dio = MockDio()
         ..queueResponse({
           'notifications': [
             {
@@ -212,8 +212,7 @@ void main() {
   });
 
   test('notification actions use live PUT routes', () async {
-    final dio = MockDio();
-    dio
+    final dio = MockDio()
       ..queueResponse(null, statusCode: 204)
       ..queueResponse(null, statusCode: 204);
     final container = ProviderContainer(
@@ -261,9 +260,29 @@ void main() {
     final notifications = await service.getNotifications();
 
     expect(dio.requestHistory.single.path, '/notifications');
-    expect(dio.requestHistory.single.queryParameters, {'page': 1, 'limit': 50});
+    expect(dio.requestHistory.single.queryParameters, {
+      'limit': 50,
+      'offset': 0,
+    });
     expect(notifications, hasLength(1));
     expect(notifications.single.navigationRoute, '/transactions/txn_live_1');
+  });
+
+  test('notifications feed paginates with backend offset contract', () async {
+    final dio = MockDio()..queueResponse({'notifications': [], 'total': 0});
+    final service = NotificationsService(dio);
+
+    await service.getNotifications(page: 2, pageSize: 25);
+
+    expect(dio.requestHistory.single.path, '/notifications');
+    expect(dio.requestHistory.single.queryParameters, {
+      'limit': 25,
+      'offset': 25,
+    });
+    expect(
+      dio.requestHistory.single.queryParameters.containsKey('page'),
+      isFalse,
+    );
   });
 
   test('FCM token removal uses the live device-token route', () async {

@@ -15,9 +15,14 @@ class NotificationsService {
     int pageSize = 50,
   }) async {
     try {
+      final safePage = page < 1 ? 1 : page;
+      final safePageSize = pageSize < 1 ? 50 : pageSize;
       final response = await _dio.get(
         '/notifications',
-        queryParameters: {'page': page, 'limit': pageSize},
+        queryParameters: {
+          'limit': safePageSize,
+          'offset': (safePage - 1) * safePageSize,
+        },
       );
       final data = _notificationItems(response.data);
 
