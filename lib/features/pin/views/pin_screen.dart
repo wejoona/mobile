@@ -60,6 +60,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
   BiometricType _biometricType = BiometricType.none;
   bool _isVerifying = false;
   bool _showUnlockTransition = false;
+  bool _hasCompletedSuccess = false;
   int _biometricAttempt = 0;
 
   @override
@@ -124,12 +125,13 @@ class _PinScreenState extends ConsumerState<PinScreen>
       case PinContext.login:
         // Show brief transition, then unlock + navigate to home together.
         if (mounted) {
+          final router = GoRouter.of(context);
           _transitionThen(() async {
-            final router = GoRouter.of(context);
             final unlocked = await _applyUnlock();
-            if (!mounted) return;
             if (!unlocked) {
-              _showUnlockFailure();
+              if (mounted) {
+                _showUnlockFailure();
+              }
               return;
             }
             router.go(widget.successRoute ?? '/home');
@@ -139,20 +141,28 @@ class _PinScreenState extends ConsumerState<PinScreen>
       case PinContext.sessionLock:
         // Show brief transition, then unlock + navigate together.
         if (mounted) {
+          final router = GoRouter.of(context);
           _transitionThen(() async {
-            final router = GoRouter.of(context);
             final unlocked = _applySessionUnlock();
             if (!unlocked) {
               _showUnlockFailure();
               return;
             }
             // Refresh wallet and transactions in the background after unlock.
-            Future.microtask(() {
-              try {
-                ref.read(walletStateMachineProvider.notifier).refresh();
-                ref.read(transactionStateMachineProvider.notifier).refresh();
-              } catch (_) {}
-            });
+            unawaited(
+              Future.microtask(() {
+                try {
+                  unawaited(
+                    ref.read(walletStateMachineProvider.notifier).refresh(),
+                  );
+                  unawaited(
+                    ref
+                        .read(transactionStateMachineProvider.notifier)
+                        .refresh(),
+                  );
+                } on Object {}
+              }),
+            );
             router.go(widget.successRoute ?? '/home');
           });
         }
@@ -202,21 +212,26 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
   /// Brief unlock animation before navigating away
   void _transitionThen(FutureOr<void> Function() navigate) {
+    if (_hasCompletedSuccess) {
+      return;
+    }
+    _hasCompletedSuccess = true;
+
     var didRun = false;
     Future<void> runOnce() async {
-      if (didRun || !mounted) return;
+      if (didRun) return;
       didRun = true;
       await navigate();
     }
 
     setState(() => _showUnlockTransition = true);
     unawaited(
-      Future.delayed(const Duration(milliseconds: 600), () {
+      Future.delayed(const Duration(milliseconds: 220), () {
         unawaited(runOnce());
       }),
     );
     unawaited(
-      Future.delayed(const Duration(milliseconds: 1200), () {
+      Future.delayed(const Duration(milliseconds: 900), () {
         if (mounted && _showUnlockTransition) {
           unawaited(runOnce());
         }
@@ -234,6 +249,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
   void _showUnlockFailure() {
     setState(() {
+      _hasCompletedSuccess = false;
       _showUnlockTransition = false;
       _isVerifying = false;
       _pin = '';
@@ -244,6 +260,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
   void _returnToPinEntry({String? message}) {
     setState(() {
+      _hasCompletedSuccess = false;
       _showUnlockTransition = false;
       _isVerifying = false;
       _pin = '';

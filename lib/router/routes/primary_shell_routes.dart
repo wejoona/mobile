@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/features/cards/views/cards_list_view.dart';
 import 'package:usdc_wallet/features/deposit/views/deposit_amount_screen.dart';
@@ -17,25 +18,29 @@ List<RouteBase> primaryShellRoutes() => [
         path: '/home',
         pageBuilder: (context, state) => NoTransitionPage(
           key: state.pageKey,
-          child: const WalletHomeScreen(),
+          child: const _ProtectedRootTab(child: WalletHomeScreen()),
         ),
       ),
       GoRoute(
         path: '/cards',
-        pageBuilder: (context, state) =>
-            NoTransitionPage(key: state.pageKey, child: const CardsListView()),
+        pageBuilder: (context, state) => NoTransitionPage(
+          key: state.pageKey,
+          child: const _ProtectedRootTab(child: CardsListView()),
+        ),
       ),
       GoRoute(
         path: '/transactions',
         pageBuilder: (context, state) => NoTransitionPage(
           key: state.pageKey,
-          child: const TransactionsView(),
+          child: const _ProtectedRootTab(child: TransactionsView()),
         ),
       ),
       GoRoute(
         path: '/settings',
-        pageBuilder: (context, state) =>
-            NoTransitionPage(key: state.pageKey, child: const SettingsScreen()),
+        pageBuilder: (context, state) => NoTransitionPage(
+          key: state.pageKey,
+          child: const _ProtectedRootTab(child: SettingsScreen()),
+        ),
       ),
     ],
   ),
@@ -56,3 +61,12 @@ List<RouteBase> primaryShellRoutes() => [
     ),
   ),
 ];
+
+class _ProtectedRootTab extends StatelessWidget {
+  const _ProtectedRootTab({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => PopScope(canPop: false, child: child);
+}
