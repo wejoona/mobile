@@ -217,12 +217,34 @@ void main() {
       reason: 'SessionService must accept { data: { accessToken, ... } }',
     );
   });
+
+  test('active sessions only request unlock when auth can be locked', () {
+    final source = File(
+      'lib/features/settings/providers/sessions_provider.dart',
+    ).readAsStringSync();
+
+    final friendlyErrorBody = _methodBody(source, '_friendlyError');
+    final expiredSessionBody = _methodBody(source, '_handleExpiredSession');
+
+    expect(friendlyErrorBody, contains('ref.read(authProvider).isLocked'));
+    expect(friendlyErrorBody, contains('Please unlock Korido again'));
+    expect(friendlyErrorBody, contains('Please sign in again'));
+    expect(expiredSessionBody, contains('setLocked()'));
+    expect(
+      expiredSessionBody,
+      contains('return ref.read(authProvider).isLocked'),
+      reason:
+          'a rejected/cleared refresh token must not route users to a dead PIN unlock screen',
+    );
+  });
 }
 
 String _methodBody(String source, String methodName) {
   final signatureIndex = source.indexOf(
     RegExp(
-      r'(?:void|bool|Future<[^>]+>)\s+' + RegExp.escape(methodName) + r'\s*\(',
+      r'(?:void|bool|String|Future<[^>]+>)\s+' +
+          RegExp.escape(methodName) +
+          r'\s*\(',
     ),
   );
   expect(signatureIndex, isNonNegative, reason: '$methodName should exist');

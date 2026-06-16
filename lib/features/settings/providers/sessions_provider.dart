@@ -217,7 +217,9 @@ class SessionsNotifier extends Notifier<SessionsState> {
       return error.message;
     }
     if (error.statusCode == 401) {
-      return 'Please unlock Korido again to continue.';
+      return ref.read(authProvider).isLocked
+          ? 'Please unlock Korido again to continue.'
+          : 'Please sign in again to manage active sessions.';
     }
     if (error.statusCode == 403) {
       return 'You do not have permission to manage sessions right now.';
@@ -230,7 +232,7 @@ class SessionsNotifier extends Notifier<SessionsState> {
       return false;
     }
     await ref.read(authProvider.notifier).setLocked();
-    return true;
+    return ref.read(authProvider).isLocked;
   }
 
   Future<bool> _refreshAuthForRetry() {
