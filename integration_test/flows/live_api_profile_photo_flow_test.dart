@@ -172,7 +172,7 @@ Future<String> _resolveOtp(String localPhone) async {
   // ignore: do_not_use_environment
   const baseUrl = String.fromEnvironment(
     'API_URL',
-    defaultValue: 'https://api.joonapay.com/api/v1',
+    defaultValue: 'https://korido-api.joonapay.com/api/v1',
   );
   final e164Phone = '+225${localPhone.replaceAll(RegExp(r'\D'), '')}';
 
@@ -202,7 +202,7 @@ Future<Dio> _authenticatedLiveApi(WidgetTester tester) async {
   // ignore: do_not_use_environment
   const baseUrl = String.fromEnvironment(
     'API_URL',
-    defaultValue: 'https://api.joonapay.com/api/v1',
+    defaultValue: 'https://korido-api.joonapay.com/api/v1',
   );
   final context = tester.element(find.byType(Scaffold).last);
   final container = ProviderScope.containerOf(context);
@@ -235,7 +235,7 @@ String _resolveApiUrl(String url) {
   // ignore: do_not_use_environment
   const baseUrl = String.fromEnvironment(
     'API_URL',
-    defaultValue: 'https://api.joonapay.com/api/v1',
+    defaultValue: 'https://korido-api.joonapay.com/api/v1',
   );
   final normalizedBase = baseUrl.endsWith('/')
       ? baseUrl.substring(0, baseUrl.length - 1)

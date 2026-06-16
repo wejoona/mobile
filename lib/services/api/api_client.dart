@@ -43,7 +43,8 @@ class ApiConfig {
   static const String _defaultDevUrl = 'http://127.0.0.1:3401/api/v1';
 
   /// Default production URL
-  static const String _defaultProdUrl = 'https://api.joonapay.com/api/v1';
+  static const String _defaultProdUrl =
+      'https://korido-api.joonapay.com/api/v1';
 
   /// Get the base URL based on environment and configuration
   /// Priority: 1. --dart-define API_URL, 2. ENV-based default
@@ -59,7 +60,7 @@ class ApiConfig {
       case 'production':
         return _defaultProdUrl;
       case 'staging':
-        return 'https://staging-api.joonapay.com/api/v1';
+        return 'https://staging-korido-api.joonapay.com/api/v1';
       case 'development':
       default:
         return kDebugMode ? _defaultDevUrl : _defaultProdUrl;
@@ -73,7 +74,7 @@ class ApiConfig {
   static bool get isDevelopment => _env == 'development' || kDebugMode;
 
   static bool get allowsBodyLogging =>
-      isDevelopment && !baseUrl.contains('api.joonapay.com');
+      isDevelopment && !baseUrl.contains('joonapay.com');
 
   static const Duration connectTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);

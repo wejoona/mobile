@@ -194,8 +194,11 @@ class MockRegistry {
         'description': 'API for JoonaPay USDC Wallet mobile app',
       },
       'servers': [
-        {'url': 'https://api.joonapay.com', 'description': 'Production'},
-        {'url': 'https://staging-api.joonapay.com', 'description': 'Staging'},
+        {'url': 'https://korido-api.joonapay.com', 'description': 'Production'},
+        {
+          'url': 'https://staging-korido-api.joonapay.com',
+          'description': 'Staging',
+        },
         {'url': 'http://localhost:3000', 'description': 'Development'},
       ],
       'components': {

@@ -19,7 +19,7 @@ import 'package:usdc_wallet/utils/logger.dart';
 ///
 /// ```bash
 /// # For production API
-/// openssl s_client -servername api.joonapay.com -connect api.joonapay.com:443 </dev/null 2>/dev/null | \
+/// openssl s_client -servername korido-api.joonapay.com -connect korido-api.joonapay.com:443 </dev/null 2>/dev/null | \
 ///   openssl x509 -pubkey -noout | \
 ///   openssl pkey -pubin -outform der | \
 ///   openssl dgst -sha256 -binary | \
@@ -49,10 +49,10 @@ class CertificatePinning {
   /// [X509Certificate]. Keep these pins exact-host scoped so staging and future
   /// service hosts do not inherit production API pins by accident.
   static const Map<String, List<String>> _trustedFingerprintsByHost = {
-    'api.joonapay.com': [
+    'korido-api.joonapay.com': [
       // Leaf DER SHA-256, verified against live certificate on 2026-06-14.
       'gvcwFV4jHJrKyc2rrHFNlZbenxWnWywAezu5tpkv7is=',
-      // Current wildcard/apex leaf DER SHA-256 served for api.joonapay.com.
+      // Current wildcard/apex leaf DER SHA-256 served for joonapay.com.
       // Keep the previous API pin above as a rollover pin.
       'BWCq7vFEHnLEBB9FD9tOUTlIeFRPNHIJL7vPHgNjodc=',
     ],

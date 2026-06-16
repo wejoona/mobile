@@ -10,8 +10,9 @@ class ApiConfiguration {
   static const String _envApiUrl = String.fromEnvironment('API_URL');
 
   static const String _devUrl = 'http://127.0.0.1:3401/api/v1';
-  static const String _stagingUrl = 'https://staging-api.joonapay.com/api/v1';
-  static const String _prodUrl = 'https://api.joonapay.com/api/v1';
+  static const String _stagingUrl =
+      'https://staging-korido-api.joonapay.com/api/v1';
+  static const String _prodUrl = 'https://korido-api.joonapay.com/api/v1';
 
   /// Resolved API base URL.
   static String get baseUrl {

@@ -11,7 +11,7 @@ void main() {
       final productionPins = CertificatePinRegistry.getPins(isProduction: true);
 
       final apiPins = productionPins.singleWhere(
-        (config) => config.host == 'api.joonapay.com',
+        (config) => config.host == 'korido-api.joonapay.com',
       );
       final apexPins = productionPins.singleWhere(
         (config) => config.host == 'joonapay.com',
@@ -26,7 +26,7 @@ void main() {
     test('validates host-specific leaf pins and shared backup pin', () {
       expect(
         CertificatePinRegistry.validatePin(
-          'api.joonapay.com',
+          'korido-api.joonapay.com',
           apiLeafSpki,
           isProduction: true,
         ),
@@ -42,7 +42,7 @@ void main() {
       );
       expect(
         CertificatePinRegistry.validatePin(
-          'api.joonapay.com',
+          'korido-api.joonapay.com',
           gtsWe1Spki,
           isProduction: true,
         ),
@@ -50,7 +50,7 @@ void main() {
       );
       expect(
         CertificatePinRegistry.validatePin(
-          'api.joonapay.com',
+          'korido-api.joonapay.com',
           apexLeafSpki,
           isProduction: true,
         ),
@@ -64,7 +64,7 @@ void main() {
       expect(stagingPins, isEmpty);
       expect(
         CertificatePinRegistry.validatePin(
-          'staging-api.joonapay.com',
+          'staging-korido-api.joonapay.com',
           'unconfigured-pin',
           isProduction: false,
         ),

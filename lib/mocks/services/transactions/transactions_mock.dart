@@ -318,7 +318,7 @@ class TransactionsMock {
     // In a real implementation, this would generate a file
     return MockResponse.success({
       'downloadUrl':
-          'https://api.joonapay.com/wallet/transactions/export/${MockDataGenerator.uuid()}.$format',
+          'https://korido-api.joonapay.com/wallet/transactions/export/${MockDataGenerator.uuid()}.$format',
       'expiresIn': 3600,
     });
   }

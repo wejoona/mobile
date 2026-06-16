@@ -21,9 +21,9 @@ class CertificatePinningConfig {
 class CertificatePinRegistry {
   static const List<CertificatePinningConfig> productionPins = [
     CertificatePinningConfig(
-      host: 'api.joonapay.com',
+      host: 'korido-api.joonapay.com',
       sha256Pins: [
-        // Leaf SPKI SHA-256 for api.joonapay.com, generated 2026-06-03.
+        // Leaf SPKI SHA-256 for Korido API, generated 2026-06-03.
         'DcXImxqsw11wXDKaem3Be3mcFibKSosQGkPpNOw9Zuw=',
         // Google Trust Services WE1 intermediate SPKI backup pin.
         'kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=',
