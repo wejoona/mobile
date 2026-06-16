@@ -109,6 +109,15 @@ KYC state should drive the mobile FSM: unverified users can start KYC, pending/m
 
 The API responds with `providerCapabilities`, `clientCapabilities`, `negotiatedCapabilities`, `requiredCaptureMode`, `acceptedCaptureModes`, `requiredEvidence`, and `evidencePolicy`. The current mobile liveness widget supports photo challenge capture only; if the API negotiates `video`, route the flow to manual review instead of attempting an unsupported capture.
 
+`POST /kyc/liveness/challenge` is multipart and currently accepts photo evidence only:
+
+- fields: `sessionToken`, `challengeId`, `captureMode=photo`, `mediaType=photo`, optional `mimeType`
+- file: `photo`
+
+Successful challenge/reference-selfie responses include review-safe `evidence` metadata with `kind`, `challengeId`, `captureMode`, `mediaType`, `mimeType`, `byteSize`, `provider`, `storage`, redacted `sessionTokenRef`, `submittedAt`, and `reviewUsage`. Do not expose raw biometric media in mobile state; raw files stay with the provider/session storage unless a dedicated evidence storage flow is added.
+
+Provider unavailability returns a retryable `KYC_PROVIDER_UNAVAILABLE` response with `supportReviewRequired=true`; mobile account recovery and KYC should route the user to manual review with an SLA instead of looping on liveness.
+
 ## Contacts
 
 | Action | Method | Path |

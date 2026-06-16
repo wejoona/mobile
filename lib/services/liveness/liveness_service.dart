@@ -184,6 +184,62 @@ class LivenessEvidencePolicy {
   }
 }
 
+class LivenessEvidenceMetadata {
+  final String kind;
+  final String? challengeId;
+  final LivenessCaptureMode captureMode;
+  final LivenessCaptureMode mediaType;
+  final String? mimeType;
+  final int? byteSize;
+  final String? provider;
+  final String? storage;
+  final String? sessionTokenRef;
+  final DateTime? submittedAt;
+  final List<String> reviewUsage;
+
+  const LivenessEvidenceMetadata({
+    required this.kind,
+    this.challengeId,
+    this.captureMode = LivenessCaptureMode.photo,
+    this.mediaType = LivenessCaptureMode.photo,
+    this.mimeType,
+    this.byteSize,
+    this.provider,
+    this.storage,
+    this.sessionTokenRef,
+    this.submittedAt,
+    this.reviewUsage = const [],
+  });
+
+  factory LivenessEvidenceMetadata.fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return const LivenessEvidenceMetadata(kind: 'unknown');
+    }
+
+    return LivenessEvidenceMetadata(
+      kind: json['kind'] as String? ?? 'unknown',
+      challengeId: json['challengeId'] as String?,
+      captureMode: LivenessCaptureModeExt.fromString(
+        json['captureMode'] as String?,
+      ),
+      mediaType: LivenessCaptureModeExt.fromString(
+        json['mediaType'] as String?,
+      ),
+      mimeType: json['mimeType'] as String?,
+      byteSize: (json['byteSize'] as num?)?.toInt(),
+      provider: json['provider'] as String?,
+      storage: json['storage'] as String?,
+      sessionTokenRef: json['sessionTokenRef'] as String?,
+      submittedAt: DateTime.tryParse(json['submittedAt'] as String? ?? ''),
+      reviewUsage:
+          (json['reviewUsage'] as List<dynamic>?)
+              ?.map((usage) => '$usage')
+              .toList() ??
+          const [],
+    );
+  }
+}
+
 extension LivenessChallengeTypeExt on LivenessChallengeType {
   String get value {
     switch (this) {
@@ -330,6 +386,7 @@ class ChallengeSubmitResult {
   final bool? isAlive;
   final int? confidence;
   final ChallengeVerificationResult? result;
+  final LivenessEvidenceMetadata? evidence;
 
   const ChallengeSubmitResult({
     required this.sessionToken,
@@ -339,6 +396,7 @@ class ChallengeSubmitResult {
     this.isAlive,
     this.confidence,
     this.result,
+    this.evidence,
   });
 
   bool get allComplete => challengesCompleted == challengesTotal;
@@ -354,6 +412,11 @@ class ChallengeSubmitResult {
       result: json['result'] != null
           ? ChallengeVerificationResult.fromJson(
               json['result'] as Map<String, dynamic>,
+            )
+          : null,
+      evidence: json['evidence'] != null
+          ? LivenessEvidenceMetadata.fromJson(
+              json['evidence'] as Map<String, dynamic>,
             )
           : null,
     );
@@ -414,6 +477,7 @@ class LivenessResult {
   final double? faceMatchScore;
   final DateTime completedAt;
   final String? failureReason;
+  final List<LivenessEvidenceMetadata> evidence;
 
   const LivenessResult({
     required this.sessionId,
@@ -422,6 +486,7 @@ class LivenessResult {
     this.faceMatchScore,
     required this.completedAt,
     this.failureReason,
+    this.evidence = const [],
   });
 
   /// Get the decision based on confidence score

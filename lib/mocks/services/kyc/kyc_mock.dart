@@ -251,6 +251,19 @@ class KycMock {
         'antiSpoofScore': 94,
         'faceMatchScore': 90,
       },
+      'evidence': {
+        'kind': 'challenge_photo',
+        'challengeId': 'turn_left',
+        'captureMode': 'photo',
+        'mediaType': 'photo',
+        'mimeType': 'image/jpeg',
+        'byteSize': 144128,
+        'provider': 'verifyhq',
+        'storage': 'provider_session',
+        'sessionTokenRef': '***session',
+        'submittedAt': DateTime.now().toIso8601String(),
+        'reviewUsage': ['face_match', 'anti_spoof', 'liveness_challenge'],
+      },
     });
   }
 
@@ -260,6 +273,19 @@ class KycMock {
     return MockResponse.success({
       'id': 'selfie_${DateTime.now().millisecondsSinceEpoch}',
       'status': 'SUBMITTED',
+      'evidence': {
+        'kind': 'reference_selfie',
+        'challengeId': null,
+        'captureMode': 'photo',
+        'mediaType': 'photo',
+        'mimeType': 'image/jpeg',
+        'byteSize': 131072,
+        'provider': 'verifyhq',
+        'storage': 'provider_session',
+        'sessionTokenRef': '***session',
+        'submittedAt': DateTime.now().toIso8601String(),
+        'reviewUsage': ['face_match', 'anti_spoof', 'reference_selfie'],
+      },
     });
   }
 

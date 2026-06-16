@@ -52,6 +52,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
 
   String? _sessionToken;
   List<LivenessChallenge> _challenges = [];
+  final List<LivenessEvidenceMetadata> _submittedEvidence = [];
   LivenessEvidencePolicy _evidencePolicy = const LivenessEvidencePolicy();
   int _currentChallengeIndex = 0;
   String? _errorMessage;
@@ -214,6 +215,9 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
         captureMode: captureMode,
         mimeType: 'image/jpeg',
       );
+      if (result.evidence != null) {
+        _submittedEvidence.add(result.evidence!);
+      }
 
       // Clean up temp photo
       try {
@@ -242,6 +246,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
               confidence: result.result!.confidence / 100.0,
               faceMatchScore: result.result!.faceMatchScore / 100.0,
               completedAt: DateTime.now(),
+              evidence: List.unmodifiable(_submittedEvidence),
             ),
           );
         }
@@ -280,6 +285,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
       _errorMessage = null;
       _sessionToken = null;
       _challenges = [];
+      _submittedEvidence.clear();
       _evidencePolicy = const LivenessEvidencePolicy();
       _currentChallengeIndex = 0;
     });
