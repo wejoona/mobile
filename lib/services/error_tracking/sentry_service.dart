@@ -4,19 +4,18 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:usdc_wallet/config/environment_config.dart';
+import 'package:usdc_wallet/utils/app_info.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Provider for [SentryService].
-final sentryServiceProvider = Provider<SentryService>((ref) {
-  return SentryService();
-});
+final sentryServiceProvider = Provider<SentryService>((ref) => SentryService());
 
 /// Sentry Error Tracking Service
 ///
 /// Initializes Sentry SDK, reports unhandled exceptions,
 /// and adds navigation breadcrumbs.
 class SentryService {
-  static final _logger = AppLogger('Sentry');
+  static const _logger = AppLogger('Sentry');
 
   /// Whether Sentry has been initialized.
   bool _initialized = false;
@@ -42,16 +41,21 @@ class SentryService {
       return;
     }
 
+    final packageInfo = await AppInfo.instance;
+
     await SentryFlutter.init((options) {
-      options.dsn = sentryDsn;
-      options.tracesSampleRate = 0.2;
-      options.environment = environment;
-      options.debug = kDebugMode;
-      options.sendDefaultPii = false;
-      options.enableLogs = true;
-      options.attachStacktrace = true;
-      options.replay.sessionSampleRate = kDebugMode ? 1.0 : 0.1;
-      options.replay.onErrorSampleRate = 1.0;
+      options
+        ..dsn = sentryDsn
+        ..tracesSampleRate = 0.2
+        ..environment = environment
+        ..release = 'korido@${packageInfo.version}+${packageInfo.buildNumber}'
+        ..dist = packageInfo.buildNumber
+        ..debug = kDebugMode
+        ..sendDefaultPii = false
+        ..enableLogs = true
+        ..attachStacktrace = true
+        ..replay.sessionSampleRate = kDebugMode ? 1.0 : 0.1
+        ..replay.onErrorSampleRate = 1.0;
 
       // Navigation breadcrumbs are added via SentryNavigatorObserver in the app's navigatorObservers
     }, appRunner: appRunner);
@@ -65,12 +69,14 @@ class SentryService {
 
   /// Report an exception to Sentry.
   Future<void> captureException(
-    dynamic exception, {
+    Object exception, {
     StackTrace? stackTrace,
     String? reason,
     bool fatal = false,
   }) async {
-    if (!_initialized) return;
+    if (!_initialized) {
+      return;
+    }
 
     try {
       await Sentry.captureException(
@@ -82,7 +88,7 @@ class SentryService {
       if (kDebugMode) {
         _logger.debug('Exception captured: $exception');
       }
-    } catch (e) {
+    } on Object catch (e) {
       _logger.debug('Failed to capture exception: $e');
     }
   }
@@ -108,7 +114,9 @@ class SentryService {
     Map<String, dynamic>? data,
     SentryLevel level = SentryLevel.info,
   }) async {
-    if (!_initialized) return;
+    if (!_initialized) {
+      return;
+    }
 
     await Sentry.addBreadcrumb(
       Breadcrumb(
@@ -122,25 +130,29 @@ class SentryService {
 
   /// Set the current user for Sentry context.
   Future<void> setUser({String? id, String? email, String? username}) async {
-    if (!_initialized) return;
+    if (!_initialized) {
+      return;
+    }
 
     await Sentry.configureScope((scope) {
       if (id != null) {
         // Keep crash telemetry pseudonymous for financial flows. Phone, email,
         // and username can be joined server-side when support has a valid reason.
-        scope.setUser(SentryUser(id: id));
+        unawaited(scope.setUser(SentryUser(id: id)));
       } else {
-        scope.setUser(null);
+        unawaited(scope.setUser(null));
       }
     });
   }
 
   /// Clear user data (e.g. on logout).
   Future<void> clearUser() async {
-    if (!_initialized) return;
+    if (!_initialized) {
+      return;
+    }
 
     await Sentry.configureScope((scope) {
-      scope.setUser(null);
+      unawaited(scope.setUser(null));
     });
   }
 }

@@ -53,7 +53,8 @@ class EnvironmentConfig {
   static const String sentryDsn = String.fromEnvironment('SENTRY_DSN');
 
   /// Whether crash reporting is enabled.
-  static bool get enableCrashReporting => sentryDsn.isNotEmpty && isProduction;
+  static bool get enableCrashReporting =>
+      sentryDsn.isNotEmpty && (isProduction || isStaging);
 
   /// App version override (for testing).
   static const String versionOverride = String.fromEnvironment('APP_VERSION');

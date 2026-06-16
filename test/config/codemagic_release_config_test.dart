@@ -50,6 +50,12 @@ void main() {
         codemagic,
         contains('API_URL=https://staging-korido-api.joonapay.com/api/v1'),
       );
+      expect(
+        codemagic,
+        contains(
+          'SENTRY_DSN=https://e940855066e902eafd3bf67348d625e7@sentry.wejoona.com/7',
+        ),
+      );
     });
 
     test('production dart define file selects live production mode', () {
@@ -68,6 +74,7 @@ void main() {
         stagingEnv,
         contains('"API_URL": "https://staging-korido-api.joonapay.com/api/v1"'),
       );
+      expect(stagingEnv, contains('"SENTRY_DSN": "https://'));
       expect(stagingEnv, isNot(contains('api-staging')));
       expect(stagingEnv, isNot(contains('staging-api')));
       expect(stagingEnv, isNot(contains('127.0.0.1')));
