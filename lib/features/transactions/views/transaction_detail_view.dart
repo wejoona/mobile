@@ -426,7 +426,7 @@ class TransactionDetailView extends ConsumerWidget {
       case TransactionType.withdrawal:
         return colors.errorText; // Red for withdrawals
       case TransactionType.transferInternal:
-        return colors.infoText; // Blue for internal transfers
+        return colors.gold; // Brand accent for Korido-to-Korido transfers
       case TransactionType.transferExternal:
         return colors.warning; // Orange/amber for external transfers
     }
