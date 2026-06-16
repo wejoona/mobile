@@ -777,6 +777,12 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     } on DioException catch (e) {
       if (mounted) {
         final message = ApiException.fromDioError(e).message;
+        if (_isVerificationProviderUnavailable(e, message)) {
+          await _routePinResetToManualReview(
+            'otp_verification_provider_unavailable',
+          );
+          return;
+        }
         setState(() {
           _isLoading = false;
           _showError = true;
@@ -794,6 +800,27 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         _resetConfirmPin();
       }
     }
+  }
+
+  bool _isVerificationProviderUnavailable(DioException error, String message) {
+    final normalized = message.toLowerCase();
+    if (normalized.contains('verification service temporarily unavailable') ||
+        normalized.contains('verification provider') ||
+        normalized.contains('provider is currently unavailable')) {
+      return true;
+    }
+
+    final data = error.response?.data;
+    if (data is Map) {
+      final code = ApiException.errorCode(data)?.toLowerCase();
+      if (code != null &&
+          (code.contains('verification') || code.contains('provider')) &&
+          (code.contains('unavailable') || code.contains('timeout'))) {
+        return true;
+      }
+    }
+
+    return error.response?.statusCode == 503;
   }
 
   /// Hash PIN using SHA256 for backend transmission
