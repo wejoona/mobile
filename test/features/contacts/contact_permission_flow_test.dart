@@ -14,11 +14,14 @@ void main() {
       final initBody = RegExp(
         r'void initState\(\) \{([\s\S]*?)\n  @override',
       ).firstMatch(source)!.group(1)!;
+      final loadBody = RegExp(
+        r'Future<void> _loadContactsOrRouteToPermission\(\) async \{([\s\S]*?)\n  Future<bool> _routeToPermissionPromptIfNeeded',
+      ).firstMatch(source)!.group(1)!;
       final manualSyncBody = RegExp(
         r'Future<void> _manualSync\(\) async \{([\s\S]*?)\n  Future<void> _requestPermissionAndSync',
       ).firstMatch(source)!.group(1)!;
       final routePermissionBody = RegExp(
-        r'Future<void> _routeToPermissionPromptIfNeeded\(\) async \{([\s\S]*?)\n  Future<void> _requestPermissionAndSync',
+        r'Future<bool> _routeToPermissionPromptIfNeeded\(\) async \{([\s\S]*?)\n  Future<void> _requestPermissionAndSync',
       ).firstMatch(source)!.group(1)!;
       final requestAndSyncBody = RegExp(
         r'Future<void> _requestPermissionAndSync\(\{([\s\S]*?)\n  @override',
@@ -28,12 +31,14 @@ void main() {
         initBody,
         contains('WidgetsBinding.instance.addPostFrameCallback'),
       );
-      expect(initBody, contains('syncContacts()'));
+      expect(initBody, contains('_loadContactsOrRouteToPermission()'));
+      expect(loadBody, contains('_routeToPermissionPromptIfNeeded()'));
+      expect(loadBody, contains('syncContacts()'));
+      expect(loadBody, contains('if (!routed && mounted)'));
       expect(
         initBody,
         isNot(contains('_requestPermissionAndSync(showSettingsDialog: false)')),
       );
-      expect(initBody, contains('_routeToPermissionPromptIfNeeded()'));
       expect(routePermissionBody, contains('hasContactsPermission()'));
       expect(
         routePermissionBody,
