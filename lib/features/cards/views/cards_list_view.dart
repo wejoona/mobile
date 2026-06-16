@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:usdc_wallet/design/components/composed/pin_confirmation_sheet.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -11,6 +12,7 @@ import 'package:usdc_wallet/features/cards/widgets/card_empty_state.dart';
 import 'package:usdc_wallet/features/cards/widgets/card_visual.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/utils/context_extensions.dart';
 
 /// Cards list screen with visual card display.
@@ -96,8 +98,24 @@ class CardsListView extends ConsumerWidget {
                   CardActionsRow(
                     card: card,
                     onFreeze: () async {
+                      final pinToken = await _requestPinToken(
+                        context,
+                        ref,
+                        title: l10n.send_verifyPin,
+                        subtitle: card.isFrozen
+                            ? l10n.cards_unfreezeConfirmation
+                            : l10n.cards_freezeConfirmation,
+                      );
+                      if (pinToken == null || !context.mounted) {
+                        return;
+                      }
+
                       final actions = ref.read(cardActionsProvider);
-                      await actions.freeze(card.id);
+                      if (card.isFrozen) {
+                        await actions.unfreezeCard(card.id, pinToken: pinToken);
+                      } else {
+                        await actions.freezeCard(card.id, pinToken: pinToken);
+                      }
                       ref.invalidate(cardsEnvelopeProvider);
                     },
                     onBlock: () async {
@@ -200,14 +218,55 @@ class CardsListView extends ConsumerWidget {
     if (confirmed != true || !context.mounted) return;
 
     try {
-      await ref.read(cardActionsProvider).cancelCard(cardId);
+      final pinToken = await _requestPinToken(
+        context,
+        ref,
+        title: l10n.send_verifyPin,
+        subtitle: l10n.cards_blockCardConfirmation,
+      );
+      if (pinToken == null || !context.mounted) {
+        return;
+      }
+
+      await ref
+          .read(cardActionsProvider)
+          .cancelCard(cardId, pinToken: pinToken);
       ref.invalidate(cardsEnvelopeProvider);
       ref.invalidate(cardsProvider);
-      if (!context.mounted) return;
+      if (!context.mounted) {
+        return;
+      }
       context.showSnack(l10n.cards_cardBlocked, tone: AppSnackTone.error);
     } catch (_) {
       if (!context.mounted) return;
       context.showSnack(l10n.cards_blockError, tone: AppSnackTone.error);
     }
+  }
+
+  Future<String?> _requestPinToken(
+    BuildContext context,
+    WidgetRef ref, {
+    required String title,
+    String? subtitle,
+  }) async {
+    String? pinToken;
+    final result = await PinConfirmationSheet.show(
+      context: context,
+      title: title,
+      subtitle: subtitle,
+      onConfirm: (pin) async {
+        final verification = await ref
+            .read(pinServiceProvider)
+            .verifyPinWithBackend(pin);
+        if (verification.success && verification.pinToken != null) {
+          pinToken = verification.pinToken;
+          return true;
+        }
+        return false;
+      },
+    );
+
+    if (result == PinConfirmationResult.success) return pinToken;
+    return null;
   }
 }

@@ -263,6 +263,10 @@ class CardsMock {
     if (userId == null) {
       return MockResponse.unauthorized();
     }
+    final pinError = _requirePinToken(options);
+    if (pinError != null) {
+      return pinError;
+    }
 
     final cardId = options.path.split('/')[2];
     final cards = CardsMockState.getCards(userId);
@@ -286,6 +290,10 @@ class CardsMock {
     if (userId == null) {
       return MockResponse.unauthorized();
     }
+    final pinError = _requirePinToken(options);
+    if (pinError != null) {
+      return pinError;
+    }
 
     final cardId = options.path.split('/')[2];
     final cards = CardsMockState.getCards(userId);
@@ -306,6 +314,10 @@ class CardsMock {
     final userId = AuthMockState.currentUserId;
     if (userId == null) {
       return MockResponse.unauthorized();
+    }
+    final pinError = _requirePinToken(options);
+    if (pinError != null) {
+      return pinError;
     }
 
     final cardId = options.path.split('/')[2];
@@ -346,6 +358,10 @@ class CardsMock {
     if (userId == null) {
       return MockResponse.unauthorized();
     }
+    final pinError = _requirePinToken(options);
+    if (pinError != null) {
+      return pinError;
+    }
 
     final cardId = options.path.split('/')[2];
     final cards = CardsMockState.getCards(userId);
@@ -379,5 +395,16 @@ class CardsMock {
 
     final transactions = CardsMockState.getTransactions(cardId);
     return MockResponse.success({'transactions': transactions});
+  }
+
+  static MockResponse? _requirePinToken(RequestOptions options) {
+    final token =
+        options.headers['X-Pin-Token'] ?? options.headers['x-pin-token'];
+    if (token == null || token.toString().trim().isEmpty) {
+      return MockResponse.badRequest(
+        'PIN verification required for this operation',
+      );
+    }
+    return null;
   }
 }

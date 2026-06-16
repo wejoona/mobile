@@ -4,9 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/composed/pin_confirmation_sheet.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/entities/card.dart';
 import 'package:usdc_wallet/features/cards/providers/cards_provider.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
 
 /// Card Settings View
 ///
@@ -265,12 +267,29 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
     String cardId,
   ) async {
     final card = ref.read(selectedCardProvider(cardId));
-    if (card == null) return;
+    if (card == null) {
+      return;
+    }
+
+    final pinToken = await _requestPinToken(
+      context,
+      title: l10n.send_verifyPin,
+      subtitle: card.isFrozen
+          ? l10n.cards_unfreezeConfirmation
+          : l10n.cards_freezeConfirmation,
+    );
+    if (pinToken == null || !context.mounted) {
+      return;
+    }
 
     if (card.isFrozen) {
-      await ref.read(cardActionsProvider).unfreezeCard(cardId);
+      await ref
+          .read(cardActionsProvider)
+          .unfreezeCard(cardId, pinToken: pinToken);
     } else {
-      await ref.read(cardActionsProvider).freezeCard(cardId);
+      await ref
+          .read(cardActionsProvider)
+          .freezeCard(cardId, pinToken: pinToken);
     }
     ref.invalidate(cardsEnvelopeProvider);
     ref.invalidate(cardsProvider);
@@ -350,12 +369,22 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
     );
 
     if (result != null && context.mounted) {
+      final pinToken = await _requestPinToken(
+        context,
+        title: l10n.send_verifyPin,
+        subtitle: l10n.cards_updateLimit,
+      );
+      if (pinToken == null || !context.mounted) {
+        return;
+      }
+
       await ref
           .read(cardActionsProvider)
           .updateSpendingLimit(
             card.id,
             dailyLimit: result,
             transactionLimit: result,
+            pinToken: pinToken,
           );
       ref.invalidate(cardsEnvelopeProvider);
       ref.invalidate(cardsProvider);
@@ -417,7 +446,18 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
 
     if (confirmed == true && context.mounted) {
       try {
-        await ref.read(cardActionsProvider).cancelCard(cardId);
+        final pinToken = await _requestPinToken(
+          context,
+          title: l10n.send_verifyPin,
+          subtitle: l10n.cards_blockCardConfirmation,
+        );
+        if (pinToken == null || !context.mounted) {
+          return;
+        }
+
+        await ref
+            .read(cardActionsProvider)
+            .cancelCard(cardId, pinToken: pinToken);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -442,5 +482,33 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
         }
       }
     }
+  }
+
+  Future<String?> _requestPinToken(
+    BuildContext context, {
+    required String title,
+    String? subtitle,
+  }) async {
+    String? pinToken;
+    final result = await PinConfirmationSheet.show(
+      context: context,
+      title: title,
+      subtitle: subtitle,
+      onConfirm: (pin) async {
+        final verification = await ref
+            .read(pinServiceProvider)
+            .verifyPinWithBackend(pin);
+        if (verification.success && verification.pinToken != null) {
+          pinToken = verification.pinToken;
+          return true;
+        }
+        return false;
+      },
+    );
+
+    if (result == PinConfirmationResult.success) {
+      return pinToken;
+    }
+    return null;
   }
 }

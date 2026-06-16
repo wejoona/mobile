@@ -45,7 +45,8 @@ class CardDetailsNotifier extends StateNotifier<CardDetailsState> {
   final Ref _ref;
   final String _cardId;
 
-  CardDetailsNotifier(this._ref, this._cardId) : super(const CardDetailsState()) {
+  CardDetailsNotifier(this._ref, this._cardId)
+    : super(const CardDetailsState()) {
     loadCard(_cardId);
   }
 
@@ -63,10 +64,7 @@ class CardDetailsNotifier extends StateNotifier<CardDetailsState> {
 
   Future<void> revealDetails() async {
     // Requires PIN/biometric verification before revealing
-    state = state.copyWith(
-      isRevealed: true,
-      revealedAt: DateTime.now(),
-    );
+    state = state.copyWith(isRevealed: true, revealedAt: DateTime.now());
     // Auto-hide after 30 seconds
     Future.delayed(const Duration(seconds: 30), () {
       if (mounted) hideDetails();
@@ -77,11 +75,11 @@ class CardDetailsNotifier extends StateNotifier<CardDetailsState> {
     state = state.copyWith(isRevealed: false);
   }
 
-  Future<void> freezeCard() async {
+  Future<void> freezeCard({required String pinToken}) async {
     state = state.copyWith(isLoading: true);
     try {
       final service = _ref.read(cardsServiceProvider);
-      await service.freezeCard(_cardId);
+      await service.freezeCard(_cardId, pinToken: pinToken);
       state = state.copyWith(isLoading: false);
       _ref.invalidate(cardsProvider);
       await loadCard(_cardId);
@@ -90,11 +88,11 @@ class CardDetailsNotifier extends StateNotifier<CardDetailsState> {
     }
   }
 
-  Future<void> unfreezeCard() async {
+  Future<void> unfreezeCard({required String pinToken}) async {
     state = state.copyWith(isLoading: true);
     try {
       final service = _ref.read(cardsServiceProvider);
-      await service.unfreezeCard(_cardId);
+      await service.unfreezeCard(_cardId, pinToken: pinToken);
       state = state.copyWith(isLoading: false);
       _ref.invalidate(cardsProvider);
       await loadCard(_cardId);
@@ -106,6 +104,7 @@ class CardDetailsNotifier extends StateNotifier<CardDetailsState> {
 
 final cardDetailsProvider =
     StateNotifierProvider.family<CardDetailsNotifier, CardDetailsState, String>(
-        (ref, cardId) {
-  return CardDetailsNotifier(ref, cardId);
-});
+      (ref, cardId) {
+        return CardDetailsNotifier(ref, cardId);
+      },
+    );
