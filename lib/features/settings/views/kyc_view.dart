@@ -1232,12 +1232,16 @@ class _KycViewState extends ConsumerState<KycView> {
         await _uploadDocuments();
 
         // Then submit KYC form with document keys
-        await _submitKycData();
+        final submittedStatus = await _submitKycData();
 
-        // Update local status
+        // Update local status from the backend response so manual review,
+        // approval, and rejection paths stay aligned with the KYC FSM.
         ref
             .read(userStateMachineProvider.notifier)
-            .updateProfile(kycStatus: KycStatus.pending);
+            .updateProfile(kycStatus: submittedStatus);
+        ref
+            .read(kycStateMachineProvider.notifier)
+            .updateFromAuthResponse(submittedStatus.toApiString());
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1266,7 +1270,7 @@ class _KycViewState extends ConsumerState<KycView> {
   }
 
   /// Submit KYC form data with document keys to the backend
-  Future<void> _submitKycData() async {
+  Future<KycStatus> _submitKycData() async {
     if (_frontDocKey == null || _backDocKey == null || _selfieDocKey == null) {
       throw Exception('Documents must be uploaded first');
     }
@@ -1280,8 +1284,8 @@ class _KycViewState extends ConsumerState<KycView> {
     // Format date of birth as ISO 8601 (YYYY-MM-DD)
     final formattedDob = DateFormat('yyyy-MM-dd').format(_dateOfBirth!);
 
-    await dio.post(
-      '/wallet/kyc/submit',
+    final response = await dio.post(
+      '/kyc/submit',
       data: {
         'firstName': _firstNameController.text.trim(),
         'lastName': _lastNameController.text.trim(),
@@ -1289,12 +1293,26 @@ class _KycViewState extends ConsumerState<KycView> {
         'country': _selectedCountry!.code,
         'idType': _selectedIdType,
         'idNumber': _idNumberController.text.trim(),
-        'documentFrontKey': _frontDocKey,
-        'documentBackKey': _backDocKey,
+        'idFrontKey': _frontDocKey,
+        'idBackKey': _backDocKey,
         'selfieKey': _selfieDocKey,
         if (_livenessSessionId != null) 'livenessSessionId': _livenessSessionId,
       },
     );
+
+    final data = response.data;
+    if (data is Map) {
+      final status =
+          data['status'] ??
+          data['kycStatus'] ??
+          (data['data'] is Map ? (data['data'] as Map)['status'] : null) ??
+          (data['data'] is Map ? (data['data'] as Map)['kycStatus'] : null);
+      if (status != null) {
+        return KycStatus.fromString(status.toString());
+      }
+    }
+
+    return KycStatus.submitted;
   }
 
   Widget _buildVerifiedView(ThemeColors colors) {
