@@ -1,26 +1,24 @@
 import 'dart:async';
-import 'package:dio/dio.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/domain/entities/wallet.dart' as wallet_entity;
+import 'package:usdc_wallet/services/wallet/wallet_service.dart'
+    as wallet_service;
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 
 /// Wallet balance state.
 class WalletBalance {
-  final double available;
-  final double pending;
-  final double total;
-  final String currency;
-  final DateTime updatedAt;
-
   const WalletBalance({
+    required this.updatedAt,
     this.available = 0,
     this.pending = 0,
     this.total = 0,
     this.currency = 'USDC',
-    required this.updatedAt,
   });
 
   factory WalletBalance.fromJson(Map<String, dynamic> json) => WalletBalance(
+    updatedAt:
+        DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? DateTime.now(),
     available:
         _amountFromString(json['availableDecimal']) ??
         _amountFromString(json['available_decimal']) ??
@@ -43,109 +41,43 @@ class WalletBalance {
         (json['balance'] as num?)?.toDouble() ??
         0,
     currency: json['currency'] as String? ?? 'USDC',
-    updatedAt:
-        DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? DateTime.now(),
-  );
-}
-
-/// Wallet balance provider — wired to GET /wallet.
-/// Backend serves balance at GET /wallet (not /wallet/balance).
-final walletBalanceProvider = FutureProvider<WalletBalance>((ref) async {
-  final dio = ref.watch(dioProvider);
-  final link = ref.keepAlive();
-  final timer = Timer(const Duration(seconds: 30), () => link.close());
-  ref.onDispose(() => timer.cancel());
-
-  try {
-    final response = await dio
-        .get(
-          '/wallet',
-          options: Options(
-            receiveTimeout: const Duration(seconds: 10),
-            sendTimeout: const Duration(seconds: 10),
-            validateStatus: (status) =>
-                status != null && (status < 400 || status == 404),
-          ),
-        )
-        .timeout(const Duration(seconds: 12));
-    if (response.statusCode == 404) {
-      final created = await dio
-          .post(
-            '/wallet/create',
-            options: Options(
-              receiveTimeout: const Duration(seconds: 15),
-              sendTimeout: const Duration(seconds: 10),
-            ),
-          )
-          .timeout(const Duration(seconds: 18));
-      return _walletBalanceFromPayload(created.data);
-    }
-    return _walletBalanceFromPayload(response.data);
-  } on DioException catch (error) {
-    if (error.response?.statusCode != 404) {
-      rethrow;
-    }
-
-    final response = await dio
-        .post(
-          '/wallet/create',
-          options: Options(
-            receiveTimeout: const Duration(seconds: 15),
-            sendTimeout: const Duration(seconds: 10),
-          ),
-        )
-        .timeout(const Duration(seconds: 18));
-    return _walletBalanceFromPayload(response.data);
-  }
-});
-
-WalletBalance _walletBalanceFromPayload(dynamic payload) {
-  final data = _asMap(payload);
-  final envelopeData = _asMap(data['data']);
-  final wallet = _unwrapWalletMap(
-    envelopeData.isNotEmpty ? envelopeData : data,
   );
 
-  // GET /wallet returns { walletId, currency, balances: [...] }.
-  // POST /wallet/create returns { id, currency, balance }.
-  // Prefer the spendable USDC row, then the wallet currency row, then the
-  // first positive row. Backend row order is not a UI contract.
-  final balances = _balanceEntries(wallet['balances']);
-  if (balances.isNotEmpty) {
-    final selected = _selectBalanceRow(balances, wallet['currency'] as String?);
-    if (selected != null) {
-      return WalletBalance.fromJson({
-        'available': selected['available'],
-        'availableDecimal': selected['availableDecimal'],
-        'pending': selected['pending'],
-        'pendingDecimal': selected['pendingDecimal'],
-        'total': selected['total'],
-        'totalDecimal': selected['totalDecimal'],
-        'currency': selected['currency'] ?? wallet['currency'] ?? 'USDC',
-        'updatedAt': DateTime.now().toIso8601String(),
-      });
-    }
+  factory WalletBalance.fromWalletResponse(
+    wallet_service.WalletBalanceResponse response,
+  ) {
+    final selected = _selectedBalance(response);
+    return WalletBalance(
+      updatedAt: DateTime.now(),
+      available: selected?.available ?? response.availableBalance,
+      pending:
+          selected?.pending ??
+          response.balances.fold<double>(
+            0,
+            (total, balance) => total + balance.pending,
+          ),
+      total: selected?.total ?? response.totalBalance,
+      currency: selected?.currency ?? response.currency,
+    );
   }
 
-  return WalletBalance.fromJson({
-    'available': wallet['available'] ?? wallet['balance'] ?? 0,
-    'pending': wallet['pending'] ?? 0,
-    'total': wallet['total'] ?? wallet['balance'] ?? 0,
-    'currency': wallet['currency'] ?? 'USDC',
-    'updatedAt': DateTime.now().toIso8601String(),
-  });
+  final double available;
+  final double pending;
+  final double total;
+  final String currency;
+  final DateTime updatedAt;
 }
 
-Map<String, dynamic>? _selectBalanceRow(
-  List<Map<String, dynamic>> balances,
-  String? walletCurrency,
+wallet_entity.WalletBalance? _selectedBalance(
+  wallet_service.WalletBalanceResponse response,
 ) {
-  if (balances.isEmpty) return null;
+  if (response.balances.isEmpty) {
+    return null;
+  }
 
-  Map<String, dynamic>? byCurrency(String currency) {
-    for (final balance in balances) {
-      if ((balance['currency'] as String?)?.toUpperCase() ==
-          currency.toUpperCase()) {
+  wallet_entity.WalletBalance? byCurrency(String currency) {
+    for (final balance in response.balances) {
+      if (balance.currency.toUpperCase() == currency.toUpperCase()) {
         return balance;
       }
     }
@@ -153,85 +85,45 @@ Map<String, dynamic>? _selectBalanceRow(
   }
 
   final usdc = byCurrency('USDC');
-  if (usdc != null) return usdc;
-
-  if (walletCurrency != null && walletCurrency.trim().isNotEmpty) {
-    final matchingWalletCurrency = byCurrency(walletCurrency);
-    if (matchingWalletCurrency != null) return matchingWalletCurrency;
+  if (usdc != null) {
+    return usdc;
   }
 
-  for (final balance in balances) {
-    final amount =
-        _amountFromString(balance['availableDecimal']) ??
-        _amountFromString(balance['available_decimal']) ??
-        (balance['available'] as num?)?.toDouble() ??
-        0;
-    if (amount > 0) return balance;
-  }
-
-  return balances.first;
-}
-
-Map<String, dynamic> _asMap(dynamic value) {
-  if (value is Map<String, dynamic>) return value;
-  if (value is Map) return Map<String, dynamic>.from(value);
-  return const {};
-}
-
-Map<String, dynamic> _unwrapWalletMap(Map<String, dynamic> value) {
-  for (final key in const ['wallet', 'account', 'result']) {
-    final nested = _asMap(value[key]);
-    if (nested.isNotEmpty) return _mergeWalletEnvelope(value, nested);
-  }
-  return value;
-}
-
-Map<String, dynamic> _mergeWalletEnvelope(
-  Map<String, dynamic> envelope,
-  Map<String, dynamic> wallet,
-) {
-  final merged = <String, dynamic>{...envelope, ...wallet};
-  for (final key in const [
-    'balances',
-    'balance',
-    'available',
-    'availableBalance',
-    'balanceUsdc',
-    'pending',
-    'pendingBalance',
-    'total',
-  ]) {
-    if (merged[key] == null && envelope.containsKey(key)) {
-      merged[key] = envelope[key];
+  final declared = response.currency.trim();
+  if (declared.isNotEmpty) {
+    final matchingDeclared = byCurrency(declared);
+    if (matchingDeclared != null) {
+      return matchingDeclared;
     }
   }
-  return merged;
-}
 
-List<Map<String, dynamic>> _balanceEntries(Object? raw) {
-  if (raw is List) {
-    return raw.whereType<Map>().map(Map<String, dynamic>.from).toList();
+  for (final balance in response.balances) {
+    if (balance.available > 0 || balance.total > 0) {
+      return balance;
+    }
   }
 
-  if (raw is Map) {
-    return raw.entries.map((entry) {
-      final currency = entry.key.toString().toUpperCase();
-      final value = entry.value;
-      if (value is Map) {
-        return {
-          'currency': value['currency'] ?? currency,
-          ...Map<String, dynamic>.from(value),
-        };
-      }
-      return {'currency': currency, 'available': value, 'total': value};
-    }).toList();
-  }
-
-  return const [];
+  return response.balances.first;
 }
+
+/// Wallet balance provider — wired to GET /wallet.
+/// Backend serves balance at GET /wallet (not /wallet/balance).
+final walletBalanceProvider = FutureProvider<WalletBalance>((ref) async {
+  final link = ref.keepAlive();
+  final timer = Timer(const Duration(seconds: 30), link.close);
+  ref.onDispose(timer.cancel);
+
+  final response = await ref
+      .watch(wallet_service.walletServiceProvider)
+      .getBalance()
+      .timeout(const Duration(seconds: 18));
+  return WalletBalance.fromWalletResponse(response);
+});
 
 double? _amountFromString(Object? value) {
-  if (value is String) return double.tryParse(value);
+  if (value is String) {
+    return double.tryParse(value);
+  }
   return null;
 }
 
@@ -246,9 +138,6 @@ final availableBalanceProvider = Provider<double>((ref) {
 });
 
 /// Whether balance is sufficient for a given amount.
-final hasSufficientBalanceProvider = Provider.family<bool, double>((
-  ref,
-  amount,
-) {
-  return ref.watch(availableBalanceProvider) >= amount;
-});
+final hasSufficientBalanceProvider = Provider.family<bool, double>(
+  (ref, amount) => ref.watch(availableBalanceProvider) >= amount,
+);

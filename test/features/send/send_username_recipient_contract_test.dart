@@ -111,6 +111,38 @@ void main() {
     },
   );
 
+  test(
+    'internal transfer prefers stable recipientId when lookup also has phone and username',
+    () async {
+      final dio = MockDio();
+      dio.queueResponse({
+        'transactionId': 'tx-789',
+        'status': 'completed',
+        'amount': 20,
+        'currency': 'USDC',
+        'supportReference': 'tx-789',
+      });
+
+      final service = TransfersService(dio);
+      await service.createInternalTransfer(
+        recipientId: '123e4567-e89b-12d3-a456-426614174003',
+        recipientPhone: '+2250748805663',
+        recipientUsername: '@awa_k',
+        amount: 20,
+        pinToken: 'pin-token',
+        idempotencyKey: 'idem-789',
+      );
+
+      final request = dio.requestHistory.single;
+      expect(request.path, '/wallet/transfer/internal');
+      final body = request.data as Map<String, dynamic>;
+      expect(body, {
+        'recipientId': '123e4567-e89b-12d3-a456-426614174003',
+        'amount': 20,
+      });
+    },
+  );
+
   test('send screens allow discoverable username recipients', () {
     final contactsScreen = File(
       'lib/features/contacts/views/contacts_list_screen.dart',
