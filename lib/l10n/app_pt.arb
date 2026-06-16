@@ -7965,5 +7965,7 @@
         "type": "String"
       }
     }
-  }
+  },
+  "moneyFlow_reviewRequiredMessage": "Sua conta está em análise. Avisaremos quando esta ação estiver disponível.",
+  "moneyFlow_verificationRequiredMessage": "Conclua a verificação de identidade para usar esta ação."
 }
