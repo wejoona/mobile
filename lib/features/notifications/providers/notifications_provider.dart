@@ -1,7 +1,16 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:usdc_wallet/domain/entities/notification.dart';
 import 'package:usdc_wallet/features/notifications/repositories/notifications_repository.dart';
+
+/// Last notification feed successfully returned by the backend.
+final lastKnownNotificationsProvider = StateProvider<List<AppNotification>>(
+  (ref) => const [],
+);
+
+/// Last unread count successfully returned by the backend.
+final lastKnownUnreadNotificationCountProvider = StateProvider<int>((ref) => 0);
 
 /// Notifications list provider.
 final notificationsProvider = FutureProvider<List<AppNotification>>((
@@ -12,7 +21,9 @@ final notificationsProvider = FutureProvider<List<AppNotification>>((
   final timer = Timer(const Duration(minutes: 1), () => link.close());
   ref.onDispose(() => timer.cancel());
 
-  return repository.getNotifications(pageSize: 100);
+  final notifications = await repository.getNotifications(pageSize: 100);
+  ref.read(lastKnownNotificationsProvider.notifier).state = notifications;
+  return notifications;
 });
 
 /// Unread notification count.
@@ -22,7 +33,9 @@ final unreadNotificationCountProvider = FutureProvider<int>((ref) async {
   final timer = Timer(const Duration(minutes: 1), () => link.close());
   ref.onDispose(() => timer.cancel());
 
-  return repository.getUnreadCount();
+  final count = await repository.getUnreadCount();
+  ref.read(lastKnownUnreadNotificationCountProvider.notifier).state = count;
+  return count;
 });
 
 /// Has unread notifications.
@@ -40,12 +53,46 @@ class NotificationActions {
 
   Future<void> markAsRead(String id) async {
     await _repository.markAsRead(id);
+    _markCachedNotificationAsRead(id);
     _refreshNotificationState();
   }
 
   Future<void> markAllAsRead() async {
     await _repository.markAllAsRead();
+    _markAllCachedNotificationsAsRead();
     _refreshNotificationState();
+  }
+
+  void _markCachedNotificationAsRead(String id) {
+    final notifications = _ref.read(lastKnownNotificationsProvider);
+    var changed = false;
+    final updated = notifications
+        .map((notification) {
+          if (notification.id != id || notification.isRead) {
+            return notification;
+          }
+          changed = true;
+          return notification.copyWith(isRead: true);
+        })
+        .toList(growable: false);
+    if (!changed) {
+      return;
+    }
+    _ref.read(lastKnownNotificationsProvider.notifier).state = updated;
+    final count = _ref.read(lastKnownUnreadNotificationCountProvider);
+    _ref.read(lastKnownUnreadNotificationCountProvider.notifier).state =
+        count > 0 ? count - 1 : 0;
+  }
+
+  void _markAllCachedNotificationsAsRead() {
+    final notifications = _ref.read(lastKnownNotificationsProvider);
+    _ref.read(lastKnownNotificationsProvider.notifier).state = [
+      for (final notification in notifications)
+        notification.isRead
+            ? notification
+            : notification.copyWith(isRead: true),
+    ];
+    _ref.read(lastKnownUnreadNotificationCountProvider.notifier).state = 0;
   }
 
   void _refreshNotificationState() {

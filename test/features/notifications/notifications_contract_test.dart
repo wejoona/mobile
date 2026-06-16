@@ -35,7 +35,9 @@ void main() {
 
     final notifications = await container.read(notificationsProvider.future);
 
-    final request = dio.requestHistory.single;
+    final request = dio.requestHistory.singleWhere(
+      (entry) => entry.path == '/notifications',
+    );
     expect(request.path, '/notifications');
     expect(request.queryParameters['limit'], 100);
     expect(request.queryParameters['offset'], 0);
@@ -44,6 +46,84 @@ void main() {
     expect(notifications.single.isRead, isFalse);
     expect(notifications.single.data?['deviceId'], 'device-1');
   });
+
+  test(
+    'notification providers preserve last-known backend feed on failure',
+    () async {
+      final dio = MockDio();
+      dio
+        ..queueResponse({
+          'notifications': [
+            {
+              'id': 'notif-cached',
+              'type': 'security_alert',
+              'title': 'Security alert',
+              'body': 'A new device signed in.',
+              'readAt': null,
+              'createdAt': DateTime.utc(2026, 6, 16).toIso8601String(),
+            },
+          ],
+        })
+        ..queueResponse({
+          'data': {'count': 1},
+        })
+        ..queueErrorResponse(statusCode: 503, message: 'unavailable')
+        ..queueErrorResponse(statusCode: 503, message: 'unavailable');
+      final container = ProviderContainer(
+        overrides: [dioProvider.overrideWithValue(dio)],
+      );
+      addTearDown(container.dispose);
+
+      final notifications = await container.read(notificationsProvider.future);
+      final unreadCount = await container.read(
+        unreadNotificationCountProvider.future,
+      );
+
+      expect(notifications.single.id, 'notif-cached');
+      expect(unreadCount, 1);
+      expect(container.read(lastKnownNotificationsProvider), hasLength(1));
+      expect(container.read(lastKnownUnreadNotificationCountProvider), 1);
+
+      final notificationsSub = container.listen(
+        notificationsProvider,
+        (_, _) {},
+        fireImmediately: true,
+      );
+      final unreadSub = container.listen(
+        unreadNotificationCountProvider,
+        (_, _) {},
+        fireImmediately: true,
+      );
+      addTearDown(notificationsSub.close);
+      addTearDown(unreadSub.close);
+
+      container
+        ..invalidate(notificationsProvider)
+        ..invalidate(unreadNotificationCountProvider);
+
+      await Future<void>.delayed(Duration.zero);
+
+      expect(
+        dio.requestHistory
+            .where((entry) => entry.path == '/notifications')
+            .length,
+        greaterThanOrEqualTo(2),
+      );
+      expect(
+        dio.requestHistory
+            .where((entry) => entry.path == '/notifications/unread-count')
+            .length,
+        greaterThanOrEqualTo(2),
+      );
+
+      expect(container.read(lastKnownNotificationsProvider), hasLength(1));
+      expect(
+        container.read(lastKnownNotificationsProvider).single.id,
+        'notif-cached',
+      );
+      expect(container.read(lastKnownUnreadNotificationCountProvider), 1);
+    },
+  );
 
   test('notification action payload resolves mobile navigation targets', () {
     final transactionNotification = AppNotification.fromJson({

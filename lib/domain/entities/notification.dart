@@ -28,6 +28,34 @@ class AppNotification {
     required this.createdAt,
   });
 
+  AppNotification copyWith({
+    String? id,
+    String? title,
+    String? body,
+    NotificationType? type,
+    String? severity,
+    String? action,
+    bool? isRead,
+    String? actionUrl,
+    String? transactionId,
+    Map<String, dynamic>? data,
+    DateTime? createdAt,
+  }) {
+    return AppNotification(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      body: body ?? this.body,
+      type: type ?? this.type,
+      severity: severity ?? this.severity,
+      action: action ?? this.action,
+      isRead: isRead ?? this.isRead,
+      actionUrl: actionUrl ?? this.actionUrl,
+      transactionId: transactionId ?? this.transactionId,
+      data: data ?? this.data,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
   factory AppNotification.fromJson(Map<String, dynamic> json) {
     final data = json['data'] is Map
         ? Map<String, dynamic>.from(json['data'] as Map)
