@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 
 class BrandedQrImage extends StatelessWidget {
   const BrandedQrImage({
@@ -85,6 +86,8 @@ class BrandedQrImage extends StatelessWidget {
                   width: iconSize,
                   height: iconSize,
                   fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) =>
+                      KoridoMark(size: iconSize),
                 ),
               ),
             ),
