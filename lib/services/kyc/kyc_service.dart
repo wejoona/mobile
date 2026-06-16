@@ -253,7 +253,19 @@ class KycService {
   /// Create a liveness verification session
   /// Returns sessionToken + challenge info
   Future<LivenessSessionResponse> createLivenessSession() async {
-    final response = await _dio.post('/kyc/liveness/session');
+    final response = await _dio.post(
+      '/kyc/liveness/session',
+      data: {
+        'capabilities': {
+          'supportedCaptureModes': ['photo'],
+          'preferredCaptureMode': 'photo',
+          'supportedMimeTypes': ['image/jpeg'],
+          'maxVideoDurationSeconds': null,
+          'supportsOnDeviceFaceDetection': false,
+          'supportsReferenceSelfie': true,
+        },
+      },
+    );
     return LivenessSessionResponse.fromJson(
       response.data as Map<String, dynamic>,
     );
