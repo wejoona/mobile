@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
 import 'package:usdc_wallet/services/limits/limits_service.dart';
@@ -6,6 +8,17 @@ import '../../helpers/test_utils.dart';
 
 void main() {
   group('TransactionLimits contract', () {
+    test('send validation uses backend limits instead of hard-coded caps', () {
+      final source = File(
+        'lib/features/send/providers/send_validation_provider.dart',
+      ).readAsStringSync();
+
+      expect(source, contains('limitHitByFor'));
+      expect(source, contains('TransactionLimitOperation.send'));
+      expect(source, isNot(contains('data.amount! > 10000')));
+      expect(source, contains(r"RegExp(r'^\+?1\d{10}$')"));
+    });
+
     test('parses live nested /user/limits response', () {
       final limits = TransactionLimits.fromJson({
         'tier': 'verified',
