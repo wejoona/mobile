@@ -469,6 +469,9 @@ void main() {
       expect(source, contains('!pendingVerification'));
       expect(source, contains('email.isNotEmpty'));
       expect(source, contains('unawaited(_resend())'));
+      expect(source, contains("'pending_verification'"));
+      expect(source, contains("'expires_in'"));
+      expect(source, contains('final normalized = value.toLowerCase()'));
       expect(source, contains("value.replaceAll(RegExp(r'\\D'), '')"));
       expect(source, contains('maxLength: index == 0 ? 6 : 1'));
     });

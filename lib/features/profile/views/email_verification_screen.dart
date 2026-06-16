@@ -49,9 +49,14 @@ class _EmailVerificationScreenState
   Future<void> _loadEmailStatus() async {
     try {
       final status = await ref.read(userServiceProvider).getEmailStatus();
-      final verified = status['verified'] == true;
-      final pendingVerification = status['pendingVerification'] == true;
-      final expiresIn = _readExpiresIn(status['expiresIn']);
+      final verified = _readBool(status, const ['verified', 'emailVerified']);
+      final pendingVerification = _readBool(status, const [
+        'pendingVerification',
+        'pending_verification',
+      ]);
+      final expiresIn = _readExpiresIn(
+        _readValue(status, const ['expiresIn', 'expires_in']),
+      );
       final email = (status['email'] as String?)?.trim();
       final shouldAutoRequestCode =
           !verified &&
@@ -221,6 +226,26 @@ class _EmailVerificationScreenState
       return int.tryParse(value) ?? 60;
     }
     return 60;
+  }
+
+  Object? _readValue(Map<String, dynamic> source, List<String> keys) {
+    for (final key in keys) {
+      if (source.containsKey(key)) {
+        return source[key];
+      }
+    }
+    return null;
+  }
+
+  bool _readBool(Map<String, dynamic> source, List<String> keys) {
+    final value = _readValue(source, keys);
+    if (value is bool) return value;
+    if (value is String) {
+      final normalized = value.toLowerCase();
+      if (normalized == 'true') return true;
+      if (normalized == 'false') return false;
+    }
+    return false;
   }
 
   void _handleOtpChange(String value, int index) {
