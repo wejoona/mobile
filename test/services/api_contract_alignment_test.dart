@@ -862,7 +862,14 @@ void main() {
       final request = dio.requestHistory.single;
       expect(request.method, 'POST');
       expect(request.path, '/notifications/device-token');
-      expect(request.data, {'token': 'fcm-token-1', 'platform': 'ios'});
+      expect(request.data, {
+        'token': 'fcm-token-1',
+        'platform': 'ios',
+        'deviceId': 'device-1',
+        'deviceName': 'iPhone 17',
+        'appVersion': '1.0.0',
+        'osVersion': 'iOS 26.0',
+      });
     });
 
     test('runtime push lifecycle delegates through notification service', () {

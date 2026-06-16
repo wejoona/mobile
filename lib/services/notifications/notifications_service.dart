@@ -82,7 +82,14 @@ class NotificationsService {
     try {
       await _dio.post(
         '/notifications/device-token',
-        data: {'token': token, 'platform': _notificationPlatform(platform)},
+        data: {
+          'token': token,
+          'platform': _notificationPlatform(platform),
+          if (_hasValue(deviceId)) 'deviceId': deviceId!.trim(),
+          if (_hasValue(deviceName)) 'deviceName': deviceName!.trim(),
+          if (_hasValue(appVersion)) 'appVersion': appVersion!.trim(),
+          if (_hasValue(osVersion)) 'osVersion': osVersion!.trim(),
+        },
       );
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -207,3 +214,5 @@ String _notificationPlatform(String platform) {
   }
   return 'ios';
 }
+
+bool _hasValue(String? value) => value != null && value.trim().isNotEmpty;
