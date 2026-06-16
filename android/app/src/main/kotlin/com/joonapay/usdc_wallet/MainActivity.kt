@@ -3,6 +3,7 @@ package com.joonapay.usdc_wallet
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.media.FaceDetector
 import android.os.Build
 import android.os.Bundle
@@ -12,6 +13,7 @@ import android.security.keystore.KeyProperties
 import android.security.keystore.UserNotAuthenticatedException
 import android.view.WindowManager
 import androidx.biometric.BiometricManager
+import androidx.exifinterface.media.ExifInterface
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -145,10 +147,11 @@ class MainActivity : FlutterActivity() {
                     return@launch
                 }
 
-                val rgb565 = if (decoded.config == Bitmap.Config.RGB_565) {
-                    decoded
+                val oriented = orientBitmapForFaceDetection(path, decoded)
+                val rgb565 = if (oriented.config == Bitmap.Config.RGB_565) {
+                    oriented
                 } else {
-                    decoded.copy(Bitmap.Config.RGB_565, false) ?: decoded
+                    oriented.copy(Bitmap.Config.RGB_565, false) ?: oriented
                 }
 
                 if (rgb565.width < 2 || rgb565.height < 2) {
@@ -194,6 +197,41 @@ class MainActivity : FlutterActivity() {
                     )
                 }
             }
+        }
+    }
+
+    private fun orientBitmapForFaceDetection(path: String, bitmap: Bitmap): Bitmap {
+        val orientation = try {
+            ExifInterface(path).getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_NORMAL
+            )
+        } catch (_: Exception) {
+            ExifInterface.ORIENTATION_NORMAL
+        }
+
+        val matrix = Matrix()
+        when (orientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+            ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+            ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+            ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> matrix.preScale(-1f, 1f)
+            ExifInterface.ORIENTATION_FLIP_VERTICAL -> matrix.preScale(1f, -1f)
+            ExifInterface.ORIENTATION_TRANSPOSE -> {
+                matrix.postRotate(90f)
+                matrix.preScale(-1f, 1f)
+            }
+            ExifInterface.ORIENTATION_TRANSVERSE -> {
+                matrix.postRotate(270f)
+                matrix.preScale(-1f, 1f)
+            }
+            else -> return bitmap
+        }
+
+        return try {
+            Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        } catch (_: Exception) {
+            bitmap
         }
     }
 
