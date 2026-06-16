@@ -51,7 +51,12 @@ workflows:
           echo "Analyzer passed with no errors or warnings."
 
       - name: Run Flutter tests
-        script: flutter test
+        script: |
+          find test -name '*_test.dart' \
+            ! -path '*/golden/*' \
+            ! -path '*/snapshots/*' \
+            | sort > /tmp/korido_flutter_tests.txt
+          xargs -n 40 flutter test < /tmp/korido_flutter_tests.txt
 
       - name: Configurer le signing iOS
         script: xcode-project use-profiles
