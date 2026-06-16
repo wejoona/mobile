@@ -78,15 +78,15 @@ class TransfersService {
     }
 
     try {
+      final recipientBody = _recipientIdentifierBody(
+        recipientId: normalizedRecipientId,
+        recipientPhone: normalizedPhone,
+        recipientUsername: normalizedUsername,
+      );
       final response = await _dio.post(
         '/wallet/transfer/internal',
         data: {
-          if (normalizedRecipientId != null && normalizedRecipientId.isNotEmpty)
-            'recipientId': normalizedRecipientId,
-          if (normalizedPhone != null && normalizedPhone.isNotEmpty)
-            'toPhone': normalizedPhone,
-          if (normalizedUsername != null && normalizedUsername.isNotEmpty)
-            'recipientUsername': normalizedUsername,
+          ...recipientBody,
           'amount': amount,
           if (note != null) 'note': note,
         },
@@ -109,6 +109,22 @@ class TransfersService {
       return null;
     }
     return trimmed.startsWith('@') ? trimmed.substring(1) : trimmed;
+  }
+
+  Map<String, String> _recipientIdentifierBody({
+    required String? recipientId,
+    required String? recipientPhone,
+    required String? recipientUsername,
+  }) {
+    // Backend accepts exactly one identifier. Lookup/contact selections may
+    // carry display phone + username too; prefer the stable user id.
+    if (recipientId != null && recipientId.isNotEmpty) {
+      return {'recipientId': recipientId};
+    }
+    if (recipientUsername != null && recipientUsername.isNotEmpty) {
+      return {'recipientUsername': recipientUsername};
+    }
+    return {'toPhone': recipientPhone!};
   }
 
   /// POST /wallet/transfer/external
