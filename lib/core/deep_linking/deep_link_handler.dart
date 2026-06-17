@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
+import 'package:usdc_wallet/core/deep_linking/deep_link_security.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
@@ -141,13 +142,13 @@ class DeepLinkHandler {
       final note = params['note'];
 
       // Validate parameters
-      if (to != null && !_isValidPhoneNumber(to)) {
+      if (to != null && !DeepLinkSecurity.isValidPhoneNumber(to)) {
         _showError(context, 'Invalid phone number');
         context.go('/home');
         return;
       }
 
-      if (amount != null && !_isValidAmount(amount)) {
+      if (amount != null && !DeepLinkSecurity.isValidAmount(amount)) {
         _showError(context, 'Invalid amount');
         context.go('/home');
         return;
@@ -170,7 +171,7 @@ class DeepLinkHandler {
       }
 
       final amount = params['amount'];
-      if (amount != null && !_isValidAmount(amount)) {
+      if (amount != null && !DeepLinkSecurity.isValidAmount(amount)) {
         _showError(context, 'Invalid amount');
         context.go('/home');
         return;
@@ -199,7 +200,7 @@ class DeepLinkHandler {
       }
 
       final transactionId = parts[1];
-      if (!_isValidUuid(transactionId)) {
+      if (!DeepLinkSecurity.isValidUuid(transactionId)) {
         _showError(context, 'Invalid transaction ID');
         context.go('/home');
         return;
@@ -440,28 +441,6 @@ class DeepLinkHandler {
     } else {
       context.go('/login');
     }
-  }
-
-  /// Validate phone number (E.164 format)
-  static bool _isValidPhoneNumber(String phone) {
-    return RegExp(r'^\+[1-9]\d{1,14}$').hasMatch(phone);
-  }
-
-  /// Validate amount
-  static bool _isValidAmount(String amount) {
-    final parsed = double.tryParse(amount);
-    if (parsed == null) return false;
-    if (parsed <= 0) return false;
-    if (parsed > 1000000) return false; // Max 1M USDC
-    return true;
-  }
-
-  /// Validate UUID
-  static bool _isValidUuid(String id) {
-    return RegExp(
-      r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
-      caseSensitive: false,
-    ).hasMatch(id);
   }
 
   /// Save deep link for after authentication using secure storage
