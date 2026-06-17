@@ -45,6 +45,7 @@ post_install do |installer|
   xcode_upgrade_check = '2700'
 
   installer.pods_project.root_object.attributes['LastUpgradeCheck'] = xcode_upgrade_check
+  installer.pods_project.root_object.attributes['LastSwiftMigration'] = xcode_upgrade_check
 
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
@@ -67,7 +68,10 @@ post_install do |installer|
       config.build_settings['ARCHS[sdk=iphonesimulator*]'] = 'arm64'
       config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
       config.build_settings['SWIFT_SUPPRESS_WARNINGS'] = 'YES'
-      config.build_settings['LIBRARY_SEARCH_PATHS'] = '$(SDKROOT)/usr/lib/swift'
+      config.build_settings['SWIFT_VERSION'] = '5.9'
+      config.build_settings['SWIFT_STRICT_CONCURRENCY'] = 'minimal'
+      config.build_settings['SWIFT_TREAT_WARNINGS_AS_ERRORS'] = 'NO'
+      config.build_settings['LIBRARY_SEARCH_PATHS'] = '$(inherited) $(SDKROOT)/usr/lib/swift'
       definitions = config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
       definitions << 'PERMISSION_CONTACTS=1' unless definitions.include?('PERMISSION_CONTACTS=1')
 
@@ -83,5 +87,15 @@ post_install do |installer|
       end
       config.build_settings['OTHER_SWIFT_FLAGS'] = swift_flags
     end
+  end
+
+  Dir[File.join(installer.sandbox.root.to_s, 'Target Support Files', '**', '*.xcconfig')].each do |path|
+    contents = File.read(path)
+    sanitized = contents
+      .gsub(/\s+"?\$\{TOOLCHAIN_DIR\}\/usr\/lib\/swift\/\$\{PLATFORM_NAME\}"?/, '')
+      .gsub(/\s+"?\$\(TOOLCHAIN_DIR\)\/usr\/lib\/swift\/\$\(PLATFORM_NAME\)\/?"?/, '')
+      .gsub(/LIBRARY_SEARCH_PATHS =\s+/, 'LIBRARY_SEARCH_PATHS = ')
+      .gsub(/[ \t]+\n/, "\n")
+    File.write(path, sanitized) if sanitized != contents
   end
 end
