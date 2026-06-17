@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 import 'package:usdc_wallet/utils/phone_normalizer.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 void main() {
   group('PhoneNormalizer', () {
@@ -13,6 +13,27 @@ void main() {
 
     test('keeps already international phone numbers in E.164', () {
       expect(PhoneNormalizer.toE164('+225 07 00 00 00 00'), '+2250700000000');
+    });
+
+    test('rejects duplicated country code input instead of guessing', () {
+      expect(
+        () => PhoneNormalizer.toE164('+225+2250748805663'),
+        throwsFormatException,
+      );
+    });
+
+    test('does not duplicate dial code when composing E.164', () {
+      expect(
+        normalizePhoneE164(dialCode: '+225', localNumber: '+2250748805663'),
+        '+2250748805663',
+      );
+    });
+
+    test('normalizes US local numbers with explicit country', () {
+      expect(
+        PhoneNormalizer.toE164('(415) 555-0101', countryCode: 'US'),
+        '+14155550101',
+      );
     });
 
     test('maps dial-code country values to ISO codes', () {
