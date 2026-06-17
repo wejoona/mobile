@@ -895,7 +895,11 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       context.enterAuthenticatedApp();
     } on DioException catch (e) {
       if (mounted) {
-        final message = ApiException.fromDioError(e).message;
+        final apiError = ApiException.fromDioError(e);
+        if (_applyBackendManualReview(apiError)) {
+          return;
+        }
+        final message = apiError.message;
         if (_isVerificationProviderUnavailable(e, message)) {
           await _routePinResetToManualReview(
             'otp_verification_provider_unavailable',
@@ -919,6 +923,42 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         _resetConfirmPin();
       }
     }
+  }
+
+  bool _applyBackendManualReview(ApiException error) {
+    final payload = _apiErrorPayload(error.data);
+    final code =
+        (error.code ?? payload['code']?.toString())?.toUpperCase() ?? '';
+    final supportReviewRequired = payload['supportReviewRequired'] == true;
+
+    if (code != 'E2007' && !supportReviewRequired) {
+      return false;
+    }
+
+    setState(() {
+      _applyManualReviewTicket({
+        'id': payload['supportTicketId'] ?? payload['ticketId'],
+        'status': payload['status'] ?? 'open',
+        'reviewSla': payload['reviewSla'],
+      });
+      _isLoading = false;
+      _showError = false;
+      _errorMessage = null;
+      _step = 6;
+    });
+    return true;
+  }
+
+  Map<String, dynamic> _apiErrorPayload(Object? data) {
+    if (data is Map) {
+      final map = Map<String, dynamic>.from(data);
+      final error = map['error'];
+      if (error is Map) {
+        return {...map, ...Map<String, dynamic>.from(error)};
+      }
+      return map;
+    }
+    return const <String, dynamic>{};
   }
 
   bool _isVerificationProviderUnavailable(DioException error, String message) {
