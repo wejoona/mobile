@@ -32,8 +32,9 @@ class UserApi {
     File file, {
     required AvatarDeviceFaceCheck faceCheck,
   }) async {
+    final boundFaceCheck = await faceCheck.bindToFile(file);
     final formData = FormData.fromMap({
-      avatarDeviceFaceCheckField: faceCheck.token,
+      avatarDeviceFaceCheckField: boundFaceCheck.token,
       'avatar': await avatarMultipartFile(file),
     });
     return _dio.post('/user/avatar', data: formData);
