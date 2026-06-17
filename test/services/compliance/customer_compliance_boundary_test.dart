@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 
 void main() {
   group('customer compliance API boundary', () {
@@ -38,8 +39,10 @@ void main() {
       final limitsService = File('lib/services/limits/limits_service.dart')
           .readAsStringSync();
 
-      expect(limitsService, contains("'/user/limits'"));
-      expect(limitsService, contains("'/user/limits/usage'"));
+      expect(ApiEndpoints.limits, '/user/limits');
+      expect(ApiEndpoints.limitsUsage, '/user/limits/usage');
+      expect(limitsService, contains('ApiEndpoints.limits'));
+      expect(limitsService, contains('ApiEndpoints.limitsUsage'));
       expect(limitsService, isNot(contains("'/compliance/limits'")));
     });
   });

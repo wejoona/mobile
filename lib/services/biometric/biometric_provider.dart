@@ -1,9 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
+import 'package:usdc_wallet/services/security/auth/biometric_reenrollment_detector.dart';
 
 /// Run 373: Biometric authentication Riverpod providers
 final biometricServiceProvider = Provider<BiometricService>((ref) {
-  return BiometricService();
+  return BiometricService(
+    null,
+    ref.watch(secureStorageProvider),
+    ref.watch(biometricReenrollmentDetectorProvider),
+  );
 });
 
 final biometricAvailableProvider = FutureProvider<bool>((ref) async {

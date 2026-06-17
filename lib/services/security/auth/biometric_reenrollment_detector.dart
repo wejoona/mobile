@@ -52,20 +52,28 @@ class BiometricReenrollmentDetector {
 
   /// Update stored enrollment hash after re-verification.
   Future<void> acknowledgeChange() async {
-    final prefs = await SharedPreferences.getInstance();
-    final currentHash = await _getCurrentEnrollmentHash();
-    if (currentHash == null) {
-      await prefs.remove(_prefKey);
-      return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final currentHash = await _getCurrentEnrollmentHash();
+      if (currentHash == null) {
+        await prefs.remove(_prefKey);
+        return;
+      }
+      await prefs.setString(_prefKey, currentHash);
+      _log.debug('Biometric enrollment hash updated');
+    } on Object catch (e) {
+      _log.warn('Biometric enrollment hash update skipped', e);
     }
-    await prefs.setString(_prefKey, currentHash);
-    _log.debug('Biometric enrollment hash updated');
   }
 
   /// Clear stored hash (on logout or device unbind).
   Future<void> reset() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_prefKey);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_prefKey);
+    } on Object catch (e) {
+      _log.warn('Biometric enrollment hash reset skipped', e);
+    }
   }
 
   Future<String?> _getCurrentEnrollmentHash() async {

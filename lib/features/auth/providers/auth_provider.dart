@@ -877,24 +877,30 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> clearLocalSession() async {
     _sessionMutationVersion++;
 
+    final realtimeService = ref.read(realtimeServiceProvider);
+    final sessionService = ref.read(sessionServiceProvider.notifier);
+    final biometricService = ref.read(biometricServiceProvider);
+    final userStateMachine = ref.read(userStateMachineProvider.notifier);
+    final appFsm = ref.read(appFsmProvider.notifier);
+
+    state = const AuthState(status: AuthStatus.unauthenticated);
+    appFsm.logout();
+
     // Stop real-time sync
-    ref.read(realtimeServiceProvider).stop();
+    realtimeService.stop();
 
     // End session
-    await ref.read(sessionServiceProvider.notifier).endSession();
-    ref.invalidate(loginProvider);
+    await sessionService.endSession();
+    if (ref.mounted) {
+      ref.invalidate(loginProvider);
+    }
 
     await _storage.delete(key: StorageKeys.accessToken);
     await _storage.delete(key: StorageKeys.refreshToken);
-    await ref.read(biometricServiceProvider).disableBiometric();
+    await biometricService.disableBiometric();
 
     // Clear user state machine (clears cache, avatar, storage keys)
-    await ref.read(userStateMachineProvider.notifier).logout();
-
-    state = const AuthState(status: AuthStatus.unauthenticated);
-
-    // Sync with FSM: notify logout
-    ref.read(appFsmProvider.notifier).logout();
+    await userStateMachine.logout();
   }
 
   /// Clear error
