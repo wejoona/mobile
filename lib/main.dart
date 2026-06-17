@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdc_wallet/config/environment_config.dart';
 import 'package:usdc_wallet/design/theme/app_theme.dart';
@@ -26,6 +27,7 @@ import 'package:usdc_wallet/services/storage/sync_service.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 const _mainLogger = AppLogger('Main');
+const _installMarkerKey = 'korido.install.marker.v1';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,6 +49,7 @@ Future<void> main() async {
 
   // Initialize SharedPreferences for feature flags cache
   final sharedPreferences = await SharedPreferences.getInstance();
+  await _clearSecureStorageAfterFreshInstall(sharedPreferences);
 
   // Lock orientation to portrait
   await SystemChrome.setPreferredOrientations([
@@ -115,6 +118,27 @@ Future<void> main() async {
   );
 }
 
+Future<void> _clearSecureStorageAfterFreshInstall(
+  SharedPreferences sharedPreferences,
+) async {
+  if (sharedPreferences.getBool(_installMarkerKey) ?? false) {
+    return;
+  }
+
+  const storage = FlutterSecureStorage(
+    iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
+  );
+
+  try {
+    await storage.deleteAll();
+    _mainLogger.info('Cleared stale secure storage for fresh install');
+  } on Object catch (error) {
+    _mainLogger.warn('Unable to clear secure storage on fresh install', error);
+  }
+
+  await sharedPreferences.setBool(_installMarkerKey, true);
+}
+
 Future<void> _initializeFirebase() async {
   if (MockConfig.useMocks) {
     return;
@@ -148,7 +172,9 @@ class _KoridoAppState extends ConsumerState<KoridoApp> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
 
       // Initialize app lifecycle observer for auto-lock on background.
       ref.read(appLifecycleObserverProvider);
@@ -156,9 +182,7 @@ class _KoridoAppState extends ConsumerState<KoridoApp> {
       // Startup side effects must happen after the first build so Riverpod
       // state changes cannot race the initial widget tree construction.
       unawaited(ref.read(localSyncServiceProvider).onAppStart());
-      unawaited(
-        ref.read(mobileVersionPolicyProvider.notifier).check(reason: 'startup'),
-      );
+      unawaited(ref.read(mobileVersionPolicyProvider.notifier).check());
     });
   }
 
