@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
@@ -15,7 +16,7 @@ class WalletService {
   Future<WalletBalanceResponse> getBalance() async {
     try {
       final response = await _dio.get(
-        '/wallet',
+        ApiEndpoints.walletBalance,
         options: Options(
           receiveTimeout: const Duration(seconds: 10),
           sendTimeout: const Duration(seconds: 10),
@@ -39,7 +40,7 @@ class WalletService {
   Future<WalletBalanceResponse> createWallet() async {
     try {
       final response = await _dio.post(
-        '/wallet/create',
+        ApiEndpoints.walletCreate,
         options: Options(
           receiveTimeout: const Duration(seconds: 15),
           sendTimeout: const Duration(seconds: 10),
@@ -55,7 +56,7 @@ class WalletService {
   Future<List<DepositChannel>> getDepositChannels({String? currency}) async {
     try {
       final response = await _dio.get(
-        '/wallet/deposit/channels',
+        ApiEndpoints.depositChannels,
         queryParameters: currency == null ? null : {'currency': currency},
       );
       final data = response.data;
@@ -84,7 +85,7 @@ class WalletService {
   }) async {
     try {
       final response = await _dio.post(
-        '/wallet/deposit',
+        ApiEndpoints.depositInitiate,
         data: {
           'amount': amount.round(),
           'sourceCurrency': sourceCurrency,
@@ -112,7 +113,7 @@ class WalletService {
   }) async {
     try {
       final response = await _dio.post(
-        '/wallet/transfer/internal',
+        ApiEndpoints.transfersSend,
         data: {
           'toPhone': toPhone,
           'amount': amount,
@@ -144,7 +145,7 @@ class WalletService {
   }) async {
     try {
       final response = await _dio.post(
-        '/wallet/transfer/external',
+        ApiEndpoints.transfersExternal,
         data: {
           'toAddress': toAddress,
           'amount': amount,
@@ -174,7 +175,7 @@ class WalletService {
   }) async {
     try {
       final response = await _dio.get(
-        '/wallet/exchange-rate',
+        ApiEndpoints.walletExchangeRate,
         queryParameters: {
           'sourceCurrency': sourceCurrency,
           'targetCurrency': targetCurrency,
@@ -204,7 +205,7 @@ class WalletService {
   }) async {
     try {
       final response = await _dio.post(
-        '/wallet/withdraw',
+        ApiEndpoints.walletWithdraw,
         data: {
           'amount': amount,
           'destinationAddress': destinationAddress,
@@ -227,7 +228,7 @@ class WalletService {
   /// GET /kyc/status
   Future<KycStatusResponse> getKycStatus() async {
     try {
-      final response = await _dio.get('/kyc/status');
+      final response = await _dio.get(ApiEndpoints.kycStatus);
       return KycStatusResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -247,7 +248,7 @@ class WalletService {
   }) async {
     try {
       final response = await _dio.post(
-        '/kyc/submit',
+        ApiEndpoints.kycSubmit,
         data: {
           'firstName': firstName,
           'lastName': lastName,
@@ -268,7 +269,7 @@ class WalletService {
   /// GET /wallet/limits
   Future<TransactionLimitsResponse> getTransactionLimits() async {
     try {
-      final response = await _dio.get('/wallet/limits');
+      final response = await _dio.get(ApiEndpoints.walletLimits);
       return TransactionLimitsResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);

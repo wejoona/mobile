@@ -2,6 +2,7 @@
 library;
 
 import 'package:dio/dio.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 
@@ -12,30 +13,31 @@ class WalletApi {
   // ── Balance ──
 
   /// GET /wallet — balance + wallet info
-  Future<Response> getWallet() => _dio.get('/wallet');
+  Future<Response> getWallet() => _dio.get(ApiEndpoints.walletBalance);
 
   /// POST /wallet/create
-  Future<Response> createWallet() => _dio.post('/wallet/create');
+  Future<Response> createWallet() => _dio.post(ApiEndpoints.walletCreate);
 
   // ── Deposit ──
 
   /// GET /wallet/deposit/channels
-  Future<Response> getDepositChannels() => _dio.get('/wallet/deposit/channels');
+  Future<Response> getDepositChannels() =>
+      _dio.get(ApiEndpoints.depositChannels);
 
   /// GET /wallet/deposit/providers
   Future<Response> getDepositProviders() =>
-      _dio.get('/wallet/deposit/providers');
+      _dio.get(ApiEndpoints.depositProviders);
 
   /// POST /wallet/deposit
   Future<Response> initiateDeposit(Map<String, dynamic> data) => _dio.post(
-    '/wallet/deposit',
+    ApiEndpoints.depositInitiate,
     data: _depositPayload(data),
     options: Options(headers: {'X-Idempotency-Key': generateIdempotencyKey()}),
   );
 
   /// GET /wallet/deposit/:id
   Future<Response> getDepositStatus(String id) =>
-      _dio.get('/wallet/deposit/$id');
+      _dio.get(ApiEndpoints.depositById(id));
 
   // ── Transfer ──
 
@@ -45,7 +47,7 @@ class WalletApi {
     String? pinToken,
     String? idempotencyKey,
   }) => _dio.post(
-    '/wallet/transfer/internal',
+    ApiEndpoints.transfersSend,
     data: _internalTransferPayload(data),
     options: _moneyMovementOptions(
       pinToken: pinToken,
@@ -59,7 +61,7 @@ class WalletApi {
     String? pinToken,
     String? idempotencyKey,
   }) => _dio.post(
-    '/wallet/transfer/external',
+    ApiEndpoints.transfersExternal,
     data: _externalTransferPayload(data),
     options: _moneyMovementOptions(
       pinToken: pinToken,
@@ -72,7 +74,7 @@ class WalletApi {
     required double amount,
     required String network,
   }) => _dio.get(
-    '/wallet/transfer/external/estimate-fee',
+    ApiEndpoints.transfersEstimateFee,
     queryParameters: {'amount': amount, 'network': network},
   );
 
@@ -84,7 +86,7 @@ class WalletApi {
     String? pinToken,
     String? idempotencyKey,
   }) => _dio.post(
-    '/wallet/withdraw',
+    ApiEndpoints.walletWithdraw,
     data: data,
     options: _moneyMovementOptions(
       pinToken: pinToken,
@@ -101,7 +103,7 @@ class WalletApi {
     double amount = 10000,
     String direction = 'buy',
   }) => _dio.get(
-    '/wallet/exchange-rate',
+    ApiEndpoints.walletExchangeRate,
     queryParameters: {
       'sourceCurrency': sourceCurrency,
       'targetCurrency': targetCurrency,
@@ -126,16 +128,16 @@ class WalletApi {
   // ── KYC ──
 
   /// GET /wallet/kyc/status
-  Future<Response> getKycStatus() => _dio.get('/wallet/kyc/status');
+  Future<Response> getKycStatus() => _dio.get(ApiEndpoints.walletKycStatus);
 
   /// POST /wallet/kyc/submit
   Future<Response> submitKyc(Map<String, dynamic> data) =>
-      _dio.post('/wallet/kyc/submit', data: data);
+      _dio.post(ApiEndpoints.walletKycSubmit, data: data);
 
   // ── Limits ──
 
   /// GET /wallet/limits
-  Future<Response> getLimits() => _dio.get('/wallet/limits');
+  Future<Response> getLimits() => _dio.get(ApiEndpoints.walletLimits);
 
   Options _moneyMovementOptions({String? pinToken, String? idempotencyKey}) {
     if (pinToken == null || pinToken.isEmpty) {

@@ -235,7 +235,7 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
       );
 
       final response = await dio.post(
-        '/withdrawals/initiate',
+        ApiEndpoints.withdrawInitiate,
         data: {
           'amount': toCents(state.amount!),
           'providerCode': providerCode,
@@ -292,7 +292,7 @@ final withdrawalOptionsProvider =
     FutureProvider.family<List<WithdrawalOption>, String>((ref, country) async {
       final dio = ref.read(dioProvider);
       final response = await dio.get(
-        '/wallet/withdraw/options',
+        ApiEndpoints.walletWithdrawOptions,
         queryParameters: {'country': country},
       );
       final payload = response.data is Map

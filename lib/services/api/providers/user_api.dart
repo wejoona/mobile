@@ -3,6 +3,7 @@ library;
 
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/services/user/avatar_multipart.dart';
 
 class UserApi {
@@ -114,5 +115,5 @@ class UserApi {
   // ── Limits ──
 
   /// GET /user/limits
-  Future<Response> getLimits() => _dio.get('/user/limits');
+  Future<Response> getLimits() => _dio.get(ApiEndpoints.limits);
 }

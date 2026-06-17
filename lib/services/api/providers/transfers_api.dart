@@ -2,6 +2,7 @@
 library;
 
 import 'package:dio/dio.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 
@@ -15,7 +16,7 @@ class TransfersApi {
     String? pinToken,
     String? idempotencyKey,
   }) => _dio.post(
-    '/wallet/transfer/internal',
+    ApiEndpoints.transfersSend,
     data: _internalTransferPayload(data),
     options: _transferOptions(
       pinToken: pinToken,
@@ -29,7 +30,7 @@ class TransfersApi {
     String? pinToken,
     String? idempotencyKey,
   }) => _dio.post(
-    '/wallet/transfer/external',
+    ApiEndpoints.transfersExternal,
     data: _externalTransferPayload(data),
     options: _transferOptions(
       pinToken: pinToken,

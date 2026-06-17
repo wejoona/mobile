@@ -1,7 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Transactions Service - mirrors backend TransactionsController
 class TransactionsService {
@@ -34,7 +35,7 @@ class TransactionsService {
       }
 
       final response = await _dio.get(
-        '/wallet/transactions',
+        ApiEndpoints.walletTransactions,
         queryParameters: queryParameters,
         options: Options(
           receiveTimeout: const Duration(seconds: 10),
@@ -50,7 +51,7 @@ class TransactionsService {
   /// GET /wallet/transactions/:id
   Future<Transaction> getTransaction(String id) async {
     try {
-      final response = await _dio.get('/wallet/transactions/$id');
+      final response = await _dio.get(ApiEndpoints.walletTransactionById(id));
       return Transaction.fromJson(_responseObject(response.data));
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -61,7 +62,7 @@ class TransactionsService {
   Future<DepositStatusResponse> getDepositStatus(String depositId) async {
     try {
       final response = await _dio.get(
-        '/wallet/transactions/deposit/$depositId/status',
+        ApiEndpoints.walletDepositTransactionStatus(depositId),
       );
       return DepositStatusResponse.fromJson(_responseObject(response.data));
     } on DioException catch (e) {

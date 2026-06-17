@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/domain/entities/transaction_filter.dart';
 
@@ -44,7 +45,7 @@ final transactionsProvider = FutureProvider<TransactionPage>((ref) async {
   ref.onDispose(() => timer.cancel());
 
   final response = await dio.get(
-    '/wallet/transactions',
+    ApiEndpoints.walletTransactions,
     queryParameters: {...filter.toQueryParams(), 'limit': 20, 'offset': 0},
   );
   return TransactionPage.fromJson(_asStringMap(response.data));

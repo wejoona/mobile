@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/features/qr_payment/models/qr_data.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
-import 'package:usdc_wallet/services/pin/pin_service.dart';
-import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/core/utils/transaction_headers.dart';
+import 'package:usdc_wallet/features/qr_payment/models/qr_data.dart';
+import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
 
 /// QR payment types.
 enum QrPaymentType { p2p, merchant, paymentLink }
@@ -135,7 +136,7 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
             return;
           }
           await dio.post(
-            '/wallet/transfer/internal',
+            ApiEndpoints.transfersSend,
             data: {
               'toPhone': recipientPhone,
               'amount': transferAmount,
@@ -188,7 +189,7 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
           final recipientPhone = _recipientPhone(data);
           if (recipientPhone != null) {
             await dio.post(
-              '/wallet/transfer/internal',
+              ApiEndpoints.transfersSend,
               data: {
                 'toPhone': recipientPhone,
                 'amount': transferAmount,

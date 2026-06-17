@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/features/deposit/models/deposit_request.dart';
 import 'package:usdc_wallet/features/deposit/models/deposit_response.dart';
@@ -26,7 +27,7 @@ class DepositService {
     String? currency,
   }) async {
     final response = await _dio.get(
-      '/wallet/deposit/channels',
+      ApiEndpoints.depositChannels,
       queryParameters: {
         if (countryCode != null && countryCode.isNotEmpty)
           'country': countryCode,
@@ -53,7 +54,7 @@ class DepositService {
     InitiateDepositRequest request,
   ) async {
     final response = await _dio.post(
-      '/wallet/deposit',
+      ApiEndpoints.depositInitiate,
       data: request.toWalletDepositJson(),
       options: Options(
         headers: {'X-Idempotency-Key': generateIdempotencyKey()},
@@ -64,7 +65,7 @@ class DepositService {
 
   /// Get deposit status (for polling)
   Future<DepositResponse> getDepositStatus(String depositId) async {
-    final response = await _dio.get('/wallet/deposit/$depositId');
+    final response = await _dio.get(ApiEndpoints.depositById(depositId));
     return DepositResponse.fromJson(response.data as Map<String, dynamic>);
   }
 
@@ -75,7 +76,7 @@ class DepositService {
   }) async {
     final offset = page <= 1 ? 0 : (page - 1) * limit;
     final response = await _dio.get(
-      '/deposits',
+      ApiEndpoints.depositHistory,
       queryParameters: {'limit': limit, 'offset': offset},
     );
     final data = response.data;
@@ -109,7 +110,7 @@ class DepositService {
         'phoneNumber': data['phoneNumber'],
     };
     final response = await _dio.post(
-      '/wallet/deposit',
+      ApiEndpoints.depositInitiate,
       data: normalized,
       options: Options(
         headers: {'X-Idempotency-Key': generateIdempotencyKey()},
@@ -130,7 +131,7 @@ class DepositService {
     double amount = 10000,
   }) async {
     final response = await _dio.get(
-      '/wallet/exchange-rate',
+      ApiEndpoints.walletExchangeRate,
       queryParameters: {
         'sourceCurrency': from,
         'targetCurrency': to,

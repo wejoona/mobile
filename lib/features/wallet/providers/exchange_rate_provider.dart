@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// USDC → XOF exchange rate.
@@ -41,7 +42,7 @@ final exchangeRateProvider = FutureProvider<ExchangeRate>((ref) async {
   ref.onDispose(() => timer.cancel());
 
   final response = await dio.get(
-    '/wallet/exchange-rate',
+    ApiEndpoints.walletExchangeRate,
     queryParameters: {
       'sourceCurrency': 'XOF',
       'targetCurrency': 'USD',

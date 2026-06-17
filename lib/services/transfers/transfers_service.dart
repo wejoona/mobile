@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
@@ -84,7 +85,7 @@ class TransfersService {
         recipientUsername: normalizedUsername,
       );
       final response = await _dio.post(
-        '/wallet/transfer/internal',
+        ApiEndpoints.transfersSend,
         data: {
           ...recipientBody,
           'amount': amount,
@@ -198,7 +199,7 @@ class TransfersService {
 
     try {
       final response = await _dio.post(
-        '/wallet/transfer/external',
+        ApiEndpoints.transfersExternal,
         data: {
           'toAddress': recipientAddress,
           'amount': amount,

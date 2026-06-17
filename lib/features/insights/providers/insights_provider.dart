@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/domain/entities/expense.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
@@ -17,7 +18,7 @@ final spendingInsightsProvider = FutureProvider<SpendingInsights>((ref) async {
   final from = now.subtract(Duration(days: period.days));
 
   final response = await dio.get(
-    '/wallet/transactions/stats',
+    ApiEndpoints.walletTransactionStats,
     queryParameters: {
       'from': from.toIso8601String(),
       'to': now.toIso8601String(),

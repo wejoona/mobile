@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/domain/entities/expense.dart';
 import 'package:usdc_wallet/features/expenses/models/expenses_state.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
@@ -15,7 +16,7 @@ final expensesProvider = FutureProvider<List<Expense>>((ref) async {
   ref.onDispose(() => timer.cancel());
 
   try {
-    final response = await dio.get('/wallet/transactions/stats');
+    final response = await dio.get(ApiEndpoints.walletTransactionStats);
     final categories = _listPayload(response.data, const [
       'categories',
       'byCategory',
@@ -36,7 +37,7 @@ final expensesProvider = FutureProvider<List<Expense>>((ref) async {
   // Fallback: aggregate from recent transactions
   try {
     final txResponse = await dio.get(
-      '/wallet/transactions',
+      ApiEndpoints.walletTransactions,
       queryParameters: {'limit': 100, 'type': 'withdrawal'},
     );
     final transactions = _listPayload(txResponse.data, const [

@@ -20,6 +20,18 @@ abstract final class ApiEndpoints {
   static const walletBalance = '/wallet';
   static const walletAddress = '/wallet/address';
   static const walletTransactions = '/wallet/transactions';
+  static const walletExchangeRate = '/wallet/exchange-rate';
+  static const walletCreate = '/wallet/create';
+  static const walletReceive = '/wallet/receive';
+  static const walletWithdraw = '/wallet/withdraw';
+  static const walletWithdrawOptions = '/wallet/withdraw/options';
+  static const walletKycStatus = '/wallet/kyc/status';
+  static const walletKycSubmit = '/wallet/kyc/submit';
+  static const walletLimits = '/wallet/limits';
+  static const walletTransactionStats = '/wallet/transactions/stats';
+  static String walletTransactionById(String id) => '/wallet/transactions/$id';
+  static String walletDepositTransactionStatus(String depositId) =>
+      '/wallet/transactions/deposit/$depositId/status';
 
   // Transfers
   static const transfersSend = '/wallet/transfer/internal';
@@ -32,11 +44,13 @@ abstract final class ApiEndpoints {
   static const depositProviders = '/wallet/deposit/providers';
   static const depositChannels = '/wallet/deposit/channels';
   static const depositHistory = '/deposits';
+  static String depositById(String id) => '$depositStatus/$id';
 
   // Withdraw
   static const withdrawInitiate = '/withdrawals/initiate';
   static const withdrawQuote = '/withdrawals/quote';
   static const withdrawStatus = '/withdrawals';
+  static String withdrawById(String id) => '$withdrawStatus/$id';
 
   // Cards
   static const cards = '/cards';

@@ -1,9 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/core/utils/amount_conversion.dart';
 import 'package:usdc_wallet/core/utils/transaction_headers.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Wallet-level actions (withdraw, request money).
 class WalletActions {
@@ -22,7 +23,7 @@ class WalletActions {
   }) async {
     // ignore: avoid_dynamic_calls
     final response = await _dio.post(
-      '/withdrawals/initiate',
+      ApiEndpoints.withdrawInitiate,
       data: {
         'amount': toCents(amount),
         'providerCode': _providerToCode(provider),
@@ -46,7 +47,7 @@ class WalletActions {
   /// Generate a receive address/QR for the wallet.
   Future<Map<String, dynamic>> getReceiveInfo() async {
     // ignore: avoid_dynamic_calls
-    final response = await _dio.get('/wallet/receive');
+    final response = await _dio.get(ApiEndpoints.walletReceive);
     // ignore: avoid_dynamic_calls
     return response.data as Map<String, dynamic>;
   }
@@ -60,7 +61,7 @@ class WalletActions {
     if (type == 'external') {
       // ignore: avoid_dynamic_calls
       final response = await _dio.get(
-        '/wallet/transfer/external/estimate-fee',
+        ApiEndpoints.transfersEstimateFee,
         queryParameters: {'amount': amount, 'network': 'polygon'},
       );
       // ignore: avoid_dynamic_calls
@@ -69,7 +70,7 @@ class WalletActions {
     if (type == 'withdrawal') {
       // ignore: avoid_dynamic_calls
       final response = await _dio.get(
-        '/wallet/withdraw/options',
+        ApiEndpoints.walletWithdrawOptions,
         queryParameters: {'country': 'CI'},
       );
       // ignore: avoid_dynamic_calls
