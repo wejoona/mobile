@@ -50,5 +50,27 @@ void main() {
         '0748805663',
       );
     });
+
+    test(
+      'recovers legacy remembered phone values without duplicating prefix',
+      () {
+        final value = PhoneNumberValue.fromAny(
+          phoneNumber: '+225|+2250748805663',
+          countryCode: '+225',
+        );
+
+        expect(value.dialCode, '+225');
+        expect(value.localNumber, '0748805663');
+        expect(value.e164, '+2250748805663');
+        expect(value.storageValue, '+225|0748805663');
+        expect(
+          localPhoneDigits(
+            dialCode: '+225',
+            phoneNumber: '+225|+2250748805663',
+          ),
+          '0748805663',
+        );
+      },
+    );
   });
 }

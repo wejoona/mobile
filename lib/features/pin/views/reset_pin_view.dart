@@ -19,6 +19,7 @@ import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Reset PIN View
 /// Multi-step flow to reset PIN via OTP
@@ -406,13 +407,44 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     final authState = ref.read(authProvider);
     final inMemoryPhone = authState.user?.phone ?? authState.phone;
     if (inMemoryPhone != null && inMemoryPhone.isNotEmpty) {
-      return inMemoryPhone;
+      final phoneValue = PhoneNumberValue.tryFromAny(
+        phoneNumber: inMemoryPhone,
+        countryCode: authState.user?.countryCode ?? authState.countryCode,
+      );
+      if (phoneValue != null) {
+        return phoneValue.e164;
+      }
     }
 
     final storage = ref.read(secureStorageProvider);
-    final storedPhone = await storage.read(key: StorageKeys.userPhone);
-    if (storedPhone != null && storedPhone.isNotEmpty) {
-      return storedPhone;
+    final storedDialCode = await storage.read(key: StorageKeys.userDialCode);
+    final storedLocalPhone = await storage.read(
+      key: StorageKeys.userLocalPhone,
+    );
+    final storedParts = storedDialCode != null && storedLocalPhone != null
+        ? PhoneNumberValue.tryFromAny(
+            phoneNumber: storedLocalPhone,
+            countryCode: storedDialCode,
+          )
+        : null;
+    if (storedParts != null) {
+      return storedParts.e164;
+    }
+
+    final storedE164 = await storage.read(key: StorageKeys.userPhoneE164);
+    final storedE164Value = PhoneNumberValue.tryFromAny(
+      phoneNumber: storedE164,
+    );
+    if (storedE164Value != null) {
+      return storedE164Value.e164;
+    }
+
+    final legacyStoredPhone = await storage.read(key: StorageKeys.userPhone);
+    final legacyValue = PhoneNumberValue.tryFromAny(
+      phoneNumber: legacyStoredPhone,
+    );
+    if (legacyValue != null) {
+      return legacyValue.e164;
     }
 
     final token = await storage.read(key: StorageKeys.accessToken);
@@ -431,7 +463,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     if (profilePhone == null || profilePhone.isEmpty) {
       return null;
     }
-    return profilePhone;
+    return PhoneNumberValue.tryFromAny(phoneNumber: profilePhone)?.e164;
   }
 
   /// Verify OTP entered by user

@@ -86,6 +86,9 @@ class StorageKeys {
   static const String refreshToken = 'refresh_token';
   static const String userId = 'user_id';
   static const String userPhone = 'user_phone';
+  static const String userDialCode = 'user_dial_code';
+  static const String userLocalPhone = 'user_local_phone';
+  static const String userPhoneE164 = 'user_phone_e164';
   static const String userPin = 'user_pin';
   static const String biometricEnabled = 'biometric_enabled';
   static const String rememberedPhone = 'remembered_phone';

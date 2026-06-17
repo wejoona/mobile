@@ -4,7 +4,8 @@ class PhoneNormalizer {
   const PhoneNormalizer._();
 
   static String toE164(String phone, {String? countryCode}) {
-    final compact = phone.trim().replaceAll(RegExp(r'[\s\-().]'), '');
+    final phoneValue = phone.contains('|') ? phone.split('|').last : phone;
+    final compact = phoneValue.trim().replaceAll(RegExp(r'[\s\-().]'), '');
     if (compact.startsWith('+')) {
       return _validateE164Digits(
         compact.substring(1).replaceAll(RegExp(r'\D'), ''),
@@ -40,17 +41,19 @@ class PhoneNormalizer {
 
   static String localDigits(String phone, {required String countryCode}) {
     final country = countryFromCode(countryCode);
+    final phoneValue = phone.contains('|') ? phone.split('|').last : phone;
     if (country == null) {
-      return phone.replaceAll(RegExp(r'\D'), '');
+      return phoneValue.replaceAll(RegExp(r'\D'), '');
     }
 
     try {
-      final e164 = toE164(phone, countryCode: country.code);
+      final e164 = toE164(phoneValue, countryCode: country.code);
       return e164.substring(country.fullPrefix.length);
     } on FormatException {
-      final digits = phone.replaceAll(RegExp(r'\D'), '');
-      if (digits.startsWith(country.prefix)) {
-        return digits.substring(country.prefix.length);
+      var digits = phoneValue.replaceAll(RegExp(r'\D'), '');
+      while (digits.startsWith(country.prefix) &&
+          digits.length > country.phoneLength) {
+        digits = digits.substring(country.prefix.length);
       }
       return digits;
     }

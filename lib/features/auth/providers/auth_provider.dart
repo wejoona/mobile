@@ -14,6 +14,7 @@ import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/services/realtime/realtime_service.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
 import 'package:usdc_wallet/utils/logger.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Auth State
 enum AuthStatus {
@@ -91,6 +92,35 @@ class AuthNotifier extends Notifier<AuthState> {
   FlutterSecureStorage get _storage => ref.read(secureStorageProvider);
   AnalyticsService get _analytics => ref.read(analyticsServiceProvider);
 
+  Future<PhoneNumberValue?> _persistPhoneValue({
+    required String? phone,
+    String? countryCode,
+  }) async {
+    final phoneValue = PhoneNumberValue.tryFromAny(
+      phoneNumber: phone,
+      countryCode: countryCode,
+    );
+    if (phoneValue == null) {
+      return null;
+    }
+
+    await _storage.write(key: StorageKeys.userPhone, value: phoneValue.e164);
+    await _storage.write(
+      key: StorageKeys.userPhoneE164,
+      value: phoneValue.e164,
+    );
+    await _storage.write(
+      key: StorageKeys.userDialCode,
+      value: phoneValue.dialCode,
+    );
+    await _storage.write(
+      key: StorageKeys.userLocalPhone,
+      value: phoneValue.localNumber,
+    );
+
+    return phoneValue;
+  }
+
   /// Check if user is already authenticated
   Future<void> checkAuth({bool startupOnly = false}) async {
     final restoreVersion = _sessionMutationVersion;
@@ -107,7 +137,7 @@ class AuthNotifier extends Notifier<AuthState> {
       if (debugToken.isNotEmpty) {
         await _storage.write(key: StorageKeys.accessToken, value: debugToken);
         if (debugPhone.isNotEmpty) {
-          await _storage.write(key: StorageKeys.userPhone, value: debugPhone);
+          await _persistPhoneValue(phone: debugPhone);
         }
       }
 
@@ -474,9 +504,12 @@ class AuthNotifier extends Notifier<AuthState> {
         );
       }
       await _storage.write(key: StorageKeys.userId, value: response.user.id);
-      if (state.phone != null && state.phone!.isNotEmpty) {
-        await _storage.write(key: StorageKeys.userPhone, value: state.phone!);
-      }
+      final phoneValue = await _persistPhoneValue(
+        phone: response.user.phone.isNotEmpty
+            ? response.user.phone
+            : state.phone,
+        countryCode: response.user.countryCode,
+      );
 
       // Start session with actual token validity from backend
       await ref
@@ -525,6 +558,8 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: response.user,
+        phone: phoneValue?.localNumber ?? state.phone,
+        countryCode: phoneValue?.isoCountryCode ?? response.user.countryCode,
       );
 
       // Populate UserStateMachine with profile data from auth response
@@ -575,6 +610,7 @@ class AuthNotifier extends Notifier<AuthState> {
     String? refreshToken,
     User? user,
     String? phone,
+    String? countryCode,
     String? kycStatus,
     int? expiresIn,
   }) async {
@@ -586,9 +622,10 @@ class AuthNotifier extends Notifier<AuthState> {
           value: refreshToken,
         );
       }
-      if (phone != null && phone.isNotEmpty) {
-        await _storage.write(key: StorageKeys.userPhone, value: phone);
-      }
+      final phoneValue = await _persistPhoneValue(
+        phone: phone ?? user?.phone,
+        countryCode: countryCode ?? user?.countryCode,
+      );
       if (user?.id != null) {
         await _storage.write(key: StorageKeys.userId, value: user!.id);
       }
@@ -635,7 +672,9 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: user,
-        phone: phone,
+        phone: phoneValue?.localNumber ?? phone ?? user?.phone,
+        countryCode:
+            phoneValue?.isoCountryCode ?? countryCode ?? user?.countryCode,
         error: null,
       );
 
@@ -712,6 +751,10 @@ class AuthNotifier extends Notifier<AuthState> {
       if (responseUserId != null && responseUserId.isNotEmpty) {
         await _storage.write(key: StorageKeys.userId, value: responseUserId);
       }
+      final phoneValue = await _persistPhoneValue(
+        phone: response.user?.phone,
+        countryCode: response.user?.countryCode,
+      );
 
       // Start session with actual token validity from backend
       await ref
@@ -734,6 +777,8 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: response.user,
+        phone: phoneValue?.localNumber,
+        countryCode: phoneValue?.isoCountryCode ?? response.user?.countryCode,
       );
 
       if (response.user != null) {

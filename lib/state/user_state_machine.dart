@@ -11,6 +11,7 @@ import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/state/transaction_state_machine.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart';
 import 'package:usdc_wallet/services/avatar/avatar_cache_service.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// User/Auth State Machine - manages user authentication globally
 class UserStateMachine extends Notifier<UserState> {
@@ -29,6 +30,62 @@ class UserStateMachine extends Notifier<UserState> {
   FlutterSecureStorage get _storage => ref.read(secureStorageProvider);
   AuthService get _authService => ref.read(authServiceProvider);
   UserService get _userService => ref.read(userServiceProvider);
+
+  Future<PhoneNumberValue?> _persistPhoneValue(
+    FlutterSecureStorage storage, {
+    required String? phone,
+    String? countryCode,
+  }) async {
+    final phoneValue = PhoneNumberValue.tryFromAny(
+      phoneNumber: phone,
+      countryCode: countryCode,
+    );
+    if (phoneValue == null) {
+      return null;
+    }
+
+    await storage.write(key: _phoneKey, value: phoneValue.e164);
+    await storage.write(key: StorageKeys.userPhoneE164, value: phoneValue.e164);
+    await storage.write(
+      key: StorageKeys.userDialCode,
+      value: phoneValue.dialCode,
+    );
+    await storage.write(
+      key: StorageKeys.userLocalPhone,
+      value: phoneValue.localNumber,
+    );
+
+    return phoneValue;
+  }
+
+  Future<PhoneNumberValue?> _readStoredPhoneValue(
+    FlutterSecureStorage storage,
+  ) async {
+    final storedDialCode = await storage.read(key: StorageKeys.userDialCode);
+    final storedLocalPhone = await storage.read(
+      key: StorageKeys.userLocalPhone,
+    );
+    final storedParts = storedDialCode != null && storedLocalPhone != null
+        ? PhoneNumberValue.tryFromAny(
+            phoneNumber: storedLocalPhone,
+            countryCode: storedDialCode,
+          )
+        : null;
+    if (storedParts != null) {
+      return storedParts;
+    }
+
+    final storedE164 = await storage.read(key: StorageKeys.userPhoneE164);
+    final storedE164Value = PhoneNumberValue.tryFromAny(
+      phoneNumber: storedE164,
+    );
+    if (storedE164Value != null) {
+      return storedE164Value;
+    }
+
+    final legacyStoredPhone = await storage.read(key: _phoneKey);
+    return PhoneNumberValue.tryFromAny(phoneNumber: legacyStoredPhone);
+  }
 
   /// Check for stored authentication on app start
   Future<void> _checkStoredAuth(FlutterSecureStorage storage) async {
@@ -49,13 +106,13 @@ class UserStateMachine extends Notifier<UserState> {
       if (debugToken.isNotEmpty) {
         await storage.write(key: _tokenKey, value: debugToken);
         if (debugPhone.isNotEmpty) {
-          await storage.write(key: _phoneKey, value: debugPhone);
+          await _persistPhoneValue(storage, phone: debugPhone);
         }
         debugPrint('[DEBUG] Auto-login token injected');
       }
 
       final token = await storage.read(key: _tokenKey);
-      final phone = await storage.read(key: _phoneKey);
+      final phoneValue = await _readStoredPhoneValue(storage);
       if (!ref.mounted) return;
 
       if (token != null && token.isNotEmpty) {
@@ -63,7 +120,8 @@ class UserStateMachine extends Notifier<UserState> {
         state = state.copyWith(
           status: AuthStatus.unauthenticated,
           accessToken: token,
-          phone: phone,
+          phone: phoneValue?.localNumber,
+          countryCode: phoneValue?.isoCountryCode,
         );
       } else {
         state = const UserState(status: AuthStatus.unauthenticated);
@@ -78,7 +136,7 @@ class UserStateMachine extends Notifier<UserState> {
   /// confirms the session is usable.
   Future<void> hydrateAuthenticatedSession({bool fetchRelated = true}) async {
     final token = await _storage.read(key: _tokenKey);
-    final phone = await _storage.read(key: _phoneKey);
+    final phoneValue = await _readStoredPhoneValue(_storage);
     if (!ref.mounted) return;
 
     if (token == null || token.isEmpty) {
@@ -99,7 +157,8 @@ class UserStateMachine extends Notifier<UserState> {
       state = UserState(
         status: AuthStatus.authenticated,
         accessToken: token,
-        phone: phone,
+        phone: phoneValue?.localNumber,
+        countryCode: phoneValue?.isoCountryCode ?? 'CI',
         avatarUrl: localAvatar,
       );
 
@@ -140,10 +199,16 @@ class UserStateMachine extends Notifier<UserState> {
       final hasAvatarThumb =
           profile.avatarThumb != null && profile.avatarThumb!.isNotEmpty;
 
+      final phoneValue = await _persistPhoneValue(
+        _storage,
+        phone: profile.phone,
+        countryCode: profile.countryCode,
+      );
+
       // Update state with profile data
       state = state.copyWith(
         userId: profile.id,
-        phone: profile.phone,
+        phone: phoneValue?.localNumber ?? profile.phone,
         username: profile.username,
         firstName: profile.firstName,
         lastName: profile.lastName,
@@ -158,9 +223,6 @@ class UserStateMachine extends Notifier<UserState> {
         canTransact: profile.canTransact,
         canWithdraw: profile.canWithdraw,
       );
-
-      // Also update storage with the phone in case it wasn't stored
-      await _storage.write(key: _phoneKey, value: profile.phone);
 
       // Cache user profile locally
       ref.read(localSyncServiceProvider).cacheUserFromState(state);
@@ -295,12 +357,19 @@ class UserStateMachine extends Notifier<UserState> {
     try {
       final response = await _authService.verifyOtp(
         phone: state.phone!,
+        countryCode: state.countryCode,
         otp: otp,
       );
 
       // Store credentials
       await _storage.write(key: _tokenKey, value: response.accessToken);
-      await _storage.write(key: _phoneKey, value: state.phone);
+      final phoneValue = await _persistPhoneValue(
+        _storage,
+        phone: response.user.phone.isNotEmpty
+            ? response.user.phone
+            : state.phone,
+        countryCode: response.user.countryCode,
+      );
 
       // Reset state machines BEFORE updating auth state to ensure clean slate
       // This prevents any residual data from previous sessions from showing
@@ -311,7 +380,7 @@ class UserStateMachine extends Notifier<UserState> {
       state = state.copyWith(
         status: AuthStatus.authenticated,
         userId: response.user.id,
-        phone: response.user.phone,
+        phone: phoneValue?.localNumber ?? response.user.phone,
         username: response.user.username,
         firstName: response.user.firstName,
         lastName: response.user.lastName,

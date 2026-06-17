@@ -44,14 +44,16 @@ class LoginNotifier extends Notifier<LoginState> {
       );
       if (rememberedPhone != null) {
         final parts = rememberedPhone.split('|');
-        if (parts.length == 2) {
-          final countryCode = parts[0];
+        final phoneValue = parts.length == 2
+            ? PhoneNumberValue.tryFromAny(
+                phoneNumber: parts[1],
+                countryCode: parts[0],
+              )
+            : PhoneNumberValue.tryFromAny(phoneNumber: rememberedPhone);
+        if (phoneValue != null) {
           state = state.copyWith(
-            countryCode: countryCode,
-            phoneNumber: localPhoneDigits(
-              dialCode: countryCode,
-              phoneNumber: parts[1],
-            ),
+            countryCode: phoneValue.dialCode,
+            phoneNumber: phoneValue.localNumber,
             rememberDevice: true,
           );
         }
@@ -93,9 +95,13 @@ class LoginNotifier extends Notifier<LoginState> {
 
       // Save remembered phone if enabled
       if (state.rememberDevice) {
+        final phoneValue = PhoneNumberValue.fromLocal(
+          dialCode: state.countryCode ?? '+225',
+          localNumber: state.phoneNumber!,
+        );
         await _storage.write(
           key: StorageKeys.rememberedPhone,
-          value: '${state.countryCode}|${state.phoneNumber}',
+          value: phoneValue.storageValue,
         );
       } else {
         await _storage.delete(key: StorageKeys.rememberedPhone);
