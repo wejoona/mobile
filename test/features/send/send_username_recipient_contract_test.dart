@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/send/models/transfer_request.dart';
+import 'package:usdc_wallet/services/api/providers/transfers_api.dart';
 import 'package:usdc_wallet/services/contacts/contacts_service.dart';
 import 'package:usdc_wallet/services/transfers/transfers_service.dart';
 
@@ -25,6 +26,32 @@ void main() {
       expect(request.toJson().containsKey('recipientPhone'), isFalse);
     },
   );
+
+  test(
+    'transfer request keeps exactly one recipient identifier by stability order',
+    () {
+      const request = TransferRequest(
+        recipientId: ' 123e4567-e89b-12d3-a456-426614174003 ',
+        recipientPhone: '+225+2250748805663',
+        recipientUsername: '@awa_k',
+        amount: 12.5,
+      );
+
+      expect(request.toJson(), {
+        'recipientId': '123e4567-e89b-12d3-a456-426614174003',
+        'amount': 12.5,
+      });
+    },
+  );
+
+  test('transfer request normalizes phone-only recipients to E.164', () {
+    const request = TransferRequest(
+      recipientPhone: '+225+2250748805663',
+      amount: 12.5,
+    );
+
+    expect(request.toJson(), {'toPhone': '+2250748805663', 'amount': 12.5});
+  });
 
   test('Korido lookup keeps username when phone is masked', () async {
     final dio = MockDio();
@@ -80,6 +107,53 @@ void main() {
       expect(body.containsKey('toPhone'), isFalse);
     },
   );
+
+  test(
+    'internal transfer normalizes malformed phone before backend submit',
+    () async {
+      final dio = MockDio();
+      dio.queueResponse({
+        'transactionId': 'tx-phone',
+        'status': 'completed',
+        'amount': 10,
+        'currency': 'USDC',
+        'supportReference': 'tx-phone',
+      });
+
+      final service = TransfersService(dio);
+      await service.createInternalTransfer(
+        recipientPhone: '+225+2250748805663',
+        amount: 10,
+        pinToken: 'pin-token',
+        idempotencyKey: 'idem-phone',
+      );
+
+      final request = dio.requestHistory.single;
+      expect(request.path, '/wallet/transfer/internal');
+      final body = request.data as Map<String, dynamic>;
+      expect(body['toPhone'], '+2250748805663');
+      expect(body.containsKey('recipientPhone'), isFalse);
+    },
+  );
+
+  test('transfers api adapter canonicalizes legacy recipient maps', () async {
+    final dio = MockDio();
+    dio.queueResponse({'transactionId': 'tx-api', 'status': 'completed'});
+
+    await TransfersApi(dio).sendInternal({
+      'recipientId': ' 123e4567-e89b-12d3-a456-426614174003 ',
+      'recipientPhone': '+225+2250748805663',
+      'recipientUsername': '@awa_k',
+      'amount': 10,
+    });
+
+    final request = dio.requestHistory.single;
+    expect(request.path, '/wallet/transfer/internal');
+    expect(request.data, {
+      'amount': 10,
+      'recipientId': '123e4567-e89b-12d3-a456-426614174003',
+    });
+  });
 
   test(
     'internal transfer sends recipientId when selected from lookup',

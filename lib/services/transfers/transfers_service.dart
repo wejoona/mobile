@@ -6,6 +6,7 @@ import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
 import 'package:usdc_wallet/utils/logger.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Transfers Service - mirrors backend TransfersController
 /// Uses risk-based adaptive security (Visa 3DS / Apple style)
@@ -31,7 +32,9 @@ class TransfersService {
     required String idempotencyKey,
   }) async {
     final normalizedRecipientId = recipientId?.trim();
-    final normalizedPhone = recipientPhone?.trim();
+    final normalizedPhone = PhoneNumberValue.tryFromAny(
+      phoneNumber: recipientPhone,
+    )?.e164;
     final normalizedUsername = _normalizeUsername(recipientUsername);
     if ((normalizedRecipientId == null || normalizedRecipientId.isEmpty) &&
         (normalizedPhone == null || normalizedPhone.isEmpty) &&
