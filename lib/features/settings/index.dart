@@ -17,9 +17,7 @@ export 'package:usdc_wallet/features/settings/views/cookie_policy_view.dart';
 export 'package:usdc_wallet/features/settings/views/currency_view.dart';
 export 'package:usdc_wallet/features/settings/views/delete_account_view.dart';
 export 'package:usdc_wallet/features/settings/views/devices_screen.dart';
-export 'package:usdc_wallet/features/settings/views/devices_view.dart';
 export 'package:usdc_wallet/features/settings/views/export_data_view.dart';
-export 'package:usdc_wallet/features/settings/views/help_screen.dart';
 export 'package:usdc_wallet/features/settings/views/help_view.dart';
 export 'package:usdc_wallet/features/settings/views/kyc_view.dart';
 export 'package:usdc_wallet/features/settings/views/language_view.dart';
@@ -32,7 +30,6 @@ export 'package:usdc_wallet/features/settings/views/security_settings_view.dart'
 export 'package:usdc_wallet/features/settings/views/security_view.dart';
 export 'package:usdc_wallet/features/settings/views/sessions_screen.dart';
 export 'package:usdc_wallet/features/settings/views/settings_screen.dart';
-export 'package:usdc_wallet/features/settings/views/settings_view.dart';
 export 'package:usdc_wallet/features/settings/views/theme_settings_view.dart';
 export 'package:usdc_wallet/features/settings/widgets/device_tile.dart';
 export 'package:usdc_wallet/features/settings/widgets/settings_section.dart';
