@@ -1618,17 +1618,39 @@ void main() {
       );
     });
 
+    test('auth client contract has one phone-normalizing boundary', () {
+      final authServiceSource = File(
+        'lib/services/auth/auth_service.dart',
+      ).readAsStringSync();
+      final apiProviderSource = File(
+        'lib/services/api/providers/api_provider.dart',
+      ).readAsStringSync();
+
+      expect(
+        File('lib/services/api/providers/auth_api.dart').existsSync(),
+        isFalse,
+        reason:
+            'AuthService is the canonical auth API boundary; a second AuthApi can send raw phone state.',
+      );
+      expect(authServiceSource, contains('PhoneNormalizer.toE164'));
+      expect(authServiceSource, contains("'/auth/login'"));
+      expect(authServiceSource, contains("'/auth/register'"));
+      expect(authServiceSource, contains("'/auth/verify-otp'"));
+      expect(apiProviderSource, isNot(contains('AuthApi')));
+      expect(apiProviderSource, isNot(contains('auth =')));
+    });
+
     test('cards API uses backend verbs for freeze and unfreeze', () {
       final cardsApiSource = File(
         'lib/services/api/providers/cards_api.dart',
       ).readAsStringSync();
 
-      expect(cardsApiSource, contains("_dio.put('/cards/\$id/freeze'"));
-      expect(cardsApiSource, contains("_dio.put('/cards/\$id/unfreeze'"));
-      expect(cardsApiSource, isNot(contains("_dio.post('/cards/\$id/freeze'")));
+      expect(cardsApiSource, contains(r"_dio.put('/cards/$id/freeze'"));
+      expect(cardsApiSource, contains(r"_dio.put('/cards/$id/unfreeze'"));
+      expect(cardsApiSource, isNot(contains(r"_dio.post('/cards/$id/freeze'")));
       expect(
         cardsApiSource,
-        isNot(contains("_dio.post('/cards/\$id/unfreeze'")),
+        isNot(contains(r"_dio.post('/cards/$id/unfreeze'")),
       );
     });
 
