@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Format d'export des données
@@ -39,10 +40,11 @@ class DataExportRequest {
   );
 }
 
-/// Service d'export des données personnelles.
+/// Service d'export des donnees personnelles.
 ///
-/// Permet aux utilisateurs d'exercer leur droit de portabilité
-/// (RGPD Article 20) en exportant leurs données.
+/// Customer-facing export uses the verified account export route. Async privacy
+/// request/deletion routes stay server-owned until the backend exposes them for
+/// customer use.
 class DataExportService {
   static const _tag = 'DataExport';
   final AppLogger _log = AppLogger(_tag);
@@ -51,47 +53,23 @@ class DataExportService {
   DataExportService({required Dio dio}) : _dio = dio;
 
   /// Demander un export de données
-  Future<DataExportRequest?> requestExport({
-    DataExportFormat format = DataExportFormat.json,
-    List<String>? categories,
-  }) async {
+  Future<Map<String, dynamic>?> exportAccountData() async {
     try {
-      final response = await _dio.post('/privacy/export/request', data: {
-        'format': format.name,
-        if (categories != null) 'categories': categories,
+      final response = await _dio.get('/user/data-export', queryParameters: {
+        'includeProfile': true,
+        'includeTransactions': false,
+        'includeContacts': false,
+        'format': 'json',
       });
-      return DataExportRequest.fromJson(response.data as Map<String, dynamic>);
+      final data = response.data;
+      return data is Map<String, dynamic> ? data : {'data': data};
     } catch (e) {
-      _log.error('Data export request failed', e);
+      _log.error('Account data export failed', e);
       return null;
-    }
-  }
-
-  /// Vérifier le statut d'un export
-  Future<DataExportRequest?> checkStatus(String requestId) async {
-    try {
-      final response = await _dio.get('/privacy/export/$requestId');
-      return DataExportRequest.fromJson(response.data as Map<String, dynamic>);
-    } catch (e) {
-      _log.error('Export status check failed', e);
-      return null;
-    }
-  }
-
-  /// Demander la suppression des données (droit à l'oubli)
-  Future<bool> requestDeletion({String? reason}) async {
-    try {
-      await _dio.post('/privacy/deletion/request', data: {
-        if (reason != null) 'reason': reason,
-      });
-      return true;
-    } catch (e) {
-      _log.error('Deletion request failed', e);
-      return false;
     }
   }
 }
 
 final dataExportProvider = Provider<DataExportService>((ref) {
-  throw UnimplementedError('Override in ProviderScope');
+  return DataExportService(dio: ref.watch(dioProvider));
 });
