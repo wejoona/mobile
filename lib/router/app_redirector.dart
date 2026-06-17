@@ -100,6 +100,7 @@ String? appRedirect(BuildContext context, GoRouterState state) {
 
   if (isAuthenticated &&
       !isLockedState &&
+      location != '/signup/verify-phone' &&
       _isAuthenticatedDeadEndRoute(location)) {
     return '/home';
   }
