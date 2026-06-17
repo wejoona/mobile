@@ -1,10 +1,8 @@
 /// User API — profile, PIN, locale, avatar, search, limits
 library;
 
-import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:usdc_wallet/core/constants/api_endpoints.dart';
-import 'package:usdc_wallet/services/user/avatar_multipart.dart';
 
 class UserApi {
   UserApi(this._dio);
@@ -24,24 +22,6 @@ class UserApi {
 
   /// GET /user/data-export
   Future<Response> exportData() => _dio.get('/user/data-export');
-
-  // ── Avatar ──
-
-  /// POST /user/avatar — upload avatar image
-  Future<Response> uploadAvatar(
-    File file, {
-    required AvatarDeviceFaceCheck faceCheck,
-  }) async {
-    final boundFaceCheck = await faceCheck.bindToFile(file);
-    final formData = FormData.fromMap({
-      avatarDeviceFaceCheckField: boundFaceCheck.token,
-      'avatar': await avatarMultipartFile(file),
-    });
-    return _dio.post('/user/avatar', data: formData);
-  }
-
-  /// DELETE /user/avatar
-  Future<Response> deleteAvatar() => _dio.delete('/user/avatar');
 
   // ── Email Verification ──
 
