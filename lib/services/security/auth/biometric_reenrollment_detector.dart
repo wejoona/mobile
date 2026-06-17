@@ -78,7 +78,11 @@ class BiometricReenrollmentDetector {
       }
       return value;
     } on MissingPluginException catch (e) {
-      _log.error('Biometric enrollment native channel missing', e);
+      if (EnvironmentConfig.isProduction) {
+        _log.error('Biometric enrollment native channel missing', e);
+      } else {
+        _log.debug('Biometric enrollment native channel missing', e);
+      }
       return null;
     } on PlatformException catch (e) {
       if (e.code == 'BIOMETRIC_UNAVAILABLE') {

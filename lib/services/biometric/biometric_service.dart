@@ -5,6 +5,7 @@ import 'package:local_auth_platform_interface/types/auth_exception.dart';
 import 'package:local_auth_platform_interface/types/auth_messages.dart';
 import 'package:local_auth_platform_interface/types/biometric_type.dart'
     as platform;
+import 'package:usdc_wallet/services/security/auth/biometric_reenrollment_detector.dart';
 
 export 'package:usdc_wallet/services/biometric/biometric_provider.dart';
 
@@ -45,12 +46,16 @@ enum BiometricFailureReason {
 class BiometricService {
   final FlutterSecureStorage _storage;
   final LocalAuthentication _localAuth;
+  final BiometricReenrollmentDetector _reenrollmentDetector;
 
   BiometricService([
     LocalAuthentication? localAuth,
     FlutterSecureStorage? storage,
+    BiometricReenrollmentDetector? reenrollmentDetector,
   ]) : _localAuth = localAuth ?? LocalAuthentication(),
-       _storage = storage ?? const FlutterSecureStorage();
+       _storage = storage ?? const FlutterSecureStorage(),
+       _reenrollmentDetector =
+           reenrollmentDetector ?? BiometricReenrollmentDetector();
 
   /// Check if device supports biometric authentication
   Future<bool> isAvailable() async {
@@ -99,7 +104,16 @@ class BiometricService {
         userId ?? await _storage.read(key: _kStoredUserIdKey);
     if (expectedUserId == null || expectedUserId.isEmpty) return false;
 
-    return boundUserId == expectedUserId;
+    if (boundUserId != expectedUserId) {
+      return false;
+    }
+
+    if (await _reenrollmentDetector.hasEnrollmentChanged()) {
+      await disableBiometric();
+      return false;
+    }
+
+    return true;
   }
 
   Future<String?> getBoundUserId() async {
@@ -179,6 +193,7 @@ class BiometricService {
     if (phone != null && phone.trim().isNotEmpty) {
       await _storage.write(key: _kBiometricPhoneKey, value: phone.trim());
     }
+    await _reenrollmentDetector.acknowledgeChange();
   }
 
   Future<bool> isBiometricEnabled({String? userId}) async =>
@@ -231,6 +246,7 @@ class BiometricService {
     await _storage.write(key: _kBiometricEnabledKey, value: 'false');
     await _storage.delete(key: _kBiometricUserIdKey);
     await _storage.delete(key: _kBiometricPhoneKey);
+    await _reenrollmentDetector.reset();
   }
 
   Future<BiometricResult> authenticateSensitive({
