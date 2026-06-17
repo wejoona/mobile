@@ -102,6 +102,15 @@ class BiometricService {
     return boundUserId == expectedUserId;
   }
 
+  Future<String?> getBoundUserId() async {
+    final value = await _storage.read(key: _kBiometricEnabledKey);
+    if (value != 'true') return null;
+
+    final boundUserId = await _storage.read(key: _kBiometricUserIdKey);
+    final normalized = boundUserId?.trim();
+    return normalized == null || normalized.isEmpty ? null : normalized;
+  }
+
   /// Authenticate using device biometric (Face ID / Touch ID / fingerprint).
   /// The OS decides which biometric to use — we just request authentication.
   Future<BiometricResult> authenticate({

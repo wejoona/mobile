@@ -7,6 +7,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
@@ -38,8 +39,10 @@ class _LoginPinViewState extends ConsumerState<LoginPinView> {
 
   Future<void> _checkBiometric() async {
     final bio = ref.read(biometricServiceProvider);
+    final userId = await _currentBiometricUserId();
     final available = await bio.isAvailable();
-    final enabled = await bio.isBiometricEnabled();
+    final enabled =
+        userId != null && await bio.isBiometricEnabled(userId: userId);
     if (mounted) {
       setState(() => _biometricAvailable = available && enabled);
     }
@@ -91,12 +94,32 @@ class _LoginPinViewState extends ConsumerState<LoginPinView> {
 
   Future<void> _handleBiometric() async {
     final bio = ref.read(biometricServiceProvider);
+    final userId = await _currentBiometricUserId();
+    if (userId == null || !await bio.isBiometricEnabled(userId: userId)) {
+      if (mounted) {
+        setState(() => _biometricAvailable = false);
+      }
+      return;
+    }
+
     final result = await bio.authenticate(
       localizedReason: 'Vérifiez votre identité pour continuer',
     );
     if (result.success && mounted) {
       _unlockAndNavigate();
     }
+  }
+
+  Future<String?> _currentBiometricUserId() async {
+    final authUserId = ref.read(authProvider).user?.id.trim();
+    if (authUserId != null && authUserId.isNotEmpty) {
+      return authUserId;
+    }
+    final storedUserId = await ref
+        .read(secureStorageProvider)
+        .read(key: StorageKeys.userId);
+    final normalized = storedUserId?.trim();
+    return normalized == null || normalized.isEmpty ? null : normalized;
   }
 
   @override

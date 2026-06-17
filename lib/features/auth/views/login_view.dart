@@ -39,6 +39,7 @@ class _LoginViewState extends ConsumerState<LoginView>
   _LoginMode _mode = _LoginMode.checking;
   bool _biometricInProgress = false;
   String? _biometricError;
+  String? _biometricUserId;
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -59,7 +60,7 @@ class _LoginViewState extends ConsumerState<LoginView>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Pre-fetch countries from API
       ref.read(countriesProvider);
-      _determineLoginMode();
+      unawaited(_determineLoginMode());
     });
   }
 
@@ -83,22 +84,37 @@ class _LoginViewState extends ConsumerState<LoginView>
       );
     }
 
-    final isEnabled = await biometricService.isBiometricEnabled();
+    final storedUserId = await storage.read(key: StorageKeys.userId);
+    final boundUserId = await biometricService.getBoundUserId();
+    final isEnabled =
+        storedUserId != null &&
+        storedUserId.isNotEmpty &&
+        boundUserId == storedUserId &&
+        await biometricService.isBiometricEnabled(userId: storedUserId);
     final refreshToken = await storage.read(key: StorageKeys.refreshToken);
 
     if (isEnabled && refreshToken != null && mounted) {
-      setState(() => _mode = _LoginMode.biometric);
-      _animationController.forward();
+      setState(() {
+        _biometricUserId = storedUserId;
+        _mode = _LoginMode.biometric;
+      });
+      unawaited(_animationController.forward());
       // Don't auto-prompt biometric on boot — let user tap the button
     } else {
       if (mounted) {
-        setState(() => _mode = _LoginMode.phone);
-        _animationController.forward();
+        setState(() {
+          _biometricUserId = null;
+          _mode = _LoginMode.phone;
+        });
+        unawaited(_animationController.forward());
       }
     }
   }
 
-  Future<void> _doBiometricAuth(String refreshToken) async {
+  Future<void> _doBiometricAuth({
+    required String refreshToken,
+    required String expectedUserId,
+  }) async {
     if (_biometricInProgress) return;
     final l10n = AppLocalizations.of(context)!;
     setState(() {
@@ -115,7 +131,7 @@ class _LoginViewState extends ConsumerState<LoginView>
       if (authenticatedBio.success && mounted) {
         final success = await ref
             .read(authProvider.notifier)
-            .loginWithBiometric(refreshToken);
+            .loginWithBiometric(refreshToken, expectedUserId: expectedUserId);
         if (success && mounted) {
           context.enterAuthenticatedApp();
           return;
@@ -272,7 +288,15 @@ class _LoginViewState extends ConsumerState<LoginView>
                     final refreshToken = await storage.read(
                       key: StorageKeys.refreshToken,
                     );
-                    if (refreshToken != null) _doBiometricAuth(refreshToken);
+                    final expectedUserId = _biometricUserId;
+                    if (refreshToken != null && expectedUserId != null) {
+                      unawaited(
+                        _doBiometricAuth(
+                          refreshToken: refreshToken,
+                          expectedUserId: expectedUserId,
+                        ),
+                      );
+                    }
                   },
                   child: Container(
                     width: 80,

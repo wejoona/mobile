@@ -100,23 +100,58 @@ void main() {
     );
   });
 
-  test('PIN lock screen keeps biometric and manual PIN fallback available', () {
-    final pinScreenSource = File(
-      'lib/features/pin/views/pin_screen.dart',
+  test(
+    'PIN lock screen keeps user-bound biometric and manual PIN fallback available',
+    () {
+      final pinScreenSource = File(
+        'lib/features/pin/views/pin_screen.dart',
+      ).readAsStringSync();
+      final sessionLockedSource = File(
+        'lib/features/fsm_states/views/session_locked_view.dart',
+      ).readAsStringSync();
+      final loginPinSource = File(
+        'lib/features/auth/views/login_pin_view.dart',
+      ).readAsStringSync();
+
+      expect(
+        pinScreenSource,
+        contains('bio.isBiometricEnabled(userId: userId)'),
+      );
+      expect(
+        sessionLockedSource,
+        contains('biometricService.isBiometricEnabled(userId: userId)'),
+      );
+      expect(
+        loginPinSource,
+        contains('bio.isBiometricEnabled(userId: userId)'),
+      );
+      expect(pinScreenSource, contains('bio.getAvailableType()'));
+      expect(
+        pinScreenSource,
+        contains('showBiometric: _shouldShowBiometricUnlock'),
+      );
+      expect(
+        pinScreenSource,
+        contains('biometric_usePinInstead'),
+        reason:
+            'unlock transition must let the user return to PIN if navigation stalls',
+      );
+    },
+  );
+
+  test('biometric login is bound to the persisted Korido user', () {
+    final loginSource = File(
+      'lib/features/auth/views/login_view.dart',
+    ).readAsStringSync();
+    final authProviderSource = File(
+      'lib/features/auth/providers/auth_provider.dart',
     ).readAsStringSync();
 
-    expect(pinScreenSource, contains('bio.isBiometricEnabled()'));
-    expect(pinScreenSource, contains('bio.getAvailableType()'));
-    expect(
-      pinScreenSource,
-      contains('showBiometric: _shouldShowBiometricUnlock'),
-    );
-    expect(
-      pinScreenSource,
-      contains('biometric_usePinInstead'),
-      reason:
-          'unlock transition must let the user return to PIN if navigation stalls',
-    );
+    expect(loginSource, contains('biometricService.getBoundUserId()'));
+    expect(loginSource, contains('boundUserId == storedUserId'));
+    expect(loginSource, contains('expectedUserId: expectedUserId'));
+    expect(authProviderSource, contains('responseUserId != expectedUserId'));
+    expect(authProviderSource, contains('await clearLocalSession()'));
   });
 
   test('reset PIN unlock does not depend on stale locked route', () {

@@ -473,6 +473,10 @@ class AuthNotifier extends Notifier<AuthState> {
           value: response.refreshToken!,
         );
       }
+      await _storage.write(key: StorageKeys.userId, value: response.user.id);
+      if (state.phone != null && state.phone!.isNotEmpty) {
+        await _storage.write(key: StorageKeys.userPhone, value: state.phone!);
+      }
 
       // Start session with actual token validity from backend
       await ref
@@ -672,13 +676,27 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   /// Login with biometric (refresh token)
-  Future<bool> loginWithBiometric(String refreshToken) async {
+  Future<bool> loginWithBiometric(
+    String refreshToken, {
+    String? expectedUserId,
+  }) async {
     state = state.copyWith(status: AuthStatus.loading);
 
     try {
       final response = await _authService.refreshToken(
         refreshToken: refreshToken,
       );
+      final responseUserId = response.user?.id;
+      if (expectedUserId != null &&
+          expectedUserId.isNotEmpty &&
+          responseUserId != expectedUserId) {
+        await clearLocalSession();
+        state = state.copyWith(
+          status: AuthStatus.error,
+          error: 'Biometric login failed. Please log in again.',
+        );
+        return false;
+      }
 
       // Store new tokens
       await _storage.write(
@@ -691,12 +709,16 @@ class AuthNotifier extends Notifier<AuthState> {
           value: response.refreshToken!,
         );
       }
+      if (responseUserId != null && responseUserId.isNotEmpty) {
+        await _storage.write(key: StorageKeys.userId, value: responseUserId);
+      }
 
       // Start session with actual token validity from backend
       await ref
           .read(sessionServiceProvider.notifier)
           .startSession(
             accessToken: response.accessToken,
+            refreshToken: response.refreshToken ?? refreshToken,
             tokenValidity: Duration(seconds: response.expiresIn),
           );
 

@@ -11,6 +11,7 @@ import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
@@ -121,7 +122,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
     }
 
     final bio = ref.read(biometricServiceProvider);
-    final enabled = await bio.isBiometricEnabled();
+    final userId = await _currentBiometricUserId();
+    final enabled =
+        userId != null && await bio.isBiometricEnabled(userId: userId);
     final available = await bio.isAvailable();
     final type = await bio.getAvailableType();
     if (mounted) {
@@ -352,7 +355,22 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
   Future<void> _handleBiometric() async {
     if (_isVerifying) return;
+    final l10n = AppLocalizations.of(context)!;
     final attempt = ++_biometricAttempt;
+    final userId = await _currentBiometricUserId();
+    final bio = ref.read(biometricServiceProvider);
+    if (userId == null || !await bio.isBiometricEnabled(userId: userId)) {
+      if (mounted) {
+        setState(() {
+          _biometricEnabled = false;
+          _isVerifying = false;
+          _errorMessage =
+              'Biometric unlock is unavailable. Please use your PIN.';
+        });
+      }
+      return;
+    }
+
     setState(() {
       _isVerifying = true;
       _errorMessage = null;
@@ -375,10 +393,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
       }),
     );
 
-    final bio = ref.read(biometricServiceProvider);
     try {
       final result = await bio.authenticate(
-        localizedReason: AppLocalizations.of(context)!.biometric_reason,
+        localizedReason: l10n.biometric_reason,
       );
       if (attempt != _biometricAttempt) {
         return;
@@ -405,6 +422,18 @@ class _PinScreenState extends ConsumerState<PinScreen>
         await _checkBiometric();
       }
     }
+  }
+
+  Future<String?> _currentBiometricUserId() async {
+    final authUserId = ref.read(authProvider).user?.id.trim();
+    if (authUserId != null && authUserId.isNotEmpty) {
+      return authUserId;
+    }
+    final storedUserId = await ref
+        .read(secureStorageProvider)
+        .read(key: StorageKeys.userId);
+    final normalized = storedUserId?.trim();
+    return normalized == null || normalized.isEmpty ? null : normalized;
   }
 
   void _dismissIfAlreadyUnlocked() {

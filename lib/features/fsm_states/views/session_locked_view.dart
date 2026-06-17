@@ -10,6 +10,7 @@ import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
@@ -54,7 +55,10 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView>
 
   Future<void> _checkBiometric() async {
     final biometricService = ref.read(biometricServiceProvider);
-    final isEnabled = await biometricService.isBiometricEnabled();
+    final userId = await _currentBiometricUserId();
+    final isEnabled =
+        userId != null &&
+        await biometricService.isBiometricEnabled(userId: userId);
     final isAvailable = await biometricService.isAvailable();
     final type = await biometricService.getAvailableType();
 
@@ -335,6 +339,18 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView>
   Future<void> _handleBiometric() async {
     final biometricService = ref.read(biometricServiceProvider);
     final l10n = AppLocalizations.of(context)!;
+    final userId = await _currentBiometricUserId();
+    if (userId == null ||
+        !await biometricService.isBiometricEnabled(userId: userId)) {
+      if (mounted) {
+        setState(() {
+          _biometricEnabled = false;
+          _biometricAvailable = false;
+        });
+      }
+      return;
+    }
+
     final result = await biometricService.authenticate(
       localizedReason: l10n.session_unlockReason,
     );
@@ -342,6 +358,18 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView>
     if (mounted && result.success) {
       unawaited(_unlock());
     }
+  }
+
+  Future<String?> _currentBiometricUserId() async {
+    final authUserId = ref.read(authProvider).user?.id.trim();
+    if (authUserId != null && authUserId.isNotEmpty) {
+      return authUserId;
+    }
+    final storedUserId = await ref
+        .read(secureStorageProvider)
+        .read(key: StorageKeys.userId);
+    final normalized = storedUserId?.trim();
+    return normalized == null || normalized.isEmpty ? null : normalized;
   }
 
   bool get _shouldShowBiometricUnlock =>
