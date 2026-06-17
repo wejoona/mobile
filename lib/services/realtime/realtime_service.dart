@@ -8,8 +8,8 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart';
-import 'package:usdc_wallet/features/wallet/providers/contacts_provider.dart'
-    as wallet_contacts;
+import 'package:usdc_wallet/features/wallet/providers/saved_recipients_provider.dart'
+    as wallet_recipients;
 import 'package:usdc_wallet/state/fsm/index.dart';
 import 'package:usdc_wallet/state/transaction_state_machine.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
@@ -200,9 +200,9 @@ class RealtimeService {
   }
 
   void _invalidateRecipientProviders() {
-    _ref.invalidate(wallet_contacts.contactsProvider);
-    _ref.invalidate(wallet_contacts.favoritesProvider);
-    _ref.invalidate(wallet_contacts.recentsProvider);
+    _ref.invalidate(wallet_recipients.savedRecipientsProvider);
+    _ref.invalidate(wallet_recipients.favoriteRecipientsProvider);
+    _ref.invalidate(wallet_recipients.recentRecipientsProvider);
   }
 
   void dispose() {

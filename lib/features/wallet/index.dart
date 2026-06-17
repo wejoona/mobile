@@ -2,7 +2,7 @@
 library;
 
 export 'package:usdc_wallet/features/wallet/providers/balance_visibility_provider.dart';
-export 'package:usdc_wallet/features/wallet/providers/contacts_provider.dart';
+export 'package:usdc_wallet/features/wallet/providers/saved_recipients_provider.dart';
 export 'package:usdc_wallet/features/wallet/providers/currency_converter_provider.dart';
 export 'package:usdc_wallet/features/wallet/providers/transaction_stats_provider.dart';
 export 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';

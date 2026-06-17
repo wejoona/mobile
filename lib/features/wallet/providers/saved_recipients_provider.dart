@@ -6,53 +6,53 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/contacts/contacts_service.dart';
 
 // =============================================================================
-// CONTACTS PROVIDERS
+// SAVED RECIPIENT PROVIDERS
 // =============================================================================
 
-/// All Contacts Provider with TTL-based caching
+/// All saved recipients with TTL-based caching.
 /// Cache duration: 30 seconds
-final contactsProvider = FutureProvider.autoDispose<List<Contact>>((ref) async {
+final savedRecipientsProvider = FutureProvider.autoDispose<List<Contact>>((
+  ref,
+) async {
   final service = ref.watch(joonaPayContactsServiceProvider);
   final link = ref.keepAlive();
 
-  // Auto-invalidate after 30 seconds
   final timer = Timer(const Duration(seconds: 30), link.close);
   ref.onDispose(timer.cancel);
 
   return service.getContacts();
 });
 
-/// Favorite Contacts Provider with TTL-based caching
+/// Favorite saved recipients with TTL-based caching.
 /// Cache duration: 30 seconds
-final favoritesProvider = FutureProvider.autoDispose<List<Contact>>((
+final favoriteRecipientsProvider = FutureProvider.autoDispose<List<Contact>>((
   ref,
 ) async {
   final service = ref.watch(joonaPayContactsServiceProvider);
   final link = ref.keepAlive();
 
-  // Auto-invalidate after 30 seconds
   final timer = Timer(const Duration(seconds: 30), link.close);
   ref.onDispose(timer.cancel);
 
   return service.getFavorites();
 });
 
-/// Recent Contacts Provider with TTL-based caching
+/// Recent saved recipients with TTL-based caching.
 /// Cache duration: 30 seconds
-final recentsProvider = FutureProvider.autoDispose<List<Contact>>((ref) async {
+final recentRecipientsProvider = FutureProvider.autoDispose<List<Contact>>((
+  ref,
+) async {
   final service = ref.watch(joonaPayContactsServiceProvider);
   final link = ref.keepAlive();
 
-  // Auto-invalidate after 30 seconds
   final timer = Timer(const Duration(seconds: 30), link.close);
   ref.onDispose(timer.cancel);
 
   return service.getRecents();
 });
 
-/// Search Contacts Provider
-/// No caching - search results should be fresh
-final searchContactsProvider = FutureProvider.autoDispose
+/// Search saved recipients. Search results should be fresh.
+final searchSavedRecipientsProvider = FutureProvider.autoDispose
     .family<List<Contact>, String>((ref, query) async {
       if (query.isEmpty) {
         return [];
@@ -66,16 +66,20 @@ final searchContactsProvider = FutureProvider.autoDispose
 // CONTACT MUTATION STATE
 // =============================================================================
 
-/// Contact State for mutations (create, update, delete)
-class ContactState {
+/// Saved recipient mutation state.
+class SavedRecipientState {
   final bool isLoading;
   final Contact? contact;
   final String? error;
 
-  const ContactState({this.isLoading = false, this.contact, this.error});
+  const SavedRecipientState({this.isLoading = false, this.contact, this.error});
 
-  ContactState copyWith({bool? isLoading, Contact? contact, String? error}) {
-    return ContactState(
+  SavedRecipientState copyWith({
+    bool? isLoading,
+    Contact? contact,
+    String? error,
+  }) {
+    return SavedRecipientState(
       isLoading: isLoading ?? this.isLoading,
       contact: contact ?? this.contact,
       error: error,
@@ -83,11 +87,11 @@ class ContactState {
   }
 }
 
-/// Contact Notifier for managing contact mutations
-class ContactNotifier extends Notifier<ContactState> {
+/// Saved recipient notifier for managing create, update, and delete mutations.
+class SavedRecipientNotifier extends Notifier<SavedRecipientState> {
   @override
-  ContactState build() {
-    return const ContactState();
+  SavedRecipientState build() {
+    return const SavedRecipientState();
   }
 
   KoridoContactsService get _service =>
@@ -112,9 +116,8 @@ class ContactNotifier extends Notifier<ContactState> {
 
       state = state.copyWith(isLoading: false, contact: contact);
 
-      // Invalidate contacts list to refresh
-      ref.invalidate(contactsProvider);
-      ref.invalidate(recentsProvider);
+      ref.invalidate(savedRecipientsProvider);
+      ref.invalidate(recentRecipientsProvider);
 
       return true;
     } on ApiException catch (e) {
@@ -140,10 +143,9 @@ class ContactNotifier extends Notifier<ContactState> {
 
       state = state.copyWith(isLoading: false, contact: contact);
 
-      // Invalidate contacts list to refresh
-      ref.invalidate(contactsProvider);
-      ref.invalidate(favoritesProvider);
-      ref.invalidate(recentsProvider);
+      ref.invalidate(savedRecipientsProvider);
+      ref.invalidate(favoriteRecipientsProvider);
+      ref.invalidate(recentRecipientsProvider);
 
       return true;
     } on ApiException catch (e) {
@@ -161,9 +163,8 @@ class ContactNotifier extends Notifier<ContactState> {
 
       state = state.copyWith(isLoading: false, contact: contact);
 
-      // Invalidate contacts list to refresh
-      ref.invalidate(contactsProvider);
-      ref.invalidate(favoritesProvider);
+      ref.invalidate(savedRecipientsProvider);
+      ref.invalidate(favoriteRecipientsProvider);
 
       return true;
     } on ApiException catch (e) {
@@ -179,12 +180,11 @@ class ContactNotifier extends Notifier<ContactState> {
     try {
       await _service.deleteContact(contactId);
 
-      state = const ContactState();
+      state = const SavedRecipientState();
 
-      // Invalidate contacts list to refresh
-      ref.invalidate(contactsProvider);
-      ref.invalidate(favoritesProvider);
-      ref.invalidate(recentsProvider);
+      ref.invalidate(savedRecipientsProvider);
+      ref.invalidate(favoriteRecipientsProvider);
+      ref.invalidate(recentRecipientsProvider);
 
       return true;
     } on ApiException catch (e) {
@@ -194,11 +194,11 @@ class ContactNotifier extends Notifier<ContactState> {
   }
 
   void reset() {
-    state = const ContactState();
+    state = const SavedRecipientState();
   }
 }
 
-final contactProvider =
-    NotifierProvider.autoDispose<ContactNotifier, ContactState>(
-      ContactNotifier.new,
+final savedRecipientMutationProvider =
+    NotifierProvider.autoDispose<SavedRecipientNotifier, SavedRecipientState>(
+      SavedRecipientNotifier.new,
     );

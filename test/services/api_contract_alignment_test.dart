@@ -2566,15 +2566,15 @@ void main() {
       );
       expect(
         invalidateRecipientProvidersBody,
-        contains('wallet_contacts.contactsProvider'),
+        contains('wallet_recipients.savedRecipientsProvider'),
       );
       expect(
         invalidateRecipientProvidersBody,
-        contains('wallet_contacts.favoritesProvider'),
+        contains('wallet_recipients.favoriteRecipientsProvider'),
       );
       expect(
         invalidateRecipientProvidersBody,
-        contains('wallet_contacts.recentsProvider'),
+        contains('wallet_recipients.recentRecipientsProvider'),
       );
     });
   });
