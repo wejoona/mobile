@@ -381,9 +381,11 @@ class ProviderSelectionScreen extends ConsumerWidget {
     // Initiate the deposit immediately
     await ref.read(depositProvider.notifier).initiateDeposit();
 
+    if (!context.mounted) return;
+
     // Navigate to payment instructions if successful, passing response as extra
     final response = ref.read(depositProvider).response;
-    if (response != null && context.mounted) {
+    if (response != null) {
       unawaited(context.push('/deposit/instructions', extra: response));
     }
   }

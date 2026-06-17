@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/main.dart' as app;
 import 'package:usdc_wallet/mocks/mock_config.dart';
 import 'package:usdc_wallet/mocks/mock_registry.dart';
@@ -439,11 +440,31 @@ class KoridoFlowDriver {
   }
 
   Future<void> tapText(List<String> candidates) async {
-    final finder = findText(candidates);
+    Finder? button = findButton(candidates);
+    Finder? finder = findText(candidates);
+
+    if (button == null && finder == null) {
+      await scrollUntilText(candidates, maxScrolls: 6);
+      button = findButton(candidates);
+      finder = findText(candidates);
+    }
+
+    if (button != null) {
+      await tester.ensureVisible(button);
+      await tester.pump(const Duration(milliseconds: 150));
+      await tester.tap(button);
+      await tester.pump(const Duration(milliseconds: 350));
+      return;
+    }
+
     if (finder == null) {
-      throw TestFailure('Could not find any text: ${candidates.join(', ')}');
+      throw TestFailure(
+        'Could not find any text: ${candidates.join(', ')}. '
+        'Visible text: ${visibleTextSnapshot()}',
+      );
     }
     await tester.ensureVisible(finder);
+    await tester.pump(const Duration(milliseconds: 150));
     await tester.tap(finder);
     await tester.pump(const Duration(milliseconds: 350));
   }
@@ -495,6 +516,17 @@ class KoridoFlowDriver {
       if (containing.evaluate().isNotEmpty) {
         return containing.first;
       }
+    }
+    return null;
+  }
+
+  Finder? findButton(List<String> candidates) {
+    final labels = candidates.toSet();
+    final button = find.byWidgetPredicate(
+      (widget) => widget is AppButton && labels.contains(widget.label),
+    );
+    if (button.evaluate().isNotEmpty) {
+      return button.first;
     }
     return null;
   }
