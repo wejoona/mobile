@@ -410,7 +410,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     }
 
     final storage = ref.read(secureStorageProvider);
-    final storedPhone = await storage.read(key: 'user_phone');
+    final storedPhone = await storage.read(key: StorageKeys.userPhone);
     if (storedPhone != null && storedPhone.isNotEmpty) {
       return storedPhone;
     }

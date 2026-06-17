@@ -84,6 +84,8 @@ class ApiConfig {
 class StorageKeys {
   static const String accessToken = 'access_token';
   static const String refreshToken = 'refresh_token';
+  static const String userId = 'user_id';
+  static const String userPhone = 'user_phone';
   static const String userPin = 'user_pin';
   static const String biometricEnabled = 'biometric_enabled';
   static const String rememberedPhone = 'remembered_phone';

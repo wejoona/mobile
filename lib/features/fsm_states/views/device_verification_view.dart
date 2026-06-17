@@ -257,7 +257,7 @@ class _DeviceVerificationViewState
 
     final storedPhone = await ref
         .read(secureStorageProvider)
-        .read(key: 'user_phone');
+        .read(key: StorageKeys.userPhone);
     if (_hasValue(storedPhone)) {
       return storedPhone!.trim();
     }

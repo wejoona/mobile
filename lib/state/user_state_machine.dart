@@ -14,8 +14,8 @@ import 'package:usdc_wallet/services/avatar/avatar_cache_service.dart';
 
 /// User/Auth State Machine - manages user authentication globally
 class UserStateMachine extends Notifier<UserState> {
-  static const _tokenKey = 'access_token';
-  static const _phoneKey = 'user_phone';
+  static const _tokenKey = StorageKeys.accessToken;
+  static const _phoneKey = StorageKeys.userPhone;
 
   @override
   UserState build() {

@@ -92,8 +92,8 @@ class SessionState {
 
 /// Session service that manages user session lifecycle
 class SessionService extends Notifier<SessionState> {
-  static const _accessTokenKey = 'access_token';
-  static const _refreshTokenKey = 'refresh_token';
+  static const _accessTokenKey = StorageKeys.accessToken;
+  static const _refreshTokenKey = StorageKeys.refreshToken;
   static const _tokenExpiryKey = 'token_expiry';
   static const _sessionStartKey = 'session_start';
 

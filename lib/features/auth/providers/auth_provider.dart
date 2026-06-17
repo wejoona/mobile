@@ -107,7 +107,7 @@ class AuthNotifier extends Notifier<AuthState> {
       if (debugToken.isNotEmpty) {
         await _storage.write(key: StorageKeys.accessToken, value: debugToken);
         if (debugPhone.isNotEmpty) {
-          await _storage.write(key: 'user_phone', value: debugPhone);
+          await _storage.write(key: StorageKeys.userPhone, value: debugPhone);
         }
       }
 
@@ -141,7 +141,7 @@ class AuthNotifier extends Notifier<AuthState> {
         }
 
         if (debugToken.isNotEmpty && EnvironmentConfig.debugSkipPin) {
-          final userId = await _storage.read(key: 'user_id');
+          final userId = await _storage.read(key: StorageKeys.userId);
           if (!ref.mounted) return;
           if (!_isCurrentSessionMutation(restoreVersion)) return;
           ref
@@ -168,7 +168,7 @@ class AuthNotifier extends Notifier<AuthState> {
         state = state.copyWith(status: AuthStatus.locked);
 
         // Sync FSM: restore auth state and trigger data fetches in background
-        final userId = await _storage.read(key: 'user_id');
+        final userId = await _storage.read(key: StorageKeys.userId);
         if (!ref.mounted) return;
         if (!_isCurrentSessionMutation(restoreVersion)) return;
         ref
@@ -288,7 +288,7 @@ class AuthNotifier extends Notifier<AuthState> {
     }
 
     final refreshToken = await _storage.read(key: StorageKeys.refreshToken);
-    final userId = await _storage.read(key: 'user_id');
+    final userId = await _storage.read(key: StorageKeys.userId);
 
     state = state.copyWith(status: AuthStatus.authenticated, error: null);
 
@@ -583,10 +583,10 @@ class AuthNotifier extends Notifier<AuthState> {
         );
       }
       if (phone != null && phone.isNotEmpty) {
-        await _storage.write(key: 'user_phone', value: phone);
+        await _storage.write(key: StorageKeys.userPhone, value: phone);
       }
       if (user?.id != null) {
-        await _storage.write(key: 'user_id', value: user!.id);
+        await _storage.write(key: StorageKeys.userId, value: user!.id);
       }
 
       await ref
