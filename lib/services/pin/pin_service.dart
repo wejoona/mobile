@@ -31,23 +31,13 @@ class PinService {
   /// Set a new PIN
   /// SECURITY: PIN is hashed with a unique salt before storage
   Future<bool> setPin(String pin, {bool requireBackendSync = false}) async {
-    if (pin.length != 6 || !RegExp(r'^\d{6}$').hasMatch(pin)) {
+    if (!_isValidPin(pin)) {
       return false;
     }
 
-    // Check for weak PINs
     if (_isWeakPin(pin)) {
       return false;
     }
-
-    // Generate a unique salt
-    final salt = _generateSalt();
-    final hash = _hashPin(pin, salt);
-
-    await _storage.write(key: _pinHashKey, value: hash);
-    await _storage.write(key: _pinSaltKey, value: salt);
-    await _storage.write(key: _pinAttemptsKey, value: '0');
-    await _storage.delete(key: _pinLockedUntilKey);
 
     // Also set PIN on backend if authenticated
     // SECURITY: Hash PIN before transmission to prevent plaintext exposure
@@ -62,6 +52,7 @@ class PinService {
       // Backend call failed, but local PIN is set. This will be synced later.
     }
 
+    await _storePinLocally(pin);
     return true;
   }
 
@@ -209,14 +200,48 @@ class PinService {
 
   /// Change PIN (requires current PIN verification)
   Future<bool> changePin(String currentPin, String newPin) async {
-    // Verify current PIN first
+    if (!_isValidPin(newPin) || _isWeakPin(newPin)) {
+      return false;
+    }
+
+    if (currentPin == newPin) {
+      return false;
+    }
+
     final verification = await verifyPinLocally(currentPin);
     if (!verification.success) {
       return false;
     }
 
-    // Set new PIN
-    return setPin(newPin);
+    try {
+      await _dio.post(
+        '/user/pin/change',
+        data: {
+          'oldPinHash': _hashPinForTransmission(currentPin),
+          'newPinHash': _hashPinForTransmission(newPin),
+        },
+      );
+    } on DioException {
+      return false;
+    }
+
+    await _storePinLocally(newPin);
+    await clearPinToken();
+    return true;
+  }
+
+  /// Update local unlock cache after the backend has already accepted a PIN.
+  ///
+  /// Use this only after a canonical server mutation such as `/user/pin/reset`
+  /// succeeds. It deliberately does not call any backend PIN endpoint.
+  Future<bool> cacheConfirmedPin(String pin) async {
+    if (!_isValidPin(pin) || _isWeakPin(pin)) {
+      return false;
+    }
+
+    await _storePinLocally(pin);
+    await clearPinToken();
+    return true;
   }
 
   /// Clear PIN (on logout)
@@ -239,6 +264,18 @@ class PinService {
     final bytes = utf8.encode(pin);
     final digest = sha256.convert(bytes);
     return digest.toString(); // 64-char lowercase hex
+  }
+
+  bool _isValidPin(String pin) => RegExp(r'^\d{6}$').hasMatch(pin);
+
+  Future<void> _storePinLocally(String pin) async {
+    final salt = _generateSalt();
+    final hash = _hashPin(pin, salt);
+
+    await _storage.write(key: _pinHashKey, value: hash);
+    await _storage.write(key: _pinSaltKey, value: salt);
+    await _storage.write(key: _pinAttemptsKey, value: '0');
+    await _storage.delete(key: _pinLockedUntilKey);
   }
 
   /// Hash PIN with salt using PBKDF2

@@ -12,6 +12,7 @@ import 'package:usdc_wallet/features/kyc/widgets/kyc_instruction_screen.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 enum ChangePinPhase { livenessExplanation, livenessCheck, pinEntry }
+
 enum PinStep { current, newPin, confirm }
 
 class ChangePinView extends ConsumerStatefulWidget {
@@ -40,18 +41,21 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
       case ChangePinPhase.livenessExplanation:
         return KycInstructionScreen(
           title: 'Vérification d\'identité',
-          description: 'Pour changer votre PIN, nous devons d\'abord vérifier votre identité par reconnaissance faciale.',
+          description:
+              'Pour changer votre PIN, nous devons d\'abord vérifier votre identité par reconnaissance faciale.',
           icon: Icons.face,
           instructions: const [
             KycInstruction(
               icon: Icons.videocam_outlined,
               title: 'Vérification vidéo',
-              subtitle: 'Nous vous demanderons d\'effectuer des actions simples',
+              subtitle:
+                  'Nous vous demanderons d\'effectuer des actions simples',
             ),
             KycInstruction(
               icon: Icons.security,
               title: 'Sécurité renforcée',
-              subtitle: 'Cela protège votre compte contre les changements non autorisés',
+              subtitle:
+                  'Cela protège votre compte contre les changements non autorisés',
             ),
             KycInstruction(
               icon: Icons.timer_outlined,
@@ -60,14 +64,16 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
             ),
           ],
           buttonLabel: l10n.common_continue,
-          onContinue: () => setState(() => _phase = ChangePinPhase.livenessCheck),
+          onContinue: () =>
+              setState(() => _phase = ChangePinPhase.livenessCheck),
           onBack: () => context.safePop(fallbackRoute: '/settings/security'),
         );
 
       case ChangePinPhase.livenessCheck:
         return LivenessCheckWidget(
           onComplete: _onLivenessComplete,
-          onCancel: () => setState(() => _phase = ChangePinPhase.livenessExplanation),
+          onCancel: () =>
+              setState(() => _phase = ChangePinPhase.livenessExplanation),
         );
 
       case ChangePinPhase.pinEntry:
@@ -82,7 +88,9 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
       // Liveness failed — go back to explanation
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.settings_verificationFailed),
+          content: Text(
+            AppLocalizations.of(context)!.settings_verificationFailed,
+          ),
           backgroundColor: context.colors.error,
         ),
       );
@@ -127,7 +135,9 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  _currentStep == PinStep.current ? Icons.lock : Icons.lock_open,
+                  _currentStep == PinStep.current
+                      ? Icons.lock
+                      : Icons.lock_open,
                   color: context.colors.gold,
                   size: 40,
                 ),
@@ -252,7 +262,9 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
             border: Border.all(
               color: hasError
                   ? context.colors.error
-                  : (isFilled ? context.colors.gold : context.colors.textSecondary),
+                  : (isFilled
+                        ? context.colors.gold
+                        : context.colors.textSecondary),
               width: 2,
             ),
           ),
@@ -413,7 +425,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
 
     try {
       final pinService = ref.read(pinServiceProvider);
-      final success = await pinService.setPin(_newPin);
+      final success = await pinService.changePin(_currentPin, _newPin);
 
       setState(() => _isLoading = false);
 

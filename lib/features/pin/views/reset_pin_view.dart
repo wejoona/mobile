@@ -867,7 +867,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       // Also update local PIN storage and in-memory PIN state.
       final pinUpdated = await ref
           .read(pinStateProvider.notifier)
-          .setPin(_newPin);
+          .cacheConfirmedPin(_newPin);
       if (!pinUpdated) {
         throw StateError('Local PIN update failed after backend reset');
       }

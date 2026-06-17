@@ -403,10 +403,12 @@ void main() {
   });
 
   group('Change PIN with old PIN verification', () {
-    test('should change PIN when old PIN is correct', () async {
+    test('should change PIN through canonical backend route', () async {
       // Arrange
       await pinService.setPin('739251');
       final oldHash = mockStorage.storage['pin_hash'];
+      mockDio.reset();
+      mockDio.queueResponse({'success': true, 'message': 'PIN changed'});
 
       // Act
       final result = await pinService.changePin('739251', '901275');
@@ -414,22 +416,56 @@ void main() {
       // Assert
       expect(result, isTrue);
       expect(mockStorage.storage['pin_hash'], isNot(equals(oldHash)));
+
+      final request = mockDio.requestHistory.single;
+      expect(request.path, '/user/pin/change');
+      expect(request.method, 'POST');
+      expect(request.data, isA<Map<String, dynamic>>());
+      final data = request.data as Map<String, dynamic>;
+      expect(data.keys, containsAll(['oldPinHash', 'newPinHash']));
+      expect(data['oldPinHash'], isNot(data['newPinHash']));
+      expect(data['oldPinHash'], matches(RegExp(r'^[a-f0-9]{64}$')));
+      expect(data['newPinHash'], matches(RegExp(r'^[a-f0-9]{64}$')));
+
+      expect((await pinService.verifyPinLocally('901275')).success, isTrue);
+      expect((await pinService.verifyPinLocally('739251')).success, isFalse);
+    });
+
+    test('should keep local PIN unchanged when backend change fails', () async {
+      // Arrange
+      await pinService.setPin('739251');
+      final oldHash = mockStorage.storage['pin_hash'];
+      mockDio.reset();
+      mockDio.queueErrorResponse(statusCode: 400, message: 'Invalid old PIN');
+
+      // Act
+      final result = await pinService.changePin('739251', '901275');
+
+      // Assert
+      expect(result, isFalse);
+      expect(mockStorage.storage['pin_hash'], equals(oldHash));
+      expect(mockDio.requestHistory.single.path, '/user/pin/change');
+      expect((await pinService.verifyPinLocally('739251')).success, isTrue);
+      expect((await pinService.verifyPinLocally('901275')).success, isFalse);
     });
 
     test('should reject change when old PIN is incorrect', () async {
       // Arrange
       await pinService.setPin('739251');
+      mockDio.reset();
 
       // Act
       final result = await pinService.changePin('wrong', '901275');
 
       // Assert
       expect(result, isFalse);
+      expect(mockDio.requestHistory, isEmpty);
     });
 
     test('should reject weak new PIN', () async {
       // Arrange
       await pinService.setPin('739251');
+      mockDio.reset();
 
       // Act
       final result = await pinService.changePin(
@@ -439,6 +475,32 @@ void main() {
 
       // Assert
       expect(result, isFalse);
+      expect(mockDio.requestHistory, isEmpty);
+    });
+  });
+
+  group('Cache server-confirmed PIN locally', () {
+    test('should update local PIN without calling backend', () async {
+      // Arrange
+      mockDio.reset();
+
+      // Act
+      final result = await pinService.cacheConfirmedPin('739251');
+
+      // Assert
+      expect(result, isTrue);
+      expect(mockDio.requestHistory, isEmpty);
+      expect((await pinService.verifyPinLocally('739251')).success, isTrue);
+    });
+
+    test('should reject weak confirmed PIN values', () async {
+      // Act
+      final result = await pinService.cacheConfirmedPin('123456');
+
+      // Assert
+      expect(result, isFalse);
+      expect(mockDio.requestHistory, isEmpty);
+      expect(await pinService.hasPin(), isFalse);
     });
   });
 

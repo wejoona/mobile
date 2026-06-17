@@ -1594,6 +1594,9 @@ void main() {
       final jweSource = File(
         'lib/services/security/jwe/jwe_interceptor.dart',
       ).readAsStringSync();
+      final resetPinSource = File(
+        'lib/features/pin/views/reset_pin_view.dart',
+      ).readAsStringSync();
       final transferContractSource = File(
         'lib/mocks/services/transfers/transfers_contract.dart',
       ).readAsStringSync();
@@ -1610,8 +1613,13 @@ void main() {
 
       expect(pinServiceSource, contains('/user/pin/verify'));
       expect(pinServiceSource, contains('/user/pin/set'));
+      expect(pinServiceSource, contains('/user/pin/change'));
+      expect(resetPinSource, contains('/user/pin/reset'));
+      expect(resetPinSource, contains('cacheConfirmedPin'));
+      expect(resetPinSource, isNot(contains('.setPin(_newPin)')));
       expect(combinedContractText, isNot(contains('/wallet/pin/verify')));
       expect(combinedContractText, isNot(contains('/wallet/pin/set')));
+      expect(combinedContractText, isNot(contains('/wallet/pin/change')));
       expect(
         '$pinServiceSource\n$combinedContractText',
         contains('/user/pin/verify'),

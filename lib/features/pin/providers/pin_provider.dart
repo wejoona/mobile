@@ -4,7 +4,9 @@ import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/features/pin/models/pin_state.dart';
 
 /// PIN state provider
-final pinStateProvider = NotifierProvider<PinNotifier, PinState>(PinNotifier.new);
+final pinStateProvider = NotifierProvider<PinNotifier, PinState>(
+  PinNotifier.new,
+);
 
 class PinNotifier extends Notifier<PinState> {
   Timer? _lockoutTimer;
@@ -46,17 +48,11 @@ class PinNotifier extends Notifier<PinState> {
         );
         return true;
       } else {
-        state = state.copyWith(
-          isLoading: false,
-          error: 'Failed to set PIN',
-        );
+        state = state.copyWith(isLoading: false, error: 'Failed to set PIN');
         return false;
       }
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
       return false;
     }
   }
@@ -76,17 +72,37 @@ class PinNotifier extends Notifier<PinState> {
         );
         return true;
       } else {
-        state = state.copyWith(
-          isLoading: false,
-          error: 'Failed to change PIN',
-        );
+        state = state.copyWith(isLoading: false, error: 'Failed to change PIN');
         return false;
       }
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  /// Update local PIN state after the backend has already confirmed a PIN
+  /// mutation such as account recovery reset.
+  Future<bool> cacheConfirmedPin(String pin) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final service = ref.read(pinServiceProvider);
+      final success = await service.cacheConfirmedPin(pin);
+
+      if (success) {
+        state = state.copyWith(
+          status: PinStatus.active,
+          isLoading: false,
+          remainingAttempts: PinService.maxAttempts,
+        );
+        return true;
+      }
+
+      state = state.copyWith(isLoading: false, error: 'Failed to cache PIN');
+      return false;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
       return false;
     }
   }
