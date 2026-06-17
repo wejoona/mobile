@@ -779,8 +779,6 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
         );
   }
 
-  String _phoneDigits(String value) => value.replaceAll(RegExp(r'\D'), '');
-
   _RecipientSnack _recipientErrorSnack(String errorCode) {
     final colors = context.colors;
     switch (errorCode) {
