@@ -293,6 +293,46 @@ void main() {
     );
 
     test(
+      'manual refresh displays flat live balance when stale rows are empty',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'walletId': 'wallet-flat-live',
+            'walletAddress': '0xabc',
+            'blockchain': 'polygon',
+            'currency': 'USDC',
+            'balanceUsdc': '77.125000',
+            'availableBalance': '75.000000',
+            'pendingBalance': '2.125000',
+            'balances': [
+              {
+                'currency': 'USDC',
+                'availableDecimal': '0.000000',
+                'pendingDecimal': '0.000000',
+                'totalDecimal': '0.000000',
+              },
+            ],
+          });
+
+        final container = ProviderContainer(
+          overrides: [
+            dioProvider.overrideWithValue(dio),
+            appFsmProvider.overrideWith(_NoopAppFsmNotifier.new),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await container.read(walletStateMachineProvider.notifier).refresh();
+
+        final state = container.read(walletStateMachineProvider);
+        expect(state.status, WalletStatus.loaded);
+        expect(state.usdcBalance, 75);
+        expect(state.pendingBalance, 2.125);
+        expect(state.availableBalance, 75);
+      },
+    );
+
+    test(
       'manual refresh creates a wallet when the API reports no wallet',
       () async {
         final dio = MockDio()

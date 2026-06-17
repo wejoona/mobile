@@ -406,6 +406,19 @@ class WalletBalanceResponse {
           .whereType<Map>()
           .map((e) => WalletBalance.fromJson(Map<String, dynamic>.from(e)))
           .toList();
+
+      final flatBalance = _flatBalanceFromPayload(payload);
+      if (flatBalance != null && !_hasSpendableBalance(balances)) {
+        final usdcIndex = balances.indexWhere(
+          (balance) => balance.currency.toUpperCase() == 'USDC',
+        );
+        balances = [...balances];
+        if (usdcIndex == -1) {
+          balances.add(flatBalance);
+        } else {
+          balances[usdcIndex] = flatBalance;
+        }
+      }
     } else if (payload['balance'] != null ||
         payload['available'] != null ||
         payload['availableBalance'] != null ||
@@ -496,6 +509,80 @@ List<Map<String, dynamic>> _balanceEntries(Object? raw) {
   }
 
   return const [];
+}
+
+WalletBalance? _flatBalanceFromPayload(Map<String, dynamic> payload) {
+  const balanceKeys = [
+    'availableDecimal',
+    'available_decimal',
+    'availableBalanceDecimal',
+    'available_balance_decimal',
+    'balanceDecimal',
+    'balance_decimal',
+    'available',
+    'availableBalance',
+    'available_balance',
+    'balanceUsdc',
+    'balance',
+    'total',
+  ];
+  const pendingKeys = [
+    'pendingDecimal',
+    'pending_decimal',
+    'pendingBalanceDecimal',
+    'pending_balance_decimal',
+    'pending',
+    'pendingBalance',
+    'pending_balance',
+  ];
+  const totalKeys = [
+    'totalDecimal',
+    'total_decimal',
+    'totalBalanceDecimal',
+    'total_balance_decimal',
+    'balanceDecimal',
+    'balance_decimal',
+    'total',
+    'totalBalance',
+    'total_balance',
+    'balanceUsdc',
+    'balance',
+  ];
+
+  if (!_hasAnyAmountKey(payload, balanceKeys) &&
+      !_hasAnyAmountKey(payload, pendingKeys) &&
+      !_hasAnyAmountKey(payload, totalKeys)) {
+    return null;
+  }
+
+  final balance = _readAmount(payload, balanceKeys);
+  final pending = _readAmount(payload, pendingKeys);
+  final total = _readAmount(payload, totalKeys);
+
+  return WalletBalance(
+    currency: payload['currency'] as String? ?? 'USDC',
+    available: balance,
+    pending: pending,
+    total: total == 0 ? balance + pending : total,
+  );
+}
+
+bool _hasSpendableBalance(List<WalletBalance> balances) {
+  for (final balance in balances) {
+    if (balance.available > 0 || balance.pending > 0 || balance.total > 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool _hasAnyAmountKey(Map<String, dynamic> payload, List<String> keys) {
+  for (final key in keys) {
+    if (payload.containsKey(key) && payload[key] != null) {
+      return true;
+    }
+  }
+  return false;
 }
 
 Map<String, dynamic> _walletPayload(Map<String, dynamic> json) {

@@ -316,6 +316,32 @@ void main() {
       },
     );
 
+    test(
+      'wallet balance parser repairs empty rows from flat live balance fields',
+      () {
+        final response = WalletBalanceResponse.fromJson({
+          'walletId': 'wallet_1',
+          'walletAddress': '0xabc',
+          'currency': 'USDC',
+          'balanceUsdc': '77.125000',
+          'availableBalance': '75.000000',
+          'pendingBalance': '2.125000',
+          'balances': [
+            {
+              'currency': 'USDC',
+              'availableDecimal': '0.000000',
+              'pendingDecimal': '0.000000',
+              'totalDecimal': '0.000000',
+            },
+          ],
+        });
+
+        expect(response.availableBalance, 75);
+        expect(response.totalBalance, 77.125);
+        expect(response.balances.single.pending, 2.125);
+      },
+    );
+
     test('wallet balance parser accepts keyed balance maps', () {
       final response = WalletBalanceResponse.fromJson({
         'walletId': 'wallet_1',
