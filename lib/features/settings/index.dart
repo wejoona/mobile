@@ -8,7 +8,6 @@ export 'package:usdc_wallet/features/settings/providers/devices_provider.dart';
 export 'package:usdc_wallet/features/settings/providers/notification_preferences_provider.dart';
 export 'package:usdc_wallet/features/settings/providers/security_settings_provider.dart';
 export 'package:usdc_wallet/features/settings/providers/sessions_provider.dart';
-export 'package:usdc_wallet/features/settings/providers/theme_provider.dart';
 export 'package:usdc_wallet/features/settings/repositories/devices_repository.dart';
 export 'package:usdc_wallet/features/settings/repositories/sessions_repository.dart';
 export 'package:usdc_wallet/features/settings/views/about_view.dart';
