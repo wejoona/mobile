@@ -403,39 +403,81 @@ class _PadLoadingPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final accentBg = colors.goldSubtle.withValues(
+      alpha: colors.isDark ? 0.58 : 0.72,
+    );
+    final panelShadow = colors.isDark
+        ? AppShadows.goldGlow
+        : AppShadows.lightGoldGlow;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.xl,
-      ),
-      decoration: BoxDecoration(
-        color: colors.elevated.withValues(alpha: colors.isDark ? 0.84 : 1),
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(
-          color: colors.gold.withValues(alpha: colors.isDark ? 0.30 : 0.22),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox.square(
-            dimension: 48,
-            child: CircularProgressIndicator(
-              color: colors.gold,
-              strokeWidth: 3,
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 320),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.xl,
+          ),
+          decoration: BoxDecoration(
+            color: colors.container.withValues(alpha: colors.isDark ? 0.92 : 1),
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            border: Border.all(
+              color: colors.gold.withValues(alpha: colors.isDark ? 0.34 : 0.24),
             ),
+            boxShadow: panelShadow,
           ),
-          const SizedBox(height: AppSpacing.md),
-          AppText(
-            label ?? 'Securing your session...',
-            variant: AppTextVariant.labelLarge,
-            color: colors.textPrimary,
-            fontWeight: FontWeight.w700,
-            textAlign: TextAlign.center,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox.square(
+                dimension: 76,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    SizedBox.square(
+                      dimension: 72,
+                      child: CircularProgressIndicator(
+                        color: colors.gold,
+                        strokeWidth: 3.2,
+                        strokeCap: StrokeCap.round,
+                        backgroundColor: colors.borderSubtle,
+                      ),
+                    ),
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: accentBg,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.verified_user_rounded,
+                        color: colors.gold,
+                        size: 26,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              AppText(
+                label ?? 'Securing your session...',
+                variant: AppTextVariant.titleSmall,
+                color: colors.textPrimary,
+                fontWeight: FontWeight.w800,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              AppText(
+                'Verifying locally and syncing your account.',
+                variant: AppTextVariant.bodySmall,
+                color: colors.textSecondary,
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
