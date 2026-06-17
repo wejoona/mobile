@@ -61,10 +61,10 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
                           appName: l10n.appName,
                           title: l10n.login_verifyCode,
                           subtitle: l10n.login_codeSentTo(
-                            state.countryCode ?? '+225',
+                            state.dialCode ?? '+225',
                             _formatPhoneForDisplay(
                               state.phoneNumber ?? '',
-                              countryCode: state.countryCode,
+                              dialCode: state.dialCode,
                             ),
                           ),
                         ),
@@ -193,9 +193,9 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
     await ref.read(loginProvider.notifier).resendOtp();
   }
 
-  String _formatPhoneForDisplay(String phone, {String? countryCode}) {
+  String _formatPhoneForDisplay(String phone, {String? dialCode}) {
     final localPhone = localPhoneDigits(
-      dialCode: countryCode ?? '+225',
+      dialCode: dialCode ?? '+225',
       phoneNumber: phone,
     );
     if (localPhone.length < 4) return localPhone;

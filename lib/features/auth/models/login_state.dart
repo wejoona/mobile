@@ -4,7 +4,7 @@ import 'package:usdc_wallet/domain/entities/index.dart';
 class LoginState {
   final LoginStep currentStep;
   final String? phoneNumber;
-  final String? countryCode;
+  final String? dialCode;
   final String? otp;
   final bool isLoading;
   final String? error;
@@ -21,7 +21,7 @@ class LoginState {
   const LoginState({
     this.currentStep = LoginStep.phone,
     this.phoneNumber,
-    this.countryCode = '+225',
+    this.dialCode = '+225',
     this.otp,
     this.isLoading = false,
     this.error,
@@ -39,7 +39,7 @@ class LoginState {
   LoginState copyWith({
     LoginStep? currentStep,
     String? phoneNumber,
-    String? countryCode,
+    String? dialCode,
     String? otp,
     bool? isLoading,
     String? error,
@@ -56,7 +56,7 @@ class LoginState {
     return LoginState(
       currentStep: currentStep ?? this.currentStep,
       phoneNumber: phoneNumber ?? this.phoneNumber,
-      countryCode: countryCode ?? this.countryCode,
+      dialCode: dialCode ?? this.dialCode,
       otp: otp ?? this.otp,
       isLoading: isLoading ?? this.isLoading,
       error: error,
@@ -81,12 +81,12 @@ enum LoginStep { phone, otp, pin, biometric, success }
 /// Login request model
 class LoginRequest {
   final String phoneNumber;
-  final String countryCode;
+  final String dialCode;
 
-  const LoginRequest({required this.phoneNumber, this.countryCode = '+225'});
+  const LoginRequest({required this.phoneNumber, this.dialCode = '+225'});
 
   Map<String, dynamic> toJson() => {
     'phoneNumber': phoneNumber,
-    'countryCode': countryCode,
+    'dialCode': dialCode,
   };
 }

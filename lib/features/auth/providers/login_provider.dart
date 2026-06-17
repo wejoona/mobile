@@ -52,7 +52,7 @@ class LoginNotifier extends Notifier<LoginState> {
             : PhoneNumberValue.tryFromAny(phoneNumber: rememberedPhone);
         if (phoneValue != null) {
           state = state.copyWith(
-            countryCode: phoneValue.dialCode,
+            dialCode: phoneValue.dialCode,
             phoneNumber: phoneValue.localNumber,
             rememberDevice: true,
           );
@@ -64,14 +64,14 @@ class LoginNotifier extends Notifier<LoginState> {
   }
 
   /// Update phone number
-  void updatePhoneNumber(String phoneNumber, String countryCode) {
+  void updatePhoneNumber(String phoneNumber, String dialCode) {
     final localPhoneNumber = localPhoneDigits(
-      dialCode: countryCode,
+      dialCode: dialCode,
       phoneNumber: phoneNumber,
     );
     state = state.copyWith(
       phoneNumber: localPhoneNumber,
-      countryCode: countryCode,
+      dialCode: dialCode,
       error: null,
     );
   }
@@ -94,13 +94,13 @@ class LoginNotifier extends Notifier<LoginState> {
       // Call login API
       await _authService.login(
         phone: state.phoneNumber!,
-        countryCode: state.countryCode,
+        countryCode: state.dialCode,
       );
 
       // Save remembered phone if enabled
       if (state.rememberDevice) {
         final phoneValue = PhoneNumberValue.fromLocal(
-          dialCode: state.countryCode ?? '+225',
+          dialCode: state.dialCode ?? '+225',
           localNumber: state.phoneNumber!,
         );
         await _storage.write(
@@ -140,7 +140,7 @@ class LoginNotifier extends Notifier<LoginState> {
     try {
       final response = await _authService.verifyOtp(
         phone: state.phoneNumber!,
-        countryCode: state.countryCode,
+        countryCode: state.dialCode,
         otp: state.otp!,
       );
 
@@ -176,7 +176,7 @@ class LoginNotifier extends Notifier<LoginState> {
     try {
       await _authService.login(
         phone: state.phoneNumber!,
-        countryCode: state.countryCode,
+        countryCode: state.dialCode,
       );
       state = state.copyWith(isLoading: false);
       _startResendCountdown();
@@ -389,7 +389,7 @@ class LoginNotifier extends Notifier<LoginState> {
     _resendTimer?.cancel();
     _lockoutTimer?.cancel();
     state = LoginState(
-      countryCode: state.countryCode,
+      dialCode: state.dialCode,
       phoneNumber: state.rememberDevice ? state.phoneNumber : null,
       rememberDevice: state.rememberDevice,
     );

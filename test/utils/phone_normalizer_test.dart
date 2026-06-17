@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:usdc_wallet/features/auth/models/login_state.dart';
 import 'package:usdc_wallet/utils/phone_normalizer.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
@@ -76,5 +77,13 @@ void main() {
         );
       },
     );
+
+    test('keeps login form state explicit about dial codes', () {
+      const state = LoginState(phoneNumber: '4155550101', dialCode: '+1');
+      const request = LoginRequest(phoneNumber: '4155550101', dialCode: '+1');
+
+      expect(state.dialCode, '+1');
+      expect(request.toJson(), {'phoneNumber': '4155550101', 'dialCode': '+1'});
+    });
   });
 }

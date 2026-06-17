@@ -216,7 +216,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
             refreshToken: loginState.refreshToken,
             user: loginState.user,
             phone: loginState.phoneNumber,
-            countryCode: loginState.countryCode,
+            countryCode: loginState.dialCode,
             kycStatus: loginState.kycStatus,
             expiresIn: loginState.sessionExpiresIn,
           );
