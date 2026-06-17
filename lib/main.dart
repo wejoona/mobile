@@ -135,20 +135,35 @@ Future<void> _initializeFirebase() async {
   }
 }
 
-class KoridoApp extends ConsumerWidget {
+class KoridoApp extends ConsumerStatefulWidget {
   const KoridoApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Initialize app lifecycle observer for auto-lock on background
-    ref.read(appLifecycleObserverProvider);
+  ConsumerState<KoridoApp> createState() => _KoridoAppState();
+}
 
-    // Load cached data into state on app start
-    unawaited(ref.read(localSyncServiceProvider).onAppStart());
-    unawaited(
-      ref.read(mobileVersionPolicyProvider.notifier).check(reason: 'startup'),
-    );
+class _KoridoAppState extends ConsumerState<KoridoApp> {
+  @override
+  void initState() {
+    super.initState();
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      // Initialize app lifecycle observer for auto-lock on background.
+      ref.read(appLifecycleObserverProvider);
+
+      // Startup side effects must happen after the first build so Riverpod
+      // state changes cannot race the initial widget tree construction.
+      unawaited(ref.read(localSyncServiceProvider).onAppStart());
+      unawaited(
+        ref.read(mobileVersionPolicyProvider.notifier).check(reason: 'startup'),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
     final themeState = ref.watch(themeProvider);
     final localeState = ref.watch(localeProvider);
