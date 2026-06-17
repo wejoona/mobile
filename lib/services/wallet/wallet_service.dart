@@ -20,18 +20,10 @@ class WalletService {
         options: Options(
           receiveTimeout: const Duration(seconds: 10),
           sendTimeout: const Duration(seconds: 10),
-          validateStatus: (status) =>
-              status != null && (status < 400 || status == 404),
         ),
       );
-      if (response.statusCode == 404) {
-        return createWallet();
-      }
       return WalletBalanceResponse.fromJson(response.data);
     } on DioException catch (e) {
-      if (e.response?.statusCode == 404) {
-        return createWallet();
-      }
       throw ApiException.fromDioError(e);
     }
   }
