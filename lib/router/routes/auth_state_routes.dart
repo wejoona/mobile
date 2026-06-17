@@ -33,54 +33,69 @@ List<RouteBase> authStateRoutes() => [
     ),
   ),
 
-  // Onboarding Route (fade)
+  // Product introduction route. This is not account creation.
   GoRoute(
     path: '/onboarding',
     pageBuilder: (context, state) =>
         AppPageTransitions.fade(state: state, child: const OnboardingView()),
   ),
+
+  // Signup/account creation routes. Keep these explicit so login,
+  // introduction, and registration cannot drift into each other.
   GoRoute(
-    path: '/onboarding/phone',
+    path: '/signup',
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const PhoneInputView(),
     ),
   ),
   GoRoute(
-    path: '/onboarding/otp',
+    path: '/signup/verify-phone',
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const OtpVerificationView(),
     ),
   ),
   GoRoute(
-    path: '/onboarding/profile',
+    path: '/signup/profile',
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const ProfileSetupView(),
     ),
   ),
   GoRoute(
-    path: '/onboarding/pin',
+    path: '/signup/set-pin',
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const OnboardingPinView(),
     ),
   ),
   GoRoute(
-    path: '/onboarding/kyc-prompt',
+    path: '/signup/kyc-prompt',
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const KycPromptView(),
     ),
   ),
   GoRoute(
-    path: '/onboarding/success',
+    path: '/signup/success',
     pageBuilder: (context, state) => AppPageTransitions.scaleAndFade(
       state: state,
       child: const OnboardingSuccessView(),
     ),
   ),
+
+  // Legacy signup paths. Redirect instead of rendering so old deep links stay
+  // valid while new code speaks the explicit signup language.
+  GoRoute(path: '/onboarding/phone', redirect: (_, _) => '/signup'),
+  GoRoute(path: '/onboarding/otp', redirect: (_, _) => '/signup/verify-phone'),
+  GoRoute(path: '/onboarding/profile', redirect: (_, _) => '/signup/profile'),
+  GoRoute(path: '/onboarding/pin', redirect: (_, _) => '/signup/set-pin'),
+  GoRoute(
+    path: '/onboarding/kyc-prompt',
+    redirect: (_, _) => '/signup/kyc-prompt',
+  ),
+  GoRoute(path: '/onboarding/success', redirect: (_, _) => '/signup/success'),
 
   // Auth Routes (fade for smooth transitions)
   GoRoute(
@@ -212,6 +227,7 @@ String _sessionLockReturnTo(GoRouterState state) {
       !returnTo.startsWith('/') ||
       returnTo.startsWith('//') ||
       returnTo.startsWith('/login') ||
+      returnTo.startsWith('/signup') ||
       returnTo.startsWith('/onboarding') ||
       returnTo == '/session-locked') {
     return '/home';

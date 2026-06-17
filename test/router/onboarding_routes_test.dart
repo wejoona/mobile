@@ -59,19 +59,19 @@ void main() {
   }
 
   group('Onboarding routes', () {
-    test('registers every onboarding step path used by the flow', () {
+    test('registers every explicit signup step path used by the flow', () {
       final container = buildContainer();
       addTearDown(container.dispose);
 
       final router = container.read(routerProvider);
 
       const expectedPaths = [
-        '/onboarding/phone',
-        '/onboarding/otp',
-        '/onboarding/profile',
-        '/onboarding/pin',
-        '/onboarding/kyc-prompt',
-        '/onboarding/success',
+        '/signup',
+        '/signup/verify-phone',
+        '/signup/profile',
+        '/signup/set-pin',
+        '/signup/kyc-prompt',
+        '/signup/success',
       ];
 
       final missingPaths = [
@@ -83,7 +83,35 @@ void main() {
         missingPaths,
         isEmpty,
         reason:
-            'Every onboarding step path used by the flow should be registered in GoRouter',
+            'Every signup step path used by account creation should be registered in GoRouter',
+      );
+    });
+
+    test('keeps legacy onboarding signup paths as redirects', () {
+      final container = buildContainer();
+      addTearDown(container.dispose);
+
+      final router = container.read(routerProvider);
+
+      const legacyPaths = [
+        '/onboarding/phone',
+        '/onboarding/otp',
+        '/onboarding/profile',
+        '/onboarding/pin',
+        '/onboarding/kyc-prompt',
+        '/onboarding/success',
+      ];
+
+      final missingPaths = [
+        for (final path in legacyPaths)
+          if (router.configuration.findMatch(Uri.parse(path)).isError) path,
+      ];
+
+      expect(
+        missingPaths,
+        isEmpty,
+        reason:
+            'Legacy onboarding signup paths should redirect instead of breaking deep links',
       );
     });
 

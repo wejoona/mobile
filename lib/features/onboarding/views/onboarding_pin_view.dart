@@ -242,7 +242,7 @@ class _OnboardingPinViewState extends ConsumerState<OnboardingPinView> {
     await ref.read(onboardingProvider.notifier).submitPin(_pin);
 
     if (mounted && ref.read(onboardingProvider).error == null) {
-      context.go('/onboarding/kyc-prompt');
+      context.go('/signup/kyc-prompt');
     }
   }
 

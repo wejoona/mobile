@@ -211,7 +211,7 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
     }
 
     if (!mounted) return;
-    context.go(hasName ? '/onboarding/pin' : '/onboarding/profile');
+    context.go(hasName ? '/signup/set-pin' : '/signup/profile');
   }
 
   String _formatPhoneForDisplay(String phone, String dialCode) {

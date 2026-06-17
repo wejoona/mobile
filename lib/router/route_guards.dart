@@ -12,8 +12,8 @@ const _publicRoutes = {
   RouteNames.loginOtp,
   RouteNames.onboarding,
   RouteNames.welcome,
-  RouteNames.phoneInput,
-  RouteNames.otpVerification,
+  RouteNames.signup,
+  RouteNames.signupVerifyPhone,
   RouteNames.payLink,
 };
 
@@ -22,6 +22,8 @@ const _publicPaths = ['/login', '/otp', '/splash', '/pay/'];
 
 const _publicExactPaths = {
   '/',
+  '/signup',
+  '/signup/verify-phone',
   '/onboarding',
   '/onboarding/phone',
   '/onboarding/otp',
@@ -71,9 +73,11 @@ String? authRedirect({
     return null;
   }
 
-  // If authenticated but hasn't completed onboarding
-  if (!hasCompletedOnboarding && !currentRoute.startsWith('/onboarding')) {
-    return '/onboarding';
+  // If authenticated but hasn't completed signup completion/onboarding
+  if (!hasCompletedOnboarding &&
+      !currentRoute.startsWith('/signup') &&
+      !currentRoute.startsWith('/onboarding')) {
+    return '/signup/profile';
   }
 
   // If authenticated and on login page, redirect to home

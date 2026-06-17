@@ -138,11 +138,7 @@ class _WelcomeViewState extends ConsumerState<WelcomeView> {
               color: colors.elevated,
               borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
-            child: Icon(
-              icon,
-              size: 100,
-              color: colors.gold,
-            ),
+            child: Icon(icon, size: 100, color: colors.gold),
           ),
           SizedBox(height: AppSpacing.xxl),
           AppText(
@@ -187,6 +183,6 @@ class _WelcomeViewState extends ConsumerState<WelcomeView> {
   }
 
   void _handleGetStarted() {
-    context.go('/onboarding/phone');
+    context.go('/signup');
   }
 }

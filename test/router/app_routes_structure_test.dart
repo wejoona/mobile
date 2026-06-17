@@ -9,6 +9,9 @@ void main() {
 
     expect(paths, contains('/'));
     expect(paths, contains('/login'));
+    expect(paths, contains('/signup'));
+    expect(paths, contains('/signup/verify-phone'));
+    expect(paths, contains('/onboarding'));
     expect(paths, contains('/onboarding/phone'));
     expect(paths, contains('/home'));
     expect(paths, contains('/send'));
@@ -40,9 +43,17 @@ void main() {
       '/',
       '/profile-complete',
       '/onboarding',
-      '/onboarding/phone',
-      '/onboarding/otp',
+      '/signup',
+      '/signup/verify-phone',
     ]);
+    expect(topLevelPaths.skip(5).take(2), [
+      '/signup/profile',
+      '/signup/set-pin',
+    ]);
+    expect(
+      topLevelPaths,
+      containsAll(['/onboarding/phone', '/onboarding/otp']),
+    );
     expect(
       topLevelPaths.indexOf('<shell>'),
       lessThan(topLevelPaths.indexOf('/services')),

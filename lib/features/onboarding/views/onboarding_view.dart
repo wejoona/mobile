@@ -237,7 +237,7 @@ class _OnboardingViewState extends ConsumerState<OnboardingView>
 
   Future<void> _startRegistration() async {
     await completeOnboarding();
-    if (mounted) context.go('/onboarding/phone');
+    if (mounted) context.go('/signup');
   }
 }
 

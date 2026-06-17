@@ -78,9 +78,15 @@ void main() {
     );
     expect(
       source,
-      contains("context.go('/onboarding/phone')"),
+      contains("context.go('/signup')"),
       reason:
-          'Sign up from login must open the registration phone step, not the intro carousel',
+          'Sign up from login must open the explicit signup flow, not the intro carousel',
+    );
+    expect(
+      source,
+      isNot(contains("context.go('/onboarding/phone')")),
+      reason:
+          'The signup flow should not use onboarding names for account creation',
     );
     expect(
       source,

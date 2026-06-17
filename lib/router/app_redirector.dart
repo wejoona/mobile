@@ -73,6 +73,8 @@ String? appRedirect(BuildContext context, GoRouterState state) {
 
   final isWithinSameFlow = _isWithinSameFlow(location, fsmTargetRoute);
   final isOnboardingRoute = _isOnboardingRoute(location);
+  final isSignupRoute =
+      _isSignupRoute(location) || _isLegacySignupRoute(location);
   final isFsmRoute = _isFsmRoute(location);
 
   if (location == '/') {
@@ -117,7 +119,7 @@ String? appRedirect(BuildContext context, GoRouterState state) {
     fsmTargetRoute: fsmTargetRoute,
     isLockedState: isLockedState,
     isFsmRoute: isFsmRoute,
-    isOnboardingRoute: isOnboardingRoute,
+    isOnboardingRoute: isOnboardingRoute || isSignupRoute,
     isWithinSameFlow: isWithinSameFlow,
   );
   if (fsmRedirect != null) {
@@ -131,7 +133,7 @@ String? appRedirect(BuildContext context, GoRouterState state) {
   final profileRedirect = _profileRedirect(
     location: location,
     isAuthenticated: isAuthenticated,
-    isOnboardingRoute: isOnboardingRoute,
+    isOnboardingRoute: isOnboardingRoute || isSignupRoute,
     authFirstName: authState.user?.firstName,
     stateFirstName: userState.firstName,
     profileKnown: authState.user != null || userState.userId != null,
@@ -225,16 +227,16 @@ String? _profileRedirect({
       (authFirstName != null && authFirstName.trim().isNotEmpty) ||
       (stateFirstName?.trim().isNotEmpty ?? false);
   final isProfileCaptureRoute =
-      location == '/profile-complete' || location == '/onboarding/profile';
+      location == '/profile-complete' || location == '/signup/profile';
 
   if (isAuthenticated &&
       profileKnown &&
       !hasProfileName &&
-      location.startsWith('/onboarding/') &&
+      location.startsWith('/signup/') &&
       !isProfileCaptureRoute &&
-      location != '/onboarding/phone' &&
-      location != '/onboarding/otp') {
-    return '/onboarding/profile';
+      location != '/signup' &&
+      location != '/signup/verify-phone') {
+    return '/signup/profile';
   }
 
   if (isAuthenticated &&
@@ -334,6 +336,8 @@ bool _isExplicitPublicRoute(String location) =>
     location == '/login' ||
     location == '/login/otp' ||
     location == '/otp' ||
+    location == '/signup' ||
+    location == '/signup/verify-phone' ||
     location == '/onboarding' ||
     location == '/onboarding/phone' ||
     location == '/onboarding/otp' ||
@@ -359,10 +363,20 @@ String? _invalidPinLoginRedirect({
 }
 
 bool _isOnboardingRoute(String location) =>
-    location.startsWith('/onboarding') ||
+    location == '/onboarding' ||
     location == '/profile-complete' ||
     location.startsWith('/settings/kyc') ||
     location.startsWith('/settings/profile');
+
+bool _isSignupRoute(String location) => location.startsWith('/signup');
+
+bool _isLegacySignupRoute(String location) =>
+    location == '/onboarding/phone' ||
+    location == '/onboarding/otp' ||
+    location == '/onboarding/profile' ||
+    location == '/onboarding/pin' ||
+    location == '/onboarding/kyc-prompt' ||
+    location == '/onboarding/success';
 
 bool _isFsmRoute(String location) {
   const fsmRoutes = [
@@ -385,6 +399,8 @@ bool _isAuthRoute(String location) =>
 
 bool _isAuthenticatedDeadEndRoute(String location) =>
     _isAuthRoute(location) ||
+    location == '/signup' ||
+    location == '/signup/verify-phone' ||
     location == '/onboarding' ||
     location == '/onboarding/phone' ||
     location == '/onboarding/otp';

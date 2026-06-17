@@ -90,12 +90,27 @@ void main() {
       );
     });
 
-    test('covers the full onboarding route sequence explicitly', () {
+    test('covers the full signup route sequence explicitly', () {
       final routePaths = _declaredRoutePaths();
 
-      const onboardingFlow = [
+      const signupFlow = [
         '/',
         '/onboarding',
+        '/signup',
+        '/signup/verify-phone',
+        '/signup/profile',
+        '/signup/set-pin',
+        '/signup/kyc-prompt',
+        '/signup/success',
+      ];
+
+      expect(routePaths, containsAllInOrder(signupFlow));
+    });
+
+    test('keeps legacy onboarding signup route redirects declared', () {
+      final routePaths = _declaredRoutePaths();
+
+      const legacySignupPaths = [
         '/onboarding/phone',
         '/onboarding/otp',
         '/onboarding/profile',
@@ -104,7 +119,7 @@ void main() {
         '/onboarding/success',
       ];
 
-      expect(routePaths, containsAllInOrder(onboardingFlow));
+      expect(routePaths, containsAll(legacySignupPaths));
     });
 
     test(

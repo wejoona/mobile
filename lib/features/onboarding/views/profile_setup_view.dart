@@ -153,7 +153,7 @@ class _ProfileSetupViewState extends ConsumerState<ProfileSetupView> {
         );
 
     if (mounted && ref.read(onboardingProvider).error == null) {
-      context.go('/onboarding/pin');
+      context.go('/signup/set-pin');
     }
   }
 }

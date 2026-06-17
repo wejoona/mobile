@@ -381,7 +381,7 @@ class _LoginViewState extends ConsumerState<LoginView>
 
                   // Toggle register/login
                   GestureDetector(
-                    onTap: () => context.go('/onboarding/phone'),
+                    onTap: () => context.go('/signup'),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                         vertical: AppSpacing.sm,

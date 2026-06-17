@@ -246,7 +246,7 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
         .submitPhoneNumber(acceptedTerms: _termsAccepted);
 
     if (mounted && ref.read(onboardingProvider).error == null) {
-      context.go('/onboarding/otp');
+      context.go('/signup/verify-phone');
     }
   }
 }

@@ -16,13 +16,13 @@ abstract final class RouteNames {
   // Onboarding
   static const onboarding = 'onboarding';
   static const welcome = 'welcome';
-  static const phoneInput = 'phone-input';
-  static const otpVerification = 'otp-verification';
-  static const profileSetup = 'profile-setup';
-  static const createPin = 'create-pin';
-  static const confirmPin = 'confirm-pin';
-  static const onboardingSuccess = 'onboarding-success';
-  static const kycPrompt = 'kyc-prompt';
+  static const signup = 'signup';
+  static const signupVerifyPhone = 'signup-verify-phone';
+  static const signupProfile = 'signup-profile';
+  static const signupSetPin = 'signup-set-pin';
+  static const signupConfirmPin = 'signup-confirm-pin';
+  static const signupSuccess = 'signup-success';
+  static const signupKycPrompt = 'signup-kyc-prompt';
   static const firstDeposit = 'first-deposit';
 
   // Wallet

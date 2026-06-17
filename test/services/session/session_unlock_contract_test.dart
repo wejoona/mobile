@@ -260,7 +260,8 @@ void main() {
     expect(redirectorSource, contains('location != \'/login/pin\''));
     expect(redirectorSource, contains('pendingPinSessionToken'));
     expect(redirectorSource, isNot(contains('isPublicPath(location)')));
-    expect(redirectorSource, contains("location == '/onboarding/phone'"));
+    expect(redirectorSource, contains("location == '/signup'"));
+    expect(redirectorSource, contains("location == '/signup/verify-phone'"));
     expect(redirectorSource, contains("return '/home'"));
     expect(legacyLoginPinSource, contains('context.enterAuthenticatedApp()'));
     expect(

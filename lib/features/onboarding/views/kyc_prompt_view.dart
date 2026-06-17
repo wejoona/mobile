@@ -134,6 +134,6 @@ class KycPromptView extends ConsumerWidget {
 
   void _handleMaybeLater(BuildContext context, WidgetRef ref) {
     ref.read(onboardingProvider.notifier).skipKyc();
-    context.go('/onboarding/success');
+    context.go('/signup/success');
   }
 }
