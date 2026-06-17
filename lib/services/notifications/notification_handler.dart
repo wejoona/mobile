@@ -1,9 +1,12 @@
+import 'dart:async';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/router/app_router.dart';
 import 'package:usdc_wallet/services/notifications/push_notification_service.dart';
 import 'package:usdc_wallet/services/notifications/rich_notification_helper.dart';
-import 'package:usdc_wallet/router/app_router.dart';
 
 /// Notification Handler Widget
 ///
@@ -14,9 +17,9 @@ import 'package:usdc_wallet/router/app_router.dart';
 ///
 /// Place this widget high in the widget tree, after authentication is complete.
 class NotificationHandler extends ConsumerStatefulWidget {
-  final Widget child;
-
   const NotificationHandler({required this.child, super.key});
+
+  final Widget child;
 
   @override
   ConsumerState<NotificationHandler> createState() =>
@@ -25,47 +28,52 @@ class NotificationHandler extends ConsumerStatefulWidget {
 
 class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
   bool _isInitialized = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeNotifications();
-  }
+  bool _isInitializing = false;
 
   Future<void> _initializeNotifications() async {
-    if (_isInitialized) return;
+    if (_isInitialized || _isInitializing) {
+      return;
+    }
 
-    final pushService = ref.read(pushNotificationServiceProvider);
+    _isInitializing = true;
 
     // Set callbacks before initialize so terminated-state notification taps
     // are routed when Firebase returns the initial message during startup.
-    pushService.onForegroundMessage = _handleForegroundMessage;
-    pushService.onMessageOpenedApp = _handleMessageTap;
-    pushService.onNavigate = _handleNavigation;
+    final pushService = ref.read(pushNotificationServiceProvider)
+      ..onForegroundMessage = _handleForegroundMessage
+      ..onMessageOpenedApp = _handleMessageTap
+      ..onNavigate = _handleNavigation;
 
-    // Initialize push notifications
-    await pushService.initialize();
+    try {
+      // Initialize push notifications without triggering an OS prompt.
+      await pushService.initialize();
 
-    // Register token with backend (user should be authenticated at this point)
-    await pushService.registerWithBackend();
+      // Register token with backend only after auth is known.
+      await pushService.registerWithBackend();
 
-    _isInitialized = true;
+      _isInitialized = true;
+    } finally {
+      _isInitializing = false;
+    }
   }
 
   /// Handle foreground message - show in-app notification
   void _handleForegroundMessage(RemoteMessage message) {
     final notification = message.notification;
-    if (notification == null) return;
+    if (notification == null) {
+      return;
+    }
 
     // Use RichNotificationHelper to show an in-app banner
-    final richHelper = ref.read(richNotificationHelperProvider);
-    richHelper.showInAppNotification(
-      context,
-      title: notification.title ?? 'Notification',
-      body: notification.body ?? '',
-      data: message.data,
-      onTap: () => _handleNavigation(message.data),
-    );
+    ref
+        .read(richNotificationHelperProvider)
+        .showInAppNotification(
+          context,
+          title: notification.title ?? 'Notification',
+          body: notification.body ?? '',
+          data: message.data,
+          onTap: () => _handleNavigation(message.data),
+        );
   }
 
   /// Handle message tap
@@ -75,12 +83,23 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
 
   /// Handle navigation based on notification data
   void _handleNavigation(Map<String, dynamic> data) {
-    final router = ref.read(routerProvider);
-    router.push(routeForNotificationData(data));
+    unawaited(ref.read(routerProvider).push(routeForNotificationData(data)));
   }
 
   @override
   Widget build(BuildContext context) {
+    final isAuthenticated = ref.watch(
+      authProvider.select((state) => state.isAuthenticated),
+    );
+
+    if (isAuthenticated && !_isInitialized) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          unawaited(_initializeNotifications());
+        }
+      });
+    }
+
     return widget.child;
   }
 }

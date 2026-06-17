@@ -20,6 +20,7 @@ import 'package:usdc_wallet/services/app_version/mobile_version_policy_service.d
 import 'package:usdc_wallet/services/error_tracking/sentry_service.dart';
 import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
 import 'package:usdc_wallet/services/localization/language_provider.dart';
+import 'package:usdc_wallet/services/notifications/notification_handler.dart';
 import 'package:usdc_wallet/services/security/security_gate.dart';
 import 'package:usdc_wallet/services/session/session_manager.dart';
 import 'package:usdc_wallet/services/storage/local_cache_service.dart';
@@ -220,8 +221,9 @@ class _KoridoAppState extends ConsumerState<KoridoApp> {
           ],
           supportedLocales: const [Locale('en'), Locale('fr')],
           routerConfig: router,
-          builder: (context, child) =>
-              SessionManager(child: child ?? const SizedBox.shrink()),
+          builder: (context, child) => NotificationHandler(
+            child: SessionManager(child: child ?? const SizedBox.shrink()),
+          ),
         ),
       ),
     );

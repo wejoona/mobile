@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/domain/entities/notification.dart';
@@ -308,5 +310,25 @@ void main() {
     );
 
     expect(dio.requestHistory, isEmpty);
+  });
+
+  test('OS notification permission is requested only from consent screen', () {
+    final root = Directory.current.path;
+    final permissionProvider = File(
+      '$root/lib/features/notifications/providers/notification_permission_provider.dart',
+    ).readAsStringSync();
+    final handler = File(
+      '$root/lib/services/notifications/notification_handler.dart',
+    ).readAsStringSync();
+    final pushService = File(
+      '$root/lib/services/notifications/push_notification_service.dart',
+    ).readAsStringSync();
+
+    expect(permissionProvider, contains('initialize(requestPermission: true)'));
+    expect(handler, isNot(contains('requestPermission: true')));
+    expect(
+      pushService,
+      contains('Future<void> initialize({bool requestPermission = false})'),
+    );
   });
 }
