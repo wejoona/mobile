@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/features/auth/views/login_view.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 import '../../golden/helpers/golden_test_helper.dart';
+import '../../helpers/test_utils.dart';
 
 void main() {
   setUpAll(() async {
@@ -43,17 +45,40 @@ void main() {
     );
   });
 
-  testWidgets('phone input keeps country code separate when full number pasted', (
+  testWidgets(
+    'phone input keeps country code separate when full number pasted',
+    (tester) async {
+      await _pumpLoginView(tester);
+
+      final phoneFieldFinder = find.byType(TextField).first;
+
+      await tester.enterText(phoneFieldFinder, '+225+2250748805663');
+      await tester.pumpAndSettle();
+
+      expect(find.text('+225'), findsOneWidget);
+      expect(
+        tester.widget<TextField>(phoneFieldFinder).controller?.text,
+        '0748805663',
+      );
+      expect(find.textContaining('+225+225'), findsNothing);
+    },
+  );
+
+  testWidgets('remembered phone hydrates as local digits in the login field', (
     tester,
   ) async {
-    await _pumpLoginView(tester);
+    final storage = MockSecureStorage();
+    await storage.write(
+      key: StorageKeys.rememberedPhone,
+      value: '+225|+2250748805663',
+    );
+
+    await _pumpLoginView(
+      tester,
+      overrides: [secureStorageProvider.overrideWithValue(storage)],
+    );
 
     final phoneFieldFinder = find.byType(TextField).first;
-
-    await tester.enterText(phoneFieldFinder, '+225+2250748805663');
-    await tester.pumpAndSettle();
-
-    expect(find.text('+225'), findsOneWidget);
     expect(
       tester.widget<TextField>(phoneFieldFinder).controller?.text,
       '0748805663',
@@ -115,10 +140,15 @@ void main() {
   });
 }
 
-Future<void> _pumpLoginView(WidgetTester tester) async {
+Future<void> _pumpLoginView(
+  WidgetTester tester, {
+  List<dynamic> overrides = const [],
+}) async {
   await tester.binding.setSurfaceSize(const Size(944, 2048));
   addTearDown(() => tester.binding.setSurfaceSize(null));
 
-  await tester.pumpWidget(GoldenTestWrapper(child: const LoginView()));
+  await tester.pumpWidget(
+    GoldenTestWrapper(overrides: overrides, child: const LoginView()),
+  );
   await tester.pumpAndSettle();
 }

@@ -27,7 +27,7 @@ class LoginNotifier extends Notifier<LoginState> {
     });
 
     // Load remembered phone number
-    _loadRememberedPhone();
+    unawaited(_loadRememberedPhone());
 
     return const LoginState();
   }
@@ -46,6 +46,9 @@ class LoginNotifier extends Notifier<LoginState> {
           rememberedPhone,
         );
         if (phoneValue != null) {
+          if ((state.phoneNumber ?? '').isNotEmpty) {
+            return;
+          }
           state = state.copyWith(
             dialCode: phoneValue.dialCode,
             phoneNumber: phoneValue.localNumber,

@@ -68,33 +68,6 @@ class _LoginViewState extends ConsumerState<LoginView>
     final biometricService = ref.read(biometricServiceProvider);
     final storage = ref.read(secureStorageProvider);
 
-    // Pre-fill remembered phone number
-    final rememberedPhone = await storage.read(
-      key: StorageKeys.rememberedPhone,
-    );
-    if (rememberedPhone != null && rememberedPhone.isNotEmpty && mounted) {
-      final phoneValue = PhoneNumberValue.tryFromStorageValue(rememberedPhone);
-      if (phoneValue != null) {
-        final storedCountry =
-            SupportedCountries.findByCodeIncludingDisabled(
-              phoneValue.isoCountryCode,
-            ) ??
-            SupportedCountries.findByPrefix(phoneValue.dialCode);
-        setState(() {
-          if (storedCountry != null) {
-            _selectedCountry = storedCountry;
-          }
-          _setPhoneControllerText(
-            localPhoneInputDigits(
-              dialCode: _selectedCountry.fullPrefix,
-              phoneNumber: phoneValue.localNumber,
-              maxLocalDigits: _selectedCountry.phoneLength,
-            ),
-          );
-        });
-      }
-    }
-
     final storedUserId = await storage.read(key: StorageKeys.userId);
     final boundUserId = await biometricService.getBoundUserId();
     final isEnabled =
@@ -180,6 +153,11 @@ class _LoginViewState extends ConsumerState<LoginView>
   Widget build(BuildContext context) {
     final colors = context.colors;
     final loginState = ref.watch(loginProvider);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _syncPhoneViewFromLoginState(ref.read(loginProvider));
+      }
+    });
 
     ref.listen<AuthState>(authProvider, (prev, next) {
       if (next.error != null) {
@@ -198,6 +176,10 @@ class _LoginViewState extends ConsumerState<LoginView>
       }
     });
     ref.listen<LoginState>(loginProvider, (prev, next) {
+      if (next.phoneNumber != prev?.phoneNumber ||
+          next.dialCode != prev?.dialCode) {
+        _syncPhoneViewFromLoginState(next);
+      }
       if (next.currentStep == LoginStep.otp &&
           prev?.currentStep != LoginStep.otp) {
         context.go('/login/otp');
@@ -709,6 +691,32 @@ class _LoginViewState extends ConsumerState<LoginView>
     if (localPhone != _phoneController.text) {
       _setPhoneControllerText(localPhone);
     }
+  }
+
+  void _syncPhoneViewFromLoginState(LoginState loginState) {
+    final phone = loginState.phoneNumber;
+    if (phone == null || phone.isEmpty || _phoneFocusNode.hasFocus) {
+      return;
+    }
+
+    final country =
+        SupportedCountries.findByPrefix(loginState.dialCode ?? '') ??
+        _selectedCountry;
+    final localPhone = localPhoneInputDigits(
+      dialCode: country.fullPrefix,
+      phoneNumber: phone,
+      maxLocalDigits: country.phoneLength,
+    );
+    final needsCountryUpdate = country.code != _selectedCountry.code;
+    final needsPhoneUpdate = localPhone != _phoneController.text;
+    if (!needsCountryUpdate && !needsPhoneUpdate) {
+      return;
+    }
+
+    setState(() {
+      _selectedCountry = country;
+      _setPhoneControllerText(localPhone);
+    });
   }
 
   void _setPhoneControllerText(String value) {
