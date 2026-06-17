@@ -78,6 +78,19 @@ void main() {
       },
     );
 
+    test('parses remembered phone storage as dial code plus local digits', () {
+      final stored = PhoneNumberValue.tryFromStorageValue(
+        '+225|+2250748805663',
+      );
+      final legacy = PhoneNumberValue.tryFromStorageValue('+14155550101');
+
+      expect(stored?.dialCode, '+225');
+      expect(stored?.localNumber, '0748805663');
+      expect(stored?.storageValue, '+225|0748805663');
+      expect(legacy?.dialCode, '+1');
+      expect(legacy?.localNumber, '4155550101');
+    });
+
     test('keeps login form state explicit about dial codes', () {
       const state = LoginState(phoneNumber: '4155550101', dialCode: '+1');
       const request = LoginRequest(phoneNumber: '4155550101', dialCode: '+1');

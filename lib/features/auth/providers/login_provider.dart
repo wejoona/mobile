@@ -43,13 +43,9 @@ class LoginNotifier extends Notifier<LoginState> {
         key: StorageKeys.rememberedPhone,
       );
       if (rememberedPhone != null) {
-        final parts = rememberedPhone.split('|');
-        final phoneValue = parts.length == 2
-            ? PhoneNumberValue.tryFromAny(
-                phoneNumber: parts[1],
-                countryCode: parts[0],
-              )
-            : PhoneNumberValue.tryFromAny(phoneNumber: rememberedPhone);
+        final phoneValue = PhoneNumberValue.tryFromStorageValue(
+          rememberedPhone,
+        );
         if (phoneValue != null) {
           state = state.copyWith(
             dialCode: phoneValue.dialCode,

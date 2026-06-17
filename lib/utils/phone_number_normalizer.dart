@@ -70,6 +70,19 @@ class PhoneNumberValue {
       return null;
     }
   }
+
+  static PhoneNumberValue? tryFromStorageValue(String? storedValue) {
+    if (storedValue == null || storedValue.trim().isEmpty) {
+      return null;
+    }
+
+    final parts = storedValue.split('|');
+    if (parts.length >= 2) {
+      return tryFromAny(phoneNumber: parts.last, countryCode: parts.first);
+    }
+
+    return tryFromAny(phoneNumber: storedValue);
+  }
 }
 
 String localPhoneDigits({

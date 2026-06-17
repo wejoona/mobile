@@ -73,15 +73,20 @@ class _LoginViewState extends ConsumerState<LoginView>
       key: StorageKeys.rememberedPhone,
     );
     if (rememberedPhone != null && rememberedPhone.isNotEmpty && mounted) {
-      final parts = rememberedPhone.split('|');
-      final storedDialCode = parts.length == 2
-          ? parts[0]
-          : _selectedCountry.fullPrefix;
-      final storedPhone = parts.length == 2 ? parts[1] : rememberedPhone;
-      _phoneController.text = localPhoneDigits(
-        dialCode: storedDialCode,
-        phoneNumber: storedPhone,
-      );
+      final phoneValue = PhoneNumberValue.tryFromStorageValue(rememberedPhone);
+      if (phoneValue != null) {
+        final storedCountry =
+            SupportedCountries.findByCodeIncludingDisabled(
+              phoneValue.isoCountryCode,
+            ) ??
+            SupportedCountries.findByPrefix(phoneValue.dialCode);
+        setState(() {
+          if (storedCountry != null) {
+            _selectedCountry = storedCountry;
+          }
+          _phoneController.text = phoneValue.localNumber;
+        });
+      }
     }
 
     final storedUserId = await storage.read(key: StorageKeys.userId);
