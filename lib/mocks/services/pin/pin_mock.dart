@@ -4,11 +4,7 @@ import 'package:usdc_wallet/mocks/base/mock_interceptor.dart';
 /// PIN API mocks
 class PinMock {
   static void register(MockInterceptor interceptor) {
-    for (final path in const [
-      '/user/pin/set',
-      '/wallet/pin/set',
-      '/api/v1/user/pin/set',
-    ]) {
+    for (final path in const ['/user/pin/set', '/api/v1/user/pin/set']) {
       interceptor.register(method: 'POST', path: path, handler: _handleSetPin);
     }
 
@@ -20,11 +16,7 @@ class PinMock {
       );
     }
 
-    for (final path in const [
-      '/user/pin/verify',
-      '/wallet/pin/verify',
-      '/api/v1/user/pin/verify',
-    ]) {
+    for (final path in const ['/user/pin/verify', '/api/v1/user/pin/verify']) {
       interceptor.register(
         method: 'POST',
         path: path,
@@ -45,13 +37,8 @@ class PinMock {
   static Future<MockResponse> _handleSetPin(RequestOptions options) async {
     final data = options.data as Map<String, dynamic>? ?? {};
     final pinHash = data['pinHash'] as String?;
-    final pin = data['pin'] as String?;
-    final confirmPin = data['confirmPin'] as String?;
-    if ((pinHash == null || pinHash.isEmpty) && (pin == null || pin.isEmpty)) {
-      return MockResponse.badRequest('PIN is required');
-    }
-    if (confirmPin != null && confirmPin != pin) {
-      return MockResponse.badRequest('PINs do not match');
+    if (!_isSha256(pinHash)) {
+      return MockResponse.badRequest('PIN hash must be a valid SHA256 hash');
     }
 
     return MockResponse.success({
@@ -65,14 +52,10 @@ class PinMock {
     final data = options.data as Map<String, dynamic>? ?? {};
     final oldPinHash = data['oldPinHash'] as String?;
     final newPinHash = data['newPinHash'] as String?;
-    final oldPin = data['oldPin'] as String?;
-    final newPin = data['newPin'] as String?;
 
-    final hasHashPair = oldPinHash != null && newPinHash != null;
-    final hasPinPair = oldPin != null && newPin != null;
-    if (!hasHashPair && !hasPinPair) {
+    if (!_isSha256(oldPinHash) || !_isSha256(newPinHash)) {
       return MockResponse.badRequest(
-        'Both old and new PIN values are required',
+        'Both old and new PIN hashes are required',
       );
     }
 
@@ -87,17 +70,14 @@ class PinMock {
   static Future<MockResponse> _handleVerifyPin(RequestOptions options) async {
     final data = options.data as Map<String, dynamic>? ?? {};
     final pinHash = data['pinHash'] as String?;
-    final pin = data['pin'] as String?;
 
-    if ((pinHash == null || pinHash.isEmpty) && (pin == null || pin.isEmpty)) {
-      return MockResponse.badRequest('PIN is required');
+    if (!_isSha256(pinHash)) {
+      return MockResponse.badRequest('PIN hash must be a valid SHA256 hash');
     }
 
     // Mock: Accept any hash for testing
     return MockResponse.success({
-      'valid': true,
       'verified': true,
-      'message': 'PIN verified successfully',
       'pinToken': 'mock_pin_token_${DateTime.now().millisecondsSinceEpoch}',
       'expiresIn': 300, // 5 minutes
     });
@@ -108,14 +88,11 @@ class PinMock {
     final data = options.data as Map<String, dynamic>? ?? {};
     final otp = data['otp'] as String?;
     final newPinHash = data['newPinHash'] as String?;
-    final newPin = data['newPin'] as String?;
     final stepUpChallengeToken = data['stepUpChallengeToken'] as String?;
 
-    if (otp == null ||
-        stepUpChallengeToken == null ||
-        (newPinHash == null && newPin == null)) {
+    if (otp == null || stepUpChallengeToken == null || !_isSha256(newPinHash)) {
       return MockResponse.badRequest(
-        'OTP, step-up verification, and new PIN are required',
+        'OTP, step-up verification, and new PIN hash are required',
       );
     }
 
@@ -128,5 +105,9 @@ class PinMock {
       'success': true,
       'message': 'PIN reset successfully',
     });
+  }
+
+  static bool _isSha256(String? value) {
+    return value != null && RegExp(r'^[a-fA-F0-9]{64}$').hasMatch(value);
   }
 }

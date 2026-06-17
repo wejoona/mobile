@@ -486,8 +486,7 @@ class TestWalletData {
   };
 
   static Map<String, dynamic> get pinVerificationResponseJson => {
-    'valid': true,
-    'message': 'PIN verified successfully',
+    'verified': true,
     'pinToken': 'a' * 64,
     'expiresIn': 300,
   };

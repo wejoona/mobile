@@ -141,8 +141,7 @@ void main() {
       () async {
         // Arrange
         mockDio.queueResponse({
-          'valid': true,
-          'message': 'PIN verified',
+          'verified': true,
           'pinToken': 'a' * 64,
           'expiresIn': 300,
         });
@@ -160,7 +159,7 @@ void main() {
     test('should store PIN token in secure storage', () async {
       // Arrange
       mockDio.queueResponse({
-        'valid': true,
+        'verified': true,
         'pinToken': 'test-pin-token',
         'expiresIn': 300,
       });

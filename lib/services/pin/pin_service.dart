@@ -152,7 +152,7 @@ class PinService {
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
         // ignore: avoid_dynamic_calls
-        if (data['valid'] == true || data['verified'] == true) {
+        if (data['verified'] == true) {
           // Store the PIN token for subsequent transfer operations
           final pinToken =
               data['pinToken'] as String? ?? data['token'] as String?;

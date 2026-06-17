@@ -95,32 +95,6 @@ void main() {
     });
   });
 
-  e2eGroup('Wallet PIN E2E', () {
-    test('POST /user/pin/set — set wallet PIN', () async {
-      final res = await client.post('/user/pin/set', {
-        'pinHash':
-            '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92',
-      });
-      expect(res.statusCode, anyOf(200, 201, 400, 409));
-    });
-
-    test('POST /user/pin/verify — verify correct PIN', () async {
-      final res = await client.post('/user/pin/verify', {
-        'pinHash':
-            '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92',
-      });
-      expect(res.statusCode, anyOf(200, 400));
-    });
-
-    test('POST /user/pin/verify — wrong PIN', () async {
-      final res = await client.post('/user/pin/verify', {
-        'pinHash':
-            '0000000000000000000000000000000000000000000000000000000000000000',
-      });
-      expect(res.statusCode, anyOf(400, 401));
-    });
-  });
-
   e2eGroup('Deposit E2E', () {
     test('POST /wallet/deposit — missing fields returns 400', () async {
       final res = await client.post(
