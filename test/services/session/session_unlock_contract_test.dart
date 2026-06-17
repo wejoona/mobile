@@ -123,8 +123,11 @@ void main() {
       );
       expect(
         loginPinSource,
-        contains('bio.isBiometricEnabled(userId: userId)'),
+        contains('PinScreen(pinContext: PinContext.login)'),
+        reason:
+            'the legacy LoginPinView import must delegate to the canonical PIN screen',
       );
+      expect(loginPinSource, isNot(contains('verifyPinLocally')));
       expect(pinScreenSource, contains('bio.getAvailableType()'));
       expect(
         pinScreenSource,
@@ -298,7 +301,10 @@ void main() {
     expect(redirectorSource, contains("location == '/signup'"));
     expect(redirectorSource, contains("location == '/signup/verify-phone'"));
     expect(redirectorSource, contains("return '/home'"));
-    expect(legacyLoginPinSource, contains('context.enterAuthenticatedApp()'));
+    expect(
+      legacyLoginPinSource,
+      contains('PinScreen(pinContext: PinContext.login)'),
+    );
     expect(
       legacyLoginPinSource,
       isNot(contains("context.go('/home')")),
