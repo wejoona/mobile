@@ -130,7 +130,6 @@ abstract final class RouteNames {
   static const alerts = 'alerts';
 
   // Pin
-  static const enterPin = 'enter-pin';
   static const setPin = 'set-pin';
   static const resetPin = 'reset-pin';
 
