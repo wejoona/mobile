@@ -630,25 +630,28 @@ void main() {
       expect(expense.transactionId, isEmpty);
     });
 
-    test('transfer history uses limit and offset pagination', () async {
-      final dio = MockDio()
-        ..queueResponse({
-          'transfers': [],
-          'total': 45,
-          'limit': 20,
-          'offset': 20,
-          'hasMore': true,
-        });
-      final service = TransfersService(dio);
+    test(
+      'transfer history uses canonical wallet transaction history',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'transactions': [],
+            'total': 45,
+            'limit': 20,
+            'offset': 20,
+            'hasMore': true,
+          });
+        final service = TransfersService(dio);
 
-      final page = await service.getTransfers(page: 2, pageSize: 20);
+        final page = await service.getTransfers(page: 2, pageSize: 20);
 
-      final request = dio.requestHistory.single;
-      expect(request.path, '/transfers');
-      expect(request.queryParameters, {'limit': 20, 'offset': 20});
-      expect(page.page, 2);
-      expect(page.totalPages, 3);
-    });
+        final request = dio.requestHistory.single;
+        expect(request.path, '/wallet/transactions');
+        expect(request.queryParameters, {'limit': 20, 'offset': 20});
+        expect(page.page, 2);
+        expect(page.totalPages, 3);
+      },
+    );
 
     test('transfer result accepts backend envelopes and id aliases', () {
       final result = TransferResult.fromJson({

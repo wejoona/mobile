@@ -34,11 +34,7 @@ void main() {
     await expectLater(
       dio.post(
         '/wallet/transfer/internal',
-        data: {
-          'toPhone': '+2250708091011',
-          'amount': 5,
-          'currency': 'USDC',
-        },
+        data: {'toPhone': '+2250708091011', 'amount': 5, 'currency': 'USDC'},
       ),
       throwsA(
         isA<DioException>()
@@ -56,7 +52,7 @@ void main() {
   });
 
   test(
-    'internal transfer updates wallet, transfers, and history together',
+    'internal transfer updates wallet and canonical history together',
     () async {
       final dio = await _authenticatedDio();
       _ensureCurrentWalletBalance(minUsdc: 50);
@@ -86,12 +82,6 @@ void main() {
         _balanceUsdc(walletAfter.data),
         closeTo(openingBalance - 12.25, 0.001),
       );
-
-      final transferListResponse = await dio.get('/transfers');
-      final transferItems =
-          (transferListResponse.data as Map<String, dynamic>)['items']
-              as List<dynamic>;
-      expect(transferItems.first, containsPair('id', transfer['id']));
 
       final historyResponse = await dio.get('/wallet/transactions');
       final transactions =

@@ -243,7 +243,7 @@ class TransfersService {
     );
   }
 
-  /// GET /transfers
+  /// GET /wallet/transactions
   Future<TransferPage> getTransfers({
     int page = 1,
     int pageSize = 20,
@@ -252,7 +252,7 @@ class TransfersService {
   }) async {
     try {
       final response = await _dio.get(
-        '/transfers',
+        ApiEndpoints.walletTransactions,
         queryParameters: {
           'limit': pageSize,
           'offset': (page - 1).clamp(0, 1 << 31) * pageSize,
@@ -266,11 +266,11 @@ class TransfersService {
     }
   }
 
-  /// GET /transfers/:id
+  /// GET /wallet/transactions/:id
   Future<Transfer> getTransfer(String id) async {
     try {
-      final response = await _dio.get('/transfers/$id');
-      return Transfer.fromJson(response.data);
+      final response = await _dio.get(ApiEndpoints.walletTransactionById(id));
+      return Transfer.fromJson(_payloadMap(_asStringMap(response.data)));
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }

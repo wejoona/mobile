@@ -86,8 +86,10 @@ class Transfer {
           _stringValue(json, const ['senderWalletId', 'fromWalletId']) ?? '',
       senderPhone: _stringValue(json, const ['senderPhone', 'fromPhone']),
       recipientId: _stringValue(json, const ['recipientId', 'toUserId']),
-      recipientWalletId:
-          _stringValue(json, const ['recipientWalletId', 'toWalletId']),
+      recipientWalletId: _stringValue(json, const [
+        'recipientWalletId',
+        'toWalletId',
+      ]),
       recipientPhone: _stringValue(json, const ['recipientPhone', 'toPhone']),
       recipientAddress: _stringValue(json, const ['recipientAddress']),
       recipientBlockchain: _stringValue(json, const [
@@ -137,8 +139,16 @@ class Transfer {
   static TransferType _parseTransferType(String? type) {
     switch (type?.toLowerCase()) {
       case 'internal':
+      case 'transfer_internal':
+      case 'internal_transfer':
+      case 'internal_transfer_sent':
+      case 'internal_transfer_received':
+      case 'transfer_in':
+      case 'transfer_out':
         return TransferType.internal;
       case 'external':
+      case 'transfer_external':
+      case 'external_transfer':
         return TransferType.external;
       default:
         return TransferType.internal;
@@ -196,10 +206,4 @@ enum TransferType {
 }
 
 /// Transfer status enum
-enum TransferStatus {
-  pending,
-  processing,
-  completed,
-  failed,
-  cancelled,
-}
+enum TransferStatus { pending, processing, completed, failed, cancelled }

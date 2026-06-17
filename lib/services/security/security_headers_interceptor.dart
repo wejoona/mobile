@@ -22,7 +22,6 @@ class SecurityHeadersInterceptor extends Interceptor {
 
   /// Paths that are considered sensitive and receive full headers.
   static const _sensitivePaths = [
-    '/transfers/',
     '/wallet/cash-out/mobile-money',
     '/deposits/',
     '/step-up/',

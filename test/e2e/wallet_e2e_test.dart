@@ -134,15 +134,21 @@ void main() {
   });
 
   e2eGroup('Transfer E2E', () {
-    test('POST /transfers/internal — missing fields is rejected', () async {
-      final res = await client.post('/transfers/internal', {});
-      expect(res.statusCode, anyOf(400, 401, 403));
-    });
+    test(
+      'POST /wallet/transfer/internal — missing fields is rejected',
+      () async {
+        final res = await client.post('/wallet/transfer/internal', {});
+        expect(res.statusCode, anyOf(400, 401, 403));
+      },
+    );
 
-    test('POST /transfers/external — missing fields is rejected', () async {
-      final res = await client.post('/transfers/external', {});
-      expect(res.statusCode, anyOf(400, 401, 403));
-    });
+    test(
+      'POST /wallet/transfer/external — missing fields is rejected',
+      () async {
+        final res = await client.post('/wallet/transfer/external', {});
+        expect(res.statusCode, anyOf(400, 401, 403));
+      },
+    );
 
     test(
       'GET /wallet/transfer/external/estimate-fee — returns fee estimate',

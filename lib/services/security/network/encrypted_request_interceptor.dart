@@ -14,7 +14,6 @@ class EncryptedRequestInterceptor extends Interceptor {
     '/wallet/transfer',
     '/wallet/cash-out/mobile-money',
     '/wallet/deposit',
-    '/transfers/',
     '/deposits/',
     '/pin/verify',
     '/pin/change',

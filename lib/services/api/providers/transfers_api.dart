@@ -39,9 +39,9 @@ class TransfersApi {
     ),
   );
 
-  /// GET /transfers — list transfer history
+  /// GET /wallet/transactions — list canonical money-movement history.
   Future<Response> list({int? page, int? limit}) => _dio.get(
-    '/transfers',
+    ApiEndpoints.walletTransactions,
     queryParameters: {
       if (limit != null) 'limit': limit,
       if (page != null && limit != null)
@@ -49,8 +49,9 @@ class TransfersApi {
     },
   );
 
-  /// GET /transfers/:id
-  Future<Response> getById(String id) => _dio.get('/transfers/$id');
+  /// GET /wallet/transactions/:id
+  Future<Response> getById(String id) =>
+      _dio.get(ApiEndpoints.walletTransactionById(id));
 
   Options _transferOptions({String? pinToken, String? idempotencyKey}) {
     if (pinToken == null || pinToken.isEmpty) {
