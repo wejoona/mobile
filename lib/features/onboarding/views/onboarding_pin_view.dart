@@ -166,7 +166,7 @@ class _OnboardingPinViewState extends ConsumerState<OnboardingPinView> {
         _showError = false;
       });
     } else {
-      context.pop();
+      context.go('/signup/profile');
     }
   }
 

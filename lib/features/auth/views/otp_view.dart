@@ -159,7 +159,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
                         child: Column(
                           children: [
                             const SizedBox(height: AppSpacing.lg),
-                            AuthTopBar(onBack: () => context.pop()),
+                            AuthTopBar(onBack: () => context.go('/login')),
                             const SizedBox(height: AppSpacing.xl),
                             AuthScreenHeader(
                               appName: l10n.appName,

@@ -58,7 +58,7 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
                     child: Column(
                       children: [
                         const SizedBox(height: AppSpacing.lg),
-                        AuthTopBar(onBack: () => context.pop()),
+                        AuthTopBar(onBack: () => context.go('/signup')),
                         const SizedBox(height: AppSpacing.lg),
                         const OnboardingProgress(currentStep: 2, totalSteps: 5),
                         const SizedBox(height: AppSpacing.xxl),

@@ -55,7 +55,7 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
                     child: Column(
                       children: [
                         const SizedBox(height: AppSpacing.lg),
-                        AuthTopBar(onBack: () => context.pop()),
+                        AuthTopBar(onBack: () => context.go('/login')),
                         const SizedBox(height: AppSpacing.xl),
                         AuthScreenHeader(
                           appName: l10n.appName,

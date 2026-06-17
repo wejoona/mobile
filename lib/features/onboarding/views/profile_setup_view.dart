@@ -43,7 +43,7 @@ class _ProfileSetupViewState extends ConsumerState<ProfileSetupView> {
           child: ListView(
             padding: const EdgeInsets.all(AppSpacing.xl),
             children: [
-              AuthTopBar(onBack: () => context.pop()),
+              AuthTopBar(onBack: () => context.go('/signup/verify-phone')),
               const SizedBox(height: AppSpacing.lg),
               const OnboardingProgress(currentStep: 3, totalSteps: 5),
               const SizedBox(height: AppSpacing.xxl),
