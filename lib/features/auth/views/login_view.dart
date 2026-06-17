@@ -84,7 +84,13 @@ class _LoginViewState extends ConsumerState<LoginView>
           if (storedCountry != null) {
             _selectedCountry = storedCountry;
           }
-          _phoneController.text = phoneValue.localNumber;
+          _setPhoneControllerText(
+            localPhoneInputDigits(
+              dialCode: _selectedCountry.fullPrefix,
+              phoneNumber: phoneValue.localNumber,
+              maxLocalDigits: _selectedCountry.phoneLength,
+            ),
+          );
         });
       }
     }
@@ -603,7 +609,10 @@ class _LoginViewState extends ConsumerState<LoginView>
                       ),
                     ],
                     onTapOutside: (_) => _phoneFocusNode.unfocus(),
-                    onChanged: (_) => setState(() {}),
+                    onChanged: (_) {
+                      _syncPhoneControllerToLocal();
+                      setState(() {});
+                    },
                   ),
                 ),
                 if (hasText)
@@ -653,9 +662,7 @@ class _LoginViewState extends ConsumerState<LoginView>
         onSelect: (country) {
           setState(() {
             _selectedCountry = country;
-            if (_phoneController.text.length > country.phoneLength) {
-              _phoneController.clear();
-            }
+            _syncPhoneControllerToLocal();
           });
           ref.read(selectedCountryProvider.notifier).select(country);
         },
@@ -664,13 +671,14 @@ class _LoginViewState extends ConsumerState<LoginView>
   }
 
   bool _isPhoneValid() {
-    final phone = digitsOnly(_phoneController.text);
+    final phone = _currentLocalPhone();
     return _selectedCountry.isValidLength(phone);
   }
 
   Future<void> _submit() async {
     if (!_isPhoneValid()) return;
-    final phone = digitsOnly(_phoneController.text);
+    final phone = _currentLocalPhone();
+    _setPhoneControllerText(phone);
     ref.read(selectedCountryProvider.notifier).select(_selectedCountry);
     ref
         .read(loginProvider.notifier)
@@ -683,9 +691,31 @@ class _LoginViewState extends ConsumerState<LoginView>
       _selectedCountry =
           SupportedCountries.findByCode('CI') ??
           SupportedCountries.defaultCountry;
-      _phoneController.text = '0748805663';
+      _setPhoneControllerText('0748805663');
     });
     unawaited(_submit());
+  }
+
+  String _currentLocalPhone() {
+    return localPhoneInputDigits(
+      dialCode: _selectedCountry.fullPrefix,
+      phoneNumber: _phoneController.text,
+      maxLocalDigits: _selectedCountry.phoneLength,
+    );
+  }
+
+  void _syncPhoneControllerToLocal() {
+    final localPhone = _currentLocalPhone();
+    if (localPhone != _phoneController.text) {
+      _setPhoneControllerText(localPhone);
+    }
+  }
+
+  void _setPhoneControllerText(String value) {
+    _phoneController.value = TextEditingValue(
+      text: value,
+      selection: TextSelection.collapsed(offset: value.length),
+    );
   }
 }
 

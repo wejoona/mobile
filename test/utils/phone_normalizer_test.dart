@@ -56,6 +56,25 @@ void main() {
       );
     });
 
+    test('canonicalizes local phone input before view validation', () {
+      expect(
+        localPhoneInputDigits(
+          dialCode: '+225',
+          phoneNumber: '+225+2250748805663',
+          maxLocalDigits: 10,
+        ),
+        '0748805663',
+      );
+      expect(
+        localPhoneInputDigits(
+          dialCode: '+1',
+          phoneNumber: '+1 (415) 555-0101',
+          maxLocalDigits: 10,
+        ),
+        '4155550101',
+      );
+    });
+
     test(
       'recovers legacy remembered phone values without duplicating prefix',
       () {

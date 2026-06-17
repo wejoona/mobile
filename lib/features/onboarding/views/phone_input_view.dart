@@ -113,6 +113,10 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
                   displayFormat: _selectedCountry.phoneFormat,
                 ),
               ],
+              onChanged: (_) {
+                _syncPhoneControllerToLocal();
+                setState(() {});
+              },
             ),
             const SizedBox(height: AppSpacing.lg),
             // Terms checkbox
@@ -187,7 +191,7 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
   }
 
   bool get _canSubmit {
-    final digits = digitsOnly(_phoneController.text);
+    final digits = _currentLocalPhone();
     return digits.length == _selectedCountry.phoneLength && _termsAccepted;
   }
 
@@ -204,10 +208,7 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
         onCountrySelected: (country) {
           setState(() {
             _selectedCountry = country;
-            if (digitsOnly(_phoneController.text).length >
-                country.phoneLength) {
-              _phoneController.clear();
-            }
+            _syncPhoneControllerToLocal();
           });
           final configCountry = app_config.SupportedCountries.findByCode(
             country.code,
@@ -222,7 +223,7 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
   }
 
   Future<void> _handleSubmit() async {
-    final localPhoneNumber = digitsOnly(_phoneController.text);
+    final localPhoneNumber = _currentLocalPhone();
     final configCountry = app_config.SupportedCountries.findByCode(
       _selectedCountry.code,
     );
@@ -242,6 +243,30 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
 
     if (mounted && ref.read(onboardingProvider).error == null) {
       context.go('/signup/verify-phone');
+    }
+  }
+
+  String _currentLocalPhone() {
+    return localPhoneInputDigits(
+      dialCode: _selectedCountry.dialCode,
+      phoneNumber: _phoneController.text,
+      maxLocalDigits: _selectedCountry.phoneLength,
+    );
+  }
+
+  void _syncPhoneControllerToLocal() {
+    final formatted =
+        LocalPhoneInputFormatter(
+          dialCode: _selectedCountry.dialCode,
+          maxLocalDigits: _selectedCountry.phoneLength,
+          displayFormat: _selectedCountry.phoneFormat,
+        ).formatEditUpdate(
+          TextEditingValue.empty,
+          TextEditingValue(text: _phoneController.text),
+        );
+
+    if (formatted.text != _phoneController.text) {
+      _phoneController.value = formatted;
     }
   }
 }

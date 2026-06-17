@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Text input formatter that formats currency amounts.
 /// E.g. "1234.56" stays as-is, restricts to 2 decimal places.
@@ -88,21 +89,11 @@ class LocalPhoneInputFormatter extends TextInputFormatter {
   }
 
   String _localDigits(String value) {
-    final trimmed = value.trim();
-    var digits = trimmed.replaceAll(RegExp(r'\D'), '');
-    final prefixDigits = dialCode.replaceAll(RegExp(r'\D'), '');
-
-    if (trimmed.startsWith('00')) {
-      digits = digits.replaceFirst(RegExp(r'^00'), '');
-    }
-
-    while (prefixDigits.isNotEmpty &&
-        digits.startsWith(prefixDigits) &&
-        digits.length > maxLocalDigits) {
-      digits = digits.substring(prefixDigits.length);
-    }
-
-    return digits;
+    return localPhoneInputDigits(
+      dialCode: dialCode,
+      phoneNumber: value,
+      maxLocalDigits: maxLocalDigits,
+    );
   }
 
   String _format(String digits) {

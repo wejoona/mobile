@@ -90,6 +90,21 @@ String localPhoneDigits({
   required String phoneNumber,
 }) => PhoneNormalizer.localDigits(phoneNumber, countryCode: dialCode);
 
+String localPhoneInputDigits({
+  required String dialCode,
+  required String phoneNumber,
+  int? maxLocalDigits,
+}) {
+  final localDigits = localPhoneDigits(
+    dialCode: dialCode,
+    phoneNumber: phoneNumber,
+  );
+  if (maxLocalDigits == null || localDigits.length <= maxLocalDigits) {
+    return localDigits;
+  }
+  return localDigits.substring(0, maxLocalDigits);
+}
+
 String normalizePhoneE164({
   required String dialCode,
   required String localNumber,
