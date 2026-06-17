@@ -19,6 +19,13 @@ Use with local API:
 | Logout | POST | `/auth/logout` | `{ "refreshToken": "..." }` | Authenticated cleanup. |
 | Logout all | POST | `/auth/logout-all` | none | Authenticated. |
 
+## App Config
+
+| Action | Method | Path | Notes |
+| --- | --- | --- | --- |
+| Supported countries | GET | `/config/countries` | Public region/rail config. |
+| Mobile version policy | GET | `/config/mobile-version?platform=ios&version=1.0.0&buildNumber=42` | Public. Returns latest/minimum supported version, optional app URL, API URL, and `forceUpgrade`. |
+
 ## User
 
 | Action | Method | Path |

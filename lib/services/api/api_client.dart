@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:usdc_wallet/config/api_config.dart';
+import 'package:usdc_wallet/config/environment_config.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/session_fsm.dart';
@@ -18,60 +20,20 @@ import 'package:usdc_wallet/services/security/jwe/jwe_interceptor.dart';
 import 'package:usdc_wallet/mocks/index.dart';
 import 'package:usdc_wallet/services/security/certificate_pinning.dart';
 import 'package:usdc_wallet/services/offline/offline_queue_interceptor.dart';
+import 'package:usdc_wallet/services/app_version/mobile_version_policy_service.dart';
 
 /// API Configuration
 /// SECURITY: Use HTTPS in production, HTTP only for local development
 class ApiConfig {
-  // Environment-based configuration using --dart-define
-  // Pass via: flutter run --dart-define=API_URL=http://YOUR_IP:3000/api/v1
-  // Or use: flutter run --dart-define-from-file=env.dev.json
-
-  /// Get API URL from compile-time environment variable
-  /// Falls back to default dev/prod URLs if not specified
-  static const String _envApiUrl = String.fromEnvironment(
-    'API_URL',
-    defaultValue: '',
-  );
-
-  /// Environment type (development, staging, production)
-  static const String _env = String.fromEnvironment(
-    'ENV',
-    defaultValue: 'development',
-  );
-
-  /// Default development URL — host-local API for simulator/device debugging.
-  static const String _defaultDevUrl = 'http://127.0.0.1:3401/api/v1';
-
-  /// Default production URL
-  static const String _defaultProdUrl =
-      'https://korido-api.joonapay.com/api/v1';
-
-  /// Get the base URL based on environment and configuration
-  /// Priority: 1. --dart-define API_URL, 2. ENV-based default
-  /// SECURITY: Always use HTTPS in production
-  static String get baseUrl {
-    // If API_URL is explicitly set via --dart-define, use it
-    if (_envApiUrl.isNotEmpty) {
-      return _envApiUrl;
-    }
-
-    // Otherwise, use environment-appropriate default
-    switch (_env) {
-      case 'production':
-        return _defaultProdUrl;
-      case 'staging':
-        return 'https://staging-korido-api.joonapay.com/api/v1';
-      case 'development':
-      default:
-        return kDebugMode ? _defaultDevUrl : _defaultProdUrl;
-    }
-  }
+  /// Resolved API URL. Kept as a compatibility wrapper for older imports.
+  static String get baseUrl => ApiConfiguration.baseUrl;
 
   /// Check if running in production
-  static bool get isProduction => _env == 'production';
+  static bool get isProduction => EnvironmentConfig.isProduction;
 
   /// Check if running in development
-  static bool get isDevelopment => _env == 'development' || kDebugMode;
+  static bool get isDevelopment =>
+      EnvironmentConfig.isDevelopment || kDebugMode;
 
   static bool get allowsBodyLogging =>
       isDevelopment && !baseUrl.contains('joonapay.com');
@@ -217,6 +179,8 @@ class AuthInterceptor extends Interceptor {
       '/auth/verify-otp',
       '/auth/login',
       '/auth/refresh',
+      '/config/countries',
+      '/config/mobile-version',
     ];
     final isPublicEndpoint = publicEndpoints.any(
       (e) => options.path.contains(e),
@@ -239,12 +203,16 @@ class AuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
+    _scheduleVersionPolicyCheck(err);
+
     // Check if this is an authenticated endpoint
     final publicEndpoints = [
       '/auth/register',
       '/auth/verify-otp',
       '/auth/login',
       '/auth/refresh',
+      '/config/countries',
+      '/config/mobile-version',
     ];
     final isPublicEndpoint = publicEndpoints.any(
       (e) => err.requestOptions.path.contains(e),
@@ -355,6 +323,34 @@ class AuthInterceptor extends Interceptor {
     }
 
     handler.next(err);
+  }
+
+  void _scheduleVersionPolicyCheck(DioException err) {
+    if (!_shouldCheckVersionPolicy(err)) return;
+    unawaited(
+      _ref
+          .read(mobileVersionPolicyProvider.notifier)
+          .check(reason: 'http_${err.response?.statusCode ?? err.type.name}'),
+    );
+  }
+
+  bool _shouldCheckVersionPolicy(DioException err) {
+    if (MockConfig.useMocks) return false;
+    if (err.requestOptions.path.contains('/config/mobile-version')) {
+      return false;
+    }
+
+    final statusCode = err.response?.statusCode;
+    if (statusCode == null) {
+      return err.type == DioExceptionType.connectionError ||
+          err.type == DioExceptionType.badResponse ||
+          err.type == DioExceptionType.unknown;
+    }
+
+    return statusCode == 404 ||
+        statusCode == 410 ||
+        statusCode == 426 ||
+        statusCode >= 500;
   }
 
   Future<Response<dynamic>> _retryWithAccessToken(

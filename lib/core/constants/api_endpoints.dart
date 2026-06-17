@@ -10,6 +10,10 @@ abstract final class ApiEndpoints {
   static const authLogout = '/auth/logout';
   static const authRegister = '/auth/register';
 
+  // App Config
+  static const configCountries = '/config/countries';
+  static const configMobileVersion = '/config/mobile-version';
+
   // User
   static const userProfile = '/user/profile';
   static const userUpdate = '/user/profile';

@@ -15,6 +15,7 @@ import 'package:usdc_wallet/mocks/mock_config.dart';
 import 'package:usdc_wallet/router/app_router.dart';
 import 'package:usdc_wallet/services/analytics/crash_reporting_service.dart';
 import 'package:usdc_wallet/services/app_lifecycle/app_lifecycle_observer.dart';
+import 'package:usdc_wallet/services/app_version/mobile_version_policy_service.dart';
 import 'package:usdc_wallet/services/error_tracking/sentry_service.dart';
 import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
 import 'package:usdc_wallet/services/localization/language_provider.dart';
@@ -144,6 +145,9 @@ class KoridoApp extends ConsumerWidget {
 
     // Load cached data into state on app start
     unawaited(ref.read(localSyncServiceProvider).onAppStart());
+    unawaited(
+      ref.read(mobileVersionPolicyProvider.notifier).check(reason: 'startup'),
+    );
 
     final router = ref.watch(routerProvider);
     final themeState = ref.watch(themeProvider);

@@ -56,5 +56,24 @@ void main() {
         ),
       );
     });
+
+    test('handles the public /config/mobile-version route', () async {
+      final response = await dio.get(
+        '/config/mobile-version',
+        queryParameters: {
+          'platform': 'ios',
+          'version': '1.0.0',
+          'buildNumber': '42',
+        },
+      );
+      final data = response.data as Map<String, dynamic>;
+
+      expect(response.statusCode, 200);
+      expect(data['platform'], 'ios');
+      expect(data['currentVersion'], '1.0.0');
+      expect(data['currentBuildNumber'], '42');
+      expect(data['forceUpgrade'], isFalse);
+      expect(data['apiUrl'], isA<String>());
+    });
   });
 }

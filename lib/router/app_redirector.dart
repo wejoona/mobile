@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/environment_config.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
+import 'package:usdc_wallet/services/app_version/mobile_version_policy_service.dart';
 import 'package:usdc_wallet/services/feature_flags/feature_flags_extensions.dart';
 import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
@@ -37,10 +38,12 @@ class RouterRefreshNotifier extends ChangeNotifier {
           notifyListeners();
         }
       })
-      ..listen(
-        kyc_machine.kycStateMachineProvider,
-        (_, _) => notifyListeners(),
-      );
+      ..listen(kyc_machine.kycStateMachineProvider, (_, _) => notifyListeners())
+      ..listen(mobileVersionPolicyProvider, (previous, next) {
+        if (previous?.forceUpgrade != next.forceUpgrade) {
+          notifyListeners();
+        }
+      });
   }
 }
 
@@ -57,6 +60,7 @@ String? appRedirect(BuildContext context, GoRouterState state) {
   final loginState = container.read(loginProvider);
   final appFsmState = container.read(appFsmProvider);
   final kycState = container.read(kyc_machine.kycStateMachineProvider);
+  final versionPolicyState = container.read(mobileVersionPolicyProvider);
 
   final isAuthenticated = authState.isAuthenticated;
   final location = state.matchedLocation;
@@ -79,6 +83,14 @@ String? appRedirect(BuildContext context, GoRouterState state) {
 
   if (location == '/') {
     return null;
+  }
+
+  if (versionPolicyState.forceUpgrade && location != '/force-update') {
+    return '/force-update';
+  }
+
+  if (!versionPolicyState.forceUpgrade && location == '/force-update') {
+    return isAuthenticated ? '/home' : '/login';
   }
 
   final isLockedState =
@@ -330,6 +342,7 @@ String? _featureFlagRedirect(String location, Map<String, bool> flags) {
 bool _isPublicRoute(String location) =>
     _isExplicitPublicRoute(location) ||
     location.startsWith('/pin/reset') ||
+    location == '/force-update' ||
     location.startsWith('/session-locked');
 
 bool _isExplicitPublicRoute(String location) =>
@@ -391,6 +404,7 @@ bool _isFsmRoute(String location) {
     '/wallet-frozen',
     '/wallet-under-review',
     '/kyc-expired',
+    '/force-update',
   ];
   return fsmRoutes.any(location.startsWith);
 }

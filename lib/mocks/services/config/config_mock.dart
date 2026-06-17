@@ -26,5 +26,28 @@ class ConfigMock {
         });
       },
     );
+
+    interceptor.register(
+      method: 'GET',
+      path: '/config/mobile-version',
+      handler: (options) async {
+        return MockResponse.success({
+          'platform': options.queryParameters['platform'] ?? 'unknown',
+          'currentVersion': options.queryParameters['version'] ?? '1.0.0',
+          'currentBuildNumber': options.queryParameters['buildNumber'] ?? '1',
+          'latestVersion': '1.0.0',
+          'minimumSupportedVersion': '1.0.0',
+          'latestBuildNumber': null,
+          'minimumSupportedBuildNumber': null,
+          'forceUpgrade': false,
+          'upgradeRecommended': false,
+          'breakingApiChange': false,
+          'message': null,
+          'appUrl': null,
+          'apiUrl': 'http://127.0.0.1:3401/api/v1',
+          'checkedAt': DateTime.now().toUtc().toIso8601String(),
+        });
+      },
+    );
   }
 }
