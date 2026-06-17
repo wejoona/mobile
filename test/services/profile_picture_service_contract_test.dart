@@ -35,11 +35,14 @@ void main() {
       final formData = dio.requestHistory.single.data as FormData;
       expect(formData.files.single.key, 'avatar');
       final evidence = _decodeFaceCheckEvidence(formData);
+      final byteSize = await file.length();
       expect(evidence, containsPair('version', avatarDeviceFaceCheckVersion));
       expect(evidence, containsPair('result', avatarDeviceFaceCheckToken));
       expect(evidence, containsPair('isAvailable', true));
       expect(evidence, containsPair('faceCount', 1));
       expect(evidence['checkedAt'], isA<String>());
+      expect(evidence['imageSha256'], matches(RegExp(r'^[a-f0-9]{64}$')));
+      expect(evidence, containsPair('byteSize', byteSize));
       expect(result.avatarUrl, '/user/avatar/usr_profile_picture');
       expect(result.avatarThumb, startsWith('data:image/jpeg;base64,'));
       expect(result.message, 'Avatar uploaded successfully');

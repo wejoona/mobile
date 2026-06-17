@@ -531,6 +531,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     final pictureService = ref.read(profilePictureServiceProvider);
     _setProfilePhotoBusy('Preparing photo...');
     final compressed = await pictureService.compressImage(picked);
+    var uploadImage = compressed;
     _setProfilePhotoBusy('Checking face on this device...');
     var faceDetection = await ref
         .read(imageAnalysisServiceProvider)
@@ -542,6 +543,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       final faceCheckImage = await pictureService.prepareForFaceDetection(
         compressed,
       );
+      uploadImage = faceCheckImage;
       faceDetection = await ref
           .read(imageAnalysisServiceProvider)
           .detectFaces(faceCheckImage);
@@ -563,12 +565,12 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
     _setProfilePhotoBusy('Uploading photo...');
     setState(() {
-      _selectedImage = compressed;
+      _selectedImage = uploadImage;
     });
 
     final uploadResult = await ref
         .read(profileProvider.notifier)
-        .uploadAvatar(compressed, faceCheck: faceCheck);
+        .uploadAvatar(uploadImage, faceCheck: faceCheck);
     final profileState = ref.read(profileProvider);
     if (!mounted) return;
 

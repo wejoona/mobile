@@ -311,11 +311,14 @@ void main() {
         expect(dio.requestHistory.single.path, '/user/avatar');
         expect(formData.files.single.key, 'avatar');
         final evidence = _decodeFaceCheckEvidence(formData);
+        final byteSize = await avatarFile.length();
         expect(evidence, containsPair('version', avatarDeviceFaceCheckVersion));
         expect(evidence, containsPair('result', avatarDeviceFaceCheckToken));
         expect(evidence, containsPair('isAvailable', true));
         expect(evidence, containsPair('faceCount', 1));
         expect(evidence['checkedAt'], isA<String>());
+        expect(evidence['imageSha256'], matches(RegExp(r'^[a-f0-9]{64}$')));
+        expect(evidence, containsPair('byteSize', byteSize));
         expect(avatar.avatarUrl, '/user/avatar/usr_face_checked');
       },
     );
@@ -544,6 +547,8 @@ void main() {
       expect(profileProviderSource, contains('updateUser(updatedUser)'));
       expect(profileProviderSource, contains('userSessionRepositoryProvider'));
       expect(profileEditSource, contains('detectFaces(compressed)'));
+      expect(profileEditSource, contains('var uploadImage = compressed'));
+      expect(profileEditSource, contains('uploadImage = faceCheckImage'));
       expect(
         profileEditSource,
         contains('AvatarDeviceFaceCheck.fromDeviceAnalysis'),
@@ -551,7 +556,10 @@ void main() {
       expect(profileEditSource, contains('Checking face on this device'));
       expect(profileEditSource, contains('_profilePhotoPickErrorMessage'));
       expect(profileEditSource, contains('PlatformException'));
-      expect(profileEditSource, contains('uploadAvatar(compressed, faceCheck'));
+      expect(
+        profileEditSource,
+        contains('uploadAvatar(uploadImage, faceCheck'),
+      );
       expect(profileEditSource, contains('_selectedImage = null'));
     });
 

@@ -104,8 +104,9 @@ class ProfilePictureService {
       _logger.info('Uploading avatar: ${imageFile.path}');
 
       final fileName = imageFile.path.split('/').last;
+      final boundFaceCheck = await faceCheck.bindToFile(imageFile);
       final formData = FormData.fromMap({
-        avatarDeviceFaceCheckField: faceCheck.token,
+        avatarDeviceFaceCheckField: boundFaceCheck.token,
         'avatar': await avatarMultipartFile(imageFile, filename: fileName),
       });
 
