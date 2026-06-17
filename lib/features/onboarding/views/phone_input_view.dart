@@ -53,7 +53,7 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.xl),
           children: [
-            AuthTopBar(onBack: () => context.pop()),
+            AuthTopBar(onBack: () => context.go('/login')),
             const SizedBox(height: AppSpacing.lg),
             const OnboardingProgress(currentStep: 1, totalSteps: 5),
             const SizedBox(height: AppSpacing.xxl),
