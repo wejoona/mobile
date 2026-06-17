@@ -1268,12 +1268,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
   }
 
   Future<void> _refreshHomeData() async {
-    await _refreshWalletForHome().timeout(
-      const Duration(seconds: 16),
-      onTimeout: () {
-        _logger.warn('Home balance refresh timed out');
-      },
-    );
+    final walletRefreshCompleted = await _refreshWalletForHome();
 
     unawaited(_refreshTransactionsForHome());
 
@@ -1282,11 +1277,15 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     }
 
     final wallet = ref.read(walletStateMachineProvider);
-    if (wallet.isDegraded || wallet.isStale || wallet.isCached) {
+    if (!walletRefreshCompleted ||
+        wallet.status == WalletStatus.refreshing ||
+        wallet.isDegraded ||
+        wallet.isStale ||
+        wallet.isCached) {
       context.showSnack(
         _localizedText(
-          en: 'Showing last known balance. We will keep trying in the background.',
-          fr: 'Dernier solde connu affiché. Nous continuons en arrière-plan.',
+          en: 'Balance sync is still catching up. Showing the last known value.',
+          fr: 'La synchronisation du solde continue. Dernier solde connu affiché.',
         ),
         tone: AppSnackTone.warning,
         duration: const Duration(seconds: 4),
@@ -1300,13 +1299,16 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     );
   }
 
-  Future<void> _refreshWalletForHome() async {
+  Future<bool> _refreshWalletForHome() async {
+    var completedCleanly = true;
     try {
       await ref
           .read(walletStateMachineProvider.notifier)
           .refresh()
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 8));
     } on Object catch (error, stackTrace) {
+      completedCleanly = false;
+      ref.read(walletStateMachineProvider.notifier).markRefreshDelayed();
       _logger.error(
         'Wallet refresh did not complete cleanly',
         error,
@@ -1324,6 +1326,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
             .fetch(force: true)
             .timeout(const Duration(seconds: 7));
       } on Object catch (error, stackTrace) {
+        completedCleanly = false;
         _logger.error(
           'Home refresh recovery fetch timed out or failed',
           error,
@@ -1331,6 +1334,9 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         );
       }
     }
+
+    final current = ref.read(walletStateMachineProvider);
+    return completedCleanly && current.status != WalletStatus.refreshing;
   }
 
   Future<void> _refreshTransactionsForHome() async {

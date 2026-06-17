@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/state/app_state.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_base.dart';
@@ -21,7 +21,7 @@ class _NoopAppFsmNotifier extends AppFsmNotifier {
 void main() {
   group('WalletStateMachine', () {
     test('availableBalance exposes the spendable USDC balance', () {
-      const state = WalletState(usdBalance: 0, usdcBalance: 42.25);
+      const state = WalletState(usdcBalance: 42.25);
 
       expect(state.availableBalance, 42.25);
     });
@@ -474,7 +474,6 @@ void main() {
           status: WalletStatus.loaded,
           walletId: 'wallet-existing',
           walletAddress: '0xabc',
-          blockchain: 'polygon',
           usdcBalance: 42,
           pendingBalance: 1,
           lastUpdated: DateTime.utc(2026, 6, 14),
@@ -497,5 +496,37 @@ void main() {
         expect(state.balanceWarning, contains('Live balance'));
       },
     );
+
+    test('delayed refresh settles the balance card on last known data', () {
+      final dio = MockDio();
+      final container = ProviderContainer(
+        overrides: [
+          dioProvider.overrideWithValue(dio),
+          appFsmProvider.overrideWith(_NoopAppFsmNotifier.new),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.read(walletStateMachineProvider.notifier).state = WalletState(
+        status: WalletStatus.refreshing,
+        walletId: 'wallet-slow-refresh',
+        walletAddress: '0xabc',
+        usdcBalance: 64,
+        pendingBalance: 2,
+        lastUpdated: DateTime.utc(2026, 6, 17),
+      );
+
+      container.read(walletStateMachineProvider.notifier).markRefreshDelayed();
+
+      final state = container.read(walletStateMachineProvider);
+      expect(state.status, WalletStatus.loaded);
+      expect(state.walletId, 'wallet-slow-refresh');
+      expect(state.usdcBalance, 64);
+      expect(state.pendingBalance, 2);
+      expect(state.isCached, isTrue);
+      expect(state.isDegraded, isTrue);
+      expect(state.isStale, isTrue);
+      expect(state.balanceReadStatus, 'cached_degraded');
+    });
   });
 }
