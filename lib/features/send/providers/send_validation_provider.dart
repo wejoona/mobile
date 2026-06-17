@@ -34,7 +34,7 @@ final sendValidationProvider = Provider.family<SendValidation, SendFormData>((
       data.amount!,
     );
     if (limitHit != null) {
-      errors['amount'] = _limitErrorFor(limitHit, limits);
+      errors['amount'] = sendLimitErrorFor(limitHit, limits);
     }
   }
 
@@ -71,10 +71,18 @@ bool _isValidPhone(String phone) {
   return RegExp(r'^\+[1-9]\d{7,14}$').hasMatch(cleaned);
 }
 
-String _limitErrorFor(
+String sendLimitErrorFor(
   String limitHit,
   TransactionLimits limits,
 ) => switch (limitHit) {
+  'manual_review_required' =>
+    limits.permissions.blockReason?.isNotEmpty == true
+        ? limits.permissions.blockReason!
+        : 'Manual review required before sending money',
+  'kyc_required' =>
+    limits.permissions.blockReason?.isNotEmpty == true
+        ? limits.permissions.blockReason!
+        : 'Verification required before sending money',
   'single_transaction' =>
     'Montant maximum: ${limits.singleTransactionLimit.toStringAsFixed(2)} USDC par transfert',
   'daily' =>

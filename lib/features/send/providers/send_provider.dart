@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/config/countries.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
+import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/contacts/contacts_service.dart';
+import 'package:usdc_wallet/services/limits/limits_service.dart';
 import 'package:usdc_wallet/services/transfers/transfers_service.dart';
 import 'package:usdc_wallet/services/wallet/wallet_service.dart';
 import 'package:usdc_wallet/services/app_review/app_review_service.dart';
@@ -13,6 +15,7 @@ import 'package:usdc_wallet/services/realtime/realtime_service.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/features/offline/providers/offline_provider.dart';
 import 'package:usdc_wallet/features/send/models/transfer_request.dart';
+import 'package:usdc_wallet/features/send/providers/send_validation_provider.dart';
 import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
@@ -359,6 +362,13 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       return false;
     }
 
+    final limitError = await _verifySendLimitsBeforeSubmission();
+    if (limitError != null) {
+      state = state.copyWith(error: limitError);
+      await hapticService.warning();
+      return false;
+    }
+
     // Prevent double-submit
     if (state.isSubmitting) return false;
 
@@ -436,6 +446,29 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
   /// Clear error
   void clearError() {
     state = state.clearError();
+  }
+
+  Future<String?> _verifySendLimitsBeforeSubmission() async {
+    final amount = state.amount;
+    if (amount == null || amount <= 0) {
+      return 'Invalid transfer details';
+    }
+
+    try {
+      final limits = await ref.read(limitsServiceProvider).getLimits();
+      final limitHit = limits.limitHitByFor(
+        TransactionLimitOperation.send,
+        amount,
+      );
+      if (limitHit == null) {
+        return null;
+      }
+      return sendLimitErrorFor(limitHit, limits);
+    } on DioException {
+      return 'Unable to verify transfer limits. Please try again.';
+    } catch (_) {
+      return 'Unable to verify transfer limits. Please try again.';
+    }
   }
 
   String _defaultCountryPrefix() {

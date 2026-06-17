@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
+import 'package:usdc_wallet/features/send/providers/send_validation_provider.dart';
 import 'package:usdc_wallet/services/limits/limits_service.dart';
 
 import '../../helpers/test_utils.dart';
@@ -17,6 +18,21 @@ void main() {
       expect(source, contains('TransactionLimitOperation.send'));
       expect(source, isNot(contains('data.amount! > 10000')));
       expect(source, contains(r"RegExp(r'^\+?1\d{10}$')"));
+    });
+
+    test('send submission verifies live limits before transfer API call', () {
+      final source = File(
+        'lib/features/send/providers/send_provider.dart',
+      ).readAsStringSync();
+
+      expect(source, contains('limitsServiceProvider'));
+      expect(source, contains('_verifySendLimitsBeforeSubmission'));
+      expect(
+        source.indexOf('_verifySendLimitsBeforeSubmission()'),
+        lessThan(source.indexOf('createInternalTransfer(')),
+      );
+      expect(source, contains('limitHitByFor('));
+      expect(source, contains('TransactionLimitOperation.send'));
     });
 
     test('parses live nested /user/limits response', () {
@@ -118,6 +134,10 @@ void main() {
       expect(
         limits.limitHitByFor(TransactionLimitOperation.withdraw, 10),
         'manual_review_required',
+      );
+      expect(
+        sendLimitErrorFor('manual_review_required', limits),
+        'Manual review required',
       );
     });
 
