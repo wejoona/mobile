@@ -31,6 +31,15 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 
 flutter_ios_podfile_setup
 
+def append_build_setting(config, key, *values)
+  setting = config.build_settings[key] || ['$(inherited)']
+  setting = setting.split if setting.is_a?(String)
+  values.each do |value|
+    setting << value unless setting.include?(value)
+  end
+  config.build_settings[key] = setting
+end
+
 target 'Runner' do
   use_frameworks!
 
@@ -72,20 +81,21 @@ post_install do |installer|
       config.build_settings['SWIFT_STRICT_CONCURRENCY'] = 'minimal'
       config.build_settings['SWIFT_TREAT_WARNINGS_AS_ERRORS'] = 'NO'
       config.build_settings['LIBRARY_SEARCH_PATHS'] = '$(inherited) $(SDKROOT)/usr/lib/swift'
+      append_build_setting(config, 'OTHER_CFLAGS', '-w')
+      append_build_setting(config, 'OTHER_SWIFT_FLAGS', '-suppress-warnings')
       definitions = config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
       definitions << 'PERMISSION_CONTACTS=1' unless definitions.include?('PERMISSION_CONTACTS=1')
 
-      next unless target.name == 'Sentry'
-
-      swift_flags = config.build_settings['OTHER_SWIFT_FLAGS'] ||= ['$(inherited)']
-      swift_flags = swift_flags.split if swift_flags.is_a?(String)
-      unless swift_flags.include?('CheckImplementationOnly')
-        swift_flags.concat([
-          '-enable-experimental-feature',
-          'CheckImplementationOnly',
-        ])
+      if target.name == 'Sentry'
+        swift_flags = config.build_settings['OTHER_SWIFT_FLAGS']
+        unless swift_flags.include?('CheckImplementationOnly')
+          swift_flags.concat([
+            '-enable-experimental-feature',
+            'CheckImplementationOnly',
+          ])
+        end
+        config.build_settings['OTHER_SWIFT_FLAGS'] = swift_flags
       end
-      config.build_settings['OTHER_SWIFT_FLAGS'] = swift_flags
     end
   end
 
