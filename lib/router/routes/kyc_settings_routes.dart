@@ -222,7 +222,9 @@ List<RouteBase> kycSettingsRoutes() => [
     path: '/profile/verify-email',
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
-      child: const EmailVerificationScreen(),
+      child: EmailVerificationScreen(
+        successRoute: state.uri.queryParameters['successRoute'],
+      ),
     ),
   ),
   GoRoute(

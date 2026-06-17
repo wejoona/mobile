@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
@@ -694,6 +695,16 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final previousEmail = ref
+        .read(userStateMachineProvider)
+        .email
+        ?.trim()
+        .toLowerCase();
+    final submittedEmail = _emailController.text.trim();
+    final submittedEmailKey = submittedEmail.toLowerCase();
+    final changedEmail =
+        submittedEmail.isNotEmpty && submittedEmailKey != previousEmail;
+
     setState(() => _isLoading = true);
 
     try {
@@ -709,19 +720,25 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             clearEmail: _emailController.text.trim().isEmpty,
           );
 
-      await ref
-          .read(profileProvider.notifier)
-          .applyProfileSnapshot(profile);
+      await ref.read(profileProvider.notifier).applyProfileSnapshot(profile);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(context)!.settings_profileUpdated,
-            ),
-            backgroundColor: context.colors.success,
-          ),
-        );
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.settings_profileUpdated),
+          backgroundColor: context.colors.success,
+        ),
+      );
+
+      final savedEmail = profile.email?.trim();
+      if (changedEmail &&
+          savedEmail != null &&
+          savedEmail.isNotEmpty &&
+          !profile.emailVerified) {
+        final successRoute = Uri.encodeComponent('/settings/profile');
+        context.go('/profile/verify-email?successRoute=$successRoute');
+      } else {
         context.safePop(fallbackRoute: '/settings');
       }
     } catch (e) {
