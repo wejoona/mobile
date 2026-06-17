@@ -194,7 +194,7 @@ class WalletService {
     }
   }
 
-  /// POST /wallet/withdraw
+  /// POST /wallet/transfer/external
   Future<WithdrawResponse> withdraw({
     required double amount,
     required String destinationAddress,
@@ -205,11 +205,12 @@ class WalletService {
   }) async {
     try {
       final response = await _dio.post(
-        ApiEndpoints.walletWithdraw,
+        ApiEndpoints.transfersExternal,
         data: {
           'amount': amount,
-          'destinationAddress': destinationAddress,
+          'toAddress': destinationAddress,
           'network': network ?? 'polygon',
+          'currency': 'USDC',
           if (method != null) 'method': method,
         },
         options: Options(
@@ -704,6 +705,8 @@ class WithdrawResponse {
       amount: _readAmount(json, const ['amountDecimal', 'amount']),
       destinationAddress:
           json['destinationAddress'] as String? ??
+          json['toAddress'] as String? ??
+          json['recipientAddress'] as String? ??
           json['phoneNumber'] as String? ??
           '',
       network:

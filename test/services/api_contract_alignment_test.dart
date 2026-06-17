@@ -388,7 +388,7 @@ void main() {
 
       final request = dio.requestHistory.single;
       expect(request.method, 'POST');
-      expect(request.path, '/withdrawals/quote');
+      expect(request.path, '/wallet/cash-out/mobile-money/quote');
       expect(request.data, {
         'amount': 2500,
         'providerCode': 'OMCI',
@@ -426,7 +426,7 @@ void main() {
 
       final request = dio.requestHistory.single;
       expect(request.method, 'GET');
-      expect(request.path, '/wallet/withdraw/options');
+      expect(request.path, '/wallet/cash-out/mobile-money/options');
       expect(request.queryParameters, {'country': 'CI'});
       expect(fee, 5);
     });
@@ -469,7 +469,7 @@ void main() {
 
         final request = dio.requestHistory.single;
         expect(request.method, 'GET');
-        expect(request.path, '/wallet/withdraw/options');
+        expect(request.path, '/wallet/cash-out/mobile-money/options');
         expect(request.queryParameters, {'country': 'CI'});
         expect(options, hasLength(1));
         expect(options.single.name, 'Wave CI');
@@ -501,11 +501,12 @@ void main() {
 
       final request = dio.requestHistory.single;
       expect(request.method, 'POST');
-      expect(request.path, '/wallet/withdraw');
+      expect(request.path, '/wallet/transfer/external');
       expect(request.data, {
         'amount': 25.0,
-        'destinationAddress': '0x1234567890abcdef1234567890abcdef12345678',
+        'toAddress': '0x1234567890abcdef1234567890abcdef12345678',
         'network': 'polygon',
+        'currency': 'USDC',
       });
       expect(request.headers['X-Pin-Token'], 'pin_token_123');
       expect(request.headers['X-Idempotency-Key'], 'idem-withdraw-123');

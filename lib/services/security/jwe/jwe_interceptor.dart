@@ -17,8 +17,7 @@ const _sensitivePathPatterns = [
   '/user/pin/', // PIN set, verify, change, reset
   '/wallet/deposit', // Deposit initiation
   '/wallet/transfer/', // Internal + external transfers
-  '/transfers/', // Active transfer controller
-  '/wallet/withdraw', // Withdrawals
+  '/wallet/cash-out/mobile-money', // Mobile money cash-out
 ];
 
 class JweInterceptor extends Interceptor {

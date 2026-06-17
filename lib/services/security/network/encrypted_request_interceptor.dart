@@ -12,10 +12,9 @@ class EncryptedRequestInterceptor extends Interceptor {
   /// Paths requiring payload encryption.
   static const _encryptedPaths = [
     '/wallet/transfer',
-    '/wallet/withdraw',
+    '/wallet/cash-out/mobile-money',
     '/wallet/deposit',
     '/transfers/',
-    '/withdrawals/',
     '/deposits/',
     '/pin/verify',
     '/pin/change',

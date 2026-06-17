@@ -77,7 +77,11 @@ Avatar URL handling: the API may return absolute URLs, `/user/avatar/...`, `user
 | Internal transfer | POST | `/wallet/transfer/internal` |
 | External transfer | POST | `/wallet/transfer/external` |
 | Estimate external fee | GET | `/wallet/transfer/external/estimate-fee` |
-| Withdraw | POST | `/wallet/withdraw` |
+| External transfer / on-chain withdrawal | POST | `/wallet/transfer/external` |
+| Mobile money cash-out options | GET | `/wallet/cash-out/mobile-money/options` |
+| Mobile money cash-out quote | POST | `/wallet/cash-out/mobile-money/quote` |
+| Mobile money cash-out | POST | `/wallet/cash-out/mobile-money` |
+| Mobile money cash-out status | GET | `/wallet/cash-out/mobile-money/:id` |
 | KYC status | GET | `/kyc/status` |
 | Submit KYC | POST | `/kyc/submit` |
 | Upload KYC documents | POST | `/kyc/documents` |

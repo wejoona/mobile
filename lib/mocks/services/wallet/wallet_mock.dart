@@ -117,24 +117,24 @@ class WalletMock {
       handler: _handleDeposit,
     );
 
-    // POST /wallet/withdraw
+    // POST /wallet/transfer/external
     interceptor.register(
       method: 'POST',
-      path: '/wallet/withdraw',
+      path: '/wallet/transfer/external',
       handler: _handleWithdraw,
     );
 
-    // POST /withdrawals/initiate
+    // POST /wallet/cash-out/mobile-money
     interceptor.register(
       method: 'POST',
-      path: '/withdrawals/initiate',
+      path: '/wallet/cash-out/mobile-money',
       handler: _handleWithdraw,
     );
 
-    // POST /withdrawals/quote
+    // POST /wallet/cash-out/mobile-money/quote
     interceptor.register(
       method: 'POST',
-      path: '/withdrawals/quote',
+      path: '/wallet/cash-out/mobile-money/quote',
       handler: _handleWithdrawQuote,
     );
 
@@ -152,11 +152,11 @@ class WalletMock {
       handler: _handleGetDepositProviders,
     );
 
-    // GET /wallet/withdraw/providers
+    // GET /wallet/cash-out/mobile-money/options
     interceptor.register(
       method: 'GET',
-      path: '/wallet/withdraw/providers',
-      handler: _handleGetWithdrawProviders,
+      path: '/wallet/cash-out/mobile-money/options',
+      handler: _handleGetWithdrawOptions,
     );
 
     // GET /wallet/limits
@@ -277,7 +277,7 @@ class WalletMock {
 
     final data = options.data as Map<String, dynamic>?;
     final rawAmount = (data?['amount'] as num?)?.toDouble() ?? 0;
-    final amount = options.path == '/withdrawals/initiate'
+    final amount = options.path == '/wallet/cash-out/mobile-money'
         ? rawAmount / 100
         : rawAmount;
     final provider =
@@ -320,7 +320,7 @@ class WalletMock {
 
     final data = options.data as Map<String, dynamic>?;
     final rawAmount = (data?['amount'] as num?)?.toDouble() ?? 0;
-    final amount = options.path == '/withdrawals/initiate'
+    final amount = options.path == '/wallet/cash-out/mobile-money'
         ? rawAmount / 100
         : rawAmount;
     final provider =
@@ -352,7 +352,7 @@ class WalletMock {
     WalletMockState.pendingWithdrawals[userId] ??= [];
     WalletMockState.pendingWithdrawals[userId]!.add(withdrawal);
 
-    if (options.path == '/withdrawals/initiate') {
+    if (options.path == '/wallet/cash-out/mobile-money') {
       return MockResponse.created({
         'id': withdrawal.id,
         'status': withdrawal.status,
@@ -366,7 +366,17 @@ class WalletMock {
       });
     }
 
-    return MockResponse.created(withdrawal.toJson());
+    return MockResponse.success({
+      'transactionId': withdrawal.id,
+      'toAddress': data?['toAddress'] as String? ?? data?['destinationAddress'],
+      'amount': amount,
+      'amountDecimal': amount.toStringAsFixed(2),
+      'currency': data?['currency'] as String? ?? 'USDC',
+      'fee': fee,
+      'feeDecimal': fee.toStringAsFixed(2),
+      'status': withdrawal.status,
+      'network': data?['network'] as String? ?? 'polygon',
+    });
   }
 
   static Future<MockResponse> _handleWithdrawQuote(
@@ -484,30 +494,44 @@ class WalletMock {
     });
   }
 
-  static Future<MockResponse> _handleGetWithdrawProviders(
+  static Future<MockResponse> _handleGetWithdrawOptions(
     RequestOptions options,
   ) async {
     return MockResponse.success({
-      'providers': [
+      'country': 'CI',
+      'currency': 'USDC',
+      'status': 'available',
+      'reason': null,
+      'retryable': false,
+      'supportReviewRequired': false,
+      'options': [
         {
-          'id': 'orange_money',
+          'id': 'orange_money_ci',
           'name': 'Orange Money',
-          'logo': 'https://example.com/orange.png',
+          'type': 'mobile_money',
+          'providerCode': 'OMCI',
+          'country': 'CI',
+          'currency': 'USDC',
+          'payoutCurrency': 'XOF',
           'minAmount': 1000,
           'maxAmount': 500000,
           'fee': 1.0,
           'feeType': 'percentage',
-          'countries': ['CI', 'SN', 'ML'],
+          'enabled': true,
         },
         {
-          'id': 'mtn_momo',
+          'id': 'mtn_momo_ci',
           'name': 'MTN Mobile Money',
-          'logo': 'https://example.com/mtn.png',
+          'type': 'mobile_money',
+          'providerCode': 'MTNCI',
+          'country': 'CI',
+          'currency': 'USDC',
+          'payoutCurrency': 'XOF',
           'minAmount': 1000,
           'maxAmount': 300000,
           'fee': 1.5,
           'feeType': 'percentage',
-          'countries': ['CI', 'GH'],
+          'enabled': true,
         },
       ],
     });

@@ -183,22 +183,29 @@ void main() {
   });
 
   e2eGroup('Withdrawal E2E', () {
-    test('POST /wallet/withdraw — missing auth factors is rejected', () async {
-      final res = await client.post('/wallet/withdraw', {
-        'amount': 10,
-        'destinationAddress': '0x1234567890abcdef1234567890abcdef12345678',
-        'network': 'polygon',
-      }, _idempotencyHeaders());
-      expect(res.statusCode, anyOf(400, 401, 403));
-    });
+    test(
+      'POST /wallet/transfer/external — missing auth factors is rejected',
+      () async {
+        final res = await client.post('/wallet/transfer/external', {
+          'amount': 10,
+          'toAddress': '0x1234567890abcdef1234567890abcdef12345678',
+          'currency': 'USDC',
+          'network': 'polygon',
+        }, _idempotencyHeaders());
+        expect(res.statusCode, anyOf(400, 401, 403));
+      },
+    );
 
-    test('POST /withdrawals/initiate — missing fields is rejected', () async {
-      final res = await client.post(
-        '/withdrawals/initiate',
-        {},
-        _idempotencyHeaders(),
-      );
-      expect(res.statusCode, anyOf(400, 401, 403));
-    });
+    test(
+      'POST /wallet/cash-out/mobile-money — missing fields is rejected',
+      () async {
+        final res = await client.post(
+          '/wallet/cash-out/mobile-money',
+          {},
+          _idempotencyHeaders(),
+        );
+        expect(res.statusCode, anyOf(400, 401, 403));
+      },
+    );
   });
 }

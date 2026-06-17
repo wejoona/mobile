@@ -21,7 +21,7 @@ enum WithdrawMethod {
   const WithdrawMethod(this.label, this.prefix, this.providerCode);
 }
 
-/// Backend-owned withdrawal rail returned by `/wallet/withdraw/options`.
+/// Backend-owned mobile-money cash-out rail returned by `/wallet/cash-out/mobile-money/options`.
 class WithdrawalOption {
   const WithdrawalOption({
     required this.id,
@@ -205,7 +205,7 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
     }
   }
 
-  /// Fix #8: Wire to real /withdrawals/initiate endpoint.
+  /// Submit a mobile-money cash-out through the explicit wallet cash-out route.
   /// Fix #1: PIN token in headers. Fix #2: Idempotency key in headers.
   /// Fix #3: Amount converted to cents for backend.
   Future<void> submit({
@@ -235,7 +235,7 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
       );
 
       final response = await dio.post(
-        ApiEndpoints.withdrawInitiate,
+        ApiEndpoints.mobileMoneyCashOut,
         data: {
           'amount': toCents(state.amount!),
           'providerCode': providerCode,
@@ -266,7 +266,7 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
   }) async {
     final dio = ref.read(dioProvider);
     final response = await dio.post(
-      ApiEndpoints.withdrawQuote,
+      ApiEndpoints.mobileMoneyCashOutQuote,
       data: {
         'amount': toCents(amount),
         'providerCode': providerCode,
@@ -292,7 +292,7 @@ final withdrawalOptionsProvider =
     FutureProvider.family<List<WithdrawalOption>, String>((ref, country) async {
       final dio = ref.read(dioProvider);
       final response = await dio.get(
-        ApiEndpoints.walletWithdrawOptions,
+        ApiEndpoints.mobileMoneyCashOutOptions,
         queryParameters: {'country': country},
       );
       final payload = response.data is Map

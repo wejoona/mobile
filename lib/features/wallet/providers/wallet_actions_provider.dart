@@ -6,7 +6,7 @@ import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
-/// Wallet-level actions (withdraw, request money).
+/// Wallet-level actions (mobile money cash-out, request money).
 class WalletActions {
   final dynamic _dio;
   final Ref _ref;
@@ -23,7 +23,7 @@ class WalletActions {
   }) async {
     // ignore: avoid_dynamic_calls
     final response = await _dio.post(
-      ApiEndpoints.withdrawInitiate,
+      ApiEndpoints.mobileMoneyCashOut,
       data: {
         'amount': toCents(amount),
         'providerCode': _providerToCode(provider),
@@ -70,7 +70,7 @@ class WalletActions {
     if (type == 'withdrawal') {
       // ignore: avoid_dynamic_calls
       final response = await _dio.get(
-        ApiEndpoints.walletWithdrawOptions,
+        ApiEndpoints.mobileMoneyCashOutOptions,
         queryParameters: {'country': 'CI'},
       );
       // ignore: avoid_dynamic_calls

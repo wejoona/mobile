@@ -1,4 +1,4 @@
-/// Wallet API — balance, deposit, transfer, withdraw, exchange rate
+/// Wallet API — balance, deposit, transfer, mobile money cash-out, exchange rate
 library;
 
 import 'package:dio/dio.dart';
@@ -78,16 +78,16 @@ class WalletApi {
     queryParameters: {'amount': amount, 'network': network},
   );
 
-  // ── Withdraw ──
+  // ── On-chain withdrawal / external transfer ──
 
-  /// POST /wallet/withdraw
+  /// POST /wallet/transfer/external
   Future<Response> withdraw(
     Map<String, dynamic> data, {
     String? pinToken,
     String? idempotencyKey,
   }) => _dio.post(
-    ApiEndpoints.walletWithdraw,
-    data: data,
+    ApiEndpoints.transfersExternal,
+    data: _externalTransferPayload(data),
     options: _moneyMovementOptions(
       pinToken: pinToken,
       idempotencyKey: idempotencyKey,
