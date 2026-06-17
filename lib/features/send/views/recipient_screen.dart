@@ -37,6 +37,8 @@ class RecipientScreen extends ConsumerStatefulWidget {
 }
 
 class _RecipientScreenState extends ConsumerState<RecipientScreen> {
+  static const _supportedDialCodes = ['+225', '+221', '+223', '+1'];
+
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
   final _nameFocusNode = FocusNode();
@@ -499,15 +501,19 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     String? userId,
     bool isKnownKorido = false,
   }) {
-    var cleanPhone = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
-    for (final code in ['+225', '+221', '+223', '+1']) {
-      if (cleanPhone.startsWith(code)) {
-        _selectedCountryCode = code;
-        cleanPhone = cleanPhone.substring(code.length).trim();
-        break;
+    final phoneValue = PhoneNumberValue.tryFromAny(
+      phoneNumber: phoneNumber,
+      countryCode: _selectedCountryCode,
+    );
+    var cleanPhone = '';
+    if (phoneValue != null) {
+      if (_supportedDialCodes.contains(phoneValue.dialCode)) {
+        _selectedCountryCode = phoneValue.dialCode;
       }
+      cleanPhone = phoneValue.localNumber;
+    } else {
+      cleanPhone = phoneNumber.replaceAll(RegExp(r'\D'), '');
     }
-    cleanPhone = cleanPhone.replaceAll(RegExp(r'\D'), '');
 
     _phoneController.text = cleanPhone;
     _selectedRecipientName = name;

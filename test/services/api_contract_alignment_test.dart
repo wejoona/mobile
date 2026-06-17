@@ -2510,6 +2510,34 @@ void main() {
     });
 
     test(
+      'known Korido recipient stores canonical E.164 phone values',
+      () async {
+        final container = ProviderContainer(
+          overrides: [
+            userStateMachineProvider.overrideWith(
+              () => _CountryUserStateMachine('CI'),
+            ),
+            auth.authProvider.overrideWith(_QuietAuthNotifier.new),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await container
+            .read(sendMoneyProvider.notifier)
+            .setKnownKoridoRecipient(
+              phoneNumber: '+225+2250748805663',
+              userId: 'user_recipient',
+              name: 'Awa Korido',
+            );
+
+        final state = container.read(sendMoneyProvider);
+        expect(state.error, isNull);
+        expect(state.recipient?.phoneNumber, '+2250748805663');
+        expect(state.recipient?.userId, 'user_recipient');
+      },
+    );
+
+    test(
       'known Korido recipient rejects current username case-insensitively',
       () async {
         final container = ProviderContainer(

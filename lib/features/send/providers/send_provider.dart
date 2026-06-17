@@ -223,7 +223,7 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
     String? name,
     String? userId,
   }) async {
-    final normalizedPhone = phoneNumber?.trim() ?? '';
+    final normalizedPhone = _canonicalRecipientPhone(phoneNumber);
     final normalizedUsername = _normalizeUsername(username);
     if (normalizedPhone.isEmpty &&
         (userId == null || userId.trim().isEmpty) &&
@@ -252,6 +252,19 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
     }
 
     state = state.copyWith(isLoading: false, error: null, recipient: recipient);
+  }
+
+  String _canonicalRecipientPhone(String? phoneNumber) {
+    final rawPhone = phoneNumber?.trim();
+    if (rawPhone == null || rawPhone.isEmpty) {
+      return '';
+    }
+
+    final phoneValue = PhoneNumberValue.tryFromAny(
+      phoneNumber: rawPhone,
+      countryCode: '+${_defaultCountryPrefix()}',
+    );
+    return phoneValue?.e164 ?? rawPhone;
   }
 
   /// Set transfer amount
