@@ -87,6 +87,7 @@ void main() {
       'initiate stores the typed deposit response and enters processing',
       () async {
         final dio = MockDio();
+        dio.queueResponse(_limitsResponse());
         dio.queueResponse(
           _initiateResponse(paymentMethodType: 'OTP'),
           statusCode: 201,
@@ -123,8 +124,9 @@ void main() {
         expect(state.response?.paymentMethodType, PaymentMethodType.otp);
         expect(state.response?.token, 'tok_dep_123');
         expect(state.result?.id, 'dep_123');
+        expect(dio.requestHistory.first.path, '/user/limits');
         expect(
-          dio.requestHistory.single.headers['X-Idempotency-Key'],
+          dio.requestHistory.last.headers['X-Idempotency-Key'],
           isNotEmpty,
         );
       },
@@ -157,7 +159,65 @@ void main() {
         expect(dio.requestHistory, isEmpty);
       },
     );
+
+    test('initiate blocks when backend limits disallow deposits', () async {
+      final dio = MockDio();
+      dio.queueResponse({
+        ..._limitsResponse(),
+        'permissions': {
+          'can_deposit': false,
+          'review_required': true,
+          'block_reason': 'Manual review required',
+        },
+      });
+      final container = ProviderContainer(
+        overrides: [dioProvider.overrideWithValue(dio)],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(depositProvider.notifier);
+      notifier.setAmountXOF(
+        10000,
+        ExchangeRate(
+          fromCurrency: 'XOF',
+          toCurrency: 'USD',
+          rate: 655.957,
+          timestamp: DateTime.utc(2026, 6, 2),
+        ),
+      );
+      notifier.selectProviderData(
+        const ProviderData(
+          id: 'BANK',
+          name: 'Korido Bank Rail',
+          paymentMethodType: 'BANK_TRANSFER',
+        ),
+      );
+
+      await notifier.initiate();
+
+      final state = container.read(depositProvider);
+      expect(state.step, DepositFlowStep.failed);
+      expect(state.error, 'Manual review required');
+      expect(dio.requestHistory, hasLength(1));
+      expect(dio.requestHistory.single.path, '/user/limits');
+    });
   });
+}
+
+Map<String, dynamic> _limitsResponse() {
+  return {
+    'currency': 'USDC',
+    'daily': {
+      'send': {'limit': 5000, 'used': 100},
+      'withdraw': {'limit': 5000, 'used': 100},
+      'deposit': {'limit': 5000, 'used': 100},
+    },
+    'monthly': {
+      'total': {'limit': 50000, 'used': 500},
+    },
+    'perTransaction': {'send': 2500, 'withdraw': 2500},
+    'tier': 'verified',
+  };
 }
 
 Map<String, dynamic> _initiateResponse({required String paymentMethodType}) {

@@ -4,6 +4,7 @@ import 'package:usdc_wallet/config/countries.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
+import 'package:usdc_wallet/features/limits/utils/money_flow_limit_errors.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/contacts/contacts_service.dart';
 import 'package:usdc_wallet/services/limits/limits_service.dart';
@@ -15,7 +16,6 @@ import 'package:usdc_wallet/services/realtime/realtime_service.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/features/offline/providers/offline_provider.dart';
 import 'package:usdc_wallet/features/send/models/transfer_request.dart';
-import 'package:usdc_wallet/features/send/providers/send_validation_provider.dart';
 import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
@@ -463,7 +463,11 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       if (limitHit == null) {
         return null;
       }
-      return sendLimitErrorFor(limitHit, limits);
+      return moneyFlowLimitErrorFor(
+        limitHit,
+        limits,
+        TransactionLimitOperation.send,
+      );
     } on DioException {
       return 'Unable to verify transfer limits. Please try again.';
     } catch (_) {

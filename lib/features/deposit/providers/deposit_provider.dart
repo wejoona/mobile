@@ -1,8 +1,12 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
+import 'package:usdc_wallet/features/limits/utils/money_flow_limit_errors.dart';
 import 'package:usdc_wallet/services/realtime/realtime_service.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
+import 'package:usdc_wallet/services/limits/limits_service.dart';
 import 'package:usdc_wallet/services/sdk/usdc_wallet_sdk.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
@@ -209,6 +213,14 @@ class DepositNotifier extends Notifier<DepositState> {
       );
       return;
     }
+    final limitError = await _verifyDepositLimitsBeforeSubmission(
+      sourceAmount: sourceAmount,
+      sourceCurrency: sourceCurrency,
+    );
+    if (limitError != null) {
+      state = state.copyWith(error: limitError, step: DepositFlowStep.failed);
+      return;
+    }
 
     state = state.copyWith(isLoading: true, step: DepositFlowStep.processing);
     try {
@@ -337,6 +349,64 @@ class DepositNotifier extends Notifier<DepositState> {
   }
 
   Future<void> initiateDeposit() async => initiate();
+
+  Future<String?> _verifyDepositLimitsBeforeSubmission({
+    required double sourceAmount,
+    required String sourceCurrency,
+  }) async {
+    try {
+      final limits = await ref.read(limitsServiceProvider).getLimits();
+      final limitAmount = _depositAmountForLimitCurrency(
+        limits,
+        sourceAmount,
+        sourceCurrency,
+      );
+      if (limitAmount == null || limitAmount <= 0) {
+        return 'Unable to verify deposit limits. Please refresh the quote.';
+      }
+      final limitHit = limits.limitHitByFor(
+        TransactionLimitOperation.deposit,
+        limitAmount,
+      );
+      if (limitHit == null) {
+        return null;
+      }
+      return moneyFlowLimitErrorFor(
+        limitHit,
+        limits,
+        TransactionLimitOperation.deposit,
+      );
+    } on DioException {
+      return 'Unable to verify deposit limits. Please try again.';
+    } on Object {
+      return 'Unable to verify deposit limits. Please try again.';
+    }
+  }
+
+  double? _depositAmountForLimitCurrency(
+    TransactionLimits limits,
+    double sourceAmount,
+    String sourceCurrency,
+  ) {
+    final limitCurrency = limits.currency.toUpperCase();
+    final normalizedSource = sourceCurrency.toUpperCase();
+    if (limitCurrency == normalizedSource) {
+      return sourceAmount;
+    }
+    if (limitCurrency == 'USD' || limitCurrency == 'USDC') {
+      if (normalizedSource == 'USD' || normalizedSource == 'USDC') {
+        return state.amountUSD ?? sourceAmount;
+      }
+      return state.amountUSD;
+    }
+    if (limitCurrency == 'XOF') {
+      if (normalizedSource == 'XOF') {
+        return state.amountXOF ?? sourceAmount;
+      }
+      return state.amountXOF;
+    }
+    return null;
+  }
 
   void selectProviderData(dynamic data) {
     final code = data is ProviderData ? data.id : data.toString();

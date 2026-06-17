@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
 import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
+import 'package:usdc_wallet/features/limits/utils/money_flow_limit_errors.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 
 /// Validates send form before submission.
@@ -34,7 +35,11 @@ final sendValidationProvider = Provider.family<SendValidation, SendFormData>((
       data.amount!,
     );
     if (limitHit != null) {
-      errors['amount'] = sendLimitErrorFor(limitHit, limits);
+      errors['amount'] = moneyFlowLimitErrorFor(
+        limitHit,
+        limits,
+        TransactionLimitOperation.send,
+      );
     }
   }
 
@@ -70,24 +75,3 @@ bool _isValidPhone(String phone) {
   }
   return RegExp(r'^\+[1-9]\d{7,14}$').hasMatch(cleaned);
 }
-
-String sendLimitErrorFor(
-  String limitHit,
-  TransactionLimits limits,
-) => switch (limitHit) {
-  'manual_review_required' =>
-    limits.permissions.blockReason?.isNotEmpty == true
-        ? limits.permissions.blockReason!
-        : 'Manual review required before sending money',
-  'kyc_required' =>
-    limits.permissions.blockReason?.isNotEmpty == true
-        ? limits.permissions.blockReason!
-        : 'Verification required before sending money',
-  'single_transaction' =>
-    'Montant maximum: ${limits.singleTransactionLimit.toStringAsFixed(2)} USDC par transfert',
-  'daily' =>
-    'Limite quotidienne restante: ${limits.dailyRemainingFor(TransactionLimitOperation.send).toStringAsFixed(2)} USDC',
-  'monthly' =>
-    'Limite mensuelle restante: ${limits.monthlyRemaining.toStringAsFixed(2)} USDC',
-  _ => 'Montant au-dessus de vos limites actuelles',
-};

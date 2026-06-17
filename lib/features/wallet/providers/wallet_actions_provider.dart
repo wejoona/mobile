@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/core/utils/amount_conversion.dart';
 import 'package:usdc_wallet/core/utils/transaction_headers.dart';
+import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
+import 'package:usdc_wallet/features/limits/utils/money_flow_limit_errors.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/limits/limits_service.dart';
 
 /// Wallet-level actions (mobile money cash-out, request money).
 class WalletActions {
@@ -21,6 +24,7 @@ class WalletActions {
     String? pinToken,
     String? idempotencyKey,
   }) async {
+    await _verifyWithdrawalLimits(amount);
     // ignore: avoid_dynamic_calls
     final response = await _dio.post(
       ApiEndpoints.mobileMoneyCashOut,
@@ -113,6 +117,36 @@ class WalletActions {
         return 'WAVECI';
       default:
         return provider;
+    }
+  }
+
+  Future<void> _verifyWithdrawalLimits(double amount) async {
+    try {
+      final limits = await _ref.read(limitsServiceProvider).getLimits();
+      final limitHit = limits.limitHitByFor(
+        TransactionLimitOperation.withdraw,
+        amount,
+      );
+      if (limitHit == null) {
+        return;
+      }
+      throw MoneyFlowLimitException(
+        moneyFlowLimitErrorFor(
+          limitHit,
+          limits,
+          TransactionLimitOperation.withdraw,
+        ),
+      );
+    } on MoneyFlowLimitException {
+      rethrow;
+    } on DioException {
+      throw const MoneyFlowLimitException(
+        'Unable to verify withdrawal limits. Please try again.',
+      );
+    } on Object {
+      throw const MoneyFlowLimitException(
+        'Unable to verify withdrawal limits. Please try again.',
+      );
     }
   }
 }

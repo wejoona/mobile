@@ -462,6 +462,93 @@ void main() {
     });
 
     test(
+      'withdraw notifier checks live limits before cash-out submit',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'amount': 2500,
+            'fee': 125,
+            'totalAmount': 2625,
+            'currency': 'XOF',
+            'providerCode': 'OMCI',
+          })
+          ..queueResponse({
+            'currency': 'USDC',
+            'daily': {
+              'send': {'limit': 5000, 'used': 100},
+              'withdraw': {'limit': 5000, 'used': 100},
+              'deposit': {'limit': 5000, 'used': 100},
+            },
+            'monthly': {
+              'total': {'limit': 50000, 'used': 500},
+            },
+            'perTransaction': {'send': 2500, 'withdraw': 2500},
+          })
+          ..queueResponse({
+            'id': 'withdraw_123',
+            'status': 'pending',
+            'reference': 'MM-123',
+          });
+        final container = ProviderContainer(
+          overrides: [dioProvider.overrideWithValue(dio)],
+        );
+        addTearDown(container.dispose);
+
+        final notifier = container.read(withdrawProvider.notifier)
+          ..selectMethod(WithdrawMethod.orangeMoney)
+          ..setPhoneNumber('+2250748805663');
+        await notifier.setAmount(25);
+        await notifier.submit(
+          pinToken: 'pin_token_123',
+          idempotencyKey: 'idem-withdraw-123',
+        );
+
+        expect(
+          dio.requestHistory[0].path,
+          '/wallet/cash-out/mobile-money/quote',
+        );
+        expect(dio.requestHistory[1].path, '/user/limits');
+        expect(dio.requestHistory[2].path, '/wallet/cash-out/mobile-money');
+        expect(container.read(withdrawProvider).result?.id, 'withdraw_123');
+      },
+    );
+
+    test('wallet actions checks live limits before cash-out submit', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'currency': 'USDC',
+          'daily': {
+            'send': {'limit': 5000, 'used': 100},
+            'withdraw': {'limit': 5000, 'used': 100},
+            'deposit': {'limit': 5000, 'used': 100},
+          },
+          'monthly': {
+            'total': {'limit': 50000, 'used': 500},
+          },
+          'perTransaction': {'send': 2500, 'withdraw': 2500},
+        })
+        ..queueResponse({'id': 'withdraw_123', 'status': 'pending'});
+      final container = ProviderContainer(
+        overrides: [dioProvider.overrideWithValue(dio)],
+      );
+      addTearDown(container.dispose);
+
+      await container
+          .read(walletActionsProvider)
+          .requestWithdrawal(
+            amount: 25,
+            provider: 'orangeMoney',
+            phoneNumber: '+2250748805663',
+            pinToken: 'pin_token_123',
+            idempotencyKey: 'idem-withdraw-123',
+          );
+
+      expect(dio.requestHistory[0].path, '/user/limits');
+      expect(dio.requestHistory[1].path, '/wallet/cash-out/mobile-money');
+      expect(dio.requestHistory[1].headers['X-Pin-Token'], 'pin_token_123');
+    });
+
+    test(
       'withdrawal options provider parses backend-owned mobile rails',
       () async {
         final dio = MockDio()

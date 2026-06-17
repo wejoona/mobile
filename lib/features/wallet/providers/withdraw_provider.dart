@@ -4,8 +4,11 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 import 'package:usdc_wallet/core/utils/amount_conversion.dart';
+import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
+import 'package:usdc_wallet/features/limits/utils/money_flow_limit_errors.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
+import 'package:usdc_wallet/services/limits/limits_service.dart';
 
 /// Withdrawal methods matching Korido's mobile money providers.
 enum WithdrawMethod {
@@ -225,6 +228,13 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
       state = state.copyWith(error: 'Phone number is required.');
       return;
     }
+    final limitError = await _verifyWithdrawalLimitsBeforeSubmission(
+      state.amount!,
+    );
+    if (limitError != null) {
+      state = state.copyWith(error: limitError);
+      return;
+    }
 
     state = state.copyWith(isLoading: true);
     try {
@@ -259,6 +269,28 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
   }
 
   void reset() => state = const WithdrawState();
+
+  Future<String?> _verifyWithdrawalLimitsBeforeSubmission(double amount) async {
+    try {
+      final limits = await ref.read(limitsServiceProvider).getLimits();
+      final limitHit = limits.limitHitByFor(
+        TransactionLimitOperation.withdraw,
+        amount,
+      );
+      if (limitHit == null) {
+        return null;
+      }
+      return moneyFlowLimitErrorFor(
+        limitHit,
+        limits,
+        TransactionLimitOperation.withdraw,
+      );
+    } on DioException {
+      return 'Unable to verify withdrawal limits. Please try again.';
+    } on Object {
+      return 'Unable to verify withdrawal limits. Please try again.';
+    }
+  }
 
   Future<double> _estimateMobileMoneyFee({
     required double amount,

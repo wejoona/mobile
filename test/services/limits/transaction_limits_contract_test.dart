@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
-import 'package:usdc_wallet/features/send/providers/send_validation_provider.dart';
+import 'package:usdc_wallet/features/limits/utils/money_flow_limit_errors.dart';
 import 'package:usdc_wallet/services/limits/limits_service.dart';
 
 import '../../helpers/test_utils.dart';
@@ -34,6 +34,52 @@ void main() {
       expect(source, contains('limitHitByFor('));
       expect(source, contains('TransactionLimitOperation.send'));
     });
+
+    test('deposit submission verifies live limits before deposit API call', () {
+      final source = File(
+        'lib/features/deposit/providers/deposit_provider.dart',
+      ).readAsStringSync();
+
+      expect(source, contains('limitsServiceProvider'));
+      expect(source, contains('_verifyDepositLimitsBeforeSubmission'));
+      expect(
+        source.indexOf('_verifyDepositLimitsBeforeSubmission('),
+        lessThan(source.indexOf('service.initiateDeposit(')),
+      );
+      expect(source, contains('TransactionLimitOperation.deposit'));
+      expect(source, contains('moneyFlowLimitErrorFor('));
+    });
+
+    test(
+      'withdraw submissions verify live limits before cash-out API call',
+      () {
+        final withdrawSource = File(
+          'lib/features/wallet/providers/withdraw_provider.dart',
+        ).readAsStringSync();
+        final actionsSource = File(
+          'lib/features/wallet/providers/wallet_actions_provider.dart',
+        ).readAsStringSync();
+
+        expect(withdrawSource, contains('limitsServiceProvider'));
+        expect(
+          withdrawSource,
+          contains('_verifyWithdrawalLimitsBeforeSubmission'),
+        );
+        expect(
+          withdrawSource.indexOf('_verifyWithdrawalLimitsBeforeSubmission('),
+          lessThan(withdrawSource.indexOf('ApiEndpoints.mobileMoneyCashOut')),
+        );
+        expect(withdrawSource, contains('TransactionLimitOperation.withdraw'));
+
+        expect(actionsSource, contains('limitsServiceProvider'));
+        expect(actionsSource, contains('_verifyWithdrawalLimits('));
+        expect(
+          actionsSource.indexOf('_verifyWithdrawalLimits(amount)'),
+          lessThan(actionsSource.indexOf('ApiEndpoints.mobileMoneyCashOut')),
+        );
+        expect(actionsSource, contains('TransactionLimitOperation.withdraw'));
+      },
+    );
 
     test('parses live nested /user/limits response', () {
       final limits = TransactionLimits.fromJson({
@@ -136,10 +182,49 @@ void main() {
         'manual_review_required',
       );
       expect(
-        sendLimitErrorFor('manual_review_required', limits),
+        moneyFlowLimitErrorFor(
+          'manual_review_required',
+          limits,
+          TransactionLimitOperation.send,
+        ),
         'Manual review required',
       );
     });
+
+    test(
+      'formats operation-specific limit errors from one canonical helper',
+      () {
+        final limits = TransactionLimits.fromJson({
+          'currency': 'USDC',
+          'daily': {
+            'deposit': {'limit': 100, 'used': 80},
+            'withdraw': {'limit': 100, 'used': 90},
+            'send': {'limit': 100, 'used': 10},
+          },
+          'monthly': {
+            'total': {'limit': 1000, 'used': 250},
+          },
+          'perTransaction': {'send': 50, 'withdraw': 25},
+        });
+
+        expect(
+          moneyFlowLimitErrorFor(
+            'daily',
+            limits,
+            TransactionLimitOperation.deposit,
+          ),
+          'Daily remaining: 20.00 USDC',
+        );
+        expect(
+          moneyFlowLimitErrorFor(
+            'single_transaction',
+            limits,
+            TransactionLimitOperation.withdraw,
+          ),
+          'Maximum withdrawal: 25.00 USDC',
+        );
+      },
+    );
 
     test('keeps flat /wallet/limits and mock payload compatibility', () {
       final limits = TransactionLimits.fromJson({
