@@ -7,34 +7,48 @@ class PhoneNormalizer {
     final phoneValue = phone.contains('|') ? phone.split('|').last : phone;
     final compact = phoneValue.trim().replaceAll(RegExp(r'[\s\-().]'), '');
     if (compact.startsWith('+')) {
+      final digits = compact.substring(1).replaceAll(RegExp(r'\D'), '');
+      final country =
+          countryFromCode(countryCode) ??
+          SupportedCountries.findByPhone(digits);
       return _validateE164Digits(
-        compact.substring(1).replaceAll(RegExp(r'\D'), ''),
+        _stripRepeatedCountryPrefix(digits, country),
+        expectedCountry: country,
       );
     }
 
     final digits = compact.replaceAll(RegExp(r'\D'), '');
     if (digits.startsWith('00') && digits.length > 2) {
-      return _validateE164Digits(digits.substring(2));
+      final internationalDigits = digits.substring(2);
+      final country =
+          countryFromCode(countryCode) ??
+          SupportedCountries.findByPhone(internationalDigits);
+      return _validateE164Digits(
+        _stripRepeatedCountryPrefix(internationalDigits, country),
+        expectedCountry: country,
+      );
     }
 
     final country =
         countryFromCode(countryCode) ??
         SupportedCountries.findByPhone(digits) ??
         SupportedCountries.defaultCountry;
+    final normalizedDigits = _stripRepeatedCountryPrefix(digits, country);
 
-    if (digits.startsWith(country.prefix) &&
-        digits.length == country.prefix.length + country.phoneLength) {
-      return _validateE164Digits(digits, expectedCountry: country);
+    if (normalizedDigits.startsWith(country.prefix) &&
+        normalizedDigits.length ==
+            country.prefix.length + country.phoneLength) {
+      return _validateE164Digits(normalizedDigits, expectedCountry: country);
     }
 
-    if (!country.isValidLength(digits)) {
+    if (!country.isValidLength(normalizedDigits)) {
       throw FormatException(
-        'Invalid ${country.code} phone number length: ${digits.length}',
+        'Invalid ${country.code} phone number length: ${normalizedDigits.length}',
       );
     }
 
     return _validateE164Digits(
-      '${country.prefix}$digits',
+      '${country.prefix}$normalizedDigits',
       expectedCountry: country,
     );
   }
@@ -108,5 +122,23 @@ class PhoneNormalizer {
     }
 
     return '+$digits';
+  }
+
+  static String _stripRepeatedCountryPrefix(
+    String digits,
+    CountryConfig? country,
+  ) {
+    if (country == null || country.prefix.isEmpty) {
+      return digits;
+    }
+
+    final expectedE164Length = country.prefix.length + country.phoneLength;
+    var normalized = digits;
+    while (normalized.startsWith('${country.prefix}${country.prefix}') &&
+        normalized.length > expectedE164Length) {
+      normalized = normalized.substring(country.prefix.length);
+    }
+
+    return normalized;
   }
 }

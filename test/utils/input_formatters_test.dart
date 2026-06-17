@@ -17,6 +17,20 @@ void main() {
       expect(result.text, '0748805663');
     });
 
+    test('strips repeated selected dial code from pasted malformed number', () {
+      final formatter = LocalPhoneInputFormatter(
+        dialCode: '+225',
+        maxLocalDigits: 10,
+      );
+
+      final result = formatter.formatEditUpdate(
+        TextEditingValue.empty,
+        const TextEditingValue(text: '+225+2250748805663'),
+      );
+
+      expect(result.text, '0748805663');
+    });
+
     test('formats local signup number without duplicating dial code', () {
       final formatter = LocalPhoneInputFormatter(
         dialCode: '+225',

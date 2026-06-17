@@ -92,16 +92,14 @@ class LocalPhoneInputFormatter extends TextInputFormatter {
     var digits = trimmed.replaceAll(RegExp(r'\D'), '');
     final prefixDigits = dialCode.replaceAll(RegExp(r'\D'), '');
 
-    final hasInternationalPrefix =
-        trimmed.startsWith('+') || trimmed.startsWith('00');
-    final internationalDigits = trimmed.startsWith('00')
-        ? digits.replaceFirst(RegExp(r'^00'), '')
-        : digits;
+    if (trimmed.startsWith('00')) {
+      digits = digits.replaceFirst(RegExp(r'^00'), '');
+    }
 
-    if (hasInternationalPrefix &&
-        prefixDigits.isNotEmpty &&
-        internationalDigits.startsWith(prefixDigits)) {
-      digits = internationalDigits.substring(prefixDigits.length);
+    while (prefixDigits.isNotEmpty &&
+        digits.startsWith(prefixDigits) &&
+        digits.length > maxLocalDigits) {
+      digits = digits.substring(prefixDigits.length);
     }
 
     return digits;

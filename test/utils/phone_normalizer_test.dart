@@ -15,10 +15,14 @@ void main() {
       expect(PhoneNormalizer.toE164('+225 07 00 00 00 00'), '+2250700000000');
     });
 
-    test('rejects duplicated country code input instead of guessing', () {
+    test('repairs duplicated country code input at the value boundary', () {
       expect(
-        () => PhoneNormalizer.toE164('+225+2250748805663'),
-        throwsFormatException,
+        PhoneNormalizer.toE164('+225+2250748805663', countryCode: '+225'),
+        '+2250748805663',
+      );
+      expect(
+        PhoneNormalizer.toE164('2252250748805663', countryCode: 'CI'),
+        '+2250748805663',
       );
     });
 

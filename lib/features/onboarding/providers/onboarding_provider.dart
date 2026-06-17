@@ -201,7 +201,7 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     String? dialCode,
   ]) {
     state = state.copyWith(
-      phoneNumber: _localPhoneNumber(phone),
+      phoneNumber: _localPhoneNumber(phone, dialCode: dialCode),
       countryCode: countryCode,
       dialCode: dialCode,
       clearError: true,
@@ -311,12 +311,12 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     state = state.copyWith(isLoading: false);
   }
 
-  String? _localPhoneNumber(String? phone) {
+  String? _localPhoneNumber(String? phone, {String? dialCode}) {
     final raw = phone?.trim();
     if (raw == null || raw.isEmpty) return null;
-    final dialCode = state.dialCode;
-    if (dialCode != null && dialCode.isNotEmpty) {
-      return localPhoneDigits(dialCode: dialCode, phoneNumber: raw);
+    final selectedDialCode = dialCode ?? state.dialCode;
+    if (selectedDialCode != null && selectedDialCode.isNotEmpty) {
+      return localPhoneDigits(dialCode: selectedDialCode, phoneNumber: raw);
     }
     return digitsOnly(raw);
   }

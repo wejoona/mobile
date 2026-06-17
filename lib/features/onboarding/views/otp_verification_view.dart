@@ -11,6 +11,7 @@ import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.da
 import 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// OTP verification screen
 class OtpVerificationView extends ConsumerStatefulWidget {
@@ -215,7 +216,7 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
   }
 
   String _formatPhoneForDisplay(String phone, String dialCode) {
-    final local = phone.replaceFirst(dialCode, '');
+    final local = localPhoneDigits(dialCode: dialCode, phoneNumber: phone);
     if (local.length < 4) return local;
     return '${local.substring(0, 2)} XX XX XX XX';
   }

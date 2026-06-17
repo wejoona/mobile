@@ -22,6 +22,29 @@ void main() {
       expect(dio.requestHistory.single.data, {'phone': '+2250748805663'});
     });
 
+    test(
+      'login repairs duplicated dial code before sending API body',
+      () async {
+        final dio = MockDio();
+        final authService = AuthService(dio, MockSecureStorage());
+
+        dio.queueResponse({
+          'success': true,
+          'message': 'OTP sent',
+          'expiresIn': 300,
+        });
+
+        await authService.login(
+          phone: '+225+2250748805663',
+          countryCode: '+225',
+        );
+
+        expect(dio.requestHistory.single.method, 'POST');
+        expect(dio.requestHistory.single.path, '/auth/login');
+        expect(dio.requestHistory.single.data, {'phone': '+2250748805663'});
+      },
+    );
+
     test('register sends E.164 phone and ISO country code to API', () async {
       final dio = MockDio();
       final authService = AuthService(dio, MockSecureStorage());

@@ -65,8 +65,12 @@ class LoginNotifier extends Notifier<LoginState> {
 
   /// Update phone number
   void updatePhoneNumber(String phoneNumber, String countryCode) {
-    state = state.copyWith(
+    final localPhoneNumber = localPhoneDigits(
+      dialCode: countryCode,
       phoneNumber: phoneNumber,
+    );
+    state = state.copyWith(
+      phoneNumber: localPhoneNumber,
       countryCode: countryCode,
       error: null,
     );
