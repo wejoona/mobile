@@ -2,8 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/services/app_version/mobile_version_policy_service.dart';
 
 /// Full-screen force update view shown when app version is too old
@@ -20,8 +20,8 @@ class ForceUpdateView extends ConsumerWidget {
     final policy = policyState.policy;
     final message =
         policy?.message ??
-        'Une nouvelle version de Korido est disponible. Veuillez mettre à jour l\'application pour continuer.';
-    final latestVersion = policy?.latestVersion;
+        "Une nouvelle version de Korido est disponible. Veuillez mettre à jour l'application pour continuer.";
+    final requiredVersion = policy?.minimumSupportedVersion;
 
     return Scaffold(
       backgroundColor: context.colors.canvas,
@@ -47,11 +47,10 @@ class ForceUpdateView extends ConsumerWidget {
                 color: context.colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
-              if (latestVersion != null) ...[
+              if (requiredVersion != null) ...[
                 const SizedBox(height: AppSpacing.md),
                 AppText(
-                  'Version requise: $latestVersion',
-                  variant: AppTextVariant.bodyMedium,
+                  'Version requise: $requiredVersion',
                   color: context.colors.textTertiary,
                   textAlign: TextAlign.center,
                 ),
