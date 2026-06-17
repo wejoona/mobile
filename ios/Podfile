@@ -1,6 +1,7 @@
 # Minimum iOS version for Korido.
 # Xcode 27 supports iOS deployment targets from 15.0 upward.
 platform :ios, '15.0'
+inhibit_all_warnings!
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -41,9 +42,22 @@ end
 
 post_install do |installer|
   development_team = ENV['DEVELOPMENT_TEAM'] || 'NV4RJ48P6V'
+  xcode_upgrade_check = '2700'
+
+  installer.pods_project.root_object.attributes['LastUpgradeCheck'] = xcode_upgrade_check
 
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+
+    if target.respond_to?(:source_build_phase) && target.source_build_phase
+      target.source_build_phase.files.each do |build_file|
+        file_ref = build_file.file_ref
+        next unless file_ref&.path&.end_with?('.xcprivacy')
+
+        target.source_build_phase.remove_build_file(build_file)
+      end
+    end
+
     target.build_configurations.each do |config|
       config.build_settings['DEVELOPMENT_TEAM'] = development_team
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
@@ -51,8 +65,23 @@ post_install do |installer|
       config.build_settings['COCOAPODS_PARALLEL_CODE_SIGN'] = 'false'
       config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'i386 x86_64'
       config.build_settings['ARCHS[sdk=iphonesimulator*]'] = 'arm64'
+      config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
+      config.build_settings['SWIFT_SUPPRESS_WARNINGS'] = 'YES'
+      config.build_settings['LIBRARY_SEARCH_PATHS'] = '$(SDKROOT)/usr/lib/swift'
       definitions = config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
       definitions << 'PERMISSION_CONTACTS=1' unless definitions.include?('PERMISSION_CONTACTS=1')
+
+      next unless target.name == 'Sentry'
+
+      swift_flags = config.build_settings['OTHER_SWIFT_FLAGS'] ||= ['$(inherited)']
+      swift_flags = swift_flags.split if swift_flags.is_a?(String)
+      unless swift_flags.include?('CheckImplementationOnly')
+        swift_flags.concat([
+          '-enable-experimental-feature',
+          'CheckImplementationOnly',
+        ])
+      end
+      config.build_settings['OTHER_SWIFT_FLAGS'] = swift_flags
     end
   end
 end
