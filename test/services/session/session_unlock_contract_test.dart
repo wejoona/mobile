@@ -73,6 +73,17 @@ void main() {
       reason:
           'biometric unlock must clear the FSM lock state before routing home',
     );
+    expect(biometricPromptSource, contains('biometricServiceProvider'));
+    expect(
+      biometricPromptSource,
+      contains('isBiometricEnabled(userId: userId)'),
+    );
+    expect(
+      biometricPromptSource,
+      isNot(contains('LocalAuthentication _localAuth')),
+      reason:
+          'FSM biometric prompt must use Korido user-bound biometric service, not raw device auth',
+    );
     expect(biometricUnlockBody, contains('addPostFrameCallback'));
     expect(biometricUnlockBody, contains('context.enterAuthenticatedApp()'));
     expect(
@@ -106,6 +117,9 @@ void main() {
       final pinScreenSource = File(
         'lib/features/pin/views/pin_screen.dart',
       ).readAsStringSync();
+      final loginProviderSource = File(
+        'lib/features/auth/providers/login_provider.dart',
+      ).readAsStringSync();
       final sessionLockedSource = File(
         'lib/features/fsm_states/views/session_locked_view.dart',
       ).readAsStringSync();
@@ -132,6 +146,12 @@ void main() {
       expect(
         pinScreenSource,
         contains('showBiometric: _shouldShowBiometricUnlock'),
+      );
+      expect(
+        loginProviderSource,
+        isNot(contains('Future<bool> verifyBiometric()')),
+        reason:
+            'LoginProvider must not carry a second biometric unlock authority',
       );
       expect(
         pinScreenSource,

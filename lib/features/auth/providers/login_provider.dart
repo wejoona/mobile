@@ -2,12 +2,11 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/features/auth/models/login_state.dart';
-import 'package:usdc_wallet/features/auth/providers/session_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/auth/providers/session_provider.dart';
 import 'package:usdc_wallet/features/settings/providers/devices_provider.dart';
 import 'package:usdc_wallet/services/device/device_registration_service.dart';
 import 'package:usdc_wallet/services/index.dart';
-import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Login state provider
@@ -293,86 +292,6 @@ class LoginNotifier extends Notifier<LoginState> {
     _lockoutTimer = Timer(Duration(seconds: seconds), () {
       state = state.copyWith(isLocked: false, pinAttempts: 0, error: null);
     });
-  }
-
-  /// Verify biometric
-  Future<bool> verifyBiometric() async {
-    state = state.copyWith(isLoading: true, error: null);
-
-    try {
-      final biometricService = ref.read(biometricServiceProvider);
-      final result = await biometricService.authenticate(
-        localizedReason: 'Verify your identity to continue',
-      );
-
-      if (result.success) {
-        // SECURITY: Biometric passed locally — verify server-side via token refresh
-        // Local biometric alone is insufficient; validate session with backend
-        final storedRefreshToken =
-            state.refreshToken ??
-            await _storage.read(key: StorageKeys.refreshToken);
-
-        if (storedRefreshToken != null) {
-          try {
-            final authNotifier = ref.read(authProvider.notifier);
-            final refreshSuccess = await authNotifier.loginWithBiometric(
-              storedRefreshToken,
-            );
-            if (!refreshSuccess) {
-              state = state.copyWith(
-                isLoading: false,
-                error: 'Session expired. Please log in with your PIN.',
-              );
-              return false;
-            }
-          } catch (_) {
-            state = state.copyWith(
-              isLoading: false,
-              error: 'Server verification failed. Please use your PIN.',
-            );
-            return false;
-          }
-        }
-
-        final storedToken =
-            state.sessionToken ??
-            await _storage.read(key: StorageKeys.accessToken);
-
-        if (storedToken != null) {
-          await ref
-              .read(sessionProvider.notifier)
-              .setTokens(
-                accessToken: storedToken,
-                refreshToken: storedRefreshToken ?? storedToken,
-              );
-        }
-
-        // Unlock session so router doesn't redirect back to lock screen
-        try {
-          ref.read(authProvider.notifier).unlock();
-        } catch (_) {}
-        try {
-          final sessionSvc = ref.read(sessionServiceProvider.notifier);
-          sessionSvc.unlockSession();
-        } catch (_) {}
-
-        state = state.copyWith(
-          isLoading: false,
-          currentStep: LoginStep.success,
-        );
-
-        return true;
-      } else {
-        state = state.copyWith(
-          isLoading: false,
-          error: result.errorMessage ?? 'Biometric authentication failed',
-        );
-        return false;
-      }
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
-      return false;
-    }
   }
 
   /// Navigate to specific step
