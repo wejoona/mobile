@@ -14,7 +14,6 @@ export 'package:usdc_wallet/services/compliance/cross_border_flagger.dart';
 export 'package:usdc_wallet/services/compliance/daily_aggregation_service.dart';
 export 'package:usdc_wallet/services/compliance/kyc_tier_service.dart';
 export 'package:usdc_wallet/services/compliance/monthly_aggregation_service.dart';
-export 'package:usdc_wallet/services/compliance/pep_screening_service.dart';
 export 'package:usdc_wallet/services/compliance/reporting_aggregator.dart';
 export 'package:usdc_wallet/services/compliance/risk_assessment_service.dart';
 export 'package:usdc_wallet/services/compliance/sanctions_checker.dart';

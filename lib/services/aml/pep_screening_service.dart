@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Catégorie de personne politiquement exposée
@@ -96,5 +97,5 @@ class PepScreeningService {
 }
 
 final pepScreeningProvider = Provider<PepScreeningService>((ref) {
-  throw UnimplementedError('Override in ProviderScope');
+  return PepScreeningService(dio: ref.watch(dioProvider));
 });
