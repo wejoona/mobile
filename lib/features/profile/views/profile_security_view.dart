@@ -8,9 +8,9 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
 import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
-import 'package:usdc_wallet/features/settings/providers/security_settings_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/biometric/biometric_provider.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart'
     show userStateMachineProvider;
 
@@ -85,7 +85,10 @@ class _SecurityScoreCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final profileState = ref.watch(profileProvider);
-    final securitySettings = ref.watch(securitySettingsProvider);
+    final biometricEnabled = ref.watch(biometricEnabledProvider).maybeWhen(
+          data: (value) => value,
+          orElse: () => false,
+        );
     final kycStatus = ref.watch(kycStatusProvider);
     final userState = ref.watch(userStateMachineProvider);
 
@@ -97,7 +100,7 @@ class _SecurityScoreCard extends ConsumerWidget {
     if (user?.hasPin == true) score += 25;
 
     // Biometric enabled (+25)
-    if (securitySettings.biometricEnabled) score += 25;
+    if (biometricEnabled) score += 25;
 
     // KYC verified (+25)
     final kycVerified =
