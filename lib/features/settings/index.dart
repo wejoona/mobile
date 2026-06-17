@@ -26,7 +26,6 @@ export 'package:usdc_wallet/features/settings/views/notification_settings_view.d
 export 'package:usdc_wallet/features/settings/views/performance_monitor_view.dart';
 export 'package:usdc_wallet/features/settings/views/profile_edit_screen.dart';
 export 'package:usdc_wallet/features/settings/views/profile_view.dart';
-export 'package:usdc_wallet/features/settings/views/security_settings_view.dart';
 export 'package:usdc_wallet/features/settings/views/security_view.dart';
 export 'package:usdc_wallet/features/settings/views/sessions_screen.dart';
 export 'package:usdc_wallet/features/settings/views/settings_screen.dart';

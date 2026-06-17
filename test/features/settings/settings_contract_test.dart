@@ -87,14 +87,19 @@ void main() {
     expect(source, contains('error.statusCode == 401'));
   });
 
-  test('security settings account actions navigate to real screens', () {
+  test('security settings account actions and persisted controls live in canonical screen', () {
     final source = File(
-      'lib/features/settings/views/security_settings_view.dart',
+      'lib/features/settings/views/security_view.dart',
     ).readAsStringSync();
 
     expect(source, isNot(contains('onTap: () {}')));
     expect(source, contains("context.push('/settings/pin')"));
     expect(source, contains("context.push('/settings/devices')"));
+    expect(source, contains('securitySettingsProvider'));
+    expect(source, contains('setPinOnAppOpen'));
+    expect(source, contains('setScreenshotProtection'));
+    expect(source, contains('setTransactionAlerts'));
+    expect(source, contains('setAutoLock'));
   });
 
   test('DevicesRepository parses bare backend array', () async {

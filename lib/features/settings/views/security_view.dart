@@ -5,6 +5,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/settings/providers/notification_preferences_provider.dart';
+import 'package:usdc_wallet/features/settings/providers/security_settings_provider.dart';
 import 'package:usdc_wallet/features/settings/providers/sessions_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
@@ -26,6 +27,8 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
+    final settings = ref.watch(securitySettingsProvider);
+    final settingsNotifier = ref.read(securitySettingsProvider.notifier);
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -69,6 +72,28 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             const SizedBox(height: AppSpacing.sm),
             _buildBiometricOption(l10n, colors),
             const SizedBox(height: AppSpacing.sm),
+            _buildToggleOption(
+              l10n: l10n,
+              colors: colors,
+              icon: Icons.lock_clock_rounded,
+              title: l10n.security_pinOnAppOpen,
+              subtitle: l10n.security_pinOnAppOpenSubtitle,
+              value: settings.pinOnAppOpen,
+              onChanged: settingsNotifier.setPinOnAppOpen,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            _buildStatusOption(
+              l10n: l10n,
+              colors: colors,
+              icon: Icons.timer_rounded,
+              title: l10n.security_autoLock,
+              subtitle: l10n.security_autoLockMinutes(
+                settings.autoLockMinutes,
+              ),
+              status: l10n.security_minutesFormat(settings.autoLockMinutes),
+              onTap: () => _showAutoLockPicker(l10n),
+            ),
+            const SizedBox(height: AppSpacing.sm),
             _buildFeatureSubscriptionOption(
               colors: colors,
               icon: Icons.security,
@@ -107,6 +132,16 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.md),
+            _buildToggleOption(
+              l10n: l10n,
+              colors: colors,
+              icon: Icons.notifications_active_rounded,
+              title: l10n.security_transactionAlerts,
+              subtitle: l10n.security_transactionAlertsSubtitle,
+              value: settings.transactionAlerts,
+              onChanged: settingsNotifier.setTransactionAlerts,
+            ),
+            const SizedBox(height: AppSpacing.sm),
             _buildSecurityAlertOption(
               l10n: l10n,
               colors: colors,
@@ -169,6 +204,16 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.md),
+            _buildToggleOption(
+              l10n: l10n,
+              colors: colors,
+              icon: Icons.screenshot_rounded,
+              title: l10n.security_screenshotProtection,
+              subtitle: l10n.security_screenshotProtectionSubtitle,
+              value: settings.screenshotProtection,
+              onChanged: settingsNotifier.setScreenshotProtection,
+            ),
+            const SizedBox(height: AppSpacing.sm),
             _buildSecurityOption(
               l10n: l10n,
               colors: colors,
@@ -416,6 +461,66 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
     );
   }
 
+  Widget _buildToggleOption({
+    required AppLocalizations l10n,
+    required ThemeColors colors,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: AppCard(
+        variant: AppCardVariant.flat,
+        borderRadius: AppRadius.lg,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: colors.gold.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(AppRadius.md),
+              ),
+              child: Icon(icon, color: colors.gold, size: 22),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(
+                    title,
+                    variant: AppTextVariant.labelMedium,
+                    color: colors.textPrimary,
+                  ),
+                  AppText(
+                    subtitle,
+                    variant: AppTextVariant.bodySmall,
+                    color: colors.textSecondary,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Switch.adaptive(
+              value: value,
+              activeThumbColor: colors.gold,
+              activeTrackColor: colors.gold.withValues(alpha: 0.28),
+              onChanged: onChanged,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSecurityAlertOption({
     required AppLocalizations l10n,
     required ThemeColors colors,
@@ -440,6 +545,81 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
           : l10n.notifications_loadError,
       status: status,
       onTap: () => context.push('/settings/notifications'),
+    );
+  }
+
+  void _showAutoLockPicker(AppLocalizations l10n) {
+    final colors = context.colors;
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: colors.container,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  l10n.security_autoLockAfter,
+                  variant: AppTextVariant.titleMedium,
+                  color: colors.textPrimary,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                for (final minutes in const [1, 2, 5, 10, 15, 30])
+                  _buildAutoLockOption(
+                    colors: colors,
+                    label: l10n.security_minutesFormat(minutes),
+                    onTap: () async {
+                      Navigator.pop(sheetContext);
+                      await ref
+                          .read(securitySettingsProvider.notifier)
+                          .setAutoLock(minutes);
+                    },
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAutoLockOption({
+    required ThemeColors colors,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: AppCard(
+        variant: AppCardVariant.flat,
+        borderRadius: AppRadius.md,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
+        onTap: onTap,
+        child: Row(
+          children: [
+            Icon(Icons.timer_outlined, color: colors.gold, size: 20),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: AppText(
+                label,
+                variant: AppTextVariant.labelMedium,
+                color: colors.textPrimary,
+              ),
+            ),
+            Icon(Icons.chevron_right, color: colors.textTertiary),
+          ],
+        ),
+      ),
     );
   }
 
