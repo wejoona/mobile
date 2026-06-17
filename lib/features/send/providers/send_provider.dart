@@ -16,6 +16,7 @@ import 'package:usdc_wallet/features/send/models/transfer_request.dart';
 import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Send Money State
 class SendMoneyState {
@@ -489,10 +490,10 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
     if (phone == null || phone.trim().isEmpty) {
       return false;
     }
-    return _phoneDigits(phoneNumber) == _phoneDigits(phone);
+    final dialCode = '+${_defaultCountryPrefix()}';
+    return localPhoneDigits(dialCode: dialCode, phoneNumber: phoneNumber) ==
+        localPhoneDigits(dialCode: dialCode, phoneNumber: phone);
   }
-
-  String _phoneDigits(String value) => value.replaceAll(RegExp(r'\D'), '');
 }
 
 List<Map<String, dynamic>> _extractContactSyncMatches(Object? payload) {

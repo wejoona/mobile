@@ -31,49 +31,80 @@ class OtpProgressCue extends StatelessWidget {
               ? AppShadows.goldGlow
               : AppShadows.lightGoldGlow,
         ),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 44,
-              height: 44,
+              width: 76,
+              height: 76,
               decoration: BoxDecoration(
                 color: colors.gold.withValues(
                   alpha: colors.isDark ? 0.20 : 0.16,
                 ),
                 shape: BoxShape.circle,
+                boxShadow: colors.isDark
+                    ? AppShadows.goldGlow
+                    : AppShadows.lightGoldGlow,
               ),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  LoadingIndicator(
+                  LoadingIndicator.large(
                     color: colors.gold,
-                    strokeWidth: 2.2,
+                    strokeWidth: 3,
                     semanticLabel: label,
                   ),
-                  Icon(Icons.check_rounded, color: colors.gold, size: 17),
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: colors.canvas.withValues(
+                        alpha: colors.isDark ? 0.92 : 0.96,
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.check_rounded,
+                      color: colors.gold,
+                      size: 24,
+                    ),
+                  ),
                 ],
               ),
             ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    label,
-                    variant: AppTextVariant.labelLarge,
-                    color: colors.textPrimary,
-                    fontWeight: FontWeight.w700,
+            const SizedBox(height: AppSpacing.lg),
+            AppText(
+              label,
+              variant: AppTextVariant.titleSmall,
+              color: colors.textPrimary,
+              fontWeight: FontWeight.w800,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            AppText(
+              _isFrench(label)
+                  ? 'Nous vérifions votre session et préparons votre espace.'
+                  : 'We are verifying your session and preparing your wallet.',
+              variant: AppTextVariant.bodySmall,
+              color: colors.textSecondary,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                3,
+                (index) => Container(
+                  width: index == 0 ? 28 : 8,
+                  height: 6,
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  decoration: BoxDecoration(
+                    color: index == 0
+                        ? colors.gold
+                        : colors.gold.withValues(alpha: 0.28),
+                    borderRadius: BorderRadius.circular(AppRadius.full),
                   ),
-                  const SizedBox(height: AppSpacing.xxs),
-                  AppText(
-                    _isFrench(label)
-                        ? 'Connexion en cours...'
-                        : 'Signing you in...',
-                    variant: AppTextVariant.bodySmall,
-                    color: colors.textSecondary,
-                  ),
-                ],
+                ),
               ),
             ),
           ],

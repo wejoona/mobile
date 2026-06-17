@@ -121,7 +121,7 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     String? phone,
     bool acceptedTerms = false,
   }) async {
-    final phoneNumber = _normalizePhone(phone ?? state.phoneNumber);
+    final phoneNumber = _localPhoneNumber(phone ?? state.phoneNumber);
     final countryCode = state.countryCode ?? 'CI';
 
     if (phoneNumber == null) {
@@ -201,7 +201,7 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     String? dialCode,
   ]) {
     state = state.copyWith(
-      phoneNumber: _normalizePhone(phone),
+      phoneNumber: _localPhoneNumber(phone),
       countryCode: countryCode,
       dialCode: dialCode,
       clearError: true,
@@ -311,13 +311,12 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     state = state.copyWith(isLoading: false);
   }
 
-  String? _normalizePhone(String? phone) {
+  String? _localPhoneNumber(String? phone) {
     final raw = phone?.trim();
     if (raw == null || raw.isEmpty) return null;
-    if (raw.startsWith('+')) return '+${digitsOnly(raw)}';
     final dialCode = state.dialCode;
     if (dialCode != null && dialCode.isNotEmpty) {
-      return normalizePhoneE164(dialCode: dialCode, localNumber: raw);
+      return localPhoneDigits(dialCode: dialCode, phoneNumber: raw);
     }
     return digitsOnly(raw);
   }

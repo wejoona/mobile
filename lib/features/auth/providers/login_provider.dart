@@ -8,6 +8,7 @@ import 'package:usdc_wallet/features/settings/providers/devices_provider.dart';
 import 'package:usdc_wallet/services/device/device_registration_service.dart';
 import 'package:usdc_wallet/services/index.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Login state provider
 final loginProvider = NotifierProvider<LoginNotifier, LoginState>(
@@ -44,9 +45,13 @@ class LoginNotifier extends Notifier<LoginState> {
       if (rememberedPhone != null) {
         final parts = rememberedPhone.split('|');
         if (parts.length == 2) {
+          final countryCode = parts[0];
           state = state.copyWith(
-            countryCode: parts[0],
-            phoneNumber: parts[1],
+            countryCode: countryCode,
+            phoneNumber: localPhoneDigits(
+              dialCode: countryCode,
+              phoneNumber: parts[1],
+            ),
             rememberDevice: true,
           );
         }
@@ -81,7 +86,10 @@ class LoginNotifier extends Notifier<LoginState> {
 
     try {
       // Call login API
-      await _authService.login(phone: state.phoneNumber!);
+      await _authService.login(
+        phone: state.phoneNumber!,
+        countryCode: state.countryCode,
+      );
 
       // Save remembered phone if enabled
       if (state.rememberDevice) {
@@ -122,6 +130,7 @@ class LoginNotifier extends Notifier<LoginState> {
     try {
       final response = await _authService.verifyOtp(
         phone: state.phoneNumber!,
+        countryCode: state.countryCode,
         otp: state.otp!,
       );
 
@@ -155,7 +164,10 @@ class LoginNotifier extends Notifier<LoginState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      await _authService.login(phone: state.phoneNumber!);
+      await _authService.login(
+        phone: state.phoneNumber!,
+        countryCode: state.countryCode,
+      );
       state = state.copyWith(isLoading: false);
       _startResendCountdown();
     } catch (e) {

@@ -414,13 +414,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
     }
 
     final authState = ref.read(authProvider);
-    final loginState = ref.read(loginProvider);
     final sessionState = ref.read(sessionServiceProvider);
     final shouldDismiss = switch (widget.pinContext) {
-      PinContext.login =>
-        authState.isAuthenticated ||
-            (loginState.sessionToken == null ||
-                loginState.sessionToken!.isEmpty),
+      PinContext.login => authState.isAuthenticated,
       PinContext.sessionLock =>
         authState.isAuthenticated &&
             !authState.isLocked &&

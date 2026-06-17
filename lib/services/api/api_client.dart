@@ -149,11 +149,12 @@ final dioProvider = Provider<Dio>((ref) {
     logger.info('Mock interceptor enabled - using mock API responses');
   }
 
-  // PERFORMANCE: Add request deduplication
-  dio.interceptors.add(ref.read(deduplicationInterceptorProvider));
-
-  // PERFORMANCE: Add HTTP response caching (must be before auth)
+  // PERFORMANCE: Add HTTP response caching before deduplication so a cache hit
+  // does not create an in-flight deduplication entry that can never complete.
   dio.interceptors.add(ref.read(cacheInterceptorProvider));
+
+  // PERFORMANCE: Add request deduplication for network-bound GET requests.
+  dio.interceptors.add(ref.read(deduplicationInterceptorProvider));
 
   // SECURITY: Add device fingerprint and risk score headers
   final securityHeadersInterceptor = ref.read(

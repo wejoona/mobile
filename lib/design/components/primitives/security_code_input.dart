@@ -53,6 +53,7 @@ class SecurityNumberPad extends StatelessWidget {
     this.onBiometricPressed,
     this.showBiometric = false,
     this.isLoading = false,
+    this.loadingLabel,
     this.biometricIcon = Icons.fingerprint_rounded,
   });
 
@@ -61,10 +62,15 @@ class SecurityNumberPad extends StatelessWidget {
   final VoidCallback? onBiometricPressed;
   final bool showBiometric;
   final bool isLoading;
+  final String? loadingLabel;
   final IconData biometricIcon;
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return _PadLoadingPanel(label: loadingLabel);
+    }
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -93,12 +99,10 @@ class SecurityNumberPad extends StatelessWidget {
               ),
             ),
             _PadSlot(
-              child: isLoading
-                  ? const _PadLoading()
-                  : _PadButton.icon(
-                      icon: Icons.backspace_outlined,
-                      onPressed: onDeletePressed,
-                    ),
+              child: _PadButton.icon(
+                icon: Icons.backspace_outlined,
+                onPressed: onDeletePressed,
+              ),
             ),
           ],
         ),
@@ -391,17 +395,48 @@ class _PadButton extends StatelessWidget {
   }
 }
 
-class _PadLoading extends StatelessWidget {
-  const _PadLoading();
+class _PadLoadingPanel extends StatelessWidget {
+  const _PadLoadingPanel({this.label});
+
+  final String? label;
 
   @override
-  Widget build(BuildContext context) => SizedBox.square(
-    dimension: 64,
-    child: Center(
-      child: CircularProgressIndicator(
-        color: context.colors.gold,
-        strokeWidth: 2,
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.xl,
       ),
-    ),
-  );
+      decoration: BoxDecoration(
+        color: colors.elevated.withValues(alpha: colors.isDark ? 0.84 : 1),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(
+          color: colors.gold.withValues(alpha: colors.isDark ? 0.30 : 0.22),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox.square(
+            dimension: 48,
+            child: CircularProgressIndicator(
+              color: colors.gold,
+              strokeWidth: 3,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          AppText(
+            label ?? 'Securing your session...',
+            variant: AppTextVariant.labelLarge,
+            color: colors.textPrimary,
+            fontWeight: FontWeight.w700,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
 }

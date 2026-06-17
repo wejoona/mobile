@@ -92,11 +92,16 @@ class KoridoFlowDriver {
   Future<void> startRegistrationFromIntro() async {
     await pumpUntil(
       () =>
+          hasAnyText(['Welcome back', 'Bon retour']) ||
           hasAnyText(['Continue', 'Continuer']) ||
           hasAnyText(['Enter your phone number', 'Entrez votre numéro']),
-      reason: 'intro or phone screen',
+      reason: 'login, intro, or phone screen',
       timeout: const Duration(seconds: 12),
     );
+
+    if (hasAnyText(['Welcome back', 'Bon retour'])) {
+      await tapText(['Sign up', "S'inscrire"]);
+    }
 
     if (hasAnyText(['Enter your phone number', 'Entrez votre numéro'])) {
       return;
@@ -114,7 +119,7 @@ class KoridoFlowDriver {
 
     await pumpUntil(
       () => hasAnyText(['Enter your phone number', 'Entrez votre numéro']),
-      reason: 'phone input screen',
+      reason: 'signup phone input screen',
     );
   }
 
@@ -160,17 +165,9 @@ class KoridoFlowDriver {
   }
 
   Future<void> submitProfile() async {
-    final fields = find.byType(TextFormField);
-    await tester.enterText(fields.at(0), 'Awa');
-    await tester.enterText(fields.at(1), 'Kone');
-    await tester.enterText(fields.at(2), 'awa.kone@example.com');
-    await dismissKeyboard();
-
-    final listView = find.byType(ListView);
-    if (listView.evaluate().isNotEmpty) {
-      await tester.drag(listView.first, const Offset(0, -420));
-      await tester.pump(const Duration(milliseconds: 250));
-    }
+    await enterTextByKey('signup_profile_first_name_input', 'Awa');
+    await enterTextByKey('signup_profile_last_name_input', 'Kone');
+    await enterTextByKey('signup_profile_email_input', 'awa.kone@example.com');
 
     await tapText(['Continue', 'Continuer']);
   }
@@ -392,6 +389,19 @@ class KoridoFlowDriver {
       reason: 'text input field',
     );
     await tester.enterText(fields().first, value);
+    await tester.pump();
+    await dismissKeyboard();
+  }
+
+  Future<void> enterTextByKey(String key, String value) async {
+    final field = find.byKey(ValueKey(key));
+    await pumpUntil(
+      () => field.evaluate().isNotEmpty,
+      reason: '$key input field',
+    );
+    await tester.ensureVisible(field);
+    await tester.tap(field);
+    await tester.enterText(field, value);
     await tester.pump();
     await dismissKeyboard();
   }

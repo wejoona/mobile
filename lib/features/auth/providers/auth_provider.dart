@@ -30,6 +30,7 @@ class AuthState {
   final AuthStatus status;
   final User? user;
   final String? phone;
+  final String? countryCode;
   final String? error;
   final int? otpExpiresIn;
 
@@ -37,6 +38,7 @@ class AuthState {
     this.status = AuthStatus.initial,
     this.user,
     this.phone,
+    this.countryCode,
     this.error,
     this.otpExpiresIn,
   });
@@ -45,6 +47,7 @@ class AuthState {
     AuthStatus? status,
     User? user,
     String? phone,
+    String? countryCode,
     String? error,
     int? otpExpiresIn,
   }) {
@@ -52,6 +55,7 @@ class AuthState {
       status: status ?? this.status,
       user: user ?? this.user,
       phone: phone ?? this.phone,
+      countryCode: countryCode ?? this.countryCode,
       error: error,
       otpExpiresIn: otpExpiresIn ?? this.otpExpiresIn,
     );
@@ -362,7 +366,11 @@ class AuthNotifier extends Notifier<AuthState> {
     String? termsVersion,
     String? privacyVersion,
   }) async {
-    state = state.copyWith(status: AuthStatus.loading, phone: phone);
+    state = state.copyWith(
+      status: AuthStatus.loading,
+      phone: phone,
+      countryCode: countryCode,
+    );
 
     // Sync with FSM: notify that login/register is starting
     ref.read(appFsmProvider.notifier).login(phone, countryCode);
@@ -397,15 +405,21 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   /// Login existing user
-  Future<void> login(String phone) async {
-    state = state.copyWith(status: AuthStatus.loading, phone: phone);
+  Future<void> login(String phone, {String? countryCode}) async {
+    state = state.copyWith(
+      status: AuthStatus.loading,
+      phone: phone,
+      countryCode: countryCode,
+    );
 
     // Sync with FSM: notify that login is starting
-    // Note: Using empty country code since login doesn't require it
-    ref.read(appFsmProvider.notifier).login(phone, '');
+    ref.read(appFsmProvider.notifier).login(phone, countryCode ?? '');
 
     try {
-      final response = await _authService.login(phone: phone);
+      final response = await _authService.login(
+        phone: phone,
+        countryCode: countryCode,
+      );
 
       state = state.copyWith(
         status: AuthStatus.otpSent,
@@ -442,6 +456,7 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final response = await _authService.verifyOtp(
         phone: state.phone!,
+        countryCode: state.countryCode,
         otp: otp,
       );
 
@@ -804,6 +819,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
     await _storage.delete(key: StorageKeys.accessToken);
     await _storage.delete(key: StorageKeys.refreshToken);
+    await ref.read(biometricServiceProvider).disableBiometric();
 
     // Clear user state machine (clears cache, avatar, storage keys)
     await ref.read(userStateMachineProvider.notifier).logout();

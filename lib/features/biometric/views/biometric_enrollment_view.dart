@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
@@ -165,7 +166,11 @@ class _BiometricEnrollmentViewState
           color: context.colors.textSecondary.withValues(alpha: 0.1),
           shape: BoxShape.circle,
         ),
-        child: Icon(Icons.security, size: 64, color: context.colors.textSecondary),
+        child: Icon(
+          Icons.security,
+          size: 64,
+          color: context.colors.textSecondary,
+        ),
       ),
     );
   }
@@ -191,11 +196,13 @@ class _BiometricEnrollmentViewState
 
     return Column(
       children: benefits
-          .map((benefit) => _buildBenefitCard(
-                icon: benefit['icon'] as IconData,
-                title: benefit['title'] as String,
-                description: benefit['description'] as String,
-              ))
+          .map(
+            (benefit) => _buildBenefitCard(
+              icon: benefit['icon'] as IconData,
+              title: benefit['title'] as String,
+              description: benefit['description'] as String,
+            ),
+          )
           .toList(),
     );
   }
@@ -325,8 +332,18 @@ class _BiometricEnrollmentViewState
       );
 
       if (authenticatedBio.success) {
+        final authState = ref.read(authProvider);
+        final userId = authState.user?.id;
+        if (userId == null || userId.isEmpty) {
+          _showError(l10n.biometric_enrollment_error_generic);
+          return;
+        }
+
         // Enable biometric
-        await biometricService.enableBiometric();
+        await biometricService.enableBiometric(
+          userId: userId,
+          phone: authState.phone,
+        );
 
         // Invalidate providers to refresh UI
         ref.invalidate(biometricEnabledProvider);
@@ -391,10 +408,7 @@ class _BiometricEnrollmentViewState
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: context.colors.error,
-      ),
+      SnackBar(content: Text(message), backgroundColor: context.colors.error),
     );
   }
 }

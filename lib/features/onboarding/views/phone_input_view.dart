@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/countries.dart' as app_config;
@@ -12,6 +11,7 @@ import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.da
 import 'package:usdc_wallet/features/onboarding/widgets/country_picker_widget.dart';
 import 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/utils/input_formatters.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Phone input screen for registration
@@ -50,139 +50,137 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
     return Scaffold(
       backgroundColor: colors.canvas,
       body: SafeArea(
-        child: Padding(
+        child: ListView(
           padding: const EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AuthTopBar(onBack: () => context.pop()),
-              const SizedBox(height: AppSpacing.lg),
-              const OnboardingProgress(currentStep: 1, totalSteps: 5),
-              const SizedBox(height: AppSpacing.xxl),
-              AuthScreenHeader(
-                appName: l10n.appName,
-                title: l10n.onboarding_phoneInput_title,
-                subtitle: l10n.onboarding_phoneInput_subtitle,
-                markSize: 52,
-              ),
-              const SizedBox(height: AppSpacing.xxl),
-              // Country picker
-              GestureDetector(
-                onTap: _showCountryPicker,
-                child: Container(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: colors.elevated,
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                    border: Border.all(color: colors.borderSubtle),
-                  ),
-                  child: Row(
-                    children: [
-                      Text(
-                        _selectedCountry.flag,
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: AppText(
-                          _selectedCountry.name,
-                          variant: AppTextVariant.bodyLarge,
-                          color: colors.textPrimary,
-                        ),
-                      ),
-                      AppText(
-                        _selectedCountry.dialCode,
-                        variant: AppTextVariant.bodyLarge,
-                        color: colors.gold,
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Icon(Icons.arrow_drop_down, color: colors.iconSecondary),
-                    ],
-                  ),
+          children: [
+            AuthTopBar(onBack: () => context.pop()),
+            const SizedBox(height: AppSpacing.lg),
+            const OnboardingProgress(currentStep: 1, totalSteps: 5),
+            const SizedBox(height: AppSpacing.xxl),
+            AuthScreenHeader(
+              appName: l10n.appName,
+              title: l10n.onboarding_phoneInput_title,
+              subtitle: l10n.onboarding_phoneInput_subtitle,
+              markSize: 52,
+            ),
+            const SizedBox(height: AppSpacing.xxl),
+            // Country picker
+            GestureDetector(
+              onTap: _showCountryPicker,
+              child: Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: colors.elevated,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  border: Border.all(color: colors.borderSubtle),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              // Phone input
-              AppInput(
-                label: l10n.onboarding_phoneInput_label,
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                hint: _selectedCountry.phoneFormat,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  _PhoneNumberFormatter(_selectedCountry.phoneFormat),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              // Terms checkbox
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Checkbox(
-                    value: _termsAccepted,
-                    onChanged: (value) {
-                      setState(() => _termsAccepted = value ?? false);
-                    },
-                    activeColor: colors.gold,
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: AppSpacing.sm),
+                child: Row(
+                  children: [
+                    Text(
+                      _selectedCountry.flag,
+                      style: const TextStyle(fontSize: 24),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
                       child: AppText(
-                        l10n.onboarding_phoneInput_terms,
-                        variant: AppTextVariant.bodySmall,
-                        color: colors.textSecondary,
+                        _selectedCountry.name,
+                        variant: AppTextVariant.bodyLarge,
+                        color: colors.textPrimary,
                       ),
                     ),
-                  ),
-                ],
+                    AppText(
+                      _selectedCountry.dialCode,
+                      variant: AppTextVariant.bodyLarge,
+                      color: colors.gold,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Icon(Icons.arrow_drop_down, color: colors.iconSecondary),
+                  ],
+                ),
               ),
-              if (state.error != null) ...[
-                const SizedBox(height: AppSpacing.md),
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: colors.errorBg,
-                    borderRadius: BorderRadius.circular(AppRadius.sm),
-                    border: Border.all(color: colors.error),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.error_outline, color: colors.errorText),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: AppText(
-                          state.error!,
-                          variant: AppTextVariant.bodySmall,
-                          color: colors.errorText,
-                        ),
-                      ),
-                    ],
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            // Phone input
+            AppInput(
+              label: l10n.onboarding_phoneInput_label,
+              controller: _phoneController,
+              keyboardType: TextInputType.phone,
+              hint: _selectedCountry.phoneFormat,
+              inputFormatters: [
+                LocalPhoneInputFormatter(
+                  dialCode: _selectedCountry.dialCode,
+                  maxLocalDigits: _selectedCountry.phoneLength,
+                  displayFormat: _selectedCountry.phoneFormat,
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            // Terms checkbox
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Checkbox(
+                  value: _termsAccepted,
+                  onChanged: (value) {
+                    setState(() => _termsAccepted = value ?? false);
+                  },
+                  activeColor: colors.gold,
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.sm),
+                    child: AppText(
+                      l10n.onboarding_phoneInput_terms,
+                      variant: AppTextVariant.bodySmall,
+                      color: colors.textSecondary,
+                    ),
                   ),
                 ),
               ],
-              const Spacer(),
-              AppButton(
-                label: l10n.action_continue,
-                onPressed: _canSubmit ? _handleSubmit : null,
-                isLoading: state.isLoading,
-                isFullWidth: true,
-              ),
+            ),
+            if (state.error != null) ...[
               const SizedBox(height: AppSpacing.md),
-              // Login link
-              Center(
-                child: TextButton(
-                  onPressed: () => context.go('/login'),
-                  child: AppText(
-                    l10n.onboarding_phoneInput_loginLink,
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: colors.gold,
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: colors.errorBg,
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                  border: Border.all(color: colors.error),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.error_outline, color: colors.errorText),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: AppText(
+                        state.error!,
+                        variant: AppTextVariant.bodySmall,
+                        color: colors.errorText,
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ],
-          ),
+            SizedBox(height: MediaQuery.sizeOf(context).height * 0.2),
+            AppButton(
+              label: l10n.action_continue,
+              onPressed: _canSubmit ? _handleSubmit : null,
+              isLoading: state.isLoading,
+              isFullWidth: true,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            // Login link
+            Center(
+              child: TextButton(
+                onPressed: () => context.go('/login'),
+                child: AppText(
+                  l10n.onboarding_phoneInput_loginLink,
+                  style: AppTypography.bodyMedium.copyWith(color: colors.gold),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -224,10 +222,7 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
   }
 
   Future<void> _handleSubmit() async {
-    final fullPhoneNumber = normalizePhoneE164(
-      dialCode: _selectedCountry.dialCode,
-      localNumber: _phoneController.text,
-    );
+    final localPhoneNumber = digitsOnly(_phoneController.text);
     final configCountry = app_config.SupportedCountries.findByCode(
       _selectedCountry.code,
     );
@@ -237,7 +232,7 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
     ref
         .read(onboardingProvider.notifier)
         .updatePhoneNumber(
-          fullPhoneNumber,
+          localPhoneNumber,
           _selectedCountry.code,
           _selectedCountry.dialCode,
         );
@@ -248,50 +243,5 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
     if (mounted && ref.read(onboardingProvider).error == null) {
       context.go('/signup/verify-phone');
     }
-  }
-}
-
-/// Phone number formatter
-class _PhoneNumberFormatter extends TextInputFormatter {
-  final String format;
-
-  _PhoneNumberFormatter(this.format);
-
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    final digitsOnly = newValue.text.replaceAll(RegExp(r'\D'), '');
-    final formatted = _formatPhoneNumber(digitsOnly);
-
-    return TextEditingValue(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
-    );
-  }
-
-  String _formatPhoneNumber(String digits) {
-    if (digits.isEmpty) return '';
-
-    final buffer = StringBuffer();
-    int digitIndex = 0;
-
-    for (int i = 0; i < format.length && digitIndex < digits.length; i++) {
-      if (format[i] == 'X') {
-        buffer.write(digits[digitIndex]);
-        digitIndex++;
-      } else {
-        buffer.write(format[i]);
-      }
-    }
-
-    // Add remaining digits
-    while (digitIndex < digits.length) {
-      buffer.write(digits[digitIndex]);
-      digitIndex++;
-    }
-
-    return buffer.toString();
   }
 }

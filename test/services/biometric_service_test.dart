@@ -281,13 +281,25 @@ void main() {
       final biometricService = service();
 
       // Act
-      await biometricService.enableBiometric();
+      await biometricService.enableBiometric(userId: 'user-1');
 
       // Assert
       verify(
         () => mockStorage.write(
           key: StorageKeys.biometricEnabled,
           value: 'true',
+          iOptions: any(named: 'iOptions'),
+          aOptions: any(named: 'aOptions'),
+          lOptions: any(named: 'lOptions'),
+          webOptions: any(named: 'webOptions'),
+          mOptions: any(named: 'mOptions'),
+          wOptions: any(named: 'wOptions'),
+        ),
+      ).called(1);
+      verify(
+        () => mockStorage.write(
+          key: 'biometric_user_id',
+          value: 'user-1',
           iOptions: any(named: 'iOptions'),
           aOptions: any(named: 'aOptions'),
           lOptions: any(named: 'lOptions'),
@@ -304,6 +316,17 @@ void main() {
         () => mockStorage.write(
           key: any(named: 'key'),
           value: any(named: 'value'),
+          iOptions: any(named: 'iOptions'),
+          aOptions: any(named: 'aOptions'),
+          lOptions: any(named: 'lOptions'),
+          webOptions: any(named: 'webOptions'),
+          mOptions: any(named: 'mOptions'),
+          wOptions: any(named: 'wOptions'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockStorage.delete(
+          key: any(named: 'key'),
           iOptions: any(named: 'iOptions'),
           aOptions: any(named: 'aOptions'),
           lOptions: any(named: 'lOptions'),
@@ -345,6 +368,28 @@ void main() {
           wOptions: any(named: 'wOptions'),
         ),
       ).thenAnswer((_) async => 'true');
+      when(
+        () => mockStorage.read(
+          key: 'biometric_user_id',
+          iOptions: any(named: 'iOptions'),
+          aOptions: any(named: 'aOptions'),
+          lOptions: any(named: 'lOptions'),
+          webOptions: any(named: 'webOptions'),
+          mOptions: any(named: 'mOptions'),
+          wOptions: any(named: 'wOptions'),
+        ),
+      ).thenAnswer((_) async => 'user-1');
+      when(
+        () => mockStorage.read(
+          key: 'user_id',
+          iOptions: any(named: 'iOptions'),
+          aOptions: any(named: 'aOptions'),
+          lOptions: any(named: 'lOptions'),
+          webOptions: any(named: 'webOptions'),
+          mOptions: any(named: 'mOptions'),
+          wOptions: any(named: 'wOptions'),
+        ),
+      ).thenAnswer((_) async => 'user-1');
       final biometricService = service();
 
       // Act
@@ -353,6 +398,53 @@ void main() {
       // Assert
       expect(result, isTrue);
     });
+
+    test(
+      'should return false when biometric belongs to another user',
+      () async {
+        // Arrange
+        when(
+          () => mockStorage.read(
+            key: StorageKeys.biometricEnabled,
+            iOptions: any(named: 'iOptions'),
+            aOptions: any(named: 'aOptions'),
+            lOptions: any(named: 'lOptions'),
+            webOptions: any(named: 'webOptions'),
+            mOptions: any(named: 'mOptions'),
+            wOptions: any(named: 'wOptions'),
+          ),
+        ).thenAnswer((_) async => 'true');
+        when(
+          () => mockStorage.read(
+            key: 'biometric_user_id',
+            iOptions: any(named: 'iOptions'),
+            aOptions: any(named: 'aOptions'),
+            lOptions: any(named: 'lOptions'),
+            webOptions: any(named: 'webOptions'),
+            mOptions: any(named: 'mOptions'),
+            wOptions: any(named: 'wOptions'),
+          ),
+        ).thenAnswer((_) async => 'user-a');
+        when(
+          () => mockStorage.read(
+            key: 'user_id',
+            iOptions: any(named: 'iOptions'),
+            aOptions: any(named: 'aOptions'),
+            lOptions: any(named: 'lOptions'),
+            webOptions: any(named: 'webOptions'),
+            mOptions: any(named: 'mOptions'),
+            wOptions: any(named: 'wOptions'),
+          ),
+        ).thenAnswer((_) async => 'user-b');
+        final biometricService = service();
+
+        // Act
+        final result = await biometricService.isBiometricEnabled();
+
+        // Assert
+        expect(result, isFalse);
+      },
+    );
 
     test('should return false when biometric is disabled', () async {
       // Arrange

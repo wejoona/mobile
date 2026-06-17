@@ -46,11 +46,16 @@ class AuthService {
   }
 
   /// POST /auth/login
-  Future<OtpResponse> login({required String phone}) async {
+  Future<OtpResponse> login({
+    required String phone,
+    String? countryCode,
+  }) async {
     try {
       final response = await _dio.post(
         '/auth/login',
-        data: {'phone': PhoneNormalizer.toE164(phone)},
+        data: {
+          'phone': PhoneNormalizer.toE164(phone, countryCode: countryCode),
+        },
       );
       return OtpResponse.fromJson(response.data);
     } on DioException catch (e) {
@@ -62,13 +67,14 @@ class AuthService {
   Future<AuthResponse> verifyOtp({
     required String phone,
     required String otp,
+    String? countryCode,
     String? verificationId,
   }) async {
     try {
       final response = await _dio.post(
         '/auth/verify-otp',
         data: {
-          'phone': PhoneNormalizer.toE164(phone),
+          'phone': PhoneNormalizer.toE164(phone, countryCode: countryCode),
           'otp': otp,
           if (verificationId != null) 'verificationId': verificationId,
         },

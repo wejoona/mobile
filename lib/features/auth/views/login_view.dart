@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/countries.dart';
@@ -17,6 +16,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
+import 'package:usdc_wallet/utils/input_formatters.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Login screen with two modes:
@@ -72,7 +72,15 @@ class _LoginViewState extends ConsumerState<LoginView>
       key: StorageKeys.rememberedPhone,
     );
     if (rememberedPhone != null && rememberedPhone.isNotEmpty && mounted) {
-      _phoneController.text = rememberedPhone;
+      final parts = rememberedPhone.split('|');
+      final storedDialCode = parts.length == 2
+          ? parts[0]
+          : _selectedCountry.fullPrefix;
+      final storedPhone = parts.length == 2 ? parts[1] : rememberedPhone;
+      _phoneController.text = localPhoneDigits(
+        dialCode: storedDialCode,
+        phoneNumber: storedPhone,
+      );
     }
 
     final isEnabled = await biometricService.isBiometricEnabled();
@@ -560,9 +568,9 @@ class _LoginViewState extends ConsumerState<LoginView>
                       ),
                     ),
                     inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(
-                        _selectedCountry.phoneLength,
+                      LocalPhoneInputFormatter(
+                        dialCode: _selectedCountry.fullPrefix,
+                        maxLocalDigits: _selectedCountry.phoneLength,
                       ),
                     ],
                     onTapOutside: (_) => _phoneFocusNode.unfocus(),
@@ -633,10 +641,7 @@ class _LoginViewState extends ConsumerState<LoginView>
 
   Future<void> _submit() async {
     if (!_isPhoneValid()) return;
-    final phone = normalizePhoneE164(
-      dialCode: _selectedCountry.fullPrefix,
-      localNumber: _phoneController.text,
-    );
+    final phone = digitsOnly(_phoneController.text);
     ref.read(selectedCountryProvider.notifier).select(_selectedCountry);
     ref
         .read(loginProvider.notifier)

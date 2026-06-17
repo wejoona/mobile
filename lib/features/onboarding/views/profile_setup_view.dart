@@ -56,6 +56,7 @@ class _ProfileSetupViewState extends ConsumerState<ProfileSetupView> {
               const SizedBox(height: AppSpacing.xxl),
               // First name
               AppInput(
+                fieldKey: const ValueKey('signup_profile_first_name_input'),
                 label: l10n.onboarding_profile_firstName,
                 controller: _firstNameController,
                 hint: l10n.onboarding_profile_firstNameHint,
@@ -70,6 +71,7 @@ class _ProfileSetupViewState extends ConsumerState<ProfileSetupView> {
               const SizedBox(height: AppSpacing.lg),
               // Last name
               AppInput(
+                fieldKey: const ValueKey('signup_profile_last_name_input'),
                 label: l10n.onboarding_profile_lastName,
                 controller: _lastNameController,
                 hint: l10n.onboarding_profile_lastNameHint,
@@ -84,6 +86,7 @@ class _ProfileSetupViewState extends ConsumerState<ProfileSetupView> {
               const SizedBox(height: AppSpacing.lg),
               // Email (optional)
               AppInput(
+                fieldKey: const ValueKey('signup_profile_email_input'),
                 label: l10n.onboarding_profile_email,
                 controller: _emailController,
                 hint: l10n.onboarding_profile_emailHint,

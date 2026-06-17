@@ -551,12 +551,20 @@ class _BiometricTile extends ConsumerWidget {
               onChanged: (value) async {
                 final service = ref.read(biometricServiceProvider);
                 if (value) {
+                  final authState = ref.read(authProvider);
+                  final userId = authState.user?.id;
+                  if (userId == null || userId.isEmpty) {
+                    return;
+                  }
                   final authenticatedBio = await service.authenticate(
                     localizedReason:
                         l10n.biometric_enrollment_authenticate_reason,
                   );
                   if (authenticatedBio.success) {
-                    await service.enableBiometric();
+                    await service.enableBiometric(
+                      userId: userId,
+                      phone: authState.phone,
+                    );
                     ref.invalidate(biometricEnabledProvider);
                   }
                 } else {

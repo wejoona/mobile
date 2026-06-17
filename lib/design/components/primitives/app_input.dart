@@ -68,6 +68,7 @@ class AppInput extends StatefulWidget {
     this.onTap,
     this.validator,
     this.semanticLabel,
+    this.fieldKey,
   });
 
   final TextEditingController? controller;
@@ -97,6 +98,12 @@ class AppInput extends StatefulWidget {
 
   /// Optional semantic label for screen readers (defaults to label or hint)
   final String? semanticLabel;
+
+  /// Optional key for the underlying editable field.
+  ///
+  /// Use this for stable product automation and accessibility-facing flows
+  /// where multiple inputs share the same component type.
+  final Key? fieldKey;
 
   @override
   State<AppInput> createState() => _AppInputState();
@@ -186,6 +193,7 @@ class _AppInputState extends State<AppInput> {
             const SizedBox(height: AppSpacing.sm),
           ],
           TextFormField(
+            key: widget.fieldKey,
             controller: widget.controller,
             focusNode: _focusNode,
             obscureText: widget.obscureText,

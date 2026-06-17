@@ -16,6 +16,7 @@ import 'package:usdc_wallet/features/send/widgets/send_flow_visuals.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/contacts/contacts_service.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 class RecipientScreen extends ConsumerStatefulWidget {
   const RecipientScreen({
@@ -768,7 +769,14 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     if (currentUserPhone == null || currentUserPhone.trim().isEmpty) {
       return false;
     }
-    return _phoneDigits(candidate) == _phoneDigits(currentUserPhone);
+    return localPhoneDigits(
+          dialCode: _selectedCountryCode,
+          phoneNumber: candidate,
+        ) ==
+        localPhoneDigits(
+          dialCode: _selectedCountryCode,
+          phoneNumber: currentUserPhone,
+        );
   }
 
   String _phoneDigits(String value) => value.replaceAll(RegExp(r'\D'), '');

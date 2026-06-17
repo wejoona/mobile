@@ -9,6 +9,9 @@ import 'package:local_auth_platform_interface/types/biometric_type.dart'
 export 'package:usdc_wallet/services/biometric/biometric_provider.dart';
 
 const _kBiometricEnabledKey = 'biometric_enabled';
+const _kBiometricUserIdKey = 'biometric_user_id';
+const _kBiometricPhoneKey = 'biometric_phone';
+const _kStoredUserIdKey = 'user_id';
 
 /// App-level biometric types
 enum BiometricType { fingerprint, faceId, iris, none }
@@ -85,9 +88,18 @@ class BiometricService {
     }
   }
 
-  Future<bool> isEnrolled() async {
+  Future<bool> isEnrolled({String? userId}) async {
     final value = await _storage.read(key: _kBiometricEnabledKey);
-    return value == 'true';
+    if (value != 'true') return false;
+
+    final boundUserId = await _storage.read(key: _kBiometricUserIdKey);
+    if (boundUserId == null || boundUserId.isEmpty) return false;
+
+    final expectedUserId =
+        userId ?? await _storage.read(key: _kStoredUserIdKey);
+    if (expectedUserId == null || expectedUserId.isEmpty) return false;
+
+    return boundUserId == expectedUserId;
   }
 
   /// Authenticate using device biometric (Face ID / Touch ID / fingerprint).
@@ -140,15 +152,28 @@ class BiometricService {
     }
   }
 
-  Future<void> enroll() async {
-    await _storage.write(key: _kBiometricEnabledKey, value: 'true');
+  Future<void> enroll({required String userId, String? phone}) async {
+    await enableBiometric(userId: userId, phone: phone);
   }
 
   Future<void> unenroll() async {
-    await _storage.write(key: _kBiometricEnabledKey, value: 'false');
+    await disableBiometric();
   }
 
-  Future<bool> isBiometricEnabled() async => isEnrolled();
+  Future<void> enableBiometric({required String userId, String? phone}) async {
+    final normalizedUserId = userId.trim();
+    if (normalizedUserId.isEmpty) {
+      throw ArgumentError.value(userId, 'userId', 'Cannot bind biometric');
+    }
+    await _storage.write(key: _kBiometricEnabledKey, value: 'true');
+    await _storage.write(key: _kBiometricUserIdKey, value: normalizedUserId);
+    if (phone != null && phone.trim().isNotEmpty) {
+      await _storage.write(key: _kBiometricPhoneKey, value: phone.trim());
+    }
+  }
+
+  Future<bool> isBiometricEnabled({String? userId}) async =>
+      isEnrolled(userId: userId);
 
   Future<List<BiometricType>> getAvailableBiometrics() async {
     try {
@@ -193,12 +218,10 @@ class BiometricService {
 
   Future<BiometricType> getPrimaryBiometricType() async => getAvailableType();
 
-  Future<void> enableBiometric() async {
-    await _storage.write(key: _kBiometricEnabledKey, value: 'true');
-  }
-
   Future<void> disableBiometric() async {
     await _storage.write(key: _kBiometricEnabledKey, value: 'false');
+    await _storage.delete(key: _kBiometricUserIdKey);
+    await _storage.delete(key: _kBiometricPhoneKey);
   }
 
   Future<BiometricResult> authenticateSensitive({
