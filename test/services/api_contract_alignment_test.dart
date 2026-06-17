@@ -107,6 +107,10 @@ void main() {
         normalizePhoneE164(dialCode: '1', localNumber: '(415) 555-0101'),
         '+14155550101',
       );
+      expect(
+        normalizePhoneE164(dialCode: '+225', localNumber: '+225+2250748805663'),
+        '+2250748805663',
+      );
       expect(digitsOnly('+225 07-48-80-56-63'), '2250748805663');
     });
 

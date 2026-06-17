@@ -43,6 +43,24 @@ void main() {
     );
   });
 
+  testWidgets('phone input keeps country code separate when full number pasted', (
+    tester,
+  ) async {
+    await _pumpLoginView(tester);
+
+    final phoneFieldFinder = find.byType(TextField).first;
+
+    await tester.enterText(phoneFieldFinder, '+225+2250748805663');
+    await tester.pumpAndSettle();
+
+    expect(find.text('+225'), findsOneWidget);
+    expect(
+      tester.widget<TextField>(phoneFieldFinder).controller?.text,
+      '0748805663',
+    );
+    expect(find.textContaining('+225+225'), findsNothing);
+  });
+
   testWidgets('terms acceptance stays out of returning-user login', (
     tester,
   ) async {
