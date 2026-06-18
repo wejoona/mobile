@@ -1,6 +1,6 @@
 # Mobile Current Status
 
-Last updated: 2026-06-18 10:04 GMT
+Last updated: 2026-06-18 10:06 GMT
 
 ## Standing
 
@@ -44,6 +44,7 @@ Last updated: 2026-06-18 10:04 GMT
 - Active sessions and device management are hardened around auth/security failures: session reads refresh once and lock instead of wiping local state on ordinary 401, device reads wait for auth, and device actions now normalize Dio failures to `ApiException` so blacklist and 401 outcomes clear or lock state consistently. Focused settings/API contract tests passed 102 tests.
 - Authenticator app 2FA is verified as an intentional backend-enforced waitlist/capability, not a fake local toggle: mobile shows it as coming soon, subscribes to `two_factor_auth` with `requestedFeature=backend_enforced_mfa`, does not store local TOTP state/secrets, and the API service catalog marks it policy-governed with `requiresBackendEnforcement=true`.
 - Email verification is verified end to end at the contract/usecase level: mobile checks `/user/email-status`, auto-requests a code when an email has no pending verification, resends through `/user/resend-email-verification`, verifies through `/user/verify-email`, and backend stores hashed 6-digit codes with non-production default `123456`. Mobile profile contract tests passed 29 tests; backend email verification usecase tests passed 6 tests.
+- Transaction limits and money-flow permissions are technically implemented across mobile and API: mobile gates send, deposit, and withdrawal with live `/user/limits` before submission; backend exposes `/user/limits`, `/user/limits/usage`, `/wallet/limits`, enforces per-transaction/daily/monthly limits before ledger movement, blocks manual-review states, and supports admin overrides. Mobile limits/deposit tests passed 16 tests; backend limit/enforcement tests passed 25 tests. Numeric tiers still need compliance sign-off before being called UEMOA-calibrated policy.
 
 ## Known Watch Items
 
