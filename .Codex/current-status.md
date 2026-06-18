@@ -1,11 +1,11 @@
 # Mobile Current Status
 
-Last updated: 2026-06-18 08:42 GMT
+Last updated: 2026-06-18 09:10 GMT
 
 ## Standing
 
 - Active branch: `develop`, tracking `origin/develop`.
-- Latest pushed mobile commit: `acb622f7 refactor: separate signup entry screens`.
+- Latest pushed mobile commit: `117c33e9 fix: revoke stale biometric binding`.
 - Latest pushed API commit: `bfa38bba fix: align mobile version policy defaults`.
 - Repo status should be clean unless a new slice is in progress.
 - Do not promote to `staging` until Codemagic-equivalent local gates pass.
@@ -18,9 +18,12 @@ Last updated: 2026-06-18 08:42 GMT
 - Login no longer shows signup/onboarding progress markers.
 - Phone input keeps country prefix and local number visually separate.
 - Login phone state now stores country, dial code, local number, and E.164 separately; malformed duplicated-prefix input such as `+225|+2250748805663` is repaired before API calls.
+- Contact matching now sends only canonical SHA-256 hashes to `/contacts/check`; the old raw-phone contact check path is disabled.
+- User-bound biometric unlock now revokes stale stored biometric bindings immediately when the stored binding belongs to a different Korido user.
 - Staging API health, login, and OTP verification worked for `0748805663` with OTP `123456` when DNS was resolving.
 - Staging API public smokes returned HTTP 200 on 2026-06-18: `/health`, `/config/mobile-version`, and `/config/countries`.
 - Full non-golden mobile test gate passed after the phone-state canonicalization slice: 469 tests.
+- Focused biometric/session security tests passed after stale-binding revocation: 40 tests.
 - Signup phone entry and legal consent now live under `features/signup`; product onboarding remains a separate intro route.
 - Live staging checks with `+2250748805663` and OTP `123456` returned HTTP 200 for login, OTP verify, `/wallet`, `/sessions`, `/devices`, `/user/profile`, `/user/profile` update, and `/user/email-status`.
 - Current staging wallet for that account is valid but zero-balance and degraded/local-mirror because ledger balance is temporarily unavailable; mobile should show zero plus sync warning, not fabricate funds.
