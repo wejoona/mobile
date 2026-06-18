@@ -17,7 +17,7 @@ Use with local API:
 | Verify OTP | POST | `/auth/verify-otp` | `{ "phone": "+225...", "otp": "123456" }` | Returns access token, refresh token, user, `kycStatus`, `expiresIn`. |
 | Refresh | POST | `/auth/refresh` | `{ "refreshToken": "..." }` | Public endpoint. |
 | Logout | POST | `/auth/logout` | `{ "refreshToken": "..." }` | Authenticated cleanup. |
-| Logout all | POST | `/auth/logout-all` | none | Authenticated. |
+| Logout all devices | POST | `/auth/logout-all` | none | Canonical user-facing logout-all route. Invalidates refresh tokens and revokes session rows. |
 
 ## App Config
 
@@ -58,7 +58,7 @@ Avatar URL handling: the API may return absolute URLs, `/user/avatar/...`, `user
 | Active sessions | GET | `/sessions` | Response includes `sessions`, `items`, and `total`. |
 | All sessions | GET | `/sessions/all` | Includes revoked/expired sessions. |
 | Revoke session | DELETE | `/sessions/:id` | Authenticated. |
-| Revoke other sessions | DELETE | `/sessions` | Preserves current session when backend can identify it. |
+| Revoke all session rows | DELETE | `/sessions` | Low-level session-row revoke. Do not use for user-facing logout-all; use `/auth/logout-all`. |
 | Register device | POST | `/devices/register` | Used for device management/risk continuity. |
 | Update FCM token | POST | `/devices/fcm-token` | Push-token registration. |
 | List devices | GET | `/devices` | Current user's active devices. |
@@ -67,8 +67,8 @@ Avatar URL handling: the API may return absolute URLs, `/user/avatar/...`, `user
 | Untrust device | POST | `/devices/:id/untrust` | User/device management. |
 | Rename device | POST | `/devices/:id/rename` | User-facing label. |
 | Register device key | POST | `/devices/:id/register-key` | Device public-key binding. |
-| Delete device | DELETE | `/devices/:id` | Remove one device. |
-| Delete current device | DELETE | `/devices` | Remove current device. |
+| Revoke device | DELETE | `/devices/:id` | Deactivate one registered device and revoke sessions linked to it. |
+| Revoke all registered devices | DELETE | `/devices` | Low-level destructive device deactivation. Do not use for user-facing logout-all; use `/auth/logout-all`. |
 
 ## Wallet And Money
 

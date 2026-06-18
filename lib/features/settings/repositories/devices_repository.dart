@@ -96,11 +96,6 @@ class DevicesRepository {
     await _sendDeviceRequest(() => _dio.delete('/devices/$deviceId'));
   }
 
-  /// Revoke all devices for the current account. Backend route is DELETE /devices.
-  Future<void> revokeAllDevices() async {
-    await _sendDeviceRequest(() => _dio.delete('/devices'));
-  }
-
   Future<Response<T>> _sendDeviceRequest<T>(
     Future<Response<T>> Function() request,
   ) async {

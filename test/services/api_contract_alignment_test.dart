@@ -2226,11 +2226,6 @@ void main() {
         '/devices/device_1',
         (repository) => repository.revokeDevice('device_1'),
       );
-      await expectDeviceApiException(
-        'DELETE',
-        '/devices',
-        (repository) => repository.revokeAllDevices(),
-      );
     });
 
     test(
