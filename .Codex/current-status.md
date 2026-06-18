@@ -1,11 +1,11 @@
 # Mobile Current Status
 
-Last updated: 2026-06-18 09:27 GMT
+Last updated: 2026-06-18 09:51 GMT
 
 ## Standing
 
 - Active branch: `develop`, tracking `origin/develop`.
-- Latest pushed mobile commit: `59743f1d refactor: name signup flow state explicitly`.
+- Latest pushed mobile commit: `cce4d131 refactor: canonicalize user pin endpoints`.
 - Latest pushed API commit: `bfa38bba fix: align mobile version policy defaults`.
 - Repo status should be clean unless a new slice is in progress.
 - Do not promote to `staging` until Codemagic-equivalent local gates pass.
@@ -26,6 +26,7 @@ Last updated: 2026-06-18 09:27 GMT
 - Focused biometric/session security tests passed after stale-binding revocation: 40 tests.
 - Signup phone entry and legal consent now live under `features/signup`; product onboarding remains a separate intro route.
 - Signup/account setup state now lives under `features/signup/providers/signup_flow_provider.dart` with `SignupFlow*` names; product tutorial onboarding keeps the onboarding naming.
+- PIN routes are centralized under `ApiEndpoints.userPin*`; mobile services, reset flow, security interceptors, and PIN mocks now derive from the same `/user/pin/*` source of truth.
 - Live staging checks with `+2250748805663` and OTP `123456` returned HTTP 200 for login, OTP verify, `/wallet`, `/sessions`, `/devices`, `/user/profile`, `/user/profile` update, and `/user/email-status`.
 - Current staging wallet for that account is valid but zero-balance and degraded/local-mirror because ledger balance is temporarily unavailable; mobile should show zero plus sync warning, not fabricate funds.
 - Profile update API and profile thumbnail shape are healthy; avatar upload still depends on on-device face detection and multipart upload in manual device testing.
@@ -37,8 +38,8 @@ Last updated: 2026-06-18 09:27 GMT
 - Staging candidate is not ready until the local replay of Codemagic gates passes: analyzer warning gate, non-golden Flutter tests, iOS release build without signing, and Android release bundle check.
 - Non-golden Flutter tests now pass locally using Codemagic's 40-file batch pattern.
 - Android release bundle passes locally using Codemagic's direct Gradle path.
-- iOS release build is currently blocked by machine Xcode state: `xcode-select` points to Command Line Tools and no local Xcode app bundle was found by `mdfind`/filesystem search.
-- Simulator/phone launch is currently blocked for the same local Xcode visibility issue: `xcrun simctl` is unavailable under Command Line Tools.
+- iOS release build is currently blocked by machine Xcode state: `xcode-select` points to `/Library/Developer/CommandLineTools`, `/Applications` and `~/Applications` do not contain a discoverable Xcode app, `mdfind` returns no `com.apple.dt.Xcode`, and `xcrun simctl` is unavailable.
+- Simulator/phone launch is currently blocked for the same local Xcode visibility issue; Flutter sees only macOS and Chrome devices.
 - Mobile app version is currently `1.0.0+2`; the staging API version policy does not block that build, but defaults should stay intentional for future pre-release trains.
 - Signup/onboarding naming split is complete at the provider layer; remaining account setup view filenames under `features/onboarding/views` can be moved only as a dedicated route-safe cleanup slice.
 
