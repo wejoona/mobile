@@ -2454,6 +2454,34 @@ void main() {
       );
     });
 
+    test('contacts API check sends only canonical phone hashes', () async {
+      final validHash = 'a'.padLeft(64, 'a');
+      final dio = MockDio()..queueResponse({'registered': []});
+      final api = ContactsApi(dio);
+
+      await api.checkPhoneHashes([
+        validHash.toUpperCase(),
+        validHash,
+        '0748805663',
+        'not-a-hash',
+      ], permissionStatus: 'limited');
+
+      expect(dio.requestHistory.single.path, '/contacts/check');
+      expect(dio.requestHistory.single.data, {
+        'permissionStatus': 'limited',
+        'phoneHashes': [validHash],
+      });
+    });
+
+    test('contacts API wrapper refuses raw phone contact checks', () async {
+      final api = ContactsApi(MockDio());
+
+      expect(
+        () => api.checkContacts(['+2250748805663']),
+        throwsA(isA<UnsupportedError>()),
+      );
+    });
+
     test(
       'send recipient validation accepts nested contact sync matches',
       () async {
