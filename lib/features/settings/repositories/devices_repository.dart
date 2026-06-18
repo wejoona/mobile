@@ -25,55 +25,50 @@ class DevicesRepository {
   }) async {
     final deviceMetadata = {if (locale != null) 'locale': locale, ...?metadata};
 
-    final response = await _dio.post(
-      '/devices/register',
-      data: {
-        'deviceIdentifier': deviceId,
-        'platform': platform,
-        if (deviceName != null) 'deviceName': deviceName,
-        if (model != null) 'model': model,
-        if (brand != null) 'brand': brand,
-        if (os != null) 'os': os,
-        if (osVersion != null) 'osVersion': osVersion,
-        if (appVersion != null) 'appVersion': appVersion,
-        if (fcmToken != null) 'fcmToken': fcmToken,
-        if (deviceMetadata.isNotEmpty) 'metadata': deviceMetadata,
-      },
+    final response = await _sendDeviceRequest(
+      () => _dio.post(
+        '/devices/register',
+        data: {
+          'deviceIdentifier': deviceId,
+          'platform': platform,
+          if (deviceName != null) 'deviceName': deviceName,
+          if (model != null) 'model': model,
+          if (brand != null) 'brand': brand,
+          if (os != null) 'os': os,
+          if (osVersion != null) 'osVersion': osVersion,
+          if (appVersion != null) 'appVersion': appVersion,
+          if (fcmToken != null) 'fcmToken': fcmToken,
+          if (deviceMetadata.isNotEmpty) 'metadata': deviceMetadata,
+        },
+      ),
     );
     return Device.fromJson(_deviceMapFromPayload(response.data));
   }
 
   /// Get all active devices for the current user
   Future<List<Device>> getDevices() async {
-    try {
-      final response = await _dio.get('/devices');
-      final raw = _unwrapDevicePayload(response.data);
-      final List<dynamic> devicesJson;
-      if (raw is Map<String, dynamic>) {
-        devicesJson =
-            (raw['devices'] ?? raw['data'] ?? raw['items']) as List? ?? [];
-      } else if (raw is List) {
-        devicesJson = raw;
-      } else {
-        devicesJson = [];
-      }
-      return devicesJson
-          .map(_deviceMapFromPayload)
-          .map(Device.fromJson)
-          .toList();
-    } on DioException catch (e) {
-      throw ApiException.fromDioError(e);
+    final response = await _sendDeviceRequest(() => _dio.get('/devices'));
+    final raw = _unwrapDevicePayload(response.data);
+    final List<dynamic> devicesJson;
+    if (raw is Map<String, dynamic>) {
+      devicesJson =
+          (raw['devices'] ?? raw['data'] ?? raw['items']) as List? ?? [];
+    } else if (raw is List) {
+      devicesJson = raw;
+    } else {
+      devicesJson = [];
     }
+    return devicesJson.map(_deviceMapFromPayload).map(Device.fromJson).toList();
   }
 
   /// Trust a device
   Future<void> trustDevice(String deviceId) async {
-    await _dio.post('/devices/$deviceId/trust');
+    await _sendDeviceRequest(() => _dio.post('/devices/$deviceId/trust'));
   }
 
   /// Remove trust from a device
   Future<void> untrustDevice(String deviceId) async {
-    await _dio.post('/devices/$deviceId/untrust');
+    await _sendDeviceRequest(() => _dio.post('/devices/$deviceId/untrust'));
   }
 
   /// Update the push token bound to a registered device.
@@ -81,25 +76,39 @@ class DevicesRepository {
     required String deviceIdentifier,
     required String fcmToken,
   }) async {
-    await _dio.post(
-      '/devices/fcm-token',
-      data: {'deviceIdentifier': deviceIdentifier, 'fcmToken': fcmToken},
+    await _sendDeviceRequest(
+      () => _dio.post(
+        '/devices/fcm-token',
+        data: {'deviceIdentifier': deviceIdentifier, 'fcmToken': fcmToken},
+      ),
     );
   }
 
   /// Rename a device
   Future<void> renameDevice(String deviceId, String name) async {
-    await _dio.post('/devices/$deviceId/rename', data: {'name': name});
+    await _sendDeviceRequest(
+      () => _dio.post('/devices/$deviceId/rename', data: {'name': name}),
+    );
   }
 
   /// Revoke/remove a device
   Future<void> revokeDevice(String deviceId) async {
-    await _dio.delete('/devices/$deviceId');
+    await _sendDeviceRequest(() => _dio.delete('/devices/$deviceId'));
   }
 
   /// Revoke all devices for the current account. Backend route is DELETE /devices.
   Future<void> revokeAllDevices() async {
-    await _dio.delete('/devices');
+    await _sendDeviceRequest(() => _dio.delete('/devices'));
+  }
+
+  Future<Response<T>> _sendDeviceRequest<T>(
+    Future<Response<T>> Function() request,
+  ) async {
+    try {
+      return await request();
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
   }
 }
 

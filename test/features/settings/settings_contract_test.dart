@@ -89,6 +89,20 @@ void main() {
     expect(source, contains('error.statusCode == 401'));
   });
 
+  test('device actions preserve auth state on security failures', () {
+    final source = File(
+      'lib/features/settings/providers/devices_provider.dart',
+    ).readAsStringSync();
+
+    expect(source, contains('_runDeviceAction'));
+    expect(source, contains('_handleApiActionError'));
+    expect(source, contains('error.isDeviceBlacklisted'));
+    expect(source, contains('clearLocalSession()'));
+    expect(source, contains('error.statusCode == 401'));
+    expect(source, contains('setLocked()'));
+    expect(source, contains('_ref.invalidate(devicesProvider)'));
+  });
+
   test(
     'security settings account actions and persisted controls live in canonical screen',
     () {

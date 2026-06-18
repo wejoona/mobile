@@ -97,13 +97,11 @@ class DeviceActions {
   DeviceActions(this._repository, this._ref);
 
   Future<void> revokeDevice(String deviceId) async {
-    await _repository.revokeDevice(deviceId);
-    _ref.invalidate(devicesProvider);
+    await _runDeviceAction(() => _repository.revokeDevice(deviceId));
   }
 
   Future<void> renameDevice(String deviceId, String name) async {
-    await _repository.renameDevice(deviceId, name);
-    _ref.invalidate(devicesProvider);
+    await _runDeviceAction(() => _repository.renameDevice(deviceId, name));
   }
 
   Future<void> refresh() async {
@@ -111,23 +109,41 @@ class DeviceActions {
   }
 
   Future<void> trustDevice(String deviceId) async {
-    await _repository.trustDevice(deviceId);
-    _ref.invalidate(devicesProvider);
+    await _runDeviceAction(() => _repository.trustDevice(deviceId));
   }
 
   Future<void> untrustDevice(String deviceId) async {
-    await _repository.untrustDevice(deviceId);
-    _ref.invalidate(devicesProvider);
+    await _runDeviceAction(() => _repository.untrustDevice(deviceId));
   }
 
   Future<void> revokeOtherDevices(List<Device> devices, String localId) async {
-    for (final device in devices) {
-      final isCurrent =
-          device.isCurrent ||
-          (localId.isNotEmpty && device.deviceIdentifier == localId);
-      if (!isCurrent) {
-        await _repository.revokeDevice(device.id);
+    await _runDeviceAction(() async {
+      for (final device in devices) {
+        final isCurrent =
+            device.isCurrent ||
+            (localId.isNotEmpty && device.deviceIdentifier == localId);
+        if (!isCurrent) {
+          await _repository.revokeDevice(device.id);
+        }
       }
+    });
+  }
+
+  Future<void> _runDeviceAction(Future<void> Function() action) async {
+    try {
+      await action();
+    } on ApiException catch (e) {
+      await _handleApiActionError(e);
+      rethrow;
+    }
+    _ref.invalidate(devicesProvider);
+  }
+
+  Future<void> _handleApiActionError(ApiException error) async {
+    if (error.isDeviceBlacklisted) {
+      await _ref.read(authProvider.notifier).clearLocalSession();
+    } else if (error.statusCode == 401) {
+      await _ref.read(authProvider.notifier).setLocked();
     }
     _ref.invalidate(devicesProvider);
   }

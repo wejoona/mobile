@@ -2165,6 +2165,74 @@ void main() {
       expect(dio.requestHistory[5].path, '/devices/device_1');
     });
 
+    test('devices repository maps action failures to ApiException', () async {
+      Future<void> expectDeviceApiException(
+        String expectedMethod,
+        String expectedPath,
+        Future<void> Function(DevicesRepository repository) action,
+      ) async {
+        final dio = MockDio()
+          ..queueErrorResponse(statusCode: 403, message: 'Forbidden');
+        final repository = DevicesRepository(dio);
+
+        await expectLater(
+          action(repository),
+          throwsA(
+            isA<ApiException>().having(
+              (error) => error.statusCode,
+              'statusCode',
+              403,
+            ),
+          ),
+        );
+
+        expect(dio.requestHistory.single.method, expectedMethod);
+        expect(dio.requestHistory.single.path, expectedPath);
+      }
+
+      await expectDeviceApiException('POST', '/devices/register', (
+        repository,
+      ) async {
+        await repository.registerDevice(
+          deviceId: 'ios-vendor-id',
+          platform: 'ios',
+        );
+      });
+      await expectDeviceApiException(
+        'POST',
+        '/devices/device_1/trust',
+        (repository) => repository.trustDevice('device_1'),
+      );
+      await expectDeviceApiException(
+        'POST',
+        '/devices/device_1/untrust',
+        (repository) => repository.untrustDevice('device_1'),
+      );
+      await expectDeviceApiException(
+        'POST',
+        '/devices/fcm-token',
+        (repository) => repository.updateFcmToken(
+          deviceIdentifier: 'ios-vendor-id',
+          fcmToken: 'fcm-token',
+        ),
+      );
+      await expectDeviceApiException(
+        'POST',
+        '/devices/device_1/rename',
+        (repository) => repository.renameDevice('device_1', 'Travel iPhone'),
+      );
+      await expectDeviceApiException(
+        'DELETE',
+        '/devices/device_1',
+        (repository) => repository.revokeDevice('device_1'),
+      );
+      await expectDeviceApiException(
+        'DELETE',
+        '/devices',
+        (repository) => repository.revokeAllDevices(),
+      );
+    });
+
     test(
       'session repository uses session routes and parses active sessions',
       () async {
