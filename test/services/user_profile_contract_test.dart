@@ -536,6 +536,10 @@ void main() {
       expect(userStateSource, contains('await _clearLocalAvatarCache();'));
       expect(userStateSource, contains('clearAvatarThumb: clearAvatarThumb'));
       expect(userStateSource, contains("delete(key: 'local_avatar_path')"));
+      expect(
+        userStateSource,
+        contains('ImageCacheConfig.clearCache(ImageCacheType.profilePhoto)'),
+      );
       expect(profileProviderSource, contains('await _applyAvatarUploadResult'));
       expect(profileProviderSource, contains('applyServerAvatar('));
       expect(profileProviderSource, contains('clearAvatarThumb: hasAvatarUrl'));
@@ -572,6 +576,10 @@ void main() {
       expect(avatarSource, contains("resolvedPath.contains('/user/avatar/')"));
       expect(avatarSource, contains('pathSegments: resolvedSegments'));
       expect(avatarSource, contains('_startsWithSegments'));
+      expect(
+        avatarSource,
+        contains('cacheManager: ImageCacheConfig.profilePhotos'),
+      );
     });
 
     test('profile completion applies backend profile snapshot', () {

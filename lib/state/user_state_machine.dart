@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:usdc_wallet/core/image_cache/image_cache_config.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/services/index.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
@@ -480,6 +481,7 @@ class UserStateMachine extends Notifier<UserState> {
     }
 
     await _storage.delete(key: 'local_avatar_path');
+    await ImageCacheConfig.clearCache(ImageCacheType.profilePhoto);
     await ref.read(avatarCacheServiceProvider).clearCache();
   }
 

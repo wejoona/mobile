@@ -1,11 +1,11 @@
 # Mobile Current Status
 
-Last updated: 2026-06-18 10:35 GMT
+Last updated: 2026-06-18 10:52 GMT
 
 ## Standing
 
 - Active branch: `develop`, tracking `origin/develop`.
-- Latest pushed mobile code commit: `ba147cdc fix: clarify api startup diagnostics`.
+- Latest pushed mobile code commit: `e0738b49 fix: refresh uploaded profile avatars`.
 - Latest pushed API commit: `b2728ec5 fix: canonicalize auth country inputs`.
 - Repo status should be clean unless a new slice is in progress.
 - Do not promote to `staging` until Codemagic-equivalent local gates pass.
@@ -37,7 +37,7 @@ Last updated: 2026-06-18 10:35 GMT
 - Current staging wallet for that account is valid but zero-balance and degraded/local-mirror because ledger balance is temporarily unavailable; mobile should show zero plus sync warning, not fabricate funds.
 - Wallet refresh path rechecked: pull-to-refresh has bounded UI timeouts, keeps last known/degraded state, and focused wallet state/balance tests passed 23 tests.
 - Live staging wallet smoke for `+2250748805663` returned wallet `286c3d68-c47b-4d1c-baeb-dc2a8d2b8e56`, `USDC=0`, `sourceOfTruth=local_mirror`, `readStatus=degraded`, and backend warning `Ledger balance is temporarily unavailable. Showing local mirror balance.`
-- Profile update API and profile thumbnail shape are healthy; avatar upload still depends on on-device face detection and multipart upload in manual device testing.
+- Profile update API, profile thumbnail shape, and avatar upload cache replacement are healthy: mobile creates one-face device evidence bound to the uploaded bytes, backend rejects missing/stale/unbound proof, `UserAvatar` now uses the dedicated profile-photo cache, and avatar replacement/removal clears stale local/profile-photo caches. Focused profile contract tests passed 29 tests.
 
 ## Known Watch Items
 
