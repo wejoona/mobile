@@ -7,11 +7,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/app_version/mobile_version_policy_service.dart';
 import '../helpers/test_utils.dart';
 
 final _authInterceptorTestProvider = Provider<AuthInterceptor>(
   AuthInterceptor.new,
 );
+
+class _RecordingVersionPolicyController extends MobileVersionPolicyController {
+  static final reasons = <String>[];
+
+  @override
+  MobileVersionPolicyState build() => const MobileVersionPolicyState();
+
+  @override
+  Future<MobileVersionPolicy?> check({
+    String reason = 'startup',
+    bool force = false,
+  }) async {
+    reasons.add(reason);
+    return state.policy;
+  }
+}
 
 class _DeviceBlacklistedAdapter implements HttpClientAdapter {
   const _DeviceBlacklistedAdapter({this.nestedEnvelope = false});
@@ -51,6 +68,32 @@ class _DeviceBlacklistedAdapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
+class _UpgradeRequiredAdapter implements HttpClientAdapter {
+  const _UpgradeRequiredAdapter();
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    return ResponseBody.fromString(
+      jsonEncode({
+        'statusCode': 426,
+        'message': 'Upgrade required',
+        'error': 'UPGRADE_REQUIRED',
+      }),
+      426,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
+
 void main() {
   late MockSecureStorage mockStorage;
 
@@ -58,6 +101,7 @@ void main() {
 
   setUp(() {
     mockStorage = MockSecureStorage();
+    _RecordingVersionPolicyController.reasons.clear();
   });
 
   tearDown(() {
@@ -65,6 +109,41 @@ void main() {
   });
 
   group('AuthInterceptor session invalidation', () {
+    test('checks mobile version policy after upgrade-required responses', () async {
+      final container = ProviderContainer(
+        overrides: [
+          secureStorageProvider.overrideWithValue(mockStorage),
+          mobileVersionPolicyProvider.overrideWith(
+            _RecordingVersionPolicyController.new,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await mockStorage.write(
+        key: StorageKeys.accessToken,
+        value: 'valid.access',
+      );
+
+      final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
+        ..httpClientAdapter = const _UpgradeRequiredAdapter()
+        ..interceptors.add(container.read(_authInterceptorTestProvider));
+
+      await expectLater(
+        dio.get('/wallet'),
+        throwsA(
+          isA<DioException>().having(
+            (error) => error.response?.statusCode,
+            'statusCode',
+            426,
+          ),
+        ),
+      );
+      await pumpEventQueue(times: 5);
+
+      expect(_RecordingVersionPolicyController.reasons, contains('http_426'));
+    });
+
     test(
       'clears local session and emits invalidation when device is blacklisted',
       () async {
