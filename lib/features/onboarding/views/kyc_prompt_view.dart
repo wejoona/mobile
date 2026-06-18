@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.dart';
+import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// KYC prompt screen
@@ -126,14 +126,14 @@ class KycPromptView extends ConsumerWidget {
 
   void _handleVerifyNow(BuildContext context, WidgetRef ref) {
     // Mark that user chose to verify (for tracking)
-    ref.read(onboardingProvider.notifier).startKyc();
+    ref.read(signupFlowProvider.notifier).startKyc();
     // Navigate to KYC document type selection
     // After KYC submission, user will be redirected to home
     context.push('/kyc/document-type');
   }
 
   void _handleMaybeLater(BuildContext context, WidgetRef ref) {
-    ref.read(onboardingProvider.notifier).skipKyc();
+    ref.read(signupFlowProvider.notifier).skipKyc();
     context.go('/signup/success');
   }
 }

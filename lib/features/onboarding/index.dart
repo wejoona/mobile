@@ -5,7 +5,6 @@ export 'package:usdc_wallet/features/onboarding/models/country_data.dart';
 export 'package:usdc_wallet/features/onboarding/models/onboarding_page_data.dart';
 export 'package:usdc_wallet/features/onboarding/models/registration_request.dart';
 export 'package:usdc_wallet/features/onboarding/providers/onboarding_progress_provider.dart';
-export 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.dart';
 export 'package:usdc_wallet/features/onboarding/views/enhanced_onboarding_view.dart';
 export 'package:usdc_wallet/features/onboarding/views/help/deposits_guide_view.dart';
 export 'package:usdc_wallet/features/onboarding/views/help/fees_transparency_view.dart';

@@ -6,7 +6,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
-import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.dart';
+import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
 import 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart';
 
 /// PIN setup screen for onboarding
@@ -26,7 +26,7 @@ class _OnboardingPinViewState extends ConsumerState<OnboardingPinView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(onboardingProvider);
+    final state = ref.watch(signupFlowProvider);
     final colors = context.colors;
 
     return Scaffold(
@@ -239,9 +239,9 @@ class _OnboardingPinViewState extends ConsumerState<OnboardingPinView> {
     }
 
     // PINs match, submit
-    await ref.read(onboardingProvider.notifier).submitPin(_pin);
+    await ref.read(signupFlowProvider.notifier).submitPin(_pin);
 
-    if (mounted && ref.read(onboardingProvider).error == null) {
+    if (mounted && ref.read(signupFlowProvider).error == null) {
       context.go('/signup/kyc-prompt');
     }
   }

@@ -7,7 +7,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/auth/widgets/otp_progress_cue.dart';
-import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.dart';
+import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
 import 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
@@ -30,7 +30,7 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(onboardingProvider);
+    final state = ref.watch(signupFlowProvider);
     final colors = context.colors;
     final isBusy = state.isLoading || _isSubmittingOtp;
     final otpCueLabel = _localizedOtpCopy(
@@ -162,12 +162,12 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
         _isSubmittingOtp = true;
         _hasError = false;
       });
-      ref.read(onboardingProvider.notifier).updateOtp(otp);
-      await ref.read(onboardingProvider.notifier).verifyOtp();
+      ref.read(signupFlowProvider.notifier).updateOtp(otp);
+      await ref.read(signupFlowProvider.notifier).verifyOtp();
       await _holdOtpCue(submittedAt);
 
       if (mounted) {
-        final state = ref.read(onboardingProvider);
+        final state = ref.read(signupFlowProvider);
         if (state.error == null) {
           await _goToNextStep();
         } else {
@@ -197,7 +197,7 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
   }
 
   Future<void> _handleResend() async {
-    await ref.read(onboardingProvider.notifier).resendOtp();
+    await ref.read(signupFlowProvider.notifier).resendOtp();
   }
 
   Future<void> _goToNextStep() async {
@@ -206,7 +206,7 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
     final hasPin = user?.hasPin ?? false;
 
     if (hasName && hasPin) {
-      await ref.read(onboardingProvider.notifier).completeOnboarding();
+      await ref.read(signupFlowProvider.notifier).completeSignupFlow();
       if (mounted) context.enterAuthenticatedApp();
       return;
     }

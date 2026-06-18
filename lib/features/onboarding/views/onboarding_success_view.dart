@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.dart';
+import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
 
@@ -14,7 +14,7 @@ class OnboardingSuccessView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(onboardingProvider);
+    final state = ref.watch(signupFlowProvider);
 
     return Scaffold(
       backgroundColor: context.colors.canvas,
@@ -116,7 +116,7 @@ class OnboardingSuccessView extends ConsumerWidget {
   }
 
   void _handleContinue(BuildContext context, WidgetRef ref) {
-    ref.read(onboardingProvider.notifier).completeOnboarding();
+    ref.read(signupFlowProvider.notifier).completeSignupFlow();
     context.enterAuthenticatedApp();
   }
 }

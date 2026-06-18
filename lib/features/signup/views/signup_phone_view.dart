@@ -7,7 +7,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/onboarding/models/country_data.dart';
-import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.dart';
+import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
 import 'package:usdc_wallet/features/onboarding/widgets/country_picker_widget.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/utils/input_formatters.dart';
@@ -42,7 +42,7 @@ class _SignupPhoneViewState extends ConsumerState<SignupPhoneView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(onboardingProvider);
+    final state = ref.watch(signupFlowProvider);
     final colors = context.colors;
 
     return Scaffold(
@@ -202,7 +202,7 @@ class _SignupPhoneViewState extends ConsumerState<SignupPhoneView> {
       ref.read(selectedCountryProvider.notifier).select(configCountry);
     }
     ref
-        .read(onboardingProvider.notifier)
+        .read(signupFlowProvider.notifier)
         .updatePhoneNumber(
           localPhoneNumber,
           _selectedCountry.code,

@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
-import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.dart';
+import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
 import 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart';
 
 /// Profile setup screen
@@ -33,7 +33,7 @@ class _ProfileSetupViewState extends ConsumerState<ProfileSetupView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(onboardingProvider);
+    final state = ref.watch(signupFlowProvider);
 
     return Scaffold(
       backgroundColor: context.colors.canvas,
@@ -146,7 +146,7 @@ class _ProfileSetupViewState extends ConsumerState<ProfileSetupView> {
     if (!_formKey.currentState!.validate()) return;
 
     await ref
-        .read(onboardingProvider.notifier)
+        .read(signupFlowProvider.notifier)
         .submitProfile(
           firstName: _firstNameController.text.trim(),
           lastName: _lastNameController.text.trim(),
@@ -155,7 +155,7 @@ class _ProfileSetupViewState extends ConsumerState<ProfileSetupView> {
               : null,
         );
 
-    if (mounted && ref.read(onboardingProvider).error == null) {
+    if (mounted && ref.read(signupFlowProvider).error == null) {
       context.go('/signup/set-pin');
     }
   }

@@ -7,8 +7,12 @@ import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
-/// Onboarding state.
-class OnboardingState {
+/// Signup/account setup flow state.
+///
+/// This owns registration state: phone, legal consent submission, OTP,
+/// profile, PIN, and the first KYC prompt. Product tutorial onboarding is a
+/// separate feature under `features/onboarding`.
+class SignupFlowState {
   final int currentPage;
   final bool isComplete;
   final bool isLoading;
@@ -24,7 +28,7 @@ class OnboardingState {
   final int otpResendCountdown;
   final String? sessionToken;
 
-  const OnboardingState({
+  const SignupFlowState({
     this.currentPage = 0,
     this.isComplete = false,
     this.isLoading = true,
@@ -41,7 +45,7 @@ class OnboardingState {
     this.sessionToken,
   });
 
-  OnboardingState copyWith({
+  SignupFlowState copyWith({
     int? currentPage,
     bool? isComplete,
     bool? isLoading,
@@ -57,7 +61,7 @@ class OnboardingState {
     int? otpResendCountdown,
     String? sessionToken,
     bool clearError = false,
-  }) => OnboardingState(
+  }) => SignupFlowState(
     currentPage: currentPage ?? this.currentPage,
     isComplete: isComplete ?? this.isComplete,
     isLoading: isLoading ?? this.isLoading,
@@ -75,19 +79,20 @@ class OnboardingState {
   );
 }
 
-/// Onboarding notifier.
-class OnboardingNotifier extends Notifier<OnboardingState> {
-  static const _key = 'onboarding_completed';
+/// Signup/account setup flow notifier.
+class SignupFlowNotifier extends Notifier<SignupFlowState> {
+  // Preserve the existing storage key so current installs do not regress.
+  static const _completionKey = 'onboarding_completed';
 
   @override
-  OnboardingState build() {
+  SignupFlowState build() {
     _checkStatus();
-    return const OnboardingState();
+    return const SignupFlowState();
   }
 
   Future<void> _checkStatus() async {
     final prefs = await SharedPreferences.getInstance();
-    final complete = prefs.getBool(_key) ?? false;
+    final complete = prefs.getBool(_completionKey) ?? false;
     state = state.copyWith(isComplete: complete, isLoading: false);
   }
 
@@ -105,16 +110,16 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     state = state.copyWith(currentPage: page);
   }
 
-  Future<void> completeOnboarding() async {
+  Future<void> completeSignupFlow() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_key, true);
+    await prefs.setBool(_completionKey, true);
     state = state.copyWith(isComplete: true);
   }
 
-  Future<void> resetOnboarding() async {
+  Future<void> resetSignupFlow() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_key);
-    state = const OnboardingState(isLoading: false);
+    await prefs.remove(_completionKey);
+    state = const SignupFlowState(isLoading: false);
   }
 
   Future<void> submitPhoneNumber({
@@ -308,10 +313,10 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     state = state.copyWith(clearError: true);
   }
 
-  /// Skip KYC for now and mark onboarding complete locally.
+  /// Skip KYC for now and mark signup/account setup complete locally.
   Future<void> skipKyc() async {
     state = state.copyWith(isLoading: true, clearError: true);
-    await completeOnboarding();
+    await completeSignupFlow();
     state = state.copyWith(isLoading: false);
   }
 
@@ -340,13 +345,13 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
   }
 }
 
-final onboardingProvider =
-    NotifierProvider<OnboardingNotifier, OnboardingState>(
-      OnboardingNotifier.new,
+final signupFlowProvider =
+    NotifierProvider<SignupFlowNotifier, SignupFlowState>(
+      SignupFlowNotifier.new,
     );
 
-/// Whether to show onboarding.
-final shouldShowOnboardingProvider = Provider<bool>((ref) {
-  final state = ref.watch(onboardingProvider);
+/// Whether to show product tutorial onboarding after signup/account setup.
+final shouldShowProductOnboardingProvider = Provider<bool>((ref) {
+  final state = ref.watch(signupFlowProvider);
   return !state.isLoading && !state.isComplete;
 });

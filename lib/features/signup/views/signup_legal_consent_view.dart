@@ -6,7 +6,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/views/legal_document_view.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
-import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.dart';
+import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/legal/legal_documents_service.dart';
 
@@ -33,7 +33,7 @@ class _SignupLegalConsentViewState
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
-    final state = ref.watch(onboardingProvider);
+    final state = ref.watch(signupFlowProvider);
     final termsAsync = ref.watch(termsOfServiceProvider);
     final privacyAsync = ref.watch(privacyPolicyProvider);
     final canAccept =
@@ -173,7 +173,7 @@ class _SignupLegalConsentViewState
   }
 
   Future<void> _handleAcceptAndSubmit() async {
-    final state = ref.read(onboardingProvider);
+    final state = ref.read(signupFlowProvider);
     if (state.phoneNumber == null) {
       context.go('/signup');
       return;
@@ -190,13 +190,13 @@ class _SignupLegalConsentViewState
       final privacy = await ref.read(privacyPolicyProvider.future);
       await service.recordAllConsents(terms: terms, privacy: privacy);
       await ref
-          .read(onboardingProvider.notifier)
+          .read(signupFlowProvider.notifier)
           .submitPhoneNumber(acceptedTerms: true);
 
       if (!mounted) {
         return;
       }
-      if (ref.read(onboardingProvider).error == null) {
+      if (ref.read(signupFlowProvider).error == null) {
         context.go('/signup/verify-phone');
       }
     } on Object catch (error) {
