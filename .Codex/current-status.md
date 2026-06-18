@@ -1,12 +1,12 @@
 # Mobile Current Status
 
-Last updated: 2026-06-18
+Last updated: 2026-06-18 07:12 GMT
 
 ## Standing
 
 - Active branch: `develop`, tracking `origin/develop`.
-- Latest mobile commit: `ec864545 fix: canonicalize phone number value`.
-- Repo status was clean after the phone canonicalization slice.
+- Latest pushed mobile commit: `659468bf test: align auth phone contracts`.
+- Current active slice: replace beta CSV picker dependency with stable `file_selector`.
 - Do not promote to `staging` until Codemagic-equivalent local gates pass.
 
 ## Verified Recently
@@ -24,11 +24,12 @@ Last updated: 2026-06-18
 - Debug logs still include some noisy/misleading environment and certificate-pinning messages.
 - Staging candidate is not ready until the local replay of Codemagic gates passes: analyzer warning gate, non-golden Flutter tests, iOS release build without signing, and Android release bundle check.
 - Non-golden Flutter tests now pass locally using Codemagic's 40-file batch pattern.
+- Android release bundle passes locally using Codemagic's direct Gradle path.
+- iOS release build is currently blocked by machine Xcode state: `xcode-select` points to Command Line Tools and no local Xcode app bundle was found by `mdfind`/filesystem search.
 
 ## Next Gate
 
-Run release-build checks locally without consuming a TestFlight build:
+Before promoting to `staging`, finish release-build checks locally without consuming a TestFlight build:
 
-- iOS release build without signing.
-- Android release bundle check.
+- Restore/select a full Xcode installation and rerun iOS release build without signing.
 - Final `git diff --check` before promotion.
