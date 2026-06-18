@@ -13,15 +13,15 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/utils/input_formatters.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
-/// Phone input screen for registration
-class PhoneInputView extends ConsumerStatefulWidget {
-  const PhoneInputView({super.key});
+/// Phone input screen for explicit account signup.
+class SignupPhoneView extends ConsumerStatefulWidget {
+  const SignupPhoneView({super.key});
 
   @override
-  ConsumerState<PhoneInputView> createState() => _PhoneInputViewState();
+  ConsumerState<SignupPhoneView> createState() => _SignupPhoneViewState();
 }
 
-class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
+class _SignupPhoneViewState extends ConsumerState<SignupPhoneView> {
   final _phoneController = TextEditingController();
   CountryData _selectedCountry = SupportedCountries.coteDivoire;
 

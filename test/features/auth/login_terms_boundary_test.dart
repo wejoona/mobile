@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/auth/views/login_view.dart';
-import 'package:usdc_wallet/features/onboarding/views/phone_input_view.dart';
 import 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart';
+import 'package:usdc_wallet/features/signup/views/signup_phone_view.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
 import '../../helpers/test_utils.dart';
@@ -96,7 +96,7 @@ void main() {
         overrides: [
           secureStorageProvider.overrideWithValue(MockSecureStorage()),
         ],
-        child: const PhoneInputView(),
+        child: const SignupPhoneView(),
       ),
     );
 
@@ -123,7 +123,7 @@ const _authEntryChromeContracts = [
   ),
   _RouteChromeContract(
     route: '/signup',
-    child: PhoneInputView(),
+    child: SignupPhoneView(),
     requiredTextFragments: ['Enter your phone number', 'Login'],
     forbiddenTooltips: ['Back'],
   ),

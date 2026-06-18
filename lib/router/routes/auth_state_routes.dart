@@ -8,11 +8,11 @@ import 'package:usdc_wallet/features/onboarding/views/onboarding_pin_view.dart';
 import 'package:usdc_wallet/features/onboarding/views/onboarding_success_view.dart';
 import 'package:usdc_wallet/features/onboarding/views/onboarding_view.dart';
 import 'package:usdc_wallet/features/onboarding/views/otp_verification_view.dart';
-import 'package:usdc_wallet/features/onboarding/views/phone_input_view.dart';
 import 'package:usdc_wallet/features/onboarding/views/profile_complete_view.dart';
 import 'package:usdc_wallet/features/onboarding/views/profile_setup_view.dart';
-import 'package:usdc_wallet/features/onboarding/views/signup_legal_consent_view.dart';
 import 'package:usdc_wallet/features/pin/views/pin_screen.dart';
+import 'package:usdc_wallet/features/signup/views/signup_legal_consent_view.dart';
+import 'package:usdc_wallet/features/signup/views/signup_phone_view.dart';
 import 'package:usdc_wallet/features/splash/views/splash_view.dart';
 import 'package:usdc_wallet/features/wallet/views/create_wallet_view.dart';
 import 'package:usdc_wallet/router/page_transitions.dart';
@@ -47,7 +47,7 @@ List<RouteBase> authStateRoutes() => [
     path: '/signup',
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
-      child: const PhoneInputView(),
+      child: const SignupPhoneView(),
     ),
   ),
   GoRoute(
