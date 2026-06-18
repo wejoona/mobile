@@ -11,6 +11,11 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Registered devices provider — wired to GET /devices.
 final devicesProvider = FutureProvider<List<Device>>((ref) async {
+  final authReady = await _ensureAuthenticatedForDeviceRead(ref);
+  if (!authReady) {
+    return const <Device>[];
+  }
+
   final repository = ref.watch(devicesRepositoryProvider);
   final link = ref.keepAlive();
   final timer = Timer(const Duration(minutes: 5), () => link.close());
@@ -21,11 +26,42 @@ final devicesProvider = FutureProvider<List<Device>>((ref) async {
     if (e.isDeviceBlacklisted) {
       await ref.read(authProvider.notifier).clearLocalSession();
     } else if (e.statusCode == 401) {
-      await ref.read(authProvider.notifier).setLocked();
+      final refreshed = await ref
+          .read(authProvider.notifier)
+          .refreshAccessTokenForForegroundRequest();
+      if (ref.mounted && refreshed) {
+        try {
+          return await repository.getDevices();
+        } on ApiException catch (retryError) {
+          if (retryError.isDeviceBlacklisted) {
+            await ref.read(authProvider.notifier).clearLocalSession();
+          } else if (retryError.statusCode == 401) {
+            await ref.read(authProvider.notifier).setLocked();
+          }
+          throw retryError;
+        }
+      }
+      if (ref.mounted) {
+        await ref.read(authProvider.notifier).setLocked();
+      }
     }
     rethrow;
   }
 });
+
+Future<bool> _ensureAuthenticatedForDeviceRead(Ref ref) async {
+  var authState = ref.read(authProvider);
+  if (authState.status == AuthStatus.initial ||
+      authState.status == AuthStatus.loading) {
+    await ref.read(authProvider.notifier).checkAuth();
+    if (!ref.mounted) {
+      return false;
+    }
+    authState = ref.read(authProvider);
+  }
+
+  return authState.isAuthenticated;
+}
 
 /// Local device identifier (vendor ID on iOS, android.id on Android).
 final localDeviceIdProvider = FutureProvider<String>((ref) async {
