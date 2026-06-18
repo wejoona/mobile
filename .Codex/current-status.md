@@ -1,11 +1,11 @@
 # Mobile Current Status
 
-Last updated: 2026-06-18 09:51 GMT
+Last updated: 2026-06-18 10:05 GMT
 
 ## Standing
 
 - Active branch: `develop`, tracking `origin/develop`.
-- Latest pushed mobile commit: `cce4d131 refactor: canonicalize user pin endpoints`.
+- Latest pushed mobile commit: `ba147cdc fix: clarify api startup diagnostics`.
 - Latest pushed API commit: `bfa38bba fix: align mobile version policy defaults`.
 - Repo status should be clean unless a new slice is in progress.
 - Do not promote to `staging` until Codemagic-equivalent local gates pass.
@@ -27,6 +27,7 @@ Last updated: 2026-06-18 09:51 GMT
 - Signup phone entry and legal consent now live under `features/signup`; product onboarding remains a separate intro route.
 - Signup/account setup state now lives under `features/signup/providers/signup_flow_provider.dart` with `SignupFlow*` names; product tutorial onboarding keeps the onboarding naming.
 - PIN routes are centralized under `ApiEndpoints.userPin*`; mobile services, reset flow, security interceptors, and PIN mocks now derive from the same `/user/pin/*` source of truth.
+- API startup diagnostics now log the actual `ENV` plus build mode, and certificate pinning logs whether it was active or skipped for the current build.
 - Live staging checks with `+2250748805663` and OTP `123456` returned HTTP 200 for login, OTP verify, `/wallet`, `/sessions`, `/devices`, `/user/profile`, `/user/profile` update, and `/user/email-status`.
 - Current staging wallet for that account is valid but zero-balance and degraded/local-mirror because ledger balance is temporarily unavailable; mobile should show zero plus sync warning, not fabricate funds.
 - Profile update API and profile thumbnail shape are healthy; avatar upload still depends on on-device face detection and multipart upload in manual device testing.
@@ -34,7 +35,6 @@ Last updated: 2026-06-18 09:51 GMT
 ## Known Watch Items
 
 - `staging-korido-api.joonapay.com` resolves publicly through system DNS, Cloudflare DNS, and Google DNS.
-- Debug logs still include some noisy/misleading environment and certificate-pinning messages.
 - Staging candidate is not ready until the local replay of Codemagic gates passes: analyzer warning gate, non-golden Flutter tests, iOS release build without signing, and Android release bundle check.
 - Non-golden Flutter tests now pass locally using Codemagic's 40-file batch pattern.
 - Android release bundle passes locally using Codemagic's direct Gradle path.
