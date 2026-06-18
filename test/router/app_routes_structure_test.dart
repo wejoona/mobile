@@ -10,6 +10,7 @@ void main() {
     expect(paths, contains('/'));
     expect(paths, contains('/login'));
     expect(paths, contains('/signup'));
+    expect(paths, contains('/signup/legal-consent'));
     expect(paths, contains('/signup/verify-phone'));
     expect(paths, contains('/onboarding'));
     expect(paths, contains('/onboarding/phone'));
@@ -44,11 +45,11 @@ void main() {
       '/profile-complete',
       '/onboarding',
       '/signup',
-      '/signup/verify-phone',
+      '/signup/legal-consent',
     ]);
     expect(topLevelPaths.skip(5).take(2), [
+      '/signup/verify-phone',
       '/signup/profile',
-      '/signup/set-pin',
     ]);
     expect(
       topLevelPaths,

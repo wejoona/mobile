@@ -17,6 +17,7 @@ abstract final class RouteNames {
   static const onboarding = 'onboarding';
   static const welcome = 'welcome';
   static const signup = 'signup';
+  static const signupLegalConsent = 'signup-legal-consent';
   static const signupVerifyPhone = 'signup-verify-phone';
   static const signupProfile = 'signup-profile';
   static const signupSetPin = 'signup-set-pin';

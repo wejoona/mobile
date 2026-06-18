@@ -17,10 +17,12 @@ export 'package:usdc_wallet/features/onboarding/views/onboarding_view.dart';
 export 'package:usdc_wallet/features/onboarding/views/otp_verification_view.dart';
 export 'package:usdc_wallet/features/onboarding/views/phone_input_view.dart';
 export 'package:usdc_wallet/features/onboarding/views/profile_setup_view.dart';
+export 'package:usdc_wallet/features/onboarding/views/signup_legal_consent_view.dart';
 export 'package:usdc_wallet/features/onboarding/views/welcome_post_login_view.dart';
 export 'package:usdc_wallet/features/onboarding/views/welcome_view.dart';
 export 'package:usdc_wallet/features/onboarding/widgets/country_picker_widget.dart';
 export 'package:usdc_wallet/features/onboarding/widgets/feature_tooltip.dart';
 export 'package:usdc_wallet/features/onboarding/widgets/first_deposit_prompt.dart';
 export 'package:usdc_wallet/features/onboarding/widgets/onboarding_page.dart';
-export 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart' hide OnboardingProgress;
+export 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart'
+    hide OnboardingProgress;

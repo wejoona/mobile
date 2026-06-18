@@ -9,7 +9,6 @@ import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/onboarding/models/country_data.dart';
 import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.dart';
 import 'package:usdc_wallet/features/onboarding/widgets/country_picker_widget.dart';
-import 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/utils/input_formatters.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
@@ -25,7 +24,6 @@ class PhoneInputView extends ConsumerStatefulWidget {
 class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
   final _phoneController = TextEditingController();
   CountryData _selectedCountry = SupportedCountries.coteDivoire;
-  bool _termsAccepted = false;
 
   @override
   void initState() {
@@ -53,10 +51,7 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.xl),
           children: [
-            AuthTopBar(onBack: () => context.go('/login')),
-            const SizedBox(height: AppSpacing.lg),
-            const OnboardingProgress(currentStep: 1, totalSteps: 5),
-            const SizedBox(height: AppSpacing.xxl),
+            const SizedBox(height: AppSpacing.giant),
             AuthScreenHeader(
               appName: l10n.appName,
               title: l10n.onboarding_phoneInput_title,
@@ -118,30 +113,6 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
                 setState(() {});
               },
             ),
-            const SizedBox(height: AppSpacing.lg),
-            // Terms checkbox
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Checkbox(
-                  value: _termsAccepted,
-                  onChanged: (value) {
-                    setState(() => _termsAccepted = value ?? false);
-                  },
-                  activeColor: colors.gold,
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: AppSpacing.sm),
-                    child: AppText(
-                      l10n.onboarding_phoneInput_terms,
-                      variant: AppTextVariant.bodySmall,
-                      color: colors.textSecondary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
             if (state.error != null) ...[
               const SizedBox(height: AppSpacing.md),
               Container(
@@ -192,12 +163,12 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
 
   bool get _canSubmit {
     final digits = _currentLocalPhone();
-    return digits.length == _selectedCountry.phoneLength && _termsAccepted;
+    return digits.length == _selectedCountry.phoneLength;
   }
 
-  void _showCountryPicker() {
+  Future<void> _showCountryPicker() async {
     final colors = context.colors;
-    showModalBottomSheet(
+    await showModalBottomSheet<void>(
       context: context,
       backgroundColor: colors.surface,
       shape: const RoundedRectangleBorder(
@@ -237,22 +208,16 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
           _selectedCountry.code,
           _selectedCountry.dialCode,
         );
-    await ref
-        .read(onboardingProvider.notifier)
-        .submitPhoneNumber(acceptedTerms: _termsAccepted);
-
-    if (mounted && ref.read(onboardingProvider).error == null) {
-      context.go('/signup/verify-phone');
+    if (mounted) {
+      context.go('/signup/legal-consent');
     }
   }
 
-  String _currentLocalPhone() {
-    return localPhoneInputDigits(
-      dialCode: _selectedCountry.dialCode,
-      phoneNumber: _phoneController.text,
-      maxLocalDigits: _selectedCountry.phoneLength,
-    );
-  }
+  String _currentLocalPhone() => localPhoneInputDigits(
+    dialCode: _selectedCountry.dialCode,
+    phoneNumber: _phoneController.text,
+    maxLocalDigits: _selectedCountry.phoneLength,
+  );
 
   void _syncPhoneControllerToLocal() {
     final formatted =

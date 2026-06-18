@@ -97,6 +97,7 @@ void main() {
         '/',
         '/onboarding',
         '/signup',
+        '/signup/legal-consent',
         '/signup/verify-phone',
         '/signup/profile',
         '/signup/set-pin',
@@ -112,6 +113,7 @@ void main() {
 
       const legacySignupPaths = [
         '/onboarding/phone',
+        '/onboarding/legal-consent',
         '/onboarding/otp',
         '/onboarding/profile',
         '/onboarding/pin',

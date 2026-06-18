@@ -11,6 +11,7 @@ import 'package:usdc_wallet/features/onboarding/views/otp_verification_view.dart
 import 'package:usdc_wallet/features/onboarding/views/phone_input_view.dart';
 import 'package:usdc_wallet/features/onboarding/views/profile_complete_view.dart';
 import 'package:usdc_wallet/features/onboarding/views/profile_setup_view.dart';
+import 'package:usdc_wallet/features/onboarding/views/signup_legal_consent_view.dart';
 import 'package:usdc_wallet/features/pin/views/pin_screen.dart';
 import 'package:usdc_wallet/features/splash/views/splash_view.dart';
 import 'package:usdc_wallet/features/wallet/views/create_wallet_view.dart';
@@ -47,6 +48,13 @@ List<RouteBase> authStateRoutes() => [
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const PhoneInputView(),
+    ),
+  ),
+  GoRoute(
+    path: '/signup/legal-consent',
+    pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+      state: state,
+      child: const SignupLegalConsentView(),
     ),
   ),
   GoRoute(
@@ -88,6 +96,10 @@ List<RouteBase> authStateRoutes() => [
   // Legacy signup paths. Redirect instead of rendering so old deep links stay
   // valid while new code speaks the explicit signup language.
   GoRoute(path: '/onboarding/phone', redirect: (_, _) => '/signup'),
+  GoRoute(
+    path: '/onboarding/legal-consent',
+    redirect: (_, _) => '/signup/legal-consent',
+  ),
   GoRoute(path: '/onboarding/otp', redirect: (_, _) => '/signup/verify-phone'),
   GoRoute(path: '/onboarding/profile', redirect: (_, _) => '/signup/profile'),
   GoRoute(path: '/onboarding/pin', redirect: (_, _) => '/signup/set-pin'),

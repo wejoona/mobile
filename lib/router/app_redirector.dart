@@ -248,6 +248,7 @@ String? _profileRedirect({
       location.startsWith('/signup/') &&
       !isProfileCaptureRoute &&
       location != '/signup' &&
+      location != '/signup/legal-consent' &&
       location != '/signup/verify-phone') {
     return '/signup/profile';
   }
@@ -351,6 +352,7 @@ bool _isExplicitPublicRoute(String location) =>
     location == '/login/otp' ||
     location == '/otp' ||
     location == '/signup' ||
+    location == '/signup/legal-consent' ||
     location == '/signup/verify-phone' ||
     location == '/onboarding' ||
     location == '/onboarding/phone' ||
@@ -386,6 +388,7 @@ bool _isSignupRoute(String location) => location.startsWith('/signup');
 
 bool _isLegacySignupRoute(String location) =>
     location == '/onboarding/phone' ||
+    location == '/onboarding/legal-consent' ||
     location == '/onboarding/otp' ||
     location == '/onboarding/profile' ||
     location == '/onboarding/pin' ||
@@ -415,6 +418,7 @@ bool _isAuthRoute(String location) =>
 bool _isAuthenticatedDeadEndRoute(String location) =>
     _isAuthRoute(location) ||
     location == '/signup' ||
+    location == '/signup/legal-consent' ||
     location == '/signup/verify-phone' ||
     location == '/onboarding' ||
     location == '/onboarding/phone' ||

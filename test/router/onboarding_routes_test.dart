@@ -1,5 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/router/app_router.dart';
@@ -45,18 +45,16 @@ class _TestWalletStateMachine extends WalletStateMachine {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  ProviderContainer buildContainer() {
-    return ProviderContainer(
-      overrides: [
-        authProvider.overrideWith(_TestAuthNotifier.new),
-        appFsmProvider.overrideWith(_TestAppFsmNotifier.new),
-        kycStateMachineProvider.overrideWith(_TestKycStateMachine.new),
-        userStateMachineProvider.overrideWith(_TestUserStateMachine.new),
-        walletStateMachineProvider.overrideWith(_TestWalletStateMachine.new),
-        secureStorageProvider.overrideWithValue(MockSecureStorage()),
-      ],
-    );
-  }
+  ProviderContainer buildContainer() => ProviderContainer(
+    overrides: [
+      authProvider.overrideWith(_TestAuthNotifier.new),
+      appFsmProvider.overrideWith(_TestAppFsmNotifier.new),
+      kycStateMachineProvider.overrideWith(_TestKycStateMachine.new),
+      userStateMachineProvider.overrideWith(_TestUserStateMachine.new),
+      walletStateMachineProvider.overrideWith(_TestWalletStateMachine.new),
+      secureStorageProvider.overrideWithValue(MockSecureStorage()),
+    ],
+  );
 
   group('Onboarding routes', () {
     test('registers every explicit signup step path used by the flow', () {
@@ -67,6 +65,7 @@ void main() {
 
       const expectedPaths = [
         '/signup',
+        '/signup/legal-consent',
         '/signup/verify-phone',
         '/signup/profile',
         '/signup/set-pin',
@@ -95,6 +94,7 @@ void main() {
 
       const legacyPaths = [
         '/onboarding/phone',
+        '/onboarding/legal-consent',
         '/onboarding/otp',
         '/onboarding/profile',
         '/onboarding/pin',

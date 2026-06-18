@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/auth/views/login_view.dart';
 import 'package:usdc_wallet/features/onboarding/views/phone_input_view.dart';
+import 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
 import '../../helpers/test_utils.dart';
@@ -33,7 +34,7 @@ void main() {
     expect(find.textContaining('agree'), findsNothing);
   });
 
-  testWidgets('terms acceptance remains on onboarding phone registration', (
+  testWidgets('signup phone entry defers legal consent to a dedicated step', (
     tester,
   ) async {
     await _usePhoneViewport(tester);
@@ -49,9 +50,11 @@ void main() {
 
     await tester.pump();
 
-    expect(find.byType(Checkbox), findsOneWidget);
-    expect(find.textContaining('Terms of Service'), findsOneWidget);
-    expect(find.textContaining('Privacy Policy'), findsOneWidget);
+    expect(find.byType(Checkbox), findsNothing);
+    expect(find.byType(OnboardingProgress), findsNothing);
+    expect(find.byTooltip('Back'), findsNothing);
+    expect(find.textContaining('Terms of Service'), findsNothing);
+    expect(find.textContaining('Privacy Policy'), findsNothing);
   });
 }
 
