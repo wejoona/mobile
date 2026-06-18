@@ -1,6 +1,6 @@
 # Mobile Current Status
 
-Last updated: 2026-06-18 09:59 GMT
+Last updated: 2026-06-18 10:01 GMT
 
 ## Standing
 
@@ -42,6 +42,7 @@ Last updated: 2026-06-18 09:59 GMT
 - Contacts permission and Korido account lookup are verified: first-time list access routes to a dedicated permission prompt instead of inline error, explicit actions request/open settings, Korido lookup uses backend search, and Korido contacts display account badges. Focused contacts permission/lookup contract tests passed 3 tests.
 - Notifications feed, unread count, read/read-all actions, explicit permission flow, and device-token registration are verified against the backend contract; the legacy device-token helper no longer hardcodes iOS and requires an explicit platform. Focused API alignment tests passed 94 tests.
 - Active sessions and device management are hardened around auth/security failures: session reads refresh once and lock instead of wiping local state on ordinary 401, device reads wait for auth, and device actions now normalize Dio failures to `ApiException` so blacklist and 401 outcomes clear or lock state consistently. Focused settings/API contract tests passed 102 tests.
+- Authenticator app 2FA is verified as an intentional backend-enforced waitlist/capability, not a fake local toggle: mobile shows it as coming soon, subscribes to `two_factor_auth` with `requestedFeature=backend_enforced_mfa`, does not store local TOTP state/secrets, and the API service catalog marks it policy-governed with `requiresBackendEnforcement=true`.
 
 ## Known Watch Items
 
