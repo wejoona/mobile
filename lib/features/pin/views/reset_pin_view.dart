@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -856,7 +857,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       // Hash the new PIN for transmission (same method as PinService)
       // We need to call the backend reset endpoint with OTP + hashed PIN
       await dio.post(
-        '/user/pin/reset',
+        ApiEndpoints.userPinReset,
         data: {
           'otp': _otpController.text,
           'newPinHash': _hashPinForBackend(_newPin),

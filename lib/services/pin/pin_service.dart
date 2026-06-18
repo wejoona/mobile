@@ -4,6 +4,7 @@ import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// PIN Service - Handles secure PIN storage and verification
@@ -43,7 +44,7 @@ class PinService {
     // SECURITY: Hash PIN before transmission to prevent plaintext exposure
     try {
       final hashedPin = _hashPinForTransmission(pin);
-      await _dio.post('/user/pin/set', data: {'pinHash': hashedPin});
+      await _dio.post(ApiEndpoints.userPinSet, data: {'pinHash': hashedPin});
     } catch (e) {
       if (requireBackendSync) {
         await clearPin();
@@ -136,7 +137,7 @@ class PinService {
       // SECURITY: Hash PIN before transmission to prevent plaintext exposure
       final hashedPin = _hashPinForTransmission(pin);
       final response = await _dio.post(
-        '/user/pin/verify',
+        ApiEndpoints.userPinVerify,
         data: {'pinHash': hashedPin},
       );
 
@@ -215,7 +216,7 @@ class PinService {
 
     try {
       await _dio.post(
-        '/user/pin/change',
+        ApiEndpoints.userPinChange,
         data: {
           'oldPinHash': _hashPinForTransmission(currentPin),
           'newPinHash': _hashPinForTransmission(newPin),

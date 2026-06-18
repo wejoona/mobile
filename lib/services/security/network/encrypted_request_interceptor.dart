@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/services/security/network/request_encryptor.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
@@ -15,8 +16,8 @@ class EncryptedRequestInterceptor extends Interceptor {
     '/wallet/cash-out/mobile-money',
     '/wallet/deposit',
     '/deposits/',
-    '/user/pin/verify',
-    '/user/pin/change',
+    ApiEndpoints.userPinVerify,
+    ApiEndpoints.userPinChange,
   ];
 
   EncryptedRequestInterceptor({required RequestEncryptor encryptor})

@@ -19,6 +19,11 @@ abstract final class ApiEndpoints {
   static const userUpdate = '/user/profile';
   static const userDelete = '/user/account';
   static const userExportData = '/user/export';
+  static const userPinPrefix = '/user/pin/';
+  static const userPinSet = '${userPinPrefix}set';
+  static const userPinVerify = '${userPinPrefix}verify';
+  static const userPinChange = '${userPinPrefix}change';
+  static const userPinReset = '${userPinPrefix}reset';
 
   // Wallet
   static const walletBalance = '/wallet';

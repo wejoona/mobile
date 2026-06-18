@@ -1,14 +1,15 @@
 import 'package:dio/dio.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/mocks/base/mock_interceptor.dart';
 
 /// PIN API mocks
 class PinMock {
   static void register(MockInterceptor interceptor) {
-    for (final path in const ['/user/pin/set', '/api/v1/user/pin/set']) {
+    for (final path in _apiPaths(ApiEndpoints.userPinSet)) {
       interceptor.register(method: 'POST', path: path, handler: _handleSetPin);
     }
 
-    for (final path in const ['/user/pin/change', '/api/v1/user/pin/change']) {
+    for (final path in _apiPaths(ApiEndpoints.userPinChange)) {
       interceptor.register(
         method: 'POST',
         path: path,
@@ -16,7 +17,7 @@ class PinMock {
       );
     }
 
-    for (final path in const ['/user/pin/verify', '/api/v1/user/pin/verify']) {
+    for (final path in _apiPaths(ApiEndpoints.userPinVerify)) {
       interceptor.register(
         method: 'POST',
         path: path,
@@ -24,7 +25,7 @@ class PinMock {
       );
     }
 
-    for (final path in const ['/user/pin/reset', '/api/v1/user/pin/reset']) {
+    for (final path in _apiPaths(ApiEndpoints.userPinReset)) {
       interceptor.register(
         method: 'POST',
         path: path,
@@ -32,6 +33,8 @@ class PinMock {
       );
     }
   }
+
+  static List<String> _apiPaths(String path) => [path, '/api/v1$path'];
 
   /// Handle set PIN
   static Future<MockResponse> _handleSetPin(RequestOptions options) async {

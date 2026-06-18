@@ -1645,6 +1645,9 @@ void main() {
       final resetPinSource = File(
         'lib/features/pin/views/reset_pin_view.dart',
       ).readAsStringSync();
+      final endpointsSource = File(
+        'lib/core/constants/api_endpoints.dart',
+      ).readAsStringSync();
       final transferContractSource = File(
         'lib/mocks/services/transfers/transfers_contract.dart',
       ).readAsStringSync();
@@ -1661,14 +1664,19 @@ void main() {
         transferMockSource,
       ].join('\n');
 
-      expect(pinServiceSource, contains('/user/pin/verify'));
-      expect(pinServiceSource, contains('/user/pin/set'));
-      expect(pinServiceSource, contains('/user/pin/change'));
-      expect(resetPinSource, contains('/user/pin/reset'));
-      expect(jweSource, contains('/user/pin/'));
-      expect(encryptedRequestSource, contains('/user/pin/verify'));
-      expect(encryptedRequestSource, contains('/user/pin/change'));
-      expect(securityHeadersSource, contains('/user/pin/'));
+      expect(endpointsSource, contains("userPinPrefix = '/user/pin/'"));
+      expect(endpointsSource, contains('userPinSet'));
+      expect(endpointsSource, contains('userPinVerify'));
+      expect(endpointsSource, contains('userPinChange'));
+      expect(endpointsSource, contains('userPinReset'));
+      expect(pinServiceSource, contains('ApiEndpoints.userPinVerify'));
+      expect(pinServiceSource, contains('ApiEndpoints.userPinSet'));
+      expect(pinServiceSource, contains('ApiEndpoints.userPinChange'));
+      expect(resetPinSource, contains('ApiEndpoints.userPinReset'));
+      expect(jweSource, contains('ApiEndpoints.userPinPrefix'));
+      expect(encryptedRequestSource, contains('ApiEndpoints.userPinVerify'));
+      expect(encryptedRequestSource, contains('ApiEndpoints.userPinChange'));
+      expect(securityHeadersSource, contains('ApiEndpoints.userPinPrefix'));
       expect(resetPinSource, contains('cacheConfirmedPin'));
       expect(resetPinSource, isNot(contains('.setPin(_newPin)')));
       expect(combinedContractText, isNot(contains('/wallet/pin/verify')));
@@ -1692,8 +1700,8 @@ void main() {
             'Stale route snippets create a second source of truth for PIN navigation.',
       );
       expect(
-        '$pinServiceSource\n$combinedContractText',
-        contains('/user/pin/verify'),
+        '$endpointsSource\n$pinServiceSource\n$combinedContractText',
+        contains('/user/pin/'),
       );
     });
 

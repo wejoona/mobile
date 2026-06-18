@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/services/security/client_risk_score_service.dart';
 import 'package:usdc_wallet/services/security/device_fingerprint_service.dart';
 import 'package:usdc_wallet/utils/logger.dart';
@@ -31,7 +32,7 @@ class SecurityHeadersInterceptor extends Interceptor {
     '/auth/verify-otp',
     '/auth/register',
     '/devices',
-    '/user/pin/',
+    ApiEndpoints.userPinPrefix,
     '/risk/',
   ];
 

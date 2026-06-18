@@ -46,18 +46,18 @@ class UserApi {
 
   /// POST /user/pin/set
   Future<Response> setPin(String pinHash) =>
-      _dio.post('/user/pin/set', data: {'pinHash': pinHash});
+      _dio.post(ApiEndpoints.userPinSet, data: {'pinHash': pinHash});
 
   /// POST /user/pin/verify
   Future<Response> verifyPin(String pinHash) =>
-      _dio.post('/user/pin/verify', data: {'pinHash': pinHash});
+      _dio.post(ApiEndpoints.userPinVerify, data: {'pinHash': pinHash});
 
   /// POST /user/pin/change
   Future<Response> changePin({
     required String oldPinHash,
     required String newPinHash,
   }) => _dio.post(
-    '/user/pin/change',
+    ApiEndpoints.userPinChange,
     data: {'oldPinHash': oldPinHash, 'newPinHash': newPinHash},
   );
 
@@ -67,7 +67,7 @@ class UserApi {
     required String newPinHash,
     required String stepUpChallengeToken,
   }) => _dio.post(
-    '/user/pin/reset',
+    ApiEndpoints.userPinReset,
     data: {
       'otp': otp,
       'newPinHash': newPinHash,
