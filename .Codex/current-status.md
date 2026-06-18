@@ -1,6 +1,6 @@
 # Mobile Current Status
 
-Last updated: 2026-06-18 10:20 GMT
+Last updated: 2026-06-18 10:25 GMT
 
 ## Standing
 
@@ -16,6 +16,7 @@ Last updated: 2026-06-18 10:20 GMT
 - Login is dark-theme default.
 - Login no longer shows the Terms checkbox.
 - Login no longer shows signup/onboarding progress markers.
+- Login's `Sign up` action goes to `/signup` with `context.go`; the current `/signup` auth-entry screen has no back button, no tutorial progress marker, and no Terms/Privacy checkbox.
 - Phone input keeps country prefix and local number visually separate.
 - Login phone state now stores country, dial code, local number, and E.164 separately; malformed duplicated-prefix input such as `+225|+2250748805663` is repaired before API calls.
 - Contact matching now sends only canonical SHA-256 hashes to `/contacts/check`; the backend now rejects raw `phoneNumbers` with `400` before lookup, hashing, or repository access.
@@ -29,6 +30,7 @@ Last updated: 2026-06-18 10:20 GMT
 - PIN routes are centralized under `ApiEndpoints.userPin*`; mobile services, reset flow, security interceptors, and PIN mocks now derive from the same `/user/pin/*` source of truth.
 - API startup diagnostics now log the actual `ENV` plus build mode, and certificate pinning logs whether it was active or skipped for the current build.
 - Backend contact controller e2e suite passed after the hash-only privacy boundary change: 23 tests, plus `npm run build` and `git diff --check`.
+- Auth route contract tests passed after rechecking the reported TestFlight signup leak: `login_terms_boundary_test.dart`, `onboarding_routes_test.dart`, and `login_view_interaction_test.dart` passed 14 tests.
 - Live staging checks with `+2250748805663` and OTP `123456` returned HTTP 200 for login, OTP verify, `/wallet`, `/sessions`, `/devices`, `/user/profile`, `/user/profile` update, and `/user/email-status`.
 - Current staging wallet for that account is valid but zero-balance and degraded/local-mirror because ledger balance is temporarily unavailable; mobile should show zero plus sync warning, not fabricate funds.
 - Profile update API and profile thumbnail shape are healthy; avatar upload still depends on on-device face detection and multipart upload in manual device testing.
