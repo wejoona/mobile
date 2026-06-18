@@ -48,6 +48,36 @@ void main() {
       );
     });
 
+    test('mobile ships no dormant AML or fraud route clients', () {
+      final roots = [
+        Directory('lib/services/aml'),
+        Directory('lib/services/fraud'),
+      ];
+      final dartFiles = <String>[];
+
+      for (final root in roots) {
+        if (!root.existsSync()) {
+          continue;
+        }
+        dartFiles.addAll(
+          root
+              .listSync(recursive: true)
+              .whereType<File>()
+              .where((file) => file.path.endsWith('.dart'))
+              .map((file) => file.path),
+        );
+      }
+
+      expect(
+        dartFiles..sort(),
+        isEmpty,
+        reason:
+            'AML and fraud screening are backend-owned. Mobile must not ship '
+            'dormant client-side decision engines or speculative /aml/* and '
+            '/fraud/* route clients.',
+      );
+    });
+
     test(
       'risk profile service uses the current-user backend contract',
       () async {

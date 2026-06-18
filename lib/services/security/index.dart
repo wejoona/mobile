@@ -2,7 +2,6 @@ export 'package:usdc_wallet/services/security/auth/index.dart';
 export 'package:usdc_wallet/services/security/network/index.dart';
 export 'package:usdc_wallet/services/security/communication/index.dart';
 export 'package:usdc_wallet/services/security/monitoring/index.dart';
-export 'package:usdc_wallet/services/security/privacy/index.dart';
 export 'package:usdc_wallet/services/security/testing/index.dart';
 export 'package:usdc_wallet/services/security/security_config.dart';
 export 'package:usdc_wallet/services/security/security_bootstrap.dart';
@@ -14,7 +13,8 @@ export 'package:usdc_wallet/services/security/whitelisted_address_service.dart';
 export 'package:usdc_wallet/services/security/security_gate.dart';
 export 'package:usdc_wallet/services/security/security_headers_interceptor.dart';
 export 'package:usdc_wallet/services/security/client_risk_score_service.dart';
-export 'package:usdc_wallet/services/security/device_attestation.dart' hide AttestationResult;
+export 'package:usdc_wallet/services/security/device_attestation.dart'
+    hide AttestationResult;
 export 'package:usdc_wallet/services/security/security_guard_service.dart';
 export 'package:usdc_wallet/services/security/device_fingerprint_service.dart';
 export 'package:usdc_wallet/services/security/risk_based_security_service.dart';

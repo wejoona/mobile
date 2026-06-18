@@ -36,14 +36,36 @@ void main() {
     });
 
     test('customer transaction limits are sourced from user limits routes', () {
-      final limitsService = File('lib/services/limits/limits_service.dart')
-          .readAsStringSync();
+      final limitsService = File(
+        'lib/services/limits/limits_service.dart',
+      ).readAsStringSync();
 
       expect(ApiEndpoints.limits, '/user/limits');
       expect(ApiEndpoints.limitsUsage, '/user/limits/usage');
       expect(limitsService, contains('ApiEndpoints.limits'));
       expect(limitsService, contains('ApiEndpoints.limitsUsage'));
       expect(limitsService, isNot(contains("'/compliance/limits'")));
+    });
+
+    test('mobile ships no dormant compliance decision clients', () {
+      final root = Directory('lib/services/compliance');
+      final dartFiles = root.existsSync()
+          ? root
+                .listSync(recursive: true)
+                .whereType<File>()
+                .where((file) => file.path.endsWith('.dart'))
+                .map((file) => file.path)
+                .toList()
+          : <String>[];
+
+      expect(
+        dartFiles..sort(),
+        isEmpty,
+        reason:
+            'Compliance, reporting, sanctions, CDD/EDD, and limit decisions '
+            'are backend-owned. Mobile should call explicit customer-safe '
+            'endpoints such as /user/limits and /wallet/kyc/status only.',
+      );
     });
   });
 }
