@@ -124,11 +124,13 @@ class CacheInterceptor extends Interceptor {
 
   /// Generate cache key from request options
   String _generateKey(RequestOptions options) {
-    final queryString = options.queryParameters.entries
-        .map((e) => '${e.key}=${e.value}')
-        .join('&');
+    final queryString = options.queryParameters.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+    final queryKey = queryString.map((e) => '${e.key}=${e.value}').join('&');
 
-    return '${options.method}:${options.path}${queryString.isNotEmpty ? '?$queryString' : ''}';
+    final authKey = _authorizationCacheKey(options.headers['Authorization']);
+
+    return '${options.method}:${options.path}${queryKey.isNotEmpty ? '?$queryKey' : ''}$authKey';
   }
 
   /// Get Time-To-Live (TTL) for different endpoints
@@ -214,6 +216,23 @@ class CacheInterceptor extends Interceptor {
   }
 
   bool _isCacheablePath(String path) => getTTL(path) > Duration.zero;
+
+  String _authorizationCacheKey(Object? authorization) {
+    final token = authorization?.toString().trim();
+    if (token == null || token.isEmpty) {
+      return '';
+    }
+    return '#auth:${_stableTokenFingerprint(token)}';
+  }
+
+  String _stableTokenFingerprint(String value) {
+    var hash = 0x811c9dc5;
+    for (final codeUnit in value.codeUnits) {
+      hash ^= codeUnit;
+      hash = (hash * 0x01000193) & 0xffffffff;
+    }
+    return hash.toRadixString(16);
+  }
 
   void _evictExpired() {
     _cache.removeWhere((_, cached) => cached.isExpired);

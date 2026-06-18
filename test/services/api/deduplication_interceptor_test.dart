@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
-import 'package:flutter_test/flutter_test.dart';
+
 import 'package:dio/dio.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/services/api/deduplication_interceptor.dart';
 
 void main() {
@@ -67,6 +69,52 @@ void main() {
         options1.headers['Authorization'],
         isNot(equals(options2.headers['Authorization'])),
       );
+    });
+
+    test('does not deduplicate authenticated GETs across sessions', () async {
+      final adapter = _DelayedEchoAuthAdapter();
+      final authenticatedDio = Dio(BaseOptions(baseUrl: 'https://api.test.com'))
+        ..httpClientAdapter = adapter
+        ..interceptors.add(interceptor);
+
+      final first = authenticatedDio.get<Map<String, dynamic>>(
+        '/wallet',
+        options: Options(headers: {'Authorization': 'Bearer user-one-token'}),
+      );
+      final second = authenticatedDio.get<Map<String, dynamic>>(
+        '/wallet',
+        options: Options(headers: {'Authorization': 'Bearer user-two-token'}),
+      );
+
+      final responses = await Future.wait([first, second]);
+
+      expect(adapter.calls, 2);
+      expect(responses[0].data?['owner'], 'Bearer user-one-token');
+      expect(responses[1].data?['owner'], 'Bearer user-two-token');
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+      expect(interceptor.getStats()['count'], equals(0));
+    });
+
+    test('does not expose raw auth tokens in in-flight statistics', () async {
+      final adapter = _BlockingAdapter();
+      final statsDio = Dio(BaseOptions(baseUrl: 'https://api.test.com'))
+        ..httpClientAdapter = adapter
+        ..interceptors.add(interceptor);
+
+      final request = statsDio.get<Map<String, dynamic>>(
+        '/wallet',
+        options: Options(headers: {'Authorization': 'Bearer secret-token'}),
+      );
+
+      await pumpEventQueue();
+
+      expect(
+        interceptor.getStats().toString(),
+        isNot(contains('secret-token')),
+      );
+
+      adapter.complete();
+      await request;
     });
 
     test('should clear all in-flight requests', () {
@@ -137,6 +185,59 @@ class _StatusCodeAdapter implements HttpClientAdapter {
     return ResponseBody.fromString(
       '{"message":"origin down"}',
       statusCode,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
+
+class _DelayedEchoAuthAdapter implements HttpClientAdapter {
+  int calls = 0;
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    calls += 1;
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+    return ResponseBody.fromString(
+      jsonEncode({'owner': options.headers['Authorization'], 'call': calls}),
+      200,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
+
+class _BlockingAdapter implements HttpClientAdapter {
+  final _completer = Completer<void>();
+
+  void complete() {
+    if (!_completer.isCompleted) {
+      _completer.complete();
+    }
+  }
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    await _completer.future;
+    return ResponseBody.fromString(
+      jsonEncode({'ok': true}),
+      200,
       headers: {
         Headers.contentTypeHeader: [Headers.jsonContentType],
       },

@@ -1,5 +1,8 @@
-import 'package:flutter_test/flutter_test.dart';
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/services/api/cache_interceptor.dart';
 
 void main() {
@@ -49,6 +52,34 @@ void main() {
 
       // Keys should be different due to different query params
       expect(options1.uri.toString(), isNot(equals(options2.uri.toString())));
+    });
+
+    test('keeps authenticated GET caches isolated by session', () async {
+      final adapter = _EchoAuthAdapter();
+      dio.httpClientAdapter = adapter;
+
+      final userOne = await dio.get<Map<String, dynamic>>(
+        '/wallet/transactions',
+        options: Options(headers: {'Authorization': 'Bearer user-one-token'}),
+      );
+      final userTwo = await dio.get<Map<String, dynamic>>(
+        '/wallet/transactions',
+        options: Options(headers: {'Authorization': 'Bearer user-two-token'}),
+      );
+      final userOneCached = await dio.get<Map<String, dynamic>>(
+        '/wallet/transactions',
+        options: Options(headers: {'Authorization': 'Bearer user-one-token'}),
+      );
+
+      expect(userOne.data?['owner'], 'Bearer user-one-token');
+      expect(userTwo.data?['owner'], 'Bearer user-two-token');
+      expect(userOneCached.data?['owner'], 'Bearer user-one-token');
+      expect(adapter.calls, 2);
+
+      final stats = interceptor.getCacheStats();
+      expect(stats['total'], 2);
+      expect(stats.toString(), isNot(contains('user-one-token')));
+      expect(stats.toString(), isNot(contains('user-two-token')));
     });
 
     test('should apply correct TTL for different endpoints', () {
@@ -124,4 +155,27 @@ void main() {
       expect(cachedResponse.isExpired, isFalse);
     });
   });
+}
+
+class _EchoAuthAdapter implements HttpClientAdapter {
+  int calls = 0;
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    calls += 1;
+    return ResponseBody.fromString(
+      jsonEncode({'owner': options.headers['Authorization'], 'call': calls}),
+      200,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
 }

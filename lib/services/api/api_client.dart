@@ -126,6 +126,10 @@ final dioProvider = Provider<Dio>((ref) {
     logger.info('Mock interceptor enabled - using mock API responses');
   }
 
+  // Add auth before cache/dedup so user-specific GET state is keyed per
+  // authenticated session instead of only by path.
+  dio.interceptors.add(AuthInterceptor(ref));
+
   // PERFORMANCE: Add HTTP response caching before deduplication so a cache hit
   // does not create an in-flight deduplication entry that can never complete.
   dio.interceptors.add(ref.read(cacheInterceptorProvider));
@@ -138,9 +142,6 @@ final dioProvider = Provider<Dio>((ref) {
     securityHeadersInterceptorProvider,
   );
   dio.interceptors.add(securityHeadersInterceptor);
-
-  // Add auth interceptor
-  dio.interceptors.add(AuthInterceptor(ref));
 
   // SECURITY: JWE encryption for sensitive endpoints (transfers, PIN, etc.)
   final jweService = ref.read(jweServiceProvider);
