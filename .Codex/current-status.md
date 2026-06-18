@@ -1,12 +1,12 @@
 # Mobile Current Status
 
-Last updated: 2026-06-18 10:05 GMT
+Last updated: 2026-06-18 10:20 GMT
 
 ## Standing
 
 - Active branch: `develop`, tracking `origin/develop`.
-- Latest pushed mobile commit: `ba147cdc fix: clarify api startup diagnostics`.
-- Latest pushed API commit: `bfa38bba fix: align mobile version policy defaults`.
+- Latest pushed mobile code commit: `ba147cdc fix: clarify api startup diagnostics`.
+- Latest pushed API commit: `17a27962 fix: reject raw contact phone lookup`.
 - Repo status should be clean unless a new slice is in progress.
 - Do not promote to `staging` until Codemagic-equivalent local gates pass.
 
@@ -18,7 +18,7 @@ Last updated: 2026-06-18 10:05 GMT
 - Login no longer shows signup/onboarding progress markers.
 - Phone input keeps country prefix and local number visually separate.
 - Login phone state now stores country, dial code, local number, and E.164 separately; malformed duplicated-prefix input such as `+225|+2250748805663` is repaired before API calls.
-- Contact matching now sends only canonical SHA-256 hashes to `/contacts/check`; the old raw-phone contact check path is disabled.
+- Contact matching now sends only canonical SHA-256 hashes to `/contacts/check`; the backend now rejects raw `phoneNumbers` with `400` before lookup, hashing, or repository access.
 - User-bound biometric unlock now revokes stale stored biometric bindings immediately when the stored binding belongs to a different Korido user.
 - Staging API health, login, and OTP verification worked for `0748805663` with OTP `123456` when DNS was resolving.
 - Staging API public smokes returned HTTP 200 on 2026-06-18: `/health`, `/config/mobile-version`, and `/config/countries`.
@@ -28,6 +28,7 @@ Last updated: 2026-06-18 10:05 GMT
 - Signup/account setup state now lives under `features/signup/providers/signup_flow_provider.dart` with `SignupFlow*` names; product tutorial onboarding keeps the onboarding naming.
 - PIN routes are centralized under `ApiEndpoints.userPin*`; mobile services, reset flow, security interceptors, and PIN mocks now derive from the same `/user/pin/*` source of truth.
 - API startup diagnostics now log the actual `ENV` plus build mode, and certificate pinning logs whether it was active or skipped for the current build.
+- Backend contact controller e2e suite passed after the hash-only privacy boundary change: 23 tests, plus `npm run build` and `git diff --check`.
 - Live staging checks with `+2250748805663` and OTP `123456` returned HTTP 200 for login, OTP verify, `/wallet`, `/sessions`, `/devices`, `/user/profile`, `/user/profile` update, and `/user/email-status`.
 - Current staging wallet for that account is valid but zero-balance and degraded/local-mirror because ledger balance is temporarily unavailable; mobile should show zero plus sync warning, not fabricate funds.
 - Profile update API and profile thumbnail shape are healthy; avatar upload still depends on on-device face detection and multipart upload in manual device testing.
