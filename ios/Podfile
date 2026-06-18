@@ -105,6 +105,7 @@ post_install do |installer|
       .gsub(/\s+"?\$\{TOOLCHAIN_DIR\}\/usr\/lib\/swift\/\$\{PLATFORM_NAME\}"?/, '')
       .gsub(/\s+"?\$\(TOOLCHAIN_DIR\)\/usr\/lib\/swift\/\$\(PLATFORM_NAME\)\/?"?/, '')
       .gsub(/\s+"?[^"\s]*Metal\.xctoolchain\/usr\/lib\/swift\/[^"\s]*"?/, '')
+      .gsub(/\s+"?\/usr\/lib\/swift"?/, '')
       .gsub(/LIBRARY_SEARCH_PATHS =\s+/, 'LIBRARY_SEARCH_PATHS = ')
       .gsub(/[ \t]+\n/, "\n")
     File.write(path, sanitized) if sanitized != contents
