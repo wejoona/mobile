@@ -16,6 +16,28 @@ class _NoopAppFsmNotifier extends AppFsmNotifier {
 
   @override
   void handleEffects(List<FsmEffect> effects) {}
+
+  @override
+  void fetchWallet() {}
+
+  @override
+  void onWalletLoaded({
+    required String walletId,
+    String? walletAddress,
+    String blockchain = 'polygon',
+    required double usdcBalance,
+    double pendingBalance = 0,
+  }) {}
+
+  @override
+  void onWalletCreated({
+    required String walletId,
+    String? walletAddress,
+    String blockchain = 'polygon',
+  }) {}
+
+  @override
+  void onWalletFailed(String message, {dynamic data}) {}
 }
 
 void main() {
@@ -258,6 +280,57 @@ void main() {
         expect(state.balanceReadStatus, 'fresh');
         expect(state.isStale, isFalse);
         expect(state.isDegraded, isFalse);
+      },
+    );
+
+    test(
+      'treats degraded local mirror zero balance as a loaded wallet',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'walletId': 'wallet-local-mirror',
+            'currency': 'USDC',
+            'source': 'local_mirror',
+            'sourceOfTruth': 'local_mirror',
+            'readStatus': 'degraded',
+            'isStale': true,
+            'degraded': true,
+            'warning':
+                'Ledger balance is temporarily unavailable. Showing local mirror balance.',
+            'balances': [
+              {
+                'currency': 'USDC',
+                'available': 0,
+                'pending': 0,
+                'total': 0,
+                'availableDecimal': '0.000000',
+                'pendingDecimal': '0.000000',
+                'totalDecimal': '0.000000',
+              },
+            ],
+          });
+
+        final container = ProviderContainer(
+          overrides: [
+            dioProvider.overrideWithValue(dio),
+            appFsmProvider.overrideWith(_NoopAppFsmNotifier.new),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await container.read(walletStateMachineProvider.notifier).fetch();
+
+        final state = container.read(walletStateMachineProvider);
+        expect(state.status, WalletStatus.loaded);
+        expect(state.hasBalanceData, isTrue);
+        expect(state.walletId, 'wallet-local-mirror');
+        expect(state.usdcBalance, 0);
+        expect(state.pendingBalance, 0);
+        expect(state.isDegraded, isTrue);
+        expect(state.isStale, isTrue);
+        expect(state.balanceSourceOfTruth, 'local_mirror');
+        expect(state.balanceReadStatus, 'degraded');
+        expect(state.balanceWarning, contains('Ledger balance'));
       },
     );
 

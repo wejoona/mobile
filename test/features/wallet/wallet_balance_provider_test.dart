@@ -8,6 +8,18 @@ import '../../helpers/test_utils.dart';
 
 void main() {
   group('walletBalanceProvider', () {
+    test('value parser treats total-only rows as displayable balance', () {
+      final balance = WalletBalance.fromJson({
+        'currency': 'USDC',
+        'totalDecimal': '88.125000',
+      });
+
+      expect(balance.available, 88.125);
+      expect(balance.pending, 0);
+      expect(balance.total, 88.125);
+      expect(balance.currency, 'USDC');
+    });
+
     test('does not create a wallet from the direct balance reader', () async {
       final dio = MockDio()
         ..queueErrorResponse(statusCode: 404, message: 'Wallet not found');
