@@ -1,6 +1,6 @@
 # Mobile Current Status
 
-Last updated: 2026-06-18 11:05 GMT
+Last updated: 2026-06-18 11:14 GMT
 
 ## Standing
 
@@ -39,6 +39,7 @@ Last updated: 2026-06-18 11:05 GMT
 - Live staging wallet smoke for `+2250748805663` returned wallet `286c3d68-c47b-4d1c-baeb-dc2a8d2b8e56`, `USDC=0`, `sourceOfTruth=local_mirror`, `readStatus=degraded`, and backend warning `Ledger balance is temporarily unavailable. Showing local mirror balance.`
 - Profile update API, profile thumbnail shape, and avatar upload cache replacement are healthy: mobile creates one-face device evidence bound to the uploaded bytes, backend rejects missing/stale/unbound proof, `UserAvatar` now uses the dedicated profile-photo cache, and avatar replacement/removal clears stale local/profile-photo caches. Focused profile contract tests passed 29 tests.
 - Reset PIN account-recovery risk path now fails closed: account recovery fallback is red/manual review, missing liveness/step-up challenge tokens route to account-recovery support review instead of a retry dead-end, and focused PIN/session recovery contract tests passed 14 tests.
+- Contacts permission and Korido account lookup are verified: first-time list access routes to a dedicated permission prompt instead of inline error, explicit actions request/open settings, Korido lookup uses backend search, and Korido contacts display account badges. Focused contacts permission/lookup contract tests passed 3 tests.
 
 ## Known Watch Items
 
