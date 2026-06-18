@@ -64,11 +64,11 @@ class CertificatePinning {
 
   /// Configure Dio client with certificate pinning
   /// Only applies in release mode for production API
-  static void configurePinning(Dio dio, {bool forceForTesting = false}) {
+  static bool configurePinning(Dio dio, {bool forceForTesting = false}) {
     // Skip pinning in debug mode (localhost doesn't have valid certs)
     if (kDebugMode && !forceForTesting) {
       _logger.info('Disabled in debug mode');
-      return;
+      return false;
     }
 
     // Verify fingerprints are configured
@@ -88,6 +88,7 @@ class CertificatePinning {
     _logger.security(
       'Certificate pinning enabled for ${_trustedFingerprintsByHost.keys.join(", ")}',
     );
+    return true;
   }
 
   /// Certificate validation callback
@@ -245,7 +246,7 @@ class CertificatePinning {
 /// Extension to easily apply certificate pinning to Dio
 extension DioCertificatePinning on Dio {
   /// Enable certificate pinning for this Dio instance
-  void enableCertificatePinning() {
-    CertificatePinning.configurePinning(this);
+  bool enableCertificatePinning() {
+    return CertificatePinning.configurePinning(this);
   }
 }

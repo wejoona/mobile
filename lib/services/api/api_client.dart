@@ -32,11 +32,19 @@ class ApiConfig {
   static bool get isProduction => EnvironmentConfig.isProduction;
 
   /// Check if running in development
-  static bool get isDevelopment =>
-      EnvironmentConfig.isDevelopment || kDebugMode;
+  static bool get isDevelopment => EnvironmentConfig.isDevelopment;
 
   static bool get allowsBodyLogging =>
-      isDevelopment && !baseUrl.contains('joonapay.com');
+      (isDevelopment || kDebugMode) && !baseUrl.contains('joonapay.com');
+
+  static String get environmentLabel {
+    final buildMode = kReleaseMode
+        ? 'release'
+        : kProfileMode
+        ? 'profile'
+        : 'debug';
+    return '${EnvironmentConfig.environment} ($buildMode)';
+  }
 
   static const Duration connectTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);
@@ -86,9 +94,7 @@ final dioProvider = Provider<Dio>((ref) {
 
   // Log API configuration
   logger.info('API URL: ${ApiConfig.baseUrl}');
-  logger.info(
-    'Environment: ${ApiConfig.isDevelopment ? 'Development' : 'Production'}',
-  );
+  logger.info('Environment: ${ApiConfig.environmentLabel}');
   logger.info('Mock Mode: ${MockConfig.useMocks ? 'Enabled' : 'Disabled'}');
 
   final dio = Dio(
@@ -105,8 +111,12 @@ final dioProvider = Provider<Dio>((ref) {
 
   // SECURITY: Certificate pinning for production
   if (!MockConfig.useMocks) {
-    dio.enableCertificatePinning();
-    logger.info('Certificate pinning enabled');
+    final pinningActive = dio.enableCertificatePinning();
+    logger.info(
+      pinningActive
+          ? 'Certificate pinning active'
+          : 'Certificate pinning skipped for this build',
+    );
   }
 
   // MOCKING: Add mock interceptor first if mocks are enabled
