@@ -49,11 +49,9 @@ class LoginNotifier extends Notifier<LoginState> {
           if ((state.phoneNumber ?? '').isNotEmpty) {
             return;
           }
-          state = state.copyWith(
-            dialCode: phoneValue.dialCode,
-            phoneNumber: phoneValue.localNumber,
-            rememberDevice: true,
-          );
+          state = state
+              .withPhoneValue(phoneValue)
+              .copyWith(rememberDevice: true);
         }
       }
     } catch (e) {
@@ -63,15 +61,21 @@ class LoginNotifier extends Notifier<LoginState> {
 
   /// Update phone number
   void updatePhoneNumber(String phoneNumber, String dialCode) {
-    final localPhoneNumber = localPhoneDigits(
-      dialCode: dialCode,
+    final phoneValue = PhoneNumberValue.tryFromAny(
       phoneNumber: phoneNumber,
+      countryCode: dialCode,
     );
-    state = state.copyWith(
-      phoneNumber: localPhoneNumber,
-      dialCode: dialCode,
-      error: null,
-    );
+    final localPhoneNumber =
+        phoneValue?.localNumber ??
+        localPhoneDigits(dialCode: dialCode, phoneNumber: phoneNumber);
+    state =
+        (phoneValue == null
+                ? state.copyWith(
+                    phoneNumber: localPhoneNumber,
+                    dialCode: dialCode,
+                  )
+                : state.withPhoneValue(phoneValue))
+            .copyWith(error: null);
   }
 
   /// Toggle remember device
@@ -341,9 +345,10 @@ class LoginNotifier extends Notifier<LoginState> {
   void reset() {
     _resendTimer?.cancel();
     _lockoutTimer?.cancel();
+    final phoneValue = state.phoneValue;
     state = LoginState(
-      dialCode: state.dialCode,
-      phoneNumber: state.rememberDevice ? state.phoneNumber : null,
+      dialCode: phoneValue?.dialCode ?? state.dialCode,
+      phoneNumber: state.rememberDevice ? phoneValue?.localNumber : null,
       rememberDevice: state.rememberDevice,
     );
   }
@@ -354,9 +359,6 @@ class LoginNotifier extends Notifier<LoginState> {
   }
 
   PhoneNumberValue? _currentPhoneValue() {
-    return PhoneNumberValue.tryFromAny(
-      phoneNumber: state.phoneNumber,
-      countryCode: state.dialCode,
-    );
+    return state.phoneValue;
   }
 }

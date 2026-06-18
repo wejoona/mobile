@@ -53,6 +53,39 @@ void main() {
       },
     );
 
+    test('canonicalizes malformed phone state before submit', () async {
+      final dio = MockDio()
+        ..queueResponse({'message': 'OTP sent', 'expiresIn': 300});
+      final storage = MockSecureStorage();
+      final container = ProviderContainer(
+        overrides: [
+          dioProvider.overrideWithValue(dio),
+          secureStorageProvider.overrideWithValue(storage),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container
+          .read(loginProvider.notifier)
+          .updatePhoneNumber('+225|+2250748805663', '+225');
+
+      var state = container.read(loginProvider);
+      expect(state.dialCode, '+225');
+      expect(state.phoneNumber, '0748805663');
+      expect(state.phoneValue?.e164, '+2250748805663');
+
+      await container.read(loginProvider.notifier).submitPhoneNumber();
+
+      state = container.read(loginProvider);
+      expect(state.currentStep.name, 'otp');
+      expect(dio.requestHistory.single.path, '/auth/login');
+      expect(dio.requestHistory.single.data, {'phone': '+2250748805663'});
+      expect(
+        await storage.read(key: StorageKeys.rememberedPhone),
+        'CI|+225|0748805663|+2250748805663',
+      );
+    });
+
     test('keeps rate-limit copy from OTP request failures', () async {
       final dio = MockDio()
         ..queueErrorResponse(

@@ -694,21 +694,27 @@ class _LoginViewState extends ConsumerState<LoginView>
   }
 
   void _syncPhoneViewFromLoginState(LoginState loginState) {
-    final phone = loginState.phoneNumber;
-    if (phone == null || phone.isEmpty || _phoneFocusNode.hasFocus) {
+    final phoneValue = loginState.phoneValue;
+    if (phoneValue == null) {
       return;
     }
 
     final country =
-        SupportedCountries.findByPrefix(loginState.dialCode ?? '') ??
+        SupportedCountries.findByPrefix(phoneValue.dialCode) ??
         _selectedCountry;
-    final localPhone = localPhoneInputDigits(
-      dialCode: country.fullPrefix,
-      phoneNumber: phone,
-      maxLocalDigits: country.phoneLength,
-    );
+    final currentFieldText = _phoneController.text;
+    final shouldRespectFocusedInput =
+        _phoneFocusNode.hasFocus &&
+        !_looksLikeInternationalPhoneInput(currentFieldText, country);
+    if (shouldRespectFocusedInput) {
+      return;
+    }
+
+    final localPhone = phoneValue.localNumber.length > country.phoneLength
+        ? phoneValue.localNumber.substring(0, country.phoneLength)
+        : phoneValue.localNumber;
     final needsCountryUpdate = country.code != _selectedCountry.code;
-    final needsPhoneUpdate = localPhone != _phoneController.text;
+    final needsPhoneUpdate = localPhone != currentFieldText;
     if (!needsCountryUpdate && !needsPhoneUpdate) {
       return;
     }
@@ -717,6 +723,15 @@ class _LoginViewState extends ConsumerState<LoginView>
       _selectedCountry = country;
       _setPhoneControllerText(localPhone);
     });
+  }
+
+  bool _looksLikeInternationalPhoneInput(String value, CountryConfig country) {
+    if (value.contains('|') || value.trim().startsWith('+')) {
+      return true;
+    }
+    final digits = digitsOnly(value);
+    return digits.startsWith(country.prefix) &&
+        digits.length > country.phoneLength;
   }
 
   void _setPhoneControllerText(String value) {

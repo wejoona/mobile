@@ -1,4 +1,5 @@
 import 'package:usdc_wallet/domain/entities/index.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Login state model
 class LoginState {
@@ -73,6 +74,21 @@ class LoginState {
   }
 
   int get remainingAttempts => 3 - pinAttempts;
+
+  PhoneNumberValue? get phoneValue => PhoneNumberValue.tryFromAny(
+    phoneNumber: phoneNumber,
+    countryCode: dialCode,
+  );
+
+  String? get localPhoneNumber => phoneValue?.localNumber ?? phoneNumber;
+  String get canonicalDialCode => phoneValue?.dialCode ?? dialCode ?? '+225';
+
+  LoginState withPhoneValue(PhoneNumberValue phoneValue) {
+    return copyWith(
+      phoneNumber: phoneValue.localNumber,
+      dialCode: phoneValue.dialCode,
+    );
+  }
 }
 
 /// Login flow steps
