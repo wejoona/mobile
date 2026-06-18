@@ -63,17 +63,12 @@ class NotificationsService {
     }
   }
 
-  /// POST /notifications/device-token
-  Future<void> registerDeviceToken(String token) async {
-    try {
-      await _dio.post(
-        '/notifications/device-token',
-        data: {'token': token, 'platform': 'ios'},
-      );
-    } on DioException catch (e) {
-      throw ApiException.fromDioError(e);
-    }
-  }
+  /// POST /notifications/device-token - legacy explicit-platform facade.
+  @Deprecated('Use registerFcmToken with device metadata instead.')
+  Future<void> registerDeviceToken({
+    required String token,
+    required String platform,
+  }) => registerFcmToken(token: token, platform: platform);
 
   /// POST /notifications/device-token - FCM/APNs token registration.
   Future<void> registerFcmToken({

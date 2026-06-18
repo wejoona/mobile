@@ -1,6 +1,6 @@
 # Mobile Current Status
 
-Last updated: 2026-06-18 11:14 GMT
+Last updated: 2026-06-18 09:53 GMT
 
 ## Standing
 
@@ -40,6 +40,7 @@ Last updated: 2026-06-18 11:14 GMT
 - Profile update API, profile thumbnail shape, and avatar upload cache replacement are healthy: mobile creates one-face device evidence bound to the uploaded bytes, backend rejects missing/stale/unbound proof, `UserAvatar` now uses the dedicated profile-photo cache, and avatar replacement/removal clears stale local/profile-photo caches. Focused profile contract tests passed 29 tests.
 - Reset PIN account-recovery risk path now fails closed: account recovery fallback is red/manual review, missing liveness/step-up challenge tokens route to account-recovery support review instead of a retry dead-end, and focused PIN/session recovery contract tests passed 14 tests.
 - Contacts permission and Korido account lookup are verified: first-time list access routes to a dedicated permission prompt instead of inline error, explicit actions request/open settings, Korido lookup uses backend search, and Korido contacts display account badges. Focused contacts permission/lookup contract tests passed 3 tests.
+- Notifications feed, unread count, read/read-all actions, explicit permission flow, and device-token registration are verified against the backend contract; the legacy device-token helper no longer hardcodes iOS and requires an explicit platform. Focused API alignment tests passed 94 tests.
 
 ## Known Watch Items
 

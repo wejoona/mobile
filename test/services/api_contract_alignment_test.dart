@@ -1070,6 +1070,21 @@ void main() {
       });
     });
 
+    test('legacy device-token helper requires explicit platform', () async {
+      final dio = MockDio()..queueResponse({'message': 'ok'});
+      final service = NotificationsService(dio);
+
+      await service.registerDeviceToken(
+        token: 'android-token-1',
+        platform: 'android',
+      );
+
+      final request = dio.requestHistory.single;
+      expect(request.method, 'POST');
+      expect(request.path, '/notifications/device-token');
+      expect(request.data, {'token': 'android-token-1', 'platform': 'android'});
+    });
+
     test('runtime push lifecycle delegates through notification service', () {
       final source = File(
         'lib/services/notifications/push_notification_service.dart',
