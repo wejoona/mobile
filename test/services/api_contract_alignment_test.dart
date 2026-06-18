@@ -496,7 +496,7 @@ void main() {
 
         final notifier = container.read(withdrawProvider.notifier)
           ..selectMethod(WithdrawMethod.orangeMoney)
-          ..setPhoneNumber('+2250748805663');
+          ..setPhoneNumber('+225+2250748805663');
         await notifier.setAmount(25);
         await notifier.submit(
           pinToken: 'pin_token_123',
@@ -509,6 +509,7 @@ void main() {
         );
         expect(dio.requestHistory[1].path, '/user/limits');
         expect(dio.requestHistory[2].path, '/wallet/cash-out/mobile-money');
+        expect(dio.requestHistory[2].data['phoneNumber'], '+2250748805663');
         expect(container.read(withdrawProvider).result?.id, 'withdraw_123');
       },
     );
@@ -538,13 +539,14 @@ void main() {
           .requestWithdrawal(
             amount: 25,
             provider: 'orangeMoney',
-            phoneNumber: '+2250748805663',
+            phoneNumber: '+225+2250748805663',
             pinToken: 'pin_token_123',
             idempotencyKey: 'idem-withdraw-123',
           );
 
       expect(dio.requestHistory[0].path, '/user/limits');
       expect(dio.requestHistory[1].path, '/wallet/cash-out/mobile-money');
+      expect(dio.requestHistory[1].data['phoneNumber'], '+2250748805663');
       expect(dio.requestHistory[1].headers['X-Pin-Token'], 'pin_token_123');
     });
 

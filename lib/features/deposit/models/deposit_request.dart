@@ -1,4 +1,5 @@
-/// Deposit Request Models
+// Deposit request models.
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Initiate Deposit Request
 class InitiateDepositRequest {
@@ -14,21 +15,25 @@ class InitiateDepositRequest {
     required this.currency,
   });
 
-  Map<String, dynamic> toJson() => {
-    'amount': amount,
-    'currency': currency,
-    'providerCode': normalizeDepositProviderCode(provider),
-    if (phoneNumber.isNotEmpty)
-      'phoneNumber': _normalizePhoneNumber(phoneNumber, currency),
-  };
+  Map<String, dynamic> toJson() {
+    final normalizedPhoneNumber = _normalizePhoneNumber(phoneNumber, currency);
+    return {
+      'amount': amount,
+      'currency': currency,
+      'providerCode': normalizeDepositProviderCode(provider),
+      if (normalizedPhoneNumber != null) 'phoneNumber': normalizedPhoneNumber,
+    };
+  }
 
-  Map<String, dynamic> toWalletDepositJson() => {
-    'amount': amount,
-    'sourceCurrency': currency,
-    'channelId': normalizeDepositChannelId(provider),
-    if (phoneNumber.isNotEmpty)
-      'phoneNumber': _normalizePhoneNumber(phoneNumber, currency),
-  };
+  Map<String, dynamic> toWalletDepositJson() {
+    final normalizedPhoneNumber = _normalizePhoneNumber(phoneNumber, currency);
+    return {
+      'amount': amount,
+      'sourceCurrency': currency,
+      'channelId': normalizeDepositChannelId(provider),
+      if (normalizedPhoneNumber != null) 'phoneNumber': normalizedPhoneNumber,
+    };
+  }
 }
 
 String normalizeDepositChannelId(String value) {
@@ -87,23 +92,23 @@ String normalizeDepositProviderCode(String value) {
   }
 }
 
-String _normalizePhoneNumber(String phoneNumber, String currency) {
-  final trimmed = phoneNumber.trim().replaceAll(' ', '');
-  if (trimmed.startsWith('+')) return trimmed;
+String? _normalizePhoneNumber(String phoneNumber, String currency) {
+  final phoneValue = PhoneNumberValue.tryFromAny(
+    phoneNumber: phoneNumber,
+    countryCode: _countryCodeForDepositCurrency(currency),
+  );
+  return phoneValue?.e164;
+}
 
-  final digits = trimmed.replaceAll(RegExp(r'\D'), '');
-  if (digits.isEmpty) return '';
-
-  if (currency == 'XOF') {
-    if (digits.startsWith('225')) return '+$digits';
-    return '+225$digits';
+String? _countryCodeForDepositCurrency(String currency) {
+  switch (currency.trim().toUpperCase()) {
+    case 'XOF':
+      return 'CI';
+    case 'USD':
+      return 'US';
+    default:
+      return null;
   }
-
-  if (currency == 'USD' && digits.length == 10) {
-    return '+1$digits';
-  }
-
-  return '+$digits';
 }
 
 /// Legacy DepositRequest (keeping for backward compatibility)

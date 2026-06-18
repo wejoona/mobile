@@ -1,14 +1,15 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/core/constants/api_endpoints.dart';
-import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 import 'package:usdc_wallet/core/utils/amount_conversion.dart';
+import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
 import 'package:usdc_wallet/features/limits/utils/money_flow_limit_errors.dart';
-import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
+import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/limits/limits_service.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Withdrawal methods matching Korido's mobile money providers.
 enum WithdrawMethod {
@@ -228,6 +229,14 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
       state = state.copyWith(error: 'Phone number is required.');
       return;
     }
+    final normalizedPhoneNumber = PhoneNumberValue.tryFromAny(
+      phoneNumber: phoneNumber,
+      countryCode: '+225',
+    )?.e164;
+    if (normalizedPhoneNumber == null) {
+      state = state.copyWith(error: 'Enter a valid mobile money phone number.');
+      return;
+    }
     final limitError = await _verifyWithdrawalLimitsBeforeSubmission(
       state.amount!,
     );
@@ -249,7 +258,7 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
         data: {
           'amount': toCents(state.amount!),
           'providerCode': providerCode,
-          'phoneNumber': phoneNumber,
+          'phoneNumber': normalizedPhoneNumber,
           'currency': 'XOF',
         },
         options: Options(headers: headers),

@@ -43,6 +43,17 @@ void main() {
       expect(request.toWalletDepositJson(), isNot(contains('providerCode')));
     });
 
+    test('deposit request normalizes duplicated country prefixes', () {
+      const request = InitiateDepositRequest(
+        amount: 5000,
+        provider: 'OMCI',
+        phoneNumber: '+225+2250748805663',
+        currency: 'XOF',
+      );
+
+      expect(request.toWalletDepositJson()['phoneNumber'], '+2250748805663');
+    });
+
     test('normalizes marketing provider names to backend enum codes', () {
       const request = InitiateDepositRequest(
         amount: 5000,

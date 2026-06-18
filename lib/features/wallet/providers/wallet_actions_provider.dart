@@ -8,6 +8,7 @@ import 'package:usdc_wallet/features/limits/utils/money_flow_limit_errors.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/limits/limits_service.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Wallet-level actions (mobile money cash-out, request money).
 class WalletActions {
@@ -25,13 +26,20 @@ class WalletActions {
     String? idempotencyKey,
   }) async {
     await _verifyWithdrawalLimits(amount);
+    final normalizedPhoneNumber = PhoneNumberValue.tryFromAny(
+      phoneNumber: phoneNumber,
+      countryCode: '+225',
+    )?.e164;
+    if (normalizedPhoneNumber == null) {
+      throw const FormatException('Enter a valid mobile money phone number.');
+    }
     // ignore: avoid_dynamic_calls
     final response = await _dio.post(
       ApiEndpoints.mobileMoneyCashOut,
       data: {
         'amount': toCents(amount),
         'providerCode': _providerToCode(provider),
-        'phoneNumber': phoneNumber,
+        'phoneNumber': normalizedPhoneNumber,
         'currency': 'XOF',
       },
       options: pinToken == null
