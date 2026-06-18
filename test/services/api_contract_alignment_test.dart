@@ -1675,7 +1675,13 @@ void main() {
         reason:
             'AuthService is the canonical auth API boundary; a second AuthApi can send raw phone state.',
       );
-      expect(authServiceSource, contains('PhoneNormalizer.toE164'));
+      expect(authServiceSource, contains('PhoneNumberValue.fromAny'));
+      expect(
+        authServiceSource,
+        isNot(contains('PhoneNormalizer.toE164')),
+        reason:
+            'AuthService should consume the canonical phone value object instead of rebuilding E.164 directly.',
+      );
       expect(authServiceSource, contains("'/auth/login'"));
       expect(authServiceSource, contains("'/auth/register'"));
       expect(authServiceSource, contains("'/auth/verify-otp'"));

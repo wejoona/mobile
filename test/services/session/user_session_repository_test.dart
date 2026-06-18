@@ -24,7 +24,10 @@ void main() {
         ),
       );
 
-      expect(await repository.getRememberedPhone(), '+225|0748805663');
+      expect(
+        await repository.getRememberedPhone(),
+        'CI|+225|0748805663|+2250748805663',
+      );
     });
 
     test('uses the phone prefix when country code is missing', () async {
@@ -44,7 +47,10 @@ void main() {
         ),
       );
 
-      expect(await repository.getRememberedPhone(), '+1|4155550101');
+      expect(
+        await repository.getRememberedPhone(),
+        'US|+1|4155550101|+14155550101',
+      );
     });
   });
 }

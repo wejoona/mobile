@@ -244,7 +244,8 @@ void main() {
         // Assert
         final state = container.read(authProvider);
         expect(state.status, equals(AuthStatus.otpSent));
-        expect(state.phone, equals('+2250123456789'));
+        expect(state.phone, equals('0123456789'));
+        expect(state.countryCode, equals('CI'));
         expect(state.otpExpiresIn, equals(300));
       },
     );
@@ -279,7 +280,10 @@ void main() {
         expiresIn: 300,
       );
       when(
-        () => mockAuthService.login(phone: any(named: 'phone')),
+        () => mockAuthService.login(
+          phone: any(named: 'phone'),
+          countryCode: any(named: 'countryCode'),
+        ),
       ).thenAnswer((_) async => otpResponse);
 
       final notifier = container.read(authProvider.notifier);
@@ -290,13 +294,17 @@ void main() {
       // Assert
       final state = container.read(authProvider);
       expect(state.status, equals(AuthStatus.otpSent));
-      expect(state.phone, equals('+2250123456789'));
+      expect(state.phone, equals('0123456789'));
+      expect(state.countryCode, equals('CI'));
     });
 
     test('should transition to error on failed login', () async {
       // Arrange
       when(
-        () => mockAuthService.login(phone: any(named: 'phone')),
+        () => mockAuthService.login(
+          phone: any(named: 'phone'),
+          countryCode: any(named: 'countryCode'),
+        ),
       ).thenThrow(ApiException(message: 'User not found'));
 
       final notifier = container.read(authProvider.notifier);
@@ -322,7 +330,10 @@ void main() {
           expiresIn: 300,
         );
         when(
-          () => mockAuthService.login(phone: any(named: 'phone')),
+          () => mockAuthService.login(
+            phone: any(named: 'phone'),
+            countryCode: any(named: 'countryCode'),
+          ),
         ).thenAnswer((_) async => otpResponse);
 
         final authResponse = AuthResponse(
@@ -334,6 +345,7 @@ void main() {
         when(
           () => mockAuthService.verifyOtp(
             phone: any(named: 'phone'),
+            countryCode: any(named: 'countryCode'),
             otp: any(named: 'otp'),
           ),
         ).thenAnswer((_) async => authResponse);
@@ -362,7 +374,10 @@ void main() {
         expiresIn: 300,
       );
       when(
-        () => mockAuthService.login(phone: any(named: 'phone')),
+        () => mockAuthService.login(
+          phone: any(named: 'phone'),
+          countryCode: any(named: 'countryCode'),
+        ),
       ).thenAnswer((_) async => otpResponse);
 
       final authResponse = AuthResponse(
@@ -374,6 +389,7 @@ void main() {
       when(
         () => mockAuthService.verifyOtp(
           phone: any(named: 'phone'),
+          countryCode: any(named: 'countryCode'),
           otp: any(named: 'otp'),
         ),
       ).thenAnswer((_) async => authResponse);
@@ -399,12 +415,16 @@ void main() {
         expiresIn: 300,
       );
       when(
-        () => mockAuthService.login(phone: any(named: 'phone')),
+        () => mockAuthService.login(
+          phone: any(named: 'phone'),
+          countryCode: any(named: 'countryCode'),
+        ),
       ).thenAnswer((_) async => otpResponse);
 
       when(
         () => mockAuthService.verifyOtp(
           phone: any(named: 'phone'),
+          countryCode: any(named: 'countryCode'),
           otp: any(named: 'otp'),
         ),
       ).thenThrow(ApiException(message: 'Invalid OTP'));
@@ -445,7 +465,10 @@ void main() {
           expiresIn: 300,
         );
         when(
-          () => mockAuthService.login(phone: any(named: 'phone')),
+          () => mockAuthService.login(
+            phone: any(named: 'phone'),
+            countryCode: any(named: 'countryCode'),
+          ),
         ).thenAnswer((_) async => otpResponse);
 
         final authResponse = AuthResponse(
@@ -458,6 +481,7 @@ void main() {
         when(
           () => mockAuthService.verifyOtp(
             phone: any(named: 'phone'),
+            countryCode: any(named: 'countryCode'),
             otp: any(named: 'otp'),
           ),
         ).thenAnswer((_) async => authResponse);
@@ -495,7 +519,10 @@ void main() {
     test('should capture error message from ApiException', () async {
       // Arrange
       when(
-        () => mockAuthService.login(phone: any(named: 'phone')),
+        () => mockAuthService.login(
+          phone: any(named: 'phone'),
+          countryCode: any(named: 'countryCode'),
+        ),
       ).thenThrow(ApiException(message: 'Network error'));
 
       final notifier = container.read(authProvider.notifier);
@@ -512,7 +539,10 @@ void main() {
     test('should clear error with clearError', () async {
       // Arrange
       when(
-        () => mockAuthService.login(phone: any(named: 'phone')),
+        () => mockAuthService.login(
+          phone: any(named: 'phone'),
+          countryCode: any(named: 'countryCode'),
+        ),
       ).thenThrow(ApiException(message: 'Error'));
 
       final notifier = container.read(authProvider.notifier);
@@ -837,7 +867,10 @@ void main() {
         expiresIn: 300,
       );
       when(
-        () => mockAuthService.login(phone: any(named: 'phone')),
+        () => mockAuthService.login(
+          phone: any(named: 'phone'),
+          countryCode: any(named: 'countryCode'),
+        ),
       ).thenAnswer((_) async => otpResponse);
 
       final authResponse = AuthResponse(
@@ -849,6 +882,7 @@ void main() {
       when(
         () => mockAuthService.verifyOtp(
           phone: any(named: 'phone'),
+          countryCode: any(named: 'countryCode'),
           otp: any(named: 'otp'),
         ),
       ).thenAnswer((_) async => authResponse);
@@ -863,9 +897,12 @@ void main() {
 
     test('isLoading should return true during async operations', () async {
       // Arrange
-      when(() => mockAuthService.login(phone: any(named: 'phone'))).thenAnswer((
-        _,
-      ) async {
+      when(
+        () => mockAuthService.login(
+          phone: any(named: 'phone'),
+          countryCode: any(named: 'countryCode'),
+        ),
+      ).thenAnswer((_) async {
         // Simulate delay
         await Future.delayed(const Duration(milliseconds: 100));
         return OtpResponse(success: true, message: 'OTP sent', expiresIn: 300);
