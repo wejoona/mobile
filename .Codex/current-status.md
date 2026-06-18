@@ -1,6 +1,6 @@
 # Mobile Current Status
 
-Last updated: 2026-06-18 10:30 GMT
+Last updated: 2026-06-18 10:35 GMT
 
 ## Standing
 
@@ -35,6 +35,8 @@ Last updated: 2026-06-18 10:30 GMT
 - Backend phone value-object and auth controller verification passed after canonical country-input hardening: 8 value-object tests, 20 auth controller e2e tests, `npm run build`, and `git diff --check`.
 - Live staging checks with `+2250748805663` and OTP `123456` returned HTTP 200 for login, OTP verify, `/wallet`, `/sessions`, `/devices`, `/user/profile`, `/user/profile` update, and `/user/email-status`.
 - Current staging wallet for that account is valid but zero-balance and degraded/local-mirror because ledger balance is temporarily unavailable; mobile should show zero plus sync warning, not fabricate funds.
+- Wallet refresh path rechecked: pull-to-refresh has bounded UI timeouts, keeps last known/degraded state, and focused wallet state/balance tests passed 23 tests.
+- Live staging wallet smoke for `+2250748805663` returned wallet `286c3d68-c47b-4d1c-baeb-dc2a8d2b8e56`, `USDC=0`, `sourceOfTruth=local_mirror`, `readStatus=degraded`, and backend warning `Ledger balance is temporarily unavailable. Showing local mirror balance.`
 - Profile update API and profile thumbnail shape are healthy; avatar upload still depends on on-device face detection and multipart upload in manual device testing.
 
 ## Known Watch Items
