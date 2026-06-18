@@ -177,6 +177,31 @@ void main() {
     expect(authProviderSource, contains('await clearLocalSession()'));
   });
 
+  test('biometric settings do not own enrollment storage', () {
+    final settingsProviderSource = File(
+      'lib/features/biometric/providers/biometric_settings_provider.dart',
+    ).readAsStringSync();
+
+    expect(settingsProviderSource, contains('biometricServiceProvider'));
+    expect(
+      settingsProviderSource,
+      contains('isBiometricEnabled()'),
+      reason:
+          'settings may project enrollment state but BiometricService owns the user-bound decision',
+    );
+    expect(
+      settingsProviderSource,
+      isNot(contains('setBiometricEnabled')),
+      reason:
+          'settings must not expose a second writer for biometric enrollment',
+    );
+    expect(
+      settingsProviderSource,
+      isNot(contains('StorageKeys.biometricEnabled')),
+      reason: 'settings must not write or read the raw biometric flag directly',
+    );
+  });
+
   test('reset PIN unlock does not depend on stale locked route', () {
     final source = File(
       'lib/features/pin/views/reset_pin_view.dart',
@@ -315,7 +340,7 @@ void main() {
     );
     expect(redirectorSource, contains('_isAuthenticatedDeadEndRoute'));
     expect(redirectorSource, contains('_invalidPinLoginRedirect'));
-    expect(redirectorSource, contains('location != \'/login/pin\''));
+    expect(redirectorSource, contains("location != '/login/pin'"));
     expect(redirectorSource, contains('pendingPinSessionToken'));
     expect(redirectorSource, isNot(contains('isPublicPath(location)')));
     expect(redirectorSource, contains("location == '/signup'"));

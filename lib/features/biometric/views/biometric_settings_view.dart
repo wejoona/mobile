@@ -2,12 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/services/biometric/biometric_service.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/biometric/providers/biometric_settings_provider.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 
 /// Biometric Settings View
 /// Manage biometric authentication preferences
@@ -74,7 +73,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
                 value: settings.requireForAppUnlock,
                 onChanged: (value) => ref
                     .read(biometricSettingsProvider.notifier)
-                    .setRequireForAppUnlock(value),
+                    .setRequireForAppUnlock(value: value),
               ),
               const SizedBox(height: AppSpacing.sm),
               _buildUseCaseToggle(
@@ -85,7 +84,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
                 value: settings.requireForTransactions,
                 onChanged: (value) => ref
                     .read(biometricSettingsProvider.notifier)
-                    .setRequireForTransactions(value),
+                    .setRequireForTransactions(value: value),
               ),
               const SizedBox(height: AppSpacing.sm),
               _buildUseCaseToggle(
@@ -96,7 +95,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
                 value: settings.requireForSensitiveSettings,
                 onChanged: (value) => ref
                     .read(biometricSettingsProvider.notifier)
-                    .setRequireForSensitiveSettings(value),
+                    .setRequireForSensitiveSettings(value: value),
               ),
               const SizedBox(height: AppSpacing.sm),
               _buildUseCaseToggle(
@@ -107,7 +106,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
                 value: settings.requireForViewBalance,
                 onChanged: (value) => ref
                     .read(biometricSettingsProvider.notifier)
-                    .setRequireForViewBalance(value),
+                    .setRequireForViewBalance(value: value),
               ),
               const SizedBox(height: AppSpacing.xxl),
 
@@ -147,8 +146,13 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
     return biometricType.when(
       data: (type) => biometricEnabled.when(
         data: (enabled) {
-          final typeName = _getBiometricTypeName(type ?? BiometricType.none, l10n);
-          final statusColor = enabled ? context.colors.success : context.colors.textSecondary;
+          final typeName = _getBiometricTypeName(
+            type ?? BiometricType.none,
+            l10n,
+          );
+          final statusColor = enabled
+              ? context.colors.success
+              : context.colors.textSecondary;
 
           return AppCard(
             variant: AppCardVariant.elevated,
@@ -209,84 +213,79 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
             ),
           );
         },
-        loading: () => _buildLoadingCard(),
-        error: (_, __) => _buildErrorCard(l10n),
+        loading: _buildLoadingCard,
+        error: (_, _) => _buildErrorCard(l10n),
       ),
-      loading: () => _buildLoadingCard(),
-      error: (_, __) => _buildErrorCard(l10n),
+      loading: _buildLoadingCard,
+      error: (_, _) => _buildErrorCard(l10n),
     );
   }
 
-  Widget _buildLoadingCard() {
-    return AppCard(
-      variant: AppCardVariant.elevated,
-      child: Row(
-        children: [
-          const SizedBox(
-            width: 64,
-            height: 64,
-            child: CircularProgressIndicator(),
-          ),
-          const SizedBox(width: AppSpacing.lg),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 100,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: context.colors.textSecondary.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(AppRadius.sm),
-                  ),
+  Widget _buildLoadingCard() => AppCard(
+    variant: AppCardVariant.elevated,
+    child: Row(
+      children: [
+        const SizedBox(
+          width: 64,
+          height: 64,
+          child: CircularProgressIndicator(),
+        ),
+        const SizedBox(width: AppSpacing.lg),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 100,
+                height: 16,
+                decoration: BoxDecoration(
+                  color: context.colors.textSecondary.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
-                const SizedBox(height: AppSpacing.xs),
-                Container(
-                  width: 60,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: context.colors.textSecondary.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(AppRadius.sm),
-                  ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Container(
+                width: 60,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: context.colors.textSecondary.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
 
-  Widget _buildErrorCard(AppLocalizations l10n) {
-    return AppCard(
-      variant: AppCardVariant.elevated,
-      child: Row(
-        children: [
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              color: context.colors.error.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.error_outline,
-              color: context.colors.error,
-              size: 32,
-            ),
+  Widget _buildErrorCard(AppLocalizations l10n) => AppCard(
+    variant: AppCardVariant.elevated,
+    child: Row(
+      children: [
+        Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            color: context.colors.error.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
           ),
-          const SizedBox(width: AppSpacing.lg),
-          Expanded(
-            child: AppText(
-              l10n.biometric_settings_error_loading,
-              variant: AppTextVariant.bodyMedium,
-              color: context.colors.error,
-            ),
+          child: Icon(
+            Icons.error_outline,
+            color: context.colors.error,
+            size: 32,
           ),
-        ],
-      ),
-    );
-  }
+        ),
+        const SizedBox(width: AppSpacing.lg),
+        Expanded(
+          child: AppText(
+            l10n.biometric_settings_error_loading,
+            color: context.colors.error,
+          ),
+        ),
+      ],
+    ),
+  );
 
   Widget _buildBiometricToggle(AppLocalizations l10n) {
     final biometricAvailable = ref.watch(biometricAvailableProvider);
@@ -320,11 +319,11 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
             onChanged: (value) => _handleBiometricToggle(value, l10n),
           ),
           loading: () => _buildLoadingToggle(l10n),
-          error: (_, __) => _buildErrorToggle(l10n),
+          error: (_, _) => _buildErrorToggle(l10n),
         );
       },
       loading: () => _buildLoadingToggle(l10n),
-      error: (_, __) => _buildErrorToggle(l10n),
+      error: (_, _) => _buildErrorToggle(l10n),
     );
   }
 
@@ -335,16 +334,14 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
     required String subtitle,
     required bool value,
     required ValueChanged<bool> onChanged,
-  }) {
-    return _buildToggleCard(
-      l10n: l10n,
-      icon: icon,
-      title: title,
-      subtitle: subtitle,
-      value: value,
-      onChanged: onChanged,
-    );
-  }
+  }) => _buildToggleCard(
+    l10n: l10n,
+    icon: icon,
+    title: title,
+    subtitle: subtitle,
+    value: value,
+    onChanged: onChanged,
+  );
 
   Widget _buildToggleCard({
     required AppLocalizations l10n,
@@ -353,8 +350,149 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
     required String subtitle,
     required bool value,
     required ValueChanged<bool> onChanged,
-  }) {
-    return AppCard(
+  }) => AppCard(
+    variant: AppCardVariant.subtle,
+    child: Row(
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: context.colors.gold.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
+          child: Icon(icon, color: context.colors.gold, size: 22),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppText(
+                title,
+                variant: AppTextVariant.labelMedium,
+                color: context.colors.textPrimary,
+              ),
+              AppText(
+                subtitle,
+                variant: AppTextVariant.bodySmall,
+                color: context.colors.textSecondary,
+              ),
+            ],
+          ),
+        ),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeThumbColor: context.colors.gold,
+        ),
+      ],
+    ),
+  );
+
+  Widget _buildOptionCard({
+    required AppLocalizations l10n,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Widget trailing,
+  }) => AppCard(
+    variant: AppCardVariant.subtle,
+    child: Row(
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: context.colors.textSecondary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
+          child: Icon(icon, color: context.colors.textSecondary, size: 22),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppText(
+                title,
+                variant: AppTextVariant.labelMedium,
+                color: context.colors.textPrimary,
+              ),
+              AppText(
+                subtitle,
+                variant: AppTextVariant.bodySmall,
+                color: context.colors.textSecondary,
+              ),
+            ],
+          ),
+        ),
+        trailing,
+      ],
+    ),
+  );
+
+  Widget _buildLoadingToggle(AppLocalizations l10n) => AppCard(
+    variant: AppCardVariant.subtle,
+    child: Row(
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: context.colors.textSecondary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
+          child: const SizedBox(
+            width: 22,
+            height: 22,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: AppText(
+            l10n.security_loading,
+            variant: AppTextVariant.labelMedium,
+            color: context.colors.textSecondary,
+          ),
+        ),
+      ],
+    ),
+  );
+
+  Widget _buildErrorToggle(AppLocalizations l10n) => AppCard(
+    variant: AppCardVariant.subtle,
+    child: Row(
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: context.colors.error.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
+          child: Icon(Icons.error, color: context.colors.error, size: 22),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: AppText(
+            l10n.security_errorLoadingState,
+            variant: AppTextVariant.labelMedium,
+            color: context.colors.error,
+          ),
+        ),
+      ],
+    ),
+  );
+
+  Widget _buildTimeoutSelector(
+    AppLocalizations l10n,
+    BiometricSettings settings,
+  ) => InkWell(
+    onTap: () => _showTimeoutSelector(l10n, settings),
+    borderRadius: BorderRadius.circular(AppRadius.md),
+    child: AppCard(
       variant: AppCardVariant.subtle,
       child: Row(
         children: [
@@ -365,7 +503,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
               color: context.colors.gold.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(icon, color: context.colors.gold, size: 22),
+            child: Icon(Icons.timer, color: context.colors.gold, size: 22),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -373,36 +511,34 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppText(
-                  title,
+                  l10n.biometric_settings_timeout_title,
                   variant: AppTextVariant.labelMedium,
                   color: context.colors.textPrimary,
                 ),
                 AppText(
-                  subtitle,
+                  _getTimeoutDescription(
+                    settings.biometricTimeoutMinutes,
+                    l10n,
+                  ),
                   variant: AppTextVariant.bodySmall,
                   color: context.colors.textSecondary,
                 ),
               ],
             ),
           ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeThumbColor: context.colors.gold,
-          ),
+          Icon(Icons.chevron_right, color: context.colors.textSecondary),
         ],
       ),
-    );
-  }
+    ),
+  );
 
-  Widget _buildOptionCard({
-    required AppLocalizations l10n,
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Widget trailing,
-  }) {
-    return AppCard(
+  Widget _buildHighValueThreshold(
+    AppLocalizations l10n,
+    BiometricSettings settings,
+  ) => InkWell(
+    onTap: () => _showThresholdSelector(l10n, settings),
+    borderRadius: BorderRadius.circular(AppRadius.md),
+    child: AppCard(
       variant: AppCardVariant.subtle,
       child: Row(
         children: [
@@ -410,10 +546,14 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: context.colors.textSecondary.withValues(alpha: 0.1),
+              color: context.colors.gold.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(icon, color: context.colors.textSecondary, size: 22),
+            child: Icon(
+              Icons.attach_money,
+              color: context.colors.gold,
+              size: 22,
+            ),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -421,26 +561,30 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppText(
-                  title,
+                  l10n.biometric_settings_high_value_title,
                   variant: AppTextVariant.labelMedium,
                   color: context.colors.textPrimary,
                 ),
                 AppText(
-                  subtitle,
+                  l10n.biometric_settings_high_value_subtitle(
+                    settings.highValueThreshold.toStringAsFixed(0),
+                  ),
                   variant: AppTextVariant.bodySmall,
                   color: context.colors.textSecondary,
                 ),
               ],
             ),
           ),
-          trailing,
+          Icon(Icons.chevron_right, color: context.colors.textSecondary),
         ],
       ),
-    );
-  }
+    ),
+  );
 
-  Widget _buildLoadingToggle(AppLocalizations l10n) {
-    return AppCard(
+  Widget _buildReEnrollButton(AppLocalizations l10n) => InkWell(
+    onTap: () => _handleReEnroll(l10n),
+    borderRadius: BorderRadius.circular(AppRadius.md),
+    child: AppCard(
       variant: AppCardVariant.subtle,
       child: Row(
         children: [
@@ -448,30 +592,39 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: context.colors.textSecondary.withValues(alpha: 0.1),
+              color: context.colors.gold.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: const SizedBox(
-              width: 22,
-              height: 22,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
+            child: Icon(Icons.refresh, color: context.colors.gold, size: 22),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
-            child: AppText(
-              l10n.security_loading,
-              variant: AppTextVariant.labelMedium,
-              color: context.colors.textSecondary,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  l10n.biometric_settings_reenroll_title,
+                  variant: AppTextVariant.labelMedium,
+                  color: context.colors.textPrimary,
+                ),
+                AppText(
+                  l10n.biometric_settings_reenroll_subtitle,
+                  variant: AppTextVariant.bodySmall,
+                  color: context.colors.textSecondary,
+                ),
+              ],
             ),
           ),
+          Icon(Icons.chevron_right, color: context.colors.textSecondary),
         ],
       ),
-    );
-  }
+    ),
+  );
 
-  Widget _buildErrorToggle(AppLocalizations l10n) {
-    return AppCard(
+  Widget _buildFallbackToPinButton(AppLocalizations l10n) => InkWell(
+    onTap: () => context.push('/settings/pin'),
+    borderRadius: BorderRadius.circular(AppRadius.md),
+    child: AppCard(
       variant: AppCardVariant.subtle,
       child: Row(
         children: [
@@ -479,193 +632,34 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: context.colors.error.withValues(alpha: 0.1),
+              color: context.colors.gold.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(Icons.error, color: context.colors.error, size: 22),
+            child: Icon(Icons.pin, color: context.colors.gold, size: 22),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
-            child: AppText(
-              l10n.security_errorLoadingState,
-              variant: AppTextVariant.labelMedium,
-              color: context.colors.error,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  l10n.biometric_settings_fallback_title,
+                  variant: AppTextVariant.labelMedium,
+                  color: context.colors.textPrimary,
+                ),
+                AppText(
+                  l10n.biometric_settings_fallback_subtitle,
+                  variant: AppTextVariant.bodySmall,
+                  color: context.colors.textSecondary,
+                ),
+              ],
             ),
           ),
+          Icon(Icons.chevron_right, color: context.colors.textSecondary),
         ],
       ),
-    );
-  }
-
-  Widget _buildTimeoutSelector(AppLocalizations l10n, BiometricSettings settings) {
-    return InkWell(
-      onTap: () => _showTimeoutSelector(l10n, settings),
-      borderRadius: BorderRadius.circular(AppRadius.md),
-      child: AppCard(
-        variant: AppCardVariant.subtle,
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: context.colors.gold.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppRadius.md),
-              ),
-              child: Icon(Icons.timer, color: context.colors.gold, size: 22),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    l10n.biometric_settings_timeout_title,
-                    variant: AppTextVariant.labelMedium,
-                    color: context.colors.textPrimary,
-                  ),
-                  AppText(
-                    _getTimeoutDescription(settings.biometricTimeoutMinutes, l10n),
-                    variant: AppTextVariant.bodySmall,
-                    color: context.colors.textSecondary,
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right, color: context.colors.textSecondary),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHighValueThreshold(AppLocalizations l10n, BiometricSettings settings) {
-    return InkWell(
-      onTap: () => _showThresholdSelector(l10n, settings),
-      borderRadius: BorderRadius.circular(AppRadius.md),
-      child: AppCard(
-        variant: AppCardVariant.subtle,
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: context.colors.gold.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppRadius.md),
-              ),
-              child: Icon(Icons.attach_money, color: context.colors.gold, size: 22),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    l10n.biometric_settings_high_value_title,
-                    variant: AppTextVariant.labelMedium,
-                    color: context.colors.textPrimary,
-                  ),
-                  AppText(
-                    l10n.biometric_settings_high_value_subtitle(
-                      settings.highValueThreshold.toStringAsFixed(0),
-                    ),
-                    variant: AppTextVariant.bodySmall,
-                    color: context.colors.textSecondary,
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right, color: context.colors.textSecondary),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildReEnrollButton(AppLocalizations l10n) {
-    return InkWell(
-      onTap: () => _handleReEnroll(l10n),
-      borderRadius: BorderRadius.circular(AppRadius.md),
-      child: AppCard(
-        variant: AppCardVariant.subtle,
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: context.colors.gold.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppRadius.md),
-              ),
-              child: Icon(Icons.refresh, color: context.colors.gold, size: 22),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    l10n.biometric_settings_reenroll_title,
-                    variant: AppTextVariant.labelMedium,
-                    color: context.colors.textPrimary,
-                  ),
-                  AppText(
-                    l10n.biometric_settings_reenroll_subtitle,
-                    variant: AppTextVariant.bodySmall,
-                    color: context.colors.textSecondary,
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right, color: context.colors.textSecondary),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFallbackToPinButton(AppLocalizations l10n) {
-    return InkWell(
-      onTap: () => context.push('/settings/pin'),
-      borderRadius: BorderRadius.circular(AppRadius.md),
-      child: AppCard(
-        variant: AppCardVariant.subtle,
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: context.colors.gold.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppRadius.md),
-              ),
-              child: Icon(Icons.pin, color: context.colors.gold, size: 22),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    l10n.biometric_settings_fallback_title,
-                    variant: AppTextVariant.labelMedium,
-                    color: context.colors.textPrimary,
-                  ),
-                  AppText(
-                    l10n.biometric_settings_fallback_subtitle,
-                    variant: AppTextVariant.bodySmall,
-                    color: context.colors.textSecondary,
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right, color: context.colors.textSecondary),
-          ],
-        ),
-      ),
-    );
-  }
+    ),
+  );
 
   // Helper Methods
 
@@ -715,8 +709,8 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
     if (value) {
       // Navigate to enrollment view
       final result = await context.push<bool>('/settings/biometric/enrollment');
-      if (result == true) {
-        ref.invalidate(biometricEnabledProvider);
+      if (result ?? false) {
+        _refreshBiometricEnrollmentState();
       }
     } else {
       // Confirm disable
@@ -731,7 +725,6 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
           ),
           content: AppText(
             l10n.biometric_settings_disable_message,
-            variant: AppTextVariant.bodyMedium,
             color: context.colors.textSecondary,
           ),
           actions: [
@@ -751,10 +744,10 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
         ),
       );
 
-      if (confirmed == true) {
+      if (confirmed ?? false) {
         final biometricService = ref.read(biometricServiceProvider);
         await biometricService.disableBiometric();
-        ref.invalidate(biometricEnabledProvider);
+        _refreshBiometricEnrollmentState();
       }
     }
   }
@@ -775,38 +768,41 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: timeouts.map((timeout) {
-            return InkWell(
-              onTap: () => Navigator.pop(context, timeout),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                child: Row(
-                  children: [
-                    Radio<int>(
-                      value: timeout,
-                      groupValue: settings.biometricTimeoutMinutes,
-                      onChanged: (value) => Navigator.pop(context, value),
-                      activeColor: context.colors.gold,
+          children: timeouts
+              .map(
+                (timeout) => InkWell(
+                  onTap: () => Navigator.pop(context, timeout),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.sm,
                     ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: AppText(
-                        _getTimeoutDescription(timeout, l10n),
-                        variant: AppTextVariant.bodyMedium,
-                        color: context.colors.textPrimary,
-                      ),
+                    child: Row(
+                      children: [
+                        Radio<int>(
+                          value: timeout,
+                          groupValue: settings.biometricTimeoutMinutes,
+                          onChanged: (value) => Navigator.pop(context, value),
+                          activeColor: context.colors.gold,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: AppText(
+                            _getTimeoutDescription(timeout, l10n),
+                            color: context.colors.textPrimary,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            );
-          }).toList(),
+              )
+              .toList(),
         ),
       ),
     );
 
     if (selected != null) {
-      ref
+      await ref
           .read(biometricSettingsProvider.notifier)
           .setBiometricTimeout(selected);
     }
@@ -828,38 +824,41 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: thresholds.map((threshold) {
-            return InkWell(
-              onTap: () => Navigator.pop(context, threshold),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                child: Row(
-                  children: [
-                    Radio<double>(
-                      value: threshold,
-                      groupValue: settings.highValueThreshold,
-                      onChanged: (value) => Navigator.pop(context, value),
-                      activeColor: context.colors.gold,
+          children: thresholds
+              .map(
+                (threshold) => InkWell(
+                  onTap: () => Navigator.pop(context, threshold),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.sm,
                     ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: AppText(
-                        '\$${threshold.toStringAsFixed(0)}',
-                        variant: AppTextVariant.bodyMedium,
-                        color: context.colors.textPrimary,
-                      ),
+                    child: Row(
+                      children: [
+                        Radio<double>(
+                          value: threshold,
+                          groupValue: settings.highValueThreshold,
+                          onChanged: (value) => Navigator.pop(context, value),
+                          activeColor: context.colors.gold,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: AppText(
+                            '\$${threshold.toStringAsFixed(0)}',
+                            color: context.colors.textPrimary,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            );
-          }).toList(),
+              )
+              .toList(),
         ),
       ),
     );
 
     if (selected != null) {
-      ref
+      await ref
           .read(biometricSettingsProvider.notifier)
           .setHighValueThreshold(selected);
     }
@@ -877,7 +876,6 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
         ),
         content: AppText(
           l10n.biometric_settings_reenroll_confirm_message,
-          variant: AppTextVariant.bodyMedium,
           color: context.colors.textSecondary,
         ),
         actions: [
@@ -890,26 +888,33 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
           AppButton(
             label: l10n.action_continue,
             onPressed: () => Navigator.pop(context, true),
-            variant: AppButtonVariant.primary,
             size: AppButtonSize.small,
           ),
         ],
       ),
     );
 
-    if (confirmed == true && mounted) {
+    if ((confirmed ?? false) && mounted) {
       // Disable then re-enable
       final biometricService = ref.read(biometricServiceProvider);
       await biometricService.disableBiometric();
-      ref.invalidate(biometricEnabledProvider);
+      _refreshBiometricEnrollmentState();
 
       // Navigate to enrollment
       if (mounted) {
-        final result = await context.push<bool>('/settings/biometric/enrollment');
-        if (result == true) {
-          ref.invalidate(biometricEnabledProvider);
+        final result = await context.push<bool>(
+          '/settings/biometric/enrollment',
+        );
+        if (result ?? false) {
+          _refreshBiometricEnrollmentState();
         }
       }
     }
+  }
+
+  void _refreshBiometricEnrollmentState() {
+    ref
+      ..invalidate(biometricEnabledProvider)
+      ..invalidate(biometricSettingsProvider);
   }
 }

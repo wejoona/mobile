@@ -1,17 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/biometric/biometric_provider.dart';
 
 /// Biometric Settings State
 class BiometricSettings {
-  final bool isBiometricEnabled;
-  final bool requireForAppUnlock;
-  final bool requireForTransactions;
-  final bool requireForSensitiveSettings;
-  final bool requireForViewBalance;
-  final int biometricTimeoutMinutes;
-  final double highValueThreshold;
-
   const BiometricSettings({
     this.isBiometricEnabled = false,
     this.requireForAppUnlock = true,
@@ -22,6 +17,14 @@ class BiometricSettings {
     this.highValueThreshold = 1000.0,
   });
 
+  final bool isBiometricEnabled;
+  final bool requireForAppUnlock;
+  final bool requireForTransactions;
+  final bool requireForSensitiveSettings;
+  final bool requireForViewBalance;
+  final int biometricTimeoutMinutes;
+  final double highValueThreshold;
+
   BiometricSettings copyWith({
     bool? isBiometricEnabled,
     bool? requireForAppUnlock,
@@ -30,26 +33,22 @@ class BiometricSettings {
     bool? requireForViewBalance,
     int? biometricTimeoutMinutes,
     double? highValueThreshold,
-  }) {
-    return BiometricSettings(
-      isBiometricEnabled: isBiometricEnabled ?? this.isBiometricEnabled,
-      requireForAppUnlock: requireForAppUnlock ?? this.requireForAppUnlock,
-      requireForTransactions:
-          requireForTransactions ?? this.requireForTransactions,
-      requireForSensitiveSettings:
-          requireForSensitiveSettings ?? this.requireForSensitiveSettings,
-      requireForViewBalance:
-          requireForViewBalance ?? this.requireForViewBalance,
-      biometricTimeoutMinutes:
-          biometricTimeoutMinutes ?? this.biometricTimeoutMinutes,
-      highValueThreshold: highValueThreshold ?? this.highValueThreshold,
-    );
-  }
+  }) => BiometricSettings(
+    isBiometricEnabled: isBiometricEnabled ?? this.isBiometricEnabled,
+    requireForAppUnlock: requireForAppUnlock ?? this.requireForAppUnlock,
+    requireForTransactions:
+        requireForTransactions ?? this.requireForTransactions,
+    requireForSensitiveSettings:
+        requireForSensitiveSettings ?? this.requireForSensitiveSettings,
+    requireForViewBalance: requireForViewBalance ?? this.requireForViewBalance,
+    biometricTimeoutMinutes:
+        biometricTimeoutMinutes ?? this.biometricTimeoutMinutes,
+    highValueThreshold: highValueThreshold ?? this.highValueThreshold,
+  );
 }
 
 /// Biometric Settings Notifier
 class BiometricSettingsNotifier extends Notifier<BiometricSettings> {
-  static const _keyBiometricEnabled = StorageKeys.biometricEnabled;
   static const _keyRequireAppUnlock = 'biometric_require_app_unlock';
   static const _keyRequireTransactions = 'biometric_require_transactions';
   static const _keyRequireSensitiveSettings = 'biometric_require_sensitive';
@@ -61,16 +60,21 @@ class BiometricSettingsNotifier extends Notifier<BiometricSettings> {
 
   @override
   BiometricSettings build() {
-    _loadSettings();
+    unawaited(_loadSettings());
     return const BiometricSettings();
   }
 
   Future<void> _loadSettings() async {
-    final enabled = await _storage.read(key: _keyBiometricEnabled) == 'true';
+    final enabled = await ref
+        .read(biometricServiceProvider)
+        .isBiometricEnabled();
     final appUnlock = await _storage.read(key: _keyRequireAppUnlock) != 'false';
-    final transactions = await _storage.read(key: _keyRequireTransactions) != 'false';
-    final sensitive = await _storage.read(key: _keyRequireSensitiveSettings) != 'false';
-    final viewBalance = await _storage.read(key: _keyRequireViewBalance) == 'true';
+    final transactions =
+        await _storage.read(key: _keyRequireTransactions) != 'false';
+    final sensitive =
+        await _storage.read(key: _keyRequireSensitiveSettings) != 'false';
+    final viewBalance =
+        await _storage.read(key: _keyRequireViewBalance) == 'true';
     final timeoutStr = await _storage.read(key: _keyTimeoutMinutes);
     final thresholdStr = await _storage.read(key: _keyHighValueThreshold);
 
@@ -85,23 +89,25 @@ class BiometricSettingsNotifier extends Notifier<BiometricSettings> {
     );
   }
 
-  Future<void> setRequireForAppUnlock(bool value) async {
+  Future<void> setRequireForAppUnlock({required bool value}) async {
     await _storage.write(key: _keyRequireAppUnlock, value: value.toString());
     state = state.copyWith(requireForAppUnlock: value);
   }
 
-  Future<void> setRequireForTransactions(bool value) async {
+  Future<void> setRequireForTransactions({required bool value}) async {
     await _storage.write(key: _keyRequireTransactions, value: value.toString());
     state = state.copyWith(requireForTransactions: value);
   }
 
-  Future<void> setRequireForSensitiveSettings(bool value) async {
+  Future<void> setRequireForSensitiveSettings({required bool value}) async {
     await _storage.write(
-        key: _keyRequireSensitiveSettings, value: value.toString());
+      key: _keyRequireSensitiveSettings,
+      value: value.toString(),
+    );
     state = state.copyWith(requireForSensitiveSettings: value);
   }
 
-  Future<void> setRequireForViewBalance(bool value) async {
+  Future<void> setRequireForViewBalance({required bool value}) async {
     await _storage.write(key: _keyRequireViewBalance, value: value.toString());
     state = state.copyWith(requireForViewBalance: value);
   }
@@ -113,18 +119,17 @@ class BiometricSettingsNotifier extends Notifier<BiometricSettings> {
 
   Future<void> setHighValueThreshold(double threshold) async {
     await _storage.write(
-        key: _keyHighValueThreshold, value: threshold.toString());
+      key: _keyHighValueThreshold,
+      value: threshold.toString(),
+    );
     state = state.copyWith(highValueThreshold: threshold);
-  }
-
-  Future<void> setBiometricEnabled(bool value) async {
-    await _storage.write(key: _keyBiometricEnabled, value: value.toString());
-    state = state.copyWith(isBiometricEnabled: value);
   }
 
   /// Check if biometric is required for a specific action
   bool isRequiredFor(BiometricAction action) {
-    if (!state.isBiometricEnabled) return false;
+    if (!state.isBiometricEnabled) {
+      return false;
+    }
 
     switch (action) {
       case BiometricAction.appUnlock:
@@ -148,15 +153,10 @@ class BiometricSettingsNotifier extends Notifier<BiometricSettings> {
 }
 
 /// Biometric Actions
-enum BiometricAction {
-  appUnlock,
-  transaction,
-  sensitiveSettings,
-  viewBalance,
-}
+enum BiometricAction { appUnlock, transaction, sensitiveSettings, viewBalance }
 
 /// Biometric Settings Provider
 final biometricSettingsProvider =
     NotifierProvider<BiometricSettingsNotifier, BiometricSettings>(
-  BiometricSettingsNotifier.new,
-);
+      BiometricSettingsNotifier.new,
+    );
