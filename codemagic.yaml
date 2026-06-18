@@ -102,11 +102,6 @@ workflows:
           printf '\nflutter.buildMode=release\nflutter.versionName=1.0.0\nflutter.versionCode=%s\n' \
             "$BUILD_NUMBER" >> "$CM_BUILD_DIR/android/local.properties"
 
-          REGISTRANT="$CM_BUILD_DIR/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java"
-          if [ -f "$REGISTRANT" ]; then
-            perl -0pi -e 's/\n    try \{\n      flutterEngine\.getPlugins\(\)\.add\(new dev\.flutter\.plugins\.integration_test\.IntegrationTestPlugin\(\)\);\n    \} catch \(Exception e\) \{\n      Log\.e\(TAG, "Error registering plugin integration_test, dev\.flutter\.plugins\.integration_test\.IntegrationTestPlugin", e\);\n    \}//g' "$REGISTRANT"
-          fi
-
           ENV_DEFINE=$(printf 'ENV=staging' | base64 | tr -d '\n')
           API_DEFINE=$(printf 'API_URL=https://staging-korido-api.joonapay.com/api/v1' | base64 | tr -d '\n')
           SENTRY_DEFINE=$(printf 'SENTRY_DSN=https://e940855066e902eafd3bf67348d625e7@sentry.wejoona.com/7' | base64 | tr -d '\n')

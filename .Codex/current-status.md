@@ -1,11 +1,11 @@
 # Mobile Current Status
 
-Last updated: 2026-06-18 10:22 GMT
+Last updated: 2026-06-18 11:18 GMT
 
 ## Standing
 
 - Active branch: `develop`, tracking `origin/develop`.
-- Latest pushed mobile code commit: `17ae80df fix: harden device action auth errors`.
+- Latest pushed mobile code commit: use `git log -1 --oneline develop` as the source of truth.
 - Latest pushed API commit: `b2728ec5 fix: canonicalize auth country inputs`.
 - Repo status should be clean unless a new slice is in progress.
 - Do not promote to `staging` until Codemagic-equivalent local gates pass.
@@ -48,11 +48,14 @@ Last updated: 2026-06-18 10:22 GMT
 - Send-recipient identity safety is verified: transfer requests keep exactly one stable recipient identifier, malformed phone input is normalized before submit, username-only/masked recipients remain supported, lookup-selected users send by stable `recipientId`, and self-send is guarded by current user id/phone/username checks before money movement. Focused send recipient contract tests passed 11 tests.
 - Backoffice device blacklist/deactivation is verified at the dashboard service boundary: Filament user device actions create reasoned blacklist records, sync through Korido API registered-device endpoints when available, deactivate registered devices, disable push tokens, revoke sessions, and record API sync metadata. Focused dashboard Pest tests passed 2 tests / 12 assertions.
 - App-version compatibility is verified for the staging-candidate path: mobile checks `/config/mobile-version` on startup, redirects to `/force-update` when `forceUpgrade=true`, and now has focused coverage that HTTP 426 responses trigger a version-policy refresh. Focused API client and force-update tests passed 34 tests.
+- Codemagic-equivalent analyzer warning gate passed locally on 2026-06-18: `dart analyze --format machine` returned exit code 0 with no `ERROR` or `WARNING` records.
+- Codemagic-style non-golden Flutter test batches passed locally on 2026-06-18: 469 tests passed, with only the existing skipped tests.
+- Android release bundle is now owned by Gradle instead of a Codemagic-only shell patch: the release build strips the generated `integration_test` plugin registration before Java compilation, `codemagic.yaml` no longer carries the perl registrant edit, the release-config test passed 5 tests, and the Codemagic-equivalent `:app:bundleRelease` command passed locally.
 
 ## Known Watch Items
 
 - `staging-korido-api.joonapay.com` resolves publicly through system DNS, Cloudflare DNS, and Google DNS.
-- Staging candidate is not ready until the local replay of Codemagic gates passes: analyzer warning gate, non-golden Flutter tests, iOS release build without signing, and Android release bundle check.
+- Staging candidate is not ready until the local replay of remaining Codemagic gates passes: iOS release build without signing and simulator/device boot once full Xcode is visible.
 - Non-golden Flutter tests now pass locally using Codemagic's 40-file batch pattern.
 - Android release bundle passes locally using Codemagic's direct Gradle path.
 - iOS release build is currently blocked by machine Xcode state: `xcode-select` points to `/Library/Developer/CommandLineTools`, `/Applications` and `~/Applications` do not contain a discoverable Xcode app, `mdfind` returns no `com.apple.dt.Xcode`, and `xcrun simctl` is unavailable.

@@ -127,6 +127,37 @@ flutter {
     source = "../.."
 }
 
+val stripReleaseIntegrationTestPlugin by tasks.registering {
+    dependsOn("compileFlutterBuildRelease")
+
+    doLast {
+        val registrant = file("src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java")
+        if (!registrant.exists()) {
+            return@doLast
+        }
+
+        val original = registrant.readText()
+        val integrationTestRegistration = """
+|    try {
+|      flutterEngine.getPlugins().add(new dev.flutter.plugins.integration_test.IntegrationTestPlugin());
+|    } catch (Exception e) {
+|      Log.e(TAG, "Error registering plugin integration_test, dev.flutter.plugins.integration_test.IntegrationTestPlugin", e);
+|    }
+        """.trimMargin()
+        val sanitized = original.replace("\n$integrationTestRegistration", "")
+
+        if (sanitized != original) {
+            registrant.writeText(sanitized)
+        }
+    }
+}
+
+afterEvaluate {
+    tasks.named("compileReleaseJavaWithJavac") {
+        dependsOn(stripReleaseIntegrationTestPlugin)
+    }
+}
+
 dependencies {
     // Core library desugaring for Java 8+ APIs on older Android versions
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
