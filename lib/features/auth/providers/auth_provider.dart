@@ -396,19 +396,25 @@ class AuthNotifier extends Notifier<AuthState> {
     String? termsVersion,
     String? privacyVersion,
   }) async {
+    final phoneValue = PhoneNumberValue.fromAny(
+      phoneNumber: phone,
+      countryCode: countryCode,
+    );
     state = state.copyWith(
       status: AuthStatus.loading,
-      phone: phone,
-      countryCode: countryCode,
+      phone: phoneValue.localNumber,
+      countryCode: phoneValue.apiCountryCode,
     );
 
     // Sync with FSM: notify that login/register is starting
-    ref.read(appFsmProvider.notifier).login(phone, countryCode);
+    ref
+        .read(appFsmProvider.notifier)
+        .login(phoneValue.localNumber, phoneValue.apiCountryCode);
 
     try {
       final response = await _authService.register(
-        phone: phone,
-        countryCode: countryCode,
+        phone: phoneValue.apiPhone,
+        countryCode: phoneValue.apiCountryCode,
         acceptedTerms: acceptedTerms,
         termsVersion: termsVersion,
         privacyVersion: privacyVersion,
@@ -420,7 +426,7 @@ class AuthNotifier extends Notifier<AuthState> {
       );
 
       // Analytics: registration
-      _analytics.trackRegistration(country: countryCode);
+      _analytics.trackRegistration(country: phoneValue.apiCountryCode);
 
       // Sync with FSM: notify that OTP was sent
       ref
@@ -436,19 +442,25 @@ class AuthNotifier extends Notifier<AuthState> {
 
   /// Login existing user
   Future<void> login(String phone, {String? countryCode}) async {
+    final phoneValue = PhoneNumberValue.fromAny(
+      phoneNumber: phone,
+      countryCode: countryCode,
+    );
     state = state.copyWith(
       status: AuthStatus.loading,
-      phone: phone,
-      countryCode: countryCode,
+      phone: phoneValue.localNumber,
+      countryCode: phoneValue.apiCountryCode,
     );
 
     // Sync with FSM: notify that login is starting
-    ref.read(appFsmProvider.notifier).login(phone, countryCode ?? '');
+    ref
+        .read(appFsmProvider.notifier)
+        .login(phoneValue.localNumber, phoneValue.apiCountryCode);
 
     try {
       final response = await _authService.login(
-        phone: phone,
-        countryCode: countryCode,
+        phone: phoneValue.apiPhone,
+        countryCode: phoneValue.apiCountryCode,
       );
 
       state = state.copyWith(

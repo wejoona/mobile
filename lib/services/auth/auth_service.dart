@@ -4,7 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/utils/logger.dart';
-import 'package:usdc_wallet/utils/phone_normalizer.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Auth Service - mirrors backend AuthController
 class AuthService {
@@ -22,18 +22,15 @@ class AuthService {
     String? privacyVersion,
   }) async {
     try {
-      final normalizedPhone = PhoneNormalizer.toE164(
-        phone,
+      final phoneValue = PhoneNumberValue.fromAny(
+        phoneNumber: phone,
         countryCode: countryCode,
       );
       final response = await _dio.post(
         '/auth/register',
         data: {
-          'phone': normalizedPhone,
-          'countryCode': PhoneNormalizer.toIsoCountryCode(
-            countryCode,
-            normalizedPhone,
-          ),
+          'phone': phoneValue.apiPhone,
+          'countryCode': phoneValue.apiCountryCode,
           'acceptedTerms': acceptedTerms,
           if (termsVersion != null) 'termsVersion': termsVersion,
           if (privacyVersion != null) 'privacyVersion': privacyVersion,
@@ -51,11 +48,13 @@ class AuthService {
     String? countryCode,
   }) async {
     try {
+      final phoneValue = PhoneNumberValue.fromAny(
+        phoneNumber: phone,
+        countryCode: countryCode,
+      );
       final response = await _dio.post(
         '/auth/login',
-        data: {
-          'phone': PhoneNormalizer.toE164(phone, countryCode: countryCode),
-        },
+        data: {'phone': phoneValue.apiPhone},
       );
       return OtpResponse.fromJson(response.data);
     } on DioException catch (e) {
@@ -71,10 +70,14 @@ class AuthService {
     String? verificationId,
   }) async {
     try {
+      final phoneValue = PhoneNumberValue.fromAny(
+        phoneNumber: phone,
+        countryCode: countryCode,
+      );
       final response = await _dio.post(
         '/auth/verify-otp',
         data: {
-          'phone': PhoneNormalizer.toE164(phone, countryCode: countryCode),
+          'phone': phoneValue.apiPhone,
           'otp': otp,
           if (verificationId != null) 'verificationId': verificationId,
         },

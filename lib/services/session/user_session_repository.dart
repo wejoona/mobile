@@ -142,12 +142,10 @@ class UserSessionRepository {
               )) ??
         SupportedCountries.findByPhone(session.phoneNumber) ??
         SupportedCountries.defaultCountry;
-    final dialCode = country.fullPrefix;
-    final localNumber = localPhoneDigits(
-      dialCode: dialCode,
+    return PhoneNumberValue.fromAny(
       phoneNumber: session.phoneNumber,
-    );
-    return '$dialCode|$localNumber';
+      countryCode: country.code,
+    ).storageValue;
   }
 }
 

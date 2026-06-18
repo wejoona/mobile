@@ -121,10 +121,9 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     String? phone,
     bool acceptedTerms = false,
   }) async {
-    final phoneNumber = _localPhoneNumber(phone ?? state.phoneNumber);
-    final countryCode = state.countryCode ?? 'CI';
+    final phoneValue = _phoneValue(phone ?? state.phoneNumber);
 
-    if (phoneNumber == null) {
+    if (phoneValue == null) {
       state = state.copyWith(
         isLoading: false,
         error: 'Phone number is required',
@@ -133,8 +132,9 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     }
 
     state = state.copyWith(
-      phoneNumber: phoneNumber,
-      countryCode: countryCode,
+      phoneNumber: phoneValue.localNumber,
+      countryCode: phoneValue.apiCountryCode,
+      dialCode: phoneValue.dialCode,
       isLoading: true,
       clearError: true,
     );
@@ -146,8 +146,8 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
       await ref
           .read(auth.authProvider.notifier)
           .register(
-            phoneNumber,
-            countryCode,
+            phoneValue.apiPhone,
+            phoneValue.apiCountryCode,
             acceptedTerms: acceptedTerms,
             termsVersion: legalDocuments.$1.version,
             privacyVersion: legalDocuments.$2.version,
@@ -200,10 +200,14 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     String? countryCode,
     String? dialCode,
   ]) {
+    final phoneValue = PhoneNumberValue.tryFromAny(
+      phoneNumber: phone,
+      countryCode: dialCode ?? countryCode ?? state.dialCode,
+    );
     state = state.copyWith(
-      phoneNumber: _localPhoneNumber(phone, dialCode: dialCode),
-      countryCode: countryCode,
-      dialCode: dialCode,
+      phoneNumber: phoneValue?.localNumber ?? _localPhoneNumber(phone),
+      countryCode: phoneValue?.apiCountryCode ?? countryCode,
+      dialCode: phoneValue?.dialCode ?? dialCode,
       clearError: true,
     );
   }
@@ -319,6 +323,13 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
       return localPhoneDigits(dialCode: selectedDialCode, phoneNumber: raw);
     }
     return digitsOnly(raw);
+  }
+
+  PhoneNumberValue? _phoneValue(String? phone) {
+    return PhoneNumberValue.tryFromAny(
+      phoneNumber: phone,
+      countryCode: state.dialCode ?? state.countryCode ?? 'CI',
+    );
   }
 
   String _messageFrom(Object error) {

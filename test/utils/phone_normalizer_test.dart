@@ -84,9 +84,18 @@ void main() {
         );
 
         expect(value.dialCode, '+225');
+        expect(value.countryPrefix, '225');
         expect(value.localNumber, '0748805663');
+        expect(value.nationalNumber, '0748805663');
+        expect(value.nationalSignificantNumber, '0748805663');
+        expect(value.msisdn, '2250748805663');
+        expect(value.internationalDigits, '2250748805663');
         expect(value.e164, '+2250748805663');
-        expect(value.storageValue, '+225|0748805663');
+        expect(value.apiPhone, '+2250748805663');
+        expect(value.apiCountryCode, 'CI');
+        expect(value.displayLocal, '07 48 80 56 63');
+        expect(value.displayInternational, '+225 07 48 80 56 63');
+        expect(value.storageValue, 'CI|+225|0748805663|+2250748805663');
         expect(
           localPhoneDigits(
             dialCode: '+225',
@@ -97,15 +106,20 @@ void main() {
       },
     );
 
-    test('parses remembered phone storage as dial code plus local digits', () {
+    test('parses rich and legacy remembered phone storage', () {
       final stored = PhoneNumberValue.tryFromStorageValue(
+        'CI|+225|0748805663|+2250748805663',
+      );
+      final twoPart = PhoneNumberValue.tryFromStorageValue(
         '+225|+2250748805663',
       );
       final legacy = PhoneNumberValue.tryFromStorageValue('+14155550101');
 
       expect(stored?.dialCode, '+225');
       expect(stored?.localNumber, '0748805663');
-      expect(stored?.storageValue, '+225|0748805663');
+      expect(stored?.storageValue, 'CI|+225|0748805663|+2250748805663');
+      expect(twoPart?.dialCode, '+225');
+      expect(twoPart?.localNumber, '0748805663');
       expect(legacy?.dialCode, '+1');
       expect(legacy?.localNumber, '4155550101');
     });

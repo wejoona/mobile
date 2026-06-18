@@ -81,7 +81,8 @@ class LoginNotifier extends Notifier<LoginState> {
 
   /// Submit phone number for login
   Future<void> submitPhoneNumber() async {
-    if (state.phoneNumber == null || state.phoneNumber!.isEmpty) {
+    final phoneValue = _currentPhoneValue();
+    if (phoneValue == null) {
       state = state.copyWith(error: 'Phone number is required');
       return;
     }
@@ -91,16 +92,12 @@ class LoginNotifier extends Notifier<LoginState> {
     try {
       // Call login API
       await _authService.login(
-        phone: state.phoneNumber!,
-        countryCode: state.dialCode,
+        phone: phoneValue.apiPhone,
+        countryCode: phoneValue.apiCountryCode,
       );
 
       // Save remembered phone if enabled
       if (state.rememberDevice) {
-        final phoneValue = PhoneNumberValue.fromLocal(
-          dialCode: state.dialCode ?? '+225',
-          localNumber: state.phoneNumber!,
-        );
         await _storage.write(
           key: StorageKeys.rememberedPhone,
           value: phoneValue.storageValue,
@@ -132,13 +129,18 @@ class LoginNotifier extends Notifier<LoginState> {
       state = state.copyWith(error: 'Please enter a valid 6-digit code');
       return;
     }
+    final phoneValue = _currentPhoneValue();
+    if (phoneValue == null) {
+      state = state.copyWith(error: 'Phone number is required');
+      return;
+    }
 
     state = state.copyWith(isLoading: true, error: null);
 
     try {
       final response = await _authService.verifyOtp(
-        phone: state.phoneNumber!,
-        countryCode: state.dialCode,
+        phone: phoneValue.apiPhone,
+        countryCode: phoneValue.apiCountryCode,
         otp: state.otp!,
       );
 
@@ -168,13 +170,18 @@ class LoginNotifier extends Notifier<LoginState> {
   /// Resend OTP
   Future<void> resendOtp() async {
     if (state.otpResendCountdown > 0) return;
+    final phoneValue = _currentPhoneValue();
+    if (phoneValue == null) {
+      state = state.copyWith(error: 'Phone number is required');
+      return;
+    }
 
     state = state.copyWith(isLoading: true, error: null);
 
     try {
       await _authService.login(
-        phone: state.phoneNumber!,
-        countryCode: state.dialCode,
+        phone: phoneValue.apiPhone,
+        countryCode: phoneValue.apiCountryCode,
       );
       state = state.copyWith(isLoading: false);
       _startResendCountdown();
@@ -316,5 +323,12 @@ class LoginNotifier extends Notifier<LoginState> {
   /// Clear error
   void clearError() {
     state = state.copyWith(error: null);
+  }
+
+  PhoneNumberValue? _currentPhoneValue() {
+    return PhoneNumberValue.tryFromAny(
+      phoneNumber: state.phoneNumber,
+      countryCode: state.dialCode,
+    );
   }
 }

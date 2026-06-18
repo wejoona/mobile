@@ -2,59 +2,97 @@ import 'package:usdc_wallet/utils/phone_normalizer.dart';
 
 String digitsOnly(String value) => value.replaceAll(RegExp(r'\D'), '');
 
+/// Canonical phone identity used inside the app.
+///
+/// Keep every common representation together so views, storage, and API
+/// callers do not rebuild phone strings differently.
 class PhoneNumberValue {
-  const PhoneNumberValue({
+  const PhoneNumberValue._({
     required this.dialCode,
+    required this.countryPrefix,
     required this.localNumber,
+    required this.nationalNumber,
+    required this.msisdn,
+    required this.e164,
     required this.isoCountryCode,
+    required this.displayLocal,
+    required this.displayInternational,
   });
 
-  final String dialCode;
-  final String localNumber;
-  final String isoCountryCode;
-
-  String get e164 =>
-      normalizePhoneE164(dialCode: dialCode, localNumber: localNumber);
-
-  String get storageValue => '$dialCode|$localNumber';
-
-  static PhoneNumberValue fromLocal({
+  factory PhoneNumberValue.fromLocal({
     required String dialCode,
     required String localNumber,
-  }) {
-    final e164 = normalizePhoneE164(
-      dialCode: dialCode,
-      localNumber: localNumber,
-    );
-    return PhoneNumberValue(
-      dialCode:
-          PhoneNormalizer.countryFromCode(dialCode)?.fullPrefix ?? dialCode,
-      localNumber: PhoneNormalizer.localDigits(e164, countryCode: dialCode),
-      isoCountryCode: PhoneNormalizer.toIsoCountryCode(dialCode, e164),
-    );
-  }
+  }) =>
+      PhoneNumberValue.fromAny(phoneNumber: localNumber, countryCode: dialCode);
 
-  static PhoneNumberValue fromAny({
+  factory PhoneNumberValue.fromAny({
     required String phoneNumber,
     String? countryCode,
   }) {
     final e164 = PhoneNormalizer.toE164(phoneNumber, countryCode: countryCode);
+    final msisdn = digitsOnly(e164);
     final country =
         PhoneNormalizer.countryFromCode(countryCode) ??
         PhoneNormalizer.countryFromCode(
           PhoneNormalizer.toIsoCountryCode(countryCode ?? '', e164),
-        );
-    final dialCode = country?.fullPrefix ?? '+${e164.substring(1, 4)}';
+        ) ??
+        PhoneNormalizer.countryFromCode(msisdn);
+    final dialCode = country?.fullPrefix ?? _dialCodeFromInput(countryCode);
+    final countryPrefix = dialCode.replaceFirst('+', '');
+    final localNumber = country == null
+        ? PhoneNormalizer.localDigits(e164, countryCode: dialCode)
+        : msisdn.substring(country.prefix.length);
+    final displayLocal = country?.formatPhone(localNumber) ?? localNumber;
 
-    return PhoneNumberValue(
+    return PhoneNumberValue._(
       dialCode: dialCode,
-      localNumber: PhoneNormalizer.localDigits(e164, countryCode: dialCode),
-      isoCountryCode: PhoneNormalizer.toIsoCountryCode(
-        countryCode ?? dialCode,
-        e164,
-      ),
+      countryPrefix: countryPrefix,
+      localNumber: localNumber,
+      nationalNumber: localNumber,
+      msisdn: msisdn,
+      e164: e164,
+      isoCountryCode:
+          country?.code ??
+          PhoneNormalizer.toIsoCountryCode(countryCode ?? dialCode, e164),
+      displayLocal: displayLocal,
+      displayInternational: '$dialCode $displayLocal',
     );
   }
+
+  /// Prefix with plus, for example `+225`.
+  final String dialCode;
+
+  /// Prefix without plus, for example `225`.
+  final String countryPrefix;
+
+  /// Number without country prefix. Kept as the UI-editable local value.
+  final String localNumber;
+
+  /// Alias for standards vocabulary: national significant number.
+  final String nationalNumber;
+
+  /// Digits-only international number. Equivalent to E.164 without `+`.
+  final String msisdn;
+
+  /// Full E.164 phone number, for example `+2250748805663`.
+  final String e164;
+
+  /// ISO 3166-1 alpha-2 country code, for example `CI`.
+  final String isoCountryCode;
+
+  /// Human-readable local form using the country's configured spacing.
+  final String displayLocal;
+
+  /// Human-readable international form.
+  final String displayInternational;
+
+  String get countryCode => isoCountryCode;
+  String get callingCode => countryPrefix;
+  String get internationalDigits => msisdn;
+  String get nationalSignificantNumber => nationalNumber;
+  String get apiPhone => e164;
+  String get apiCountryCode => isoCountryCode;
+  String get storageValue => '$isoCountryCode|$dialCode|$localNumber|$e164';
 
   static PhoneNumberValue? tryFromAny({
     required String? phoneNumber,
@@ -65,7 +103,10 @@ class PhoneNumberValue {
     }
 
     try {
-      return fromAny(phoneNumber: phoneNumber, countryCode: countryCode);
+      return PhoneNumberValue.fromAny(
+        phoneNumber: phoneNumber,
+        countryCode: countryCode,
+      );
     } on FormatException {
       return null;
     }
@@ -77,11 +118,27 @@ class PhoneNumberValue {
     }
 
     final parts = storedValue.split('|');
-    if (parts.length >= 2) {
-      return tryFromAny(phoneNumber: parts.last, countryCode: parts.first);
+    if (parts.length >= 4) {
+      return tryFromAny(phoneNumber: parts[3], countryCode: parts[0]);
+    }
+    if (parts.length == 2) {
+      return tryFromAny(phoneNumber: parts[1], countryCode: parts[0]);
     }
 
     return tryFromAny(phoneNumber: storedValue);
+  }
+
+  static String _dialCodeFromInput(String? countryCode) {
+    final country = PhoneNormalizer.countryFromCode(countryCode);
+    if (country != null) {
+      return country.fullPrefix;
+    }
+
+    final digits = digitsOnly(countryCode ?? '');
+    if (digits.isEmpty) {
+      return '+${PhoneNormalizer.countryFromCode('CI')?.prefix ?? '225'}';
+    }
+    return '+$digits';
   }
 }
 
