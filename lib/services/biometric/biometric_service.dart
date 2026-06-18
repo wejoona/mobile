@@ -105,6 +105,7 @@ class BiometricService {
     if (expectedUserId == null || expectedUserId.isEmpty) return false;
 
     if (boundUserId != expectedUserId) {
+      await disableBiometric();
       return false;
     }
 

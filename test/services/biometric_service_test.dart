@@ -497,7 +497,7 @@ void main() {
     );
 
     test(
-      'should return false when biometric belongs to another user',
+      'should disable biometric when binding belongs to another user',
       () async {
         // Arrange
         when(
@@ -533,6 +533,29 @@ void main() {
             wOptions: any(named: 'wOptions'),
           ),
         ).thenAnswer((_) async => 'user-b');
+        when(
+          () => mockStorage.write(
+            key: any(named: 'key'),
+            value: any(named: 'value'),
+            iOptions: any(named: 'iOptions'),
+            aOptions: any(named: 'aOptions'),
+            lOptions: any(named: 'lOptions'),
+            webOptions: any(named: 'webOptions'),
+            mOptions: any(named: 'mOptions'),
+            wOptions: any(named: 'wOptions'),
+          ),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockStorage.delete(
+            key: any(named: 'key'),
+            iOptions: any(named: 'iOptions'),
+            aOptions: any(named: 'aOptions'),
+            lOptions: any(named: 'lOptions'),
+            webOptions: any(named: 'webOptions'),
+            mOptions: any(named: 'mOptions'),
+            wOptions: any(named: 'wOptions'),
+          ),
+        ).thenAnswer((_) async {});
         final biometricService = service();
 
         // Act
@@ -540,6 +563,30 @@ void main() {
 
         // Assert
         expect(result, isFalse);
+        verify(
+          () => mockStorage.write(
+            key: StorageKeys.biometricEnabled,
+            value: 'false',
+            iOptions: any(named: 'iOptions'),
+            aOptions: any(named: 'aOptions'),
+            lOptions: any(named: 'lOptions'),
+            webOptions: any(named: 'webOptions'),
+            mOptions: any(named: 'mOptions'),
+            wOptions: any(named: 'wOptions'),
+          ),
+        ).called(1);
+        verify(
+          () => mockStorage.delete(
+            key: 'biometric_user_id',
+            iOptions: any(named: 'iOptions'),
+            aOptions: any(named: 'aOptions'),
+            lOptions: any(named: 'lOptions'),
+            webOptions: any(named: 'webOptions'),
+            mOptions: any(named: 'mOptions'),
+            wOptions: any(named: 'wOptions'),
+          ),
+        ).called(1);
+        verify(() => mockReenrollmentDetector.reset()).called(1);
       },
     );
 
