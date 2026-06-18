@@ -31,7 +31,7 @@ class SecurityHeadersInterceptor extends Interceptor {
     '/auth/verify-otp',
     '/auth/register',
     '/devices',
-    '/pin/',
+    '/user/pin/',
     '/risk/',
   ];
 

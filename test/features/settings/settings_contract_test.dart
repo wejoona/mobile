@@ -87,20 +87,33 @@ void main() {
     expect(source, contains('error.statusCode == 401'));
   });
 
-  test('security settings account actions and persisted controls live in canonical screen', () {
-    final source = File(
-      'lib/features/settings/views/security_view.dart',
-    ).readAsStringSync();
+  test(
+    'security settings account actions and persisted controls live in canonical screen',
+    () {
+      final source = File(
+        'lib/features/settings/views/security_view.dart',
+      ).readAsStringSync();
+      final profileSecuritySource = File(
+        'lib/features/profile/views/profile_security_view.dart',
+      ).readAsStringSync();
 
-    expect(source, isNot(contains('onTap: () {}')));
-    expect(source, contains("context.push('/settings/pin')"));
-    expect(source, contains("context.push('/settings/devices')"));
-    expect(source, contains('securitySettingsProvider'));
-    expect(source, contains('setPinOnAppOpen'));
-    expect(source, contains('setScreenshotProtection'));
-    expect(source, contains('setTransactionAlerts'));
-    expect(source, contains('setAutoLock'));
-  });
+      expect(source, isNot(contains('onTap: () {}')));
+      expect(source, contains("context.push('/settings/pin')"));
+      expect(source, contains("context.push('/settings/devices')"));
+      expect(source, contains('securitySettingsProvider'));
+      expect(source, contains('setPinOnAppOpen'));
+      expect(source, contains('setScreenshotProtection'));
+      expect(source, contains('setTransactionAlerts'));
+      expect(source, contains('setAutoLock'));
+      expect(profileSecuritySource, contains("context.push('/settings/pin')"));
+      expect(
+        profileSecuritySource,
+        isNot(contains("pushNamed('/pin/change')")),
+        reason:
+            'Profile security must use the canonical settings PIN route, not legacy /pin/change.',
+      );
+    },
+  );
 
   test('DevicesRepository parses bare backend array', () async {
     final dio = MockDio();

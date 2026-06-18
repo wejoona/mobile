@@ -124,6 +124,15 @@ void main() {
       expect(routePaths, containsAll(legacySignupPaths));
     });
 
+    test('does not expose legacy PIN route aliases', () {
+      final routePaths = _declaredRoutePaths();
+
+      expect(routePaths, contains('/settings/pin'));
+      expect(routePaths, contains('/pin/setup'));
+      expect(routePaths, isNot(contains('/pin/change')));
+      expect(routePaths, isNot(contains('/pin/set')));
+    });
+
     test(
       'production navigation literals resolve through the assembled router',
       () {

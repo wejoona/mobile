@@ -151,7 +151,6 @@ List<RouteBase> cardAccountRoutes() => [
         AppPageTransitions.fade(state: state, child: const ChangePinView()),
   ),
   // PIN Setup (post-registration)
-  GoRoute(path: '/pin/set', redirect: (_, _) => '/pin/setup'),
   GoRoute(
     path: '/pin/setup',
     pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
@@ -176,7 +175,6 @@ List<RouteBase> cardAccountRoutes() => [
       );
     },
   ),
-  GoRoute(path: '/pin/change', redirect: (_, _) => '/settings/pin'),
   GoRoute(
     path: '/pin/locked',
     pageBuilder: (context, state) =>

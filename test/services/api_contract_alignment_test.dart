@@ -509,7 +509,9 @@ void main() {
         );
         expect(dio.requestHistory[1].path, '/user/limits');
         expect(dio.requestHistory[2].path, '/wallet/cash-out/mobile-money');
-        expect(dio.requestHistory[2].data['phoneNumber'], '+2250748805663');
+        final cashOutRequestData =
+            dio.requestHistory[2].data as Map<String, dynamic>;
+        expect(cashOutRequestData['phoneNumber'], '+2250748805663');
         expect(container.read(withdrawProvider).result?.id, 'withdraw_123');
       },
     );
@@ -546,7 +548,9 @@ void main() {
 
       expect(dio.requestHistory[0].path, '/user/limits');
       expect(dio.requestHistory[1].path, '/wallet/cash-out/mobile-money');
-      expect(dio.requestHistory[1].data['phoneNumber'], '+2250748805663');
+      final withdrawalRequestData =
+          dio.requestHistory[1].data as Map<String, dynamic>;
+      expect(withdrawalRequestData['phoneNumber'], '+2250748805663');
       expect(dio.requestHistory[1].headers['X-Pin-Token'], 'pin_token_123');
     });
 
@@ -1596,6 +1600,12 @@ void main() {
       final jweSource = File(
         'lib/services/security/jwe/jwe_interceptor.dart',
       ).readAsStringSync();
+      final encryptedRequestSource = File(
+        'lib/services/security/network/encrypted_request_interceptor.dart',
+      ).readAsStringSync();
+      final securityHeadersSource = File(
+        'lib/services/security/security_headers_interceptor.dart',
+      ).readAsStringSync();
       final resetPinSource = File(
         'lib/features/pin/views/reset_pin_view.dart',
       ).readAsStringSync();
@@ -1609,6 +1619,8 @@ void main() {
       final combinedContractText = [
         walletApiSource,
         jweSource,
+        encryptedRequestSource,
+        securityHeadersSource,
         transferContractSource,
         transferMockSource,
       ].join('\n');
@@ -1617,11 +1629,32 @@ void main() {
       expect(pinServiceSource, contains('/user/pin/set'));
       expect(pinServiceSource, contains('/user/pin/change'));
       expect(resetPinSource, contains('/user/pin/reset'));
+      expect(jweSource, contains('/user/pin/'));
+      expect(encryptedRequestSource, contains('/user/pin/verify'));
+      expect(encryptedRequestSource, contains('/user/pin/change'));
+      expect(securityHeadersSource, contains('/user/pin/'));
       expect(resetPinSource, contains('cacheConfirmedPin'));
       expect(resetPinSource, isNot(contains('.setPin(_newPin)')));
       expect(combinedContractText, isNot(contains('/wallet/pin/verify')));
       expect(combinedContractText, isNot(contains('/wallet/pin/set')));
       expect(combinedContractText, isNot(contains('/wallet/pin/change')));
+      expect(
+        combinedContractText,
+        isNot(contains("'/pin/")),
+        reason:
+            'Security matchers must name /user/pin/* explicitly so stale wallet/pin routes cannot look supported.',
+      );
+      expect(
+        combinedContractText,
+        isNot(contains("'/pin/verify'")),
+        reason: 'The canonical PIN verification endpoint is /user/pin/verify.',
+      );
+      expect(
+        File('lib/features/pin/ROUTES.dart').existsSync(),
+        isFalse,
+        reason:
+            'Stale route snippets create a second source of truth for PIN navigation.',
+      );
       expect(
         '$pinServiceSource\n$combinedContractText',
         contains('/user/pin/verify'),
