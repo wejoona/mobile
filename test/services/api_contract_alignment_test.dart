@@ -2803,15 +2803,15 @@ void main() {
       final getDeviceContactsBody = RegExp(
         r'Future<List<Contact>> getDeviceContacts\(\) async \{([\s\S]*?)\n  \}',
       ).firstMatch(contactsServiceSource)!.group(1)!;
-      final contactSyncProviderSource = File(
-        'lib/features/contacts/providers/contact_sync_provider.dart',
+      final contactsProviderSource = File(
+        'lib/features/contacts/providers/contacts_provider.dart',
       ).readAsStringSync();
       final syncContactsBody = RegExp(
-        r'Future<void> syncContacts\(\) async \{([\s\S]*?)\n  Future<void> syncIfNeeded',
-      ).firstMatch(contactSyncProviderSource)!.group(1)!;
+        r'Future<void> syncContacts\(\) async \{([\s\S]*?)\n  Future<List<SyncedContact>> _getMockContacts',
+      ).firstMatch(contactsProviderSource)!.group(1)!;
       final requestPermissionBody = RegExp(
-        r'Future<bool> requestPermission\(\) async \{([\s\S]*?)\n  /// Sync device contacts',
-      ).firstMatch(contactSyncProviderSource)!.group(1)!;
+        r'Future<bool> requestPermission\(\) async \{([\s\S]*?)\n\}',
+      ).firstMatch(contactsProviderSource)!.group(1)!;
 
       expect(getDeviceContactsBody, contains('Permission.contacts.status'));
       expect(getDeviceContactsBody, isNot(contains('requestPermission')));
@@ -2823,8 +2823,7 @@ void main() {
         syncContactsBody,
         contains('contactsService.hasContactsPermission'),
       );
-      expect(syncContactsBody, contains('defaultCountryPrefix'));
-      expect(syncContactsBody, contains('syncPhoneHashes'));
+      expect(syncContactsBody, contains('_getSyncedDeviceContacts'));
       expect(syncContactsBody, isNot(contains('await requestPermission')));
       expect(syncContactsBody, isNot(contains('Permission.contacts.request')));
       expect(syncContactsBody, isNot(contains('Permission.contacts.status')));
@@ -2840,13 +2839,8 @@ void main() {
         requestPermissionBody,
         isNot(contains('Permission.contacts.request')),
       );
-      expect(contactSyncProviderSource, isNot(contains('permission_handler')));
-
-      final contactActionsSource = File(
-        'lib/features/contacts/providers/contacts_provider.dart',
-      ).readAsStringSync();
       expect(
-        contactActionsSource,
+        contactsProviderSource,
         contains('defaultCountryPrefix: _defaultCountryPrefix'),
         reason:
             'manual contact sync must hash local numbers with the active market prefix',
