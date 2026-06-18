@@ -1,11 +1,11 @@
 # Mobile Current Status
 
-Last updated: 2026-06-18 09:53 GMT
+Last updated: 2026-06-18 09:54 GMT
 
 ## Standing
 
 - Active branch: `develop`, tracking `origin/develop`.
-- Latest pushed mobile code commit: `a11eb6fa fix: route pin recovery to manual review`.
+- Latest pushed mobile code commit: `71676ce9 fix: require explicit push token platform`.
 - Latest pushed API commit: `b2728ec5 fix: canonicalize auth country inputs`.
 - Repo status should be clean unless a new slice is in progress.
 - Do not promote to `staging` until Codemagic-equivalent local gates pass.
