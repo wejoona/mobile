@@ -5,7 +5,7 @@ Last updated: 2026-06-18 09:59 GMT
 ## Standing
 
 - Active branch: `develop`, tracking `origin/develop`.
-- Latest pushed mobile code commit: `71676ce9 fix: require explicit push token platform`.
+- Latest pushed mobile code commit: `17ae80df fix: harden device action auth errors`.
 - Latest pushed API commit: `b2728ec5 fix: canonicalize auth country inputs`.
 - Repo status should be clean unless a new slice is in progress.
 - Do not promote to `staging` until Codemagic-equivalent local gates pass.
