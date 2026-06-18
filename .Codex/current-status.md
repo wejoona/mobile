@@ -5,7 +5,7 @@ Last updated: 2026-06-18 11:05 GMT
 ## Standing
 
 - Active branch: `develop`, tracking `origin/develop`.
-- Latest pushed mobile code commit: `61605234 fix: refresh uploaded profile avatars`.
+- Latest pushed mobile code commit: `a11eb6fa fix: route pin recovery to manual review`.
 - Latest pushed API commit: `b2728ec5 fix: canonicalize auth country inputs`.
 - Repo status should be clean unless a new slice is in progress.
 - Do not promote to `staging` until Codemagic-equivalent local gates pass.
