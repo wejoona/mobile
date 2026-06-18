@@ -136,7 +136,7 @@ class CacheInterceptor extends Interceptor {
   Duration getTTL(String path) {
     // Wallet balance is financial state. Fetch it fresh and let the offline
     // cache layer show explicit stale indicators when the network is down.
-    if (path == '/wallet' || path.contains('/wallet/balance')) {
+    if (path == '/wallet') {
       return Duration.zero;
     }
 

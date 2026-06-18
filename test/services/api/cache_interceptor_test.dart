@@ -36,13 +36,13 @@ void main() {
 
     test('should generate correct cache keys', () {
       final options1 = RequestOptions(
-        path: '/wallet/balance',
+        path: '/wallet',
         method: 'GET',
         queryParameters: {'currency': 'USDC'},
       );
 
       final options2 = RequestOptions(
-        path: '/wallet/balance',
+        path: '/wallet',
         method: 'GET',
         queryParameters: {'currency': 'USDT'},
       );
@@ -53,7 +53,7 @@ void main() {
 
     test('should apply correct TTL for different endpoints', () {
       // Test wallet balance TTL (fresh financial state, no generic cache)
-      final walletTTL = interceptor.getTTL('/wallet/balance');
+      final walletTTL = interceptor.getTTL('/wallet');
       expect(walletTTL, equals(Duration.zero));
 
       // Test deposit channels TTL (30m)

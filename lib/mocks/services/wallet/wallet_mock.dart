@@ -96,13 +96,6 @@ class WalletMock {
       handler: _handleCreateWallet,
     );
 
-    // GET /wallet/balance
-    interceptor.register(
-      method: 'GET',
-      path: '/wallet/balance',
-      handler: _handleGetBalance,
-    );
-
     // GET /wallet/exchange-rate
     interceptor.register(
       method: 'GET',
@@ -203,24 +196,6 @@ class WalletMock {
 
     final wallet = WalletMockState.createWallet(userId, network: network);
     return MockResponse.created(wallet.toJson());
-  }
-
-  static Future<MockResponse> _handleGetBalance(RequestOptions options) async {
-    final userId = AuthMockState.currentUserId;
-    if (userId == null) {
-      return MockResponse.unauthorized();
-    }
-
-    final wallet = WalletMockState.getWallet(userId);
-    if (wallet == null) {
-      return MockResponse.notFound('Wallet not found');
-    }
-
-    return MockResponse.success({
-      'balanceUsdc': wallet.balanceUsdc,
-      'balanceLocal': wallet.balanceLocal,
-      'localCurrency': wallet.localCurrency,
-    });
   }
 
   static Future<MockResponse> _handleGetRate(RequestOptions options) async {

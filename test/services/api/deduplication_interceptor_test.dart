@@ -37,10 +37,10 @@ void main() {
     });
 
     test('should generate unique keys for different requests', () {
-      final options1 = RequestOptions(path: '/wallet/balance', method: 'GET');
+      final options1 = RequestOptions(path: '/wallet', method: 'GET');
 
       final options2 = RequestOptions(
-        path: '/wallet/balance',
+        path: '/wallet',
         method: 'GET',
         queryParameters: {'currency': 'USDC'},
       );
@@ -51,13 +51,13 @@ void main() {
 
     test('should include auth header in key generation', () {
       final options1 = RequestOptions(
-        path: '/wallet/balance',
+        path: '/wallet',
         method: 'GET',
         headers: {'Authorization': 'Bearer token1'},
       );
 
       final options2 = RequestOptions(
-        path: '/wallet/balance',
+        path: '/wallet',
         method: 'GET',
         headers: {'Authorization': 'Bearer token2'},
       );

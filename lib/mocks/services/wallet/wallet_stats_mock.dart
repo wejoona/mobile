@@ -3,25 +3,6 @@ import 'package:usdc_wallet/mocks/base/mock_interceptor.dart';
 /// Wallet balance and stats mock.
 class WalletStatsMock {
   static void register(MockInterceptor interceptor) {
-    // GET /wallet/balance
-    interceptor.register(
-      method: 'GET',
-      path: '/wallet/balance',
-      legacyHandler: (uri, headers, data) async {
-        return MockResponse(
-          statusCode: 200,
-          data: {
-            'balance': 2450.75,
-            'available': 2450.75,
-            'pending': 0.00,
-            'total': 2450.75,
-            'currency': 'USDC',
-            'updatedAt': DateTime.now().toIso8601String(),
-          },
-        );
-      },
-    );
-
     // GET /alerts
     interceptor.register(
       method: 'GET',

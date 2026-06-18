@@ -205,7 +205,7 @@ void main() {
     test('should map device blacklist errors to blocked-device message', () {
       // Arrange
       final dioError = DioException(
-        requestOptions: RequestOptions(path: '/wallet/balance'),
+        requestOptions: RequestOptions(path: '/wallet'),
         response: Response(
           statusCode: 403,
           data: {
@@ -213,7 +213,7 @@ void main() {
             'message': 'Access denied. This device has been blocked.',
             'error': 'DEVICE_BLACKLISTED',
           },
-          requestOptions: RequestOptions(path: '/wallet/balance'),
+          requestOptions: RequestOptions(path: '/wallet'),
         ),
         type: DioExceptionType.badResponse,
       );
@@ -236,7 +236,7 @@ void main() {
       () {
         // Arrange
         final dioError = DioException(
-          requestOptions: RequestOptions(path: '/wallet/balance'),
+          requestOptions: RequestOptions(path: '/wallet'),
           response: Response(
             statusCode: 403,
             data: {
@@ -246,7 +246,7 @@ void main() {
                 'message': 'Access denied. This device has been blocked.',
               },
             },
-            requestOptions: RequestOptions(path: '/wallet/balance'),
+            requestOptions: RequestOptions(path: '/wallet'),
           ),
           type: DioExceptionType.badResponse,
         );
