@@ -1,6 +1,6 @@
 # Mobile Current Status
 
-Last updated: 2026-06-18 10:07 GMT
+Last updated: 2026-06-18 10:17 GMT
 
 ## Standing
 
@@ -46,6 +46,7 @@ Last updated: 2026-06-18 10:07 GMT
 - Email verification is verified end to end at the contract/usecase level: mobile checks `/user/email-status`, auto-requests a code when an email has no pending verification, resends through `/user/resend-email-verification`, verifies through `/user/verify-email`, and backend stores hashed 6-digit codes with non-production default `123456`. Mobile profile contract tests passed 29 tests; backend email verification usecase tests passed 6 tests.
 - Transaction limits and money-flow permissions are technically implemented across mobile and API: mobile gates send, deposit, and withdrawal with live `/user/limits` before submission; backend exposes `/user/limits`, `/user/limits/usage`, `/wallet/limits`, enforces per-transaction/daily/monthly limits before ledger movement, blocks manual-review states, and supports admin overrides. Mobile limits/deposit tests passed 16 tests; backend limit/enforcement tests passed 25 tests. Numeric tiers still need compliance sign-off before being called UEMOA-calibrated policy.
 - Send-recipient identity safety is verified: transfer requests keep exactly one stable recipient identifier, malformed phone input is normalized before submit, username-only/masked recipients remain supported, lookup-selected users send by stable `recipientId`, and self-send is guarded by current user id/phone/username checks before money movement. Focused send recipient contract tests passed 11 tests.
+- Backoffice device blacklist/deactivation is verified at the dashboard service boundary: Filament user device actions create reasoned blacklist records, sync through Korido API registered-device endpoints when available, deactivate registered devices, disable push tokens, revoke sessions, and record API sync metadata. Focused dashboard Pest tests passed 2 tests / 12 assertions.
 
 ## Known Watch Items
 
