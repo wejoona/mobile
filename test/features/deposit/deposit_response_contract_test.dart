@@ -71,6 +71,12 @@ void main() {
       expect(normalizeDepositChannelId('moov-money'), 'moov_money_ci');
       expect(normalizeDepositProviderCode('wave_ci'), 'WAVECI');
       expect(normalizeDepositChannelId('wave_ci'), 'wave_ci');
+      expect(normalizeDepositChannelId('mobile_money'), 'mobile_money');
+      expect(
+        depositChannelIdFromJson({'id': 'us_ach', 'code': 'ACH'}),
+        'us_ach',
+      );
+      expect(depositChannelIdFromJson({'code': 'OMCI'}), 'orange_money_ci');
     });
 
     test('deposit service sends canonical backend initiate payload', () async {

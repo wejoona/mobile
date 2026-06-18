@@ -480,15 +480,19 @@ class _ProviderTile extends StatelessWidget {
 
   Color _getProviderColor() {
     switch (provider.id.toUpperCase()) {
+      case 'ORANGE_MONEY_CI':
       case 'OMCI':
       case 'ORANGE_MONEY':
         return const Color(0xFFFF6B35);
+      case 'MTN_MOMO_CI':
       case 'MTNCI':
       case 'MTN_MOMO':
         return const Color(0xFFFFCB05);
+      case 'MOOV_MONEY_CI':
       case 'MOOVCI':
       case 'MOOV_MONEY':
         return const Color(0xFF0066CC);
+      case 'WAVE_CI':
       case 'WAVECI':
       case 'WAVE':
         return const Color(0xFF4A148C);
@@ -513,6 +517,8 @@ class _ProviderTile extends StatelessWidget {
 
   IconData _getPaymentMethodIcon() {
     switch (provider.paymentMethodType?.toUpperCase()) {
+      case 'MOBILE_MONEY':
+        return Icons.notifications_active;
       case 'OTP':
         return Icons.dialpad;
       case 'PUSH':
@@ -533,6 +539,8 @@ class _ProviderTile extends StatelessWidget {
 
   String _getPaymentMethodDescription() {
     switch (provider.paymentMethodType?.toUpperCase()) {
+      case 'MOBILE_MONEY':
+        return l10n.deposit_approveOnPhone;
       case 'OTP':
         return l10n.deposit_enterOTP;
       case 'PUSH':

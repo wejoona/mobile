@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
+import 'package:usdc_wallet/features/deposit/models/deposit_channel_id.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
@@ -81,7 +82,7 @@ class WalletService {
         data: {
           'amount': amount.round(),
           'sourceCurrency': sourceCurrency,
-          'channelId': _mobileMoneyChannelId(channelId),
+          'channelId': normalizeDepositChannelId(channelId),
           if (phoneNumber.trim().isNotEmpty) 'phoneNumber': phoneNumber.trim(),
         },
         options: Options(
@@ -902,32 +903,4 @@ Map<String, dynamic> _asStringMap(Object? value) {
   if (value is Map<String, dynamic>) return value;
   if (value is Map) return Map<String, dynamic>.from(value);
   return const <String, dynamic>{};
-}
-
-String _mobileMoneyChannelId(String value) {
-  switch (value.replaceAll('-', '_').toLowerCase()) {
-    case 'orange_money_ci':
-    case 'omci':
-    case 'orange':
-    case 'orange_money':
-    case 'mobile_money':
-      return 'orange_money_ci';
-    case 'mtn_momo_ci':
-    case 'mtnci':
-    case 'mtn':
-    case 'mtn_momo':
-    case 'mtn_mobile_money':
-      return 'mtn_momo_ci';
-    case 'moov_money_ci':
-    case 'moovci':
-    case 'moov':
-    case 'moov_money':
-      return 'moov_money_ci';
-    case 'wave_ci':
-    case 'waveci':
-    case 'wave':
-      return 'wave_ci';
-    default:
-      return value;
-  }
 }

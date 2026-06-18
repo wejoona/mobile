@@ -12,6 +12,7 @@ import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
 import 'package:usdc_wallet/features/deposit/models/deposit_request.dart';
 import 'package:usdc_wallet/features/deposit/models/deposit_response.dart';
+import 'package:usdc_wallet/features/deposit/models/deposit_channel_id.dart';
 import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
 import 'package:usdc_wallet/features/deposit/models/mobile_money_provider.dart';
 import 'package:usdc_wallet/features/deposit/models/provider_data.dart';
@@ -195,7 +196,7 @@ class DepositNotifier extends Notifier<DepositState> {
         state.selectedProviderCode ??
         (state.selectedMethod == null
             ? null
-            : _methodToProviderCode(state.selectedMethod!));
+            : _methodToChannelId(state.selectedMethod!));
     final userState = ref.read(userStateMachineProvider);
     final authState = ref.read(auth.authProvider);
     final phoneNumber =
@@ -409,7 +410,9 @@ class DepositNotifier extends Notifier<DepositState> {
   }
 
   void selectProviderData(dynamic data) {
-    final code = data is ProviderData ? data.id : data.toString();
+    final code = normalizeDepositChannelId(
+      data is ProviderData ? data.id : data.toString(),
+    );
     state = state.copyWith(
       selectedProviderCode: code,
       selectedProviderMethodType: data is ProviderData
@@ -421,77 +424,39 @@ class DepositNotifier extends Notifier<DepositState> {
 
   void setOtp(String otp) => state = state.copyWith(otpInput: otp);
 
-  /// Map mobile DepositMethod enum to backend provider codes.
-  static String _methodToProviderCode(DepositMethod method) {
+  /// Map mobile DepositMethod enum to backend channel ids.
+  static String _methodToChannelId(DepositMethod method) {
     switch (method) {
       case DepositMethod.orangeMoney:
-        return 'OMCI';
+        return 'orange_money_ci';
       case DepositMethod.mtnMomo:
-        return 'MTNCI';
+        return 'mtn_momo_ci';
       case DepositMethod.moovMoney:
-        return 'MOOVCI';
+        return 'moov_money_ci';
       case DepositMethod.wave:
-        return 'WAVECI';
+        return 'wave_ci';
       case DepositMethod.bankTransfer:
-        return 'BANK';
+        return 'bank_transfer';
     }
   }
 
   static DepositMethod? _providerCodeToMethod(String code) {
-    switch (_normalizeProviderCode(code)) {
-      case 'OMCI':
+    switch (normalizeDepositChannelId(code)) {
+      case 'orange_money_ci':
         return DepositMethod.orangeMoney;
-      case 'MTNCI':
+      case 'mtn_momo_ci':
         return DepositMethod.mtnMomo;
-      case 'MOOVCI':
+      case 'moov_money_ci':
         return DepositMethod.moovMoney;
-      case 'WAVECI':
+      case 'wave_ci':
         return DepositMethod.wave;
       default:
         return null;
     }
   }
 
-  static String _normalizeProviderCode(String value) {
-    switch (value.toUpperCase()) {
-      case 'ORANGE_MONEY_CI':
-      case 'ORANGE_MONEY':
-      case 'ORANGE':
-      case 'OMCI':
-        return 'OMCI';
-      case 'MTN_MOMO_CI':
-      case 'MTN_MOMO':
-      case 'MTN':
-      case 'MTNCI':
-        return 'MTNCI';
-      case 'MOOV_MONEY_CI':
-      case 'MOOV_MONEY':
-      case 'MOOV':
-      case 'MOOVCI':
-        return 'MOOVCI';
-      case 'WAVE_CI':
-      case 'WAVE':
-      case 'WAVECI':
-        return 'WAVECI';
-      default:
-        return value.toUpperCase();
-    }
-  }
-
   static bool _providerRequiresPhone(String providerCode, String? methodType) {
-    final method = methodType?.toUpperCase();
-    if (method == 'CARD' || method == 'BANK_TRANSFER' || method == 'ACH') {
-      return false;
-    }
-    final provider = providerCode.toLowerCase();
-    return provider.endsWith('ci') ||
-        provider.endsWith('_ci') ||
-        provider.contains('money') ||
-        provider.contains('wave') ||
-        method == 'MOBILE_MONEY' ||
-        method == 'OTP' ||
-        method == 'PUSH' ||
-        method == 'QR_LINK';
+    return depositChannelRequiresPhone(providerCode, methodType);
   }
 }
 

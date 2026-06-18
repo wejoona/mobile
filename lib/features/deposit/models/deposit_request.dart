@@ -1,5 +1,12 @@
-// Deposit request models.
+import 'package:usdc_wallet/features/deposit/models/deposit_channel_id.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
+
+// Deposit request models.
+export 'package:usdc_wallet/features/deposit/models/deposit_channel_id.dart'
+    show
+        depositChannelIdFromJson,
+        normalizeDepositChannelId,
+        normalizeDepositProviderCode;
 
 /// Initiate Deposit Request
 class InitiateDepositRequest {
@@ -33,62 +40,6 @@ class InitiateDepositRequest {
       'channelId': normalizeDepositChannelId(provider),
       if (normalizedPhoneNumber != null) 'phoneNumber': normalizedPhoneNumber,
     };
-  }
-}
-
-String normalizeDepositChannelId(String value) {
-  switch (value.replaceAll('-', '_').toLowerCase()) {
-    case 'orange_money_ci':
-    case 'omci':
-    case 'orange':
-    case 'orange_money':
-    case 'mobile_money':
-      return 'orange_money_ci';
-    case 'mtn_momo_ci':
-    case 'mtnci':
-    case 'mtn':
-    case 'mtn_momo':
-    case 'mtn_mobile_money':
-      return 'mtn_momo_ci';
-    case 'moov_money_ci':
-    case 'moovci':
-    case 'moov':
-    case 'moov_money':
-      return 'moov_money_ci';
-    case 'wave_ci':
-    case 'waveci':
-    case 'wave':
-      return 'wave_ci';
-    default:
-      return value;
-  }
-}
-
-String normalizeDepositProviderCode(String value) {
-  switch (value.replaceAll('-', '_').toLowerCase()) {
-    case 'omci':
-    case 'orange':
-    case 'orange_money':
-    case 'orange_money_ci':
-    case 'mobile_money':
-      return 'OMCI';
-    case 'mtnci':
-    case 'mtn':
-    case 'mtn_momo':
-    case 'mtn_momo_ci':
-    case 'mtn_mobile_money':
-      return 'MTNCI';
-    case 'moovci':
-    case 'moov':
-    case 'moov_money':
-    case 'moov_money_ci':
-      return 'MOOVCI';
-    case 'waveci':
-    case 'wave':
-    case 'wave_ci':
-      return 'WAVECI';
-    default:
-      return value.toUpperCase();
   }
 }
 

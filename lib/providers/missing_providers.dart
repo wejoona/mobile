@@ -12,6 +12,7 @@ import 'package:usdc_wallet/features/insights/models/top_recipient.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:usdc_wallet/config/countries.dart';
+import 'package:usdc_wallet/features/deposit/models/deposit_channel_id.dart';
 import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
 import 'package:usdc_wallet/features/deposit/models/provider_data.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
@@ -429,9 +430,9 @@ bool _matchesSelectedCountry(
 
 ProviderData _providerDataFromJson(Map<String, dynamic> json) {
   return ProviderData(
-    id: json['code'] as String? ?? json['id'] as String? ?? '',
+    id: depositChannelIdFromJson(json),
     name: json['name'] as String? ?? '',
-    paymentMethodType: json['paymentMethodType'] as String?,
+    paymentMethodType: _paymentMethodTypeFromDepositRail(json),
     enumProvider: json['provider'] as String? ?? json['code'] as String?,
     minAmount: (json['minAmount'] as num?)?.toDouble(),
     maxAmount: (json['maxAmount'] as num?)?.toDouble(),
@@ -446,6 +447,43 @@ ProviderData _providerDataFromJson(Map<String, dynamic> json) {
     ]),
     rails: _stringList(json, const ['rails', 'type']),
   );
+}
+
+String? _paymentMethodTypeFromDepositRail(Map<String, dynamic> json) {
+  final explicit = json['paymentMethodType']?.toString();
+  if (explicit != null && explicit.isNotEmpty) {
+    return explicit;
+  }
+
+  final rail =
+      (json['rail'] ?? json['type'] ?? json['method'] ?? json['paymentRail'])
+          ?.toString()
+          .trim()
+          .toLowerCase()
+          .replaceAll('-', '_');
+  switch (rail) {
+    case 'mobile_money':
+    case 'momo':
+      return 'PUSH';
+    case 'bank':
+    case 'bank_transfer':
+    case 'ach':
+      return 'BANK_TRANSFER';
+    case 'card':
+      return 'CARD';
+    case 'crypto':
+    case 'usdc':
+    case 'usdc_crypto':
+      return 'CRYPTO';
+    case 'qr':
+    case 'qr_link':
+      return 'QR_LINK';
+    case 'otp':
+    case 'push':
+      return rail?.toUpperCase();
+    default:
+      return null;
+  }
 }
 
 bool _railMatchesCountry(String rawRail, CountryConfig selectedCountry) {

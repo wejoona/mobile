@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/core/utils/transaction_headers.dart';
+import 'package:usdc_wallet/features/deposit/models/deposit_channel_id.dart';
 
 class WalletApi {
   WalletApi(this._dio);
@@ -164,7 +165,7 @@ Map<String, dynamic> _depositPayload(Map<String, dynamic> data) {
       payload.remove('provider') ??
       payload.remove('providerCode');
   if (channelId != null) {
-    payload['channelId'] = _mobileMoneyChannelId(channelId.toString());
+    payload['channelId'] = normalizeDepositChannelId(channelId.toString());
   }
   payload.putIfAbsent(
     'sourceCurrency',
@@ -185,32 +186,4 @@ Map<String, dynamic> _externalTransferPayload(Map<String, dynamic> data) {
   final recipientAddress = payload.remove('recipientAddress');
   payload['toAddress'] = payload['toAddress'] ?? recipientAddress;
   return payload;
-}
-
-String _mobileMoneyChannelId(String value) {
-  switch (value.replaceAll('-', '_').toLowerCase()) {
-    case 'orange_money_ci':
-    case 'omci':
-    case 'orange':
-    case 'orange_money':
-    case 'mobile_money':
-      return 'orange_money_ci';
-    case 'mtn_momo_ci':
-    case 'mtnci':
-    case 'mtn':
-    case 'mtn_momo':
-    case 'mtn_mobile_money':
-      return 'mtn_momo_ci';
-    case 'moov_money_ci':
-    case 'moovci':
-    case 'moov':
-    case 'moov_money':
-      return 'moov_money_ci';
-    case 'wave_ci':
-    case 'waveci':
-    case 'wave':
-      return 'wave_ci';
-    default:
-      return value;
-  }
 }
