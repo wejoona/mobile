@@ -1,6 +1,6 @@
 # Mobile Current Status
 
-Last updated: 2026-06-18 11:18 GMT
+Last updated: 2026-06-18 11:04 GMT
 
 ## Standing
 
@@ -51,6 +51,7 @@ Last updated: 2026-06-18 11:18 GMT
 - Codemagic-equivalent analyzer warning gate passed locally on 2026-06-18: `dart analyze --format machine` returned exit code 0 with no `ERROR` or `WARNING` records.
 - Codemagic-style non-golden Flutter test batches passed locally on 2026-06-18: 469 tests passed, with only the existing skipped tests.
 - Android release bundle is now owned by Gradle instead of a Codemagic-only shell patch: the release build strips the generated `integration_test` plugin registration before Java compilation, `codemagic.yaml` no longer carries the perl registrant edit, the release-config test passed 5 tests, and the Codemagic-equivalent `:app:bundleRelease` command passed locally.
+- Live staging API smoke passed on 2026-06-18 for the mobile candidate account `+2250748805663` with dev OTP `123456`: login, OTP verification, profile, email status, limits, wallet, transactions, sessions, devices, notifications, contacts, cards capability, deposit providers/channels, and feature subscriptions all returned HTTP 200 with parseable JSON. Wallet remains intentionally degraded/local-mirror with zero balance until ledger availability is restored.
 
 ## Known Watch Items
 
@@ -60,6 +61,7 @@ Last updated: 2026-06-18 11:18 GMT
 - Android release bundle passes locally using Codemagic's direct Gradle path.
 - iOS release build is currently blocked by machine Xcode state: `xcode-select` points to `/Library/Developer/CommandLineTools`, `/Applications` and `~/Applications` do not contain a discoverable Xcode app, `mdfind` returns no `com.apple.dt.Xcode`, and `xcrun simctl` is unavailable.
 - Simulator/phone launch is currently blocked for the same local Xcode visibility issue; Flutter sees only macOS and Chrome devices.
+- Local protected-route smoke checks that read an auth token from `/tmp` require unsandboxed network execution in Codex; sandboxed Node/system DNS lookup returned `ENOTFOUND` while `dig` and unsandboxed curl resolved the same hostname.
 - Mobile app version is currently `1.0.0+2`; the staging API version policy does not block that build, but defaults should stay intentional for future pre-release trains.
 - Signup/onboarding naming split is complete at the provider layer; remaining account setup view filenames under `features/onboarding/views` can be moved only as a dedicated route-safe cleanup slice.
 
