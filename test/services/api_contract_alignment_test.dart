@@ -164,6 +164,42 @@ void main() {
       });
     });
 
+    test(
+      'wallet service maps product rate directions to backend DTO',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'fromCurrency': 'XOF',
+            'toCurrency': 'USD',
+            'rate': 600,
+            'timestamp': '2026-06-04T00:00:00.000Z',
+          })
+          ..queueResponse({
+            'fromCurrency': 'USD',
+            'toCurrency': 'XOF',
+            'rate': 600,
+            'timestamp': '2026-06-04T00:00:00.000Z',
+          });
+        final service = WalletService(dio);
+
+        await service.getRate(
+          sourceCurrency: 'XOF',
+          targetCurrency: 'USD',
+          amount: 1000,
+          direction: 'deposit',
+        );
+        await service.getRate(
+          sourceCurrency: 'USD',
+          targetCurrency: 'XOF',
+          amount: 20,
+          direction: 'withdrawal',
+        );
+
+        expect(dio.requestHistory[0].queryParameters['direction'], 'buy');
+        expect(dio.requestHistory[1].queryParameters['direction'], 'sell');
+      },
+    );
+
     test('wallet KYC facade uses canonical KYC routes', () async {
       final dio = MockDio()
         ..queueResponse({'status': 'pending', 'canResubmit': false})

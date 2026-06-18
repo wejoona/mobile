@@ -167,13 +167,14 @@ class WalletService {
     String direction = 'deposit',
   }) async {
     try {
+      final canonicalDirection = _canonicalRateDirection(direction);
       final response = await _dio.get(
         ApiEndpoints.walletExchangeRate,
         queryParameters: {
           'sourceCurrency': sourceCurrency,
           'targetCurrency': targetCurrency,
           'amount': amount,
-          'direction': direction,
+          'direction': canonicalDirection,
         },
       );
       return _exchangeRateFromPayload(
@@ -268,6 +269,24 @@ class WalletService {
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
+  }
+}
+
+String _canonicalRateDirection(String direction) {
+  switch (direction.trim().toLowerCase()) {
+    case 'sell':
+    case 'withdraw':
+    case 'withdrawal':
+    case 'cash_out':
+    case 'cash-out':
+    case 'payout':
+      return 'sell';
+    case 'buy':
+    case 'deposit':
+    case 'payin':
+    case 'pay-in':
+    default:
+      return 'buy';
   }
 }
 
