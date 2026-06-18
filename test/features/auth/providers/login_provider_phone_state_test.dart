@@ -52,5 +52,71 @@ void main() {
         expect(state.phoneNumber, '0748805663');
       },
     );
+
+    test('keeps rate-limit copy from OTP request failures', () async {
+      final dio = MockDio()
+        ..queueErrorResponse(
+          statusCode: 400,
+          data: {
+            'success': false,
+            'error': {
+              'code': 'VERIFY_RATE_LIMITED',
+              'message':
+                  'Too many verification requests. Please try again later.',
+            },
+          },
+        );
+      final container = ProviderContainer(
+        overrides: [
+          dioProvider.overrideWithValue(dio),
+          secureStorageProvider.overrideWithValue(MockSecureStorage()),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container
+          .read(loginProvider.notifier)
+          .updatePhoneNumber('0748805663', '+225');
+
+      await container.read(loginProvider.notifier).submitPhoneNumber();
+
+      final state = container.read(loginProvider);
+      expect(state.isLoading, isFalse);
+      expect(
+        state.error,
+        'Too many verification requests. Please try again later.',
+      );
+      expect(dio.requestHistory.single.path, '/auth/login');
+      expect(dio.requestHistory.single.data, {'phone': '+2250748805663'});
+    });
+
+    test('keeps generic login copy for account-safe failures', () async {
+      final dio = MockDio()
+        ..queueErrorResponse(
+          statusCode: 404,
+          data: {
+            'success': false,
+            'error': {'code': 'USER_NOT_FOUND', 'message': 'User not found'},
+          },
+        );
+      final container = ProviderContainer(
+        overrides: [
+          dioProvider.overrideWithValue(dio),
+          secureStorageProvider.overrideWithValue(MockSecureStorage()),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container
+          .read(loginProvider.notifier)
+          .updatePhoneNumber('0748805663', '+225');
+
+      await container.read(loginProvider.notifier).submitPhoneNumber();
+
+      expect(
+        container.read(loginProvider).error,
+        'Unable to log in. Please check your details and try again.',
+      );
+    });
   });
 }

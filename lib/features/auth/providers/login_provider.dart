@@ -112,8 +112,7 @@ class LoginNotifier extends Notifier<LoginState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        // SECURITY: Generic error to prevent account enumeration attacks
-        error: 'Unable to log in. Please check your details and try again.',
+        error: _otpRequestErrorMessage(e, isResend: false),
       );
     }
   }
@@ -188,9 +187,38 @@ class LoginNotifier extends Notifier<LoginState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: 'Failed to resend code. Please try again.',
+        error: _otpRequestErrorMessage(e, isResend: true),
       );
     }
+  }
+
+  String _otpRequestErrorMessage(Object error, {required bool isResend}) {
+    if (error is ApiException) {
+      final message = error.message.trim();
+      final normalized = message.toLowerCase();
+      final code = error.code?.toUpperCase();
+      final isRateLimited =
+          error.statusCode == 429 ||
+          code == 'TOO_MANY_REQUESTS' ||
+          code == 'RATE_LIMITED' ||
+          normalized.contains('too many') ||
+          normalized.contains('rate limit');
+      if (isRateLimited && message.isNotEmpty) {
+        return message;
+      }
+
+      final statusCode = error.statusCode;
+      if (statusCode != null && statusCode >= 500 && message.isNotEmpty) {
+        return message;
+      }
+    }
+
+    if (isResend) {
+      return 'Failed to resend code. Please try again.';
+    }
+
+    // SECURITY: Generic error to prevent account enumeration attacks.
+    return 'Unable to log in. Please check your details and try again.';
   }
 
   /// Start OTP resend countdown
