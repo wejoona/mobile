@@ -3231,5 +3231,16 @@
     }
   },
   "moneyFlow_reviewRequiredMessage": "Votre compte est en cours de vérification. Nous vous préviendrons quand cette action sera disponible.",
-  "moneyFlow_verificationRequiredMessage": "Terminez la vérification d'identité pour utiliser cette action."
+  "moneyFlow_verificationRequiredMessage": "Terminez la vérification d'identité pour utiliser cette action.",
+  "forceUpdate_title": "Mise à jour requise",
+  "forceUpdate_defaultMessage": "Une nouvelle version de Korido est requise pour garder votre portefeuille sécurisé.",
+  "forceUpdate_requiredVersion": "Version requise : {version}",
+  "@forceUpdate_requiredVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "forceUpdate_button": "Mettre à jour Korido"
 }

@@ -14387,6 +14387,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Complete identity verification to use this action.'**
   String get moneyFlow_verificationRequiredMessage;
+
+  /// Title for the blocking mobile app update screen
+  ///
+  /// In en, this message translates to:
+  /// **'Update required'**
+  String get forceUpdate_title;
+
+  /// Fallback message for the blocking mobile app update screen
+  ///
+  /// In en, this message translates to:
+  /// **'A newer version of Korido is required to keep your wallet secure.'**
+  String get forceUpdate_defaultMessage;
+
+  /// Minimum app version required to continue
+  ///
+  /// In en, this message translates to:
+  /// **'Required version: {version}'**
+  String forceUpdate_requiredVersion(String version);
+
+  /// Button label that opens the app store
+  ///
+  /// In en, this message translates to:
+  /// **'Update Korido'**
+  String get forceUpdate_button;
 }
 
 class _AppLocalizationsDelegate

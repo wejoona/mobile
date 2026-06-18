@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/fsm_states/views/force_update_view.dart';
 import 'package:usdc_wallet/services/app_version/mobile_version_policy_service.dart';
@@ -19,7 +20,6 @@ class _ForcedUpgradeVersionPolicyController
       forceUpgrade: true,
       upgradeRecommended: true,
       breakingApiChange: true,
-      message: 'Please update Korido to continue.',
       apiUrl: 'https://staging-korido-api.joonapay.com/api/v1',
       checkedAt: DateTime.utc(2026, 6, 17),
     ),
@@ -33,9 +33,7 @@ class _ForcedUpgradeVersionPolicyController
 }
 
 void main() {
-  testWidgets('force update copy shows the minimum required version', (
-    tester,
-  ) async {
+  testWidgets('force update copy is localized in English', (tester) async {
     await tester.pumpWidget(
       TestWrapper(
         overrides: [
@@ -47,9 +45,40 @@ void main() {
       ),
     );
 
+    expect(find.text('Update required'), findsOneWidget);
+    expect(
+      find.text(
+        'A newer version of Korido is required to keep your wallet secure.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Required version: 1.2.0'), findsOneWidget);
+    expect(find.text('Required version: 2.0.0'), findsNothing);
+    expect(find.text('Update Korido'), findsOneWidget);
+  });
+
+  testWidgets('force update copy is localized in French', (tester) async {
+    await tester.pumpWidget(
+      TestWrapper(
+        locale: const Locale('fr'),
+        overrides: [
+          mobileVersionPolicyProvider.overrideWith(
+            _ForcedUpgradeVersionPolicyController.new,
+          ),
+        ],
+        child: const ForceUpdateView(),
+      ),
+    );
+
     expect(find.text('Mise à jour requise'), findsOneWidget);
-    expect(find.text('Please update Korido to continue.'), findsOneWidget);
-    expect(find.text('Version requise: 1.2.0'), findsOneWidget);
-    expect(find.text('Version requise: 2.0.0'), findsNothing);
+    expect(
+      find.text(
+        'Une nouvelle version de Korido est requise pour garder votre portefeuille sécurisé.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Version requise : 1.2.0'), findsOneWidget);
+    expect(find.text('Version requise : 2.0.0'), findsNothing);
+    expect(find.text('Mettre à jour Korido'), findsOneWidget);
   });
 }

@@ -7971,4 +7971,19 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get moneyFlow_verificationRequiredMessage =>
       'Terminez la vérification d\'identité pour utiliser cette action.';
+
+  @override
+  String get forceUpdate_title => 'Mise à jour requise';
+
+  @override
+  String get forceUpdate_defaultMessage =>
+      'Une nouvelle version de Korido est requise pour garder votre portefeuille sécurisé.';
+
+  @override
+  String forceUpdate_requiredVersion(String version) {
+    return 'Version requise : $version';
+  }
+
+  @override
+  String get forceUpdate_button => 'Mettre à jour Korido';
 }

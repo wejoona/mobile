@@ -7810,4 +7810,19 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get moneyFlow_verificationRequiredMessage =>
       'أكمل التحقق من الهوية لاستخدام هذه العملية.';
+
+  @override
+  String get forceUpdate_title => 'Update required';
+
+  @override
+  String get forceUpdate_defaultMessage =>
+      'A newer version of Korido is required to keep your wallet secure.';
+
+  @override
+  String forceUpdate_requiredVersion(String version) {
+    return 'Required version: $version';
+  }
+
+  @override
+  String get forceUpdate_button => 'Update Korido';
 }

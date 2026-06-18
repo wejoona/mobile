@@ -7967,5 +7967,16 @@
     }
   },
   "moneyFlow_reviewRequiredMessage": "Sua conta está em análise. Avisaremos quando esta ação estiver disponível.",
-  "moneyFlow_verificationRequiredMessage": "Conclua a verificação de identidade para usar esta ação."
+  "moneyFlow_verificationRequiredMessage": "Conclua a verificação de identidade para usar esta ação.",
+  "forceUpdate_title": "Update required",
+  "forceUpdate_defaultMessage": "A newer version of Korido is required to keep your wallet secure.",
+  "forceUpdate_requiredVersion": "Required version: {version}",
+  "@forceUpdate_requiredVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "forceUpdate_button": "Update Korido"
 }

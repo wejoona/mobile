@@ -9019,5 +9019,26 @@
   "moneyFlow_verificationRequiredMessage": "Complete identity verification to use this action.",
   "@moneyFlow_verificationRequiredMessage": {
     "description": "Shown when a backend permission blocks a money action until KYC is completed"
+  },
+  "forceUpdate_title": "Update required",
+  "@forceUpdate_title": {
+    "description": "Title for the blocking mobile app update screen"
+  },
+  "forceUpdate_defaultMessage": "A newer version of Korido is required to keep your wallet secure.",
+  "@forceUpdate_defaultMessage": {
+    "description": "Fallback message for the blocking mobile app update screen"
+  },
+  "forceUpdate_requiredVersion": "Required version: {version}",
+  "@forceUpdate_requiredVersion": {
+    "description": "Minimum app version required to continue",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "forceUpdate_button": "Update Korido",
+  "@forceUpdate_button": {
+    "description": "Button label that opens the app store"
   }
 }

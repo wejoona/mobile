@@ -4,23 +4,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/app_version/mobile_version_policy_service.dart';
 
 /// Full-screen force update view shown when app version is too old
 class ForceUpdateView extends ConsumerWidget {
   const ForceUpdateView({super.key});
 
-  static const _appStoreUrl = 'https://apps.apple.com/search?term=Korido';
+  static const _appStoreUrl = 'https://apps.apple.com/app/korido/id6761443157';
   static const _playStoreUrl =
       'https://play.google.com/store/apps/details?id=com.joonapay.usdcWallet';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final policyState = ref.watch(mobileVersionPolicyProvider);
     final policy = policyState.policy;
-    final message =
-        policy?.message ??
-        "Une nouvelle version de Korido est disponible. Veuillez mettre à jour l'application pour continuer.";
+    final message = policy?.message ?? l10n.forceUpdate_defaultMessage;
     final requiredVersion = policy?.minimumSupportedVersion;
 
     return Scaffold(
@@ -35,7 +35,7 @@ class ForceUpdateView extends ConsumerWidget {
               Icon(Icons.system_update, size: 80, color: context.colors.gold),
               const SizedBox(height: AppSpacing.xxl),
               AppText(
-                'Mise à jour requise',
+                l10n.forceUpdate_title,
                 variant: AppTextVariant.headlineMedium,
                 color: context.colors.textPrimary,
                 textAlign: TextAlign.center,
@@ -50,14 +50,14 @@ class ForceUpdateView extends ConsumerWidget {
               if (requiredVersion != null) ...[
                 const SizedBox(height: AppSpacing.md),
                 AppText(
-                  'Version requise: $requiredVersion',
+                  l10n.forceUpdate_requiredVersion(requiredVersion),
                   color: context.colors.textTertiary,
                   textAlign: TextAlign.center,
                 ),
               ],
               const Spacer(),
               AppButton(
-                label: 'Mettre à jour',
+                label: l10n.forceUpdate_button,
                 onPressed: () => _openStore(policy?.appUrl),
                 isFullWidth: true,
               ),
