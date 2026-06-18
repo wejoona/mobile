@@ -1,11 +1,12 @@
 # Mobile Current Status
 
-Last updated: 2026-06-18 08:24 GMT
+Last updated: 2026-06-18 08:42 GMT
 
 ## Standing
 
 - Active branch: `develop`, tracking `origin/develop`.
-- Latest pushed mobile commit: `96dab7f6 fix: canonicalize login phone state`.
+- Latest pushed mobile commit: `acb622f7 refactor: separate signup entry screens`.
+- Latest pushed API commit: `bfa38bba fix: align mobile version policy defaults`.
 - Repo status should be clean unless a new slice is in progress.
 - Do not promote to `staging` until Codemagic-equivalent local gates pass.
 
@@ -20,6 +21,10 @@ Last updated: 2026-06-18 08:24 GMT
 - Staging API health, login, and OTP verification worked for `0748805663` with OTP `123456` when DNS was resolving.
 - Staging API public smokes returned HTTP 200 on 2026-06-18: `/health`, `/config/mobile-version`, and `/config/countries`.
 - Full non-golden mobile test gate passed after the phone-state canonicalization slice: 469 tests.
+- Signup phone entry and legal consent now live under `features/signup`; product onboarding remains a separate intro route.
+- Live staging checks with `+2250748805663` and OTP `123456` returned HTTP 200 for login, OTP verify, `/wallet`, `/sessions`, `/devices`, `/user/profile`, `/user/profile` update, and `/user/email-status`.
+- Current staging wallet for that account is valid but zero-balance and degraded/local-mirror because ledger balance is temporarily unavailable; mobile should show zero plus sync warning, not fabricate funds.
+- Profile update API and profile thumbnail shape are healthy; avatar upload still depends on on-device face detection and multipart upload in manual device testing.
 
 ## Known Watch Items
 
@@ -31,6 +36,7 @@ Last updated: 2026-06-18 08:24 GMT
 - iOS release build is currently blocked by machine Xcode state: `xcode-select` points to Command Line Tools and no local Xcode app bundle was found by `mdfind`/filesystem search.
 - Simulator/phone launch is currently blocked for the same local Xcode visibility issue: `xcrun simctl` is unavailable under Command Line Tools.
 - Mobile app version is currently `1.0.0+2`; the staging API version policy does not block that build, but defaults should stay intentional for future pre-release trains.
+- Signup state is still named `onboardingProvider`; split/rename only as a dedicated slice because it spans OTP, profile, PIN, KYC prompt, and onboarding completion storage.
 
 ## Next Gate
 
