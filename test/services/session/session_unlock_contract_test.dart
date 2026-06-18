@@ -443,6 +443,9 @@ void main() {
     final resetSource = File(
       'lib/features/pin/views/reset_pin_view.dart',
     ).readAsStringSync();
+    final riskSource = File(
+      'lib/services/security/risk_based_security_service.dart',
+    ).readAsStringSync();
     final livenessSource = File(
       'lib/features/liveness/widgets/liveness_check_widget.dart',
     ).readAsStringSync();
@@ -456,7 +459,10 @@ void main() {
     expect(reviewBody, contains("'/support/tickets'"));
     expect(reviewBody, contains("'category': 'account_recovery'"));
     expect(reviewBody, contains("'priority': 'high'"));
+    expect(resetSource, contains("'step_up_challenge_unavailable'"));
     expect(resetSource, contains('_buildManualReviewStep'));
+    expect(riskSource, contains("'account_recovery': StepUpType.manualReview"));
+    expect(riskSource, contains('stepUpType == StepUpType.manualReview'));
     expect(
       resetSource,
       contains('Expected first response: within 30 minutes'),

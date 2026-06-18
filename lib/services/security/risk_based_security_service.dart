@@ -359,7 +359,8 @@ class RiskBasedSecurityService {
     final stepUpType = defaults[operation] ?? StepUpType.biometric;
     final flow =
         stepUpType == StepUpType.liveness ||
-            stepUpType == StepUpType.biometricAndLiveness
+            stepUpType == StepUpType.biometricAndLiveness ||
+            stepUpType == StepUpType.manualReview
         ? RiskFlow.red
         : stepUpType == StepUpType.biometric
         ? RiskFlow.yellow

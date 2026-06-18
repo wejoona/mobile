@@ -506,11 +506,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
 
       if (_requiresFaceAndLiveness(decision)) {
         if (decision.challengeToken == null) {
-          setState(() {
-            _isLoading = false;
-            _errorMessage =
-                'We could not start the required security check. Please try again.';
-          });
+          await _routePinResetToManualReview('step_up_challenge_unavailable');
           return;
         }
 
@@ -523,11 +519,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
 
       if (decision.stepUpRequired) {
         if (decision.challengeToken == null) {
-          setState(() {
-            _isLoading = false;
-            _errorMessage =
-                'We could not start the required security check. Please try again.';
-          });
+          await _routePinResetToManualReview('step_up_challenge_unavailable');
           return;
         }
 
@@ -559,11 +551,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       }
 
       if (_stepUpChallengeToken == null) {
-        setState(() {
-          _isLoading = false;
-          _errorMessage =
-              'We could not start the required security check. Please try again.';
-        });
+        await _routePinResetToManualReview('step_up_challenge_unavailable');
         return;
       }
 
