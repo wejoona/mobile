@@ -539,8 +539,8 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         .detectFaces(compressed);
     if (!mounted) return;
 
-    if (!faceDetection.isAvailable) {
-      _setProfilePhotoBusy('Retrying face check on a lighter photo...');
+    if (_shouldRetryProfileFaceCheck(faceDetection)) {
+      _setProfilePhotoBusy('Retrying face check on a clearer photo...');
       final faceCheckImage = await pictureService.prepareForFaceDetection(
         compressed,
       );
@@ -600,6 +600,9 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       isError: false,
     );
   }
+
+  bool _shouldRetryProfileFaceCheck(FaceDetectionResult result) =>
+      !result.isAvailable || result.faceCount == 0;
 
   String _profilePhotoFaceMessage(FaceDetectionResult result) {
     if (!result.isAvailable) {

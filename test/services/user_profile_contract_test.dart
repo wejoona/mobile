@@ -555,6 +555,15 @@ void main() {
       expect(profileEditSource, contains('uploadImage = faceCheckImage'));
       expect(
         profileEditSource,
+        contains('bool _shouldRetryProfileFaceCheck'),
+      );
+      expect(profileEditSource, contains('result.faceCount == 0'));
+      expect(
+        profileEditSource,
+        contains('Retrying face check on a clearer photo'),
+      );
+      expect(
+        profileEditSource,
         contains('AvatarDeviceFaceCheck.fromDeviceAnalysis'),
       );
       expect(profileEditSource, contains('Checking face on this device'));
