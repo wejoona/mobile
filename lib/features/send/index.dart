@@ -5,7 +5,6 @@ export 'package:usdc_wallet/features/send/models/transfer_request.dart';
 export 'package:usdc_wallet/features/send/providers/send_fee_provider.dart';
 export 'package:usdc_wallet/features/send/providers/send_limits_provider.dart';
 export 'package:usdc_wallet/features/send/providers/send_provider.dart';
-export 'package:usdc_wallet/features/send/providers/send_validation_provider.dart';
 export 'package:usdc_wallet/features/send/repositories/transfers_repository.dart';
 export 'package:usdc_wallet/features/send/views/amount_screen.dart';
 export 'package:usdc_wallet/features/send/views/confirm_screen.dart';

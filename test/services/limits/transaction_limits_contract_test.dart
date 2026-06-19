@@ -9,15 +9,20 @@ import '../../helpers/test_utils.dart';
 
 void main() {
   group('TransactionLimits contract', () {
-    test('send validation uses backend limits instead of hard-coded caps', () {
-      final source = File(
-        'lib/features/send/providers/send_validation_provider.dart',
+    test('send feature does not export stale form validation authority', () {
+      final barrelSource = File(
+        'lib/features/send/index.dart',
       ).readAsStringSync();
 
-      expect(source, contains('limitHitByFor'));
-      expect(source, contains('TransactionLimitOperation.send'));
-      expect(source, isNot(contains('data.amount! > 10000')));
-      expect(source, contains(r"RegExp(r'^\+?1\d{10}$')"));
+      expect(barrelSource, isNot(contains('send_validation_provider')));
+      expect(
+        File(
+          'lib/features/send/providers/send_validation_provider.dart',
+        ).existsSync(),
+        isFalse,
+        reason:
+            'SendMoneyNotifier owns recipient validation and live limit checks; a dormant provider can revive stale phone regexes and hard-coded copy.',
+      );
     });
 
     test('send submission verifies live limits before transfer API call', () {
