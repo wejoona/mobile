@@ -4,6 +4,7 @@ import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -140,7 +141,16 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           hint: l10n.error_phoneRequired,
           prefixIcon: Icons.phone_iphone_rounded,
           keyboardType: TextInputType.phone,
-          readOnly: true,
+          textInputAction: TextInputAction.done,
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'[0-9+\s()-]')),
+          ],
+          readOnly: _recoveryPhone != null,
+          onChanged: (_) {
+            if (_errorMessage != null) {
+              setState(() => _errorMessage = null);
+            }
+          },
         ),
         if (_errorMessage != null) ...[
           const SizedBox(height: AppSpacing.md),
@@ -479,6 +489,11 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       }
     }
 
+    final manuallyEnteredPhone = _manualRecoveryPhoneFromInput();
+    if (manuallyEnteredPhone != null) {
+      return manuallyEnteredPhone;
+    }
+
     final storage = ref.read(secureStorageProvider);
     final storedDialCode = await storage.read(key: StorageKeys.userDialCode);
     final storedLocalPhone = await storage.read(
@@ -549,6 +564,19 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
 
     _recoveryPhone = phone;
     _phoneController.text = phone.displayInternational;
+  }
+
+  PhoneNumberValue? _manualRecoveryPhoneFromInput() {
+    final input = _phoneController.text.trim();
+    if (input.isEmpty) {
+      return null;
+    }
+
+    final loginState = ref.read(loginProvider);
+    return PhoneNumberValue.tryFromAny(
+      phoneNumber: input,
+      countryCode: loginState.dialCode ?? '+225',
+    );
   }
 
   /// Verify OTP entered by user and create a scoped recovery session.

@@ -305,6 +305,13 @@ void main() {
       reason:
           'PIN reset should show the registered phone before sending an OTP',
     );
+    expect(
+      resetSource,
+      contains('readOnly: _recoveryPhone != null'),
+      reason:
+          'PIN reset should lock a known phone but allow recovery entry when context is missing',
+    );
+    expect(resetSource, contains('_manualRecoveryPhoneFromInput()'));
     expect(resetSource, contains('widget.initialContext?.phoneValue'));
     expect(resetSource, contains('ref.read(loginProvider).phoneValue'));
     expect(resetSource, contains('login(phone: phone.apiPhone'));
