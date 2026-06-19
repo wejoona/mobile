@@ -160,6 +160,12 @@ class DepositNotifier extends Notifier<DepositState> {
 
   @override
   DepositState build() {
+    ref.listen<auth.AuthState>(auth.authProvider, (previous, next) {
+      if (next.status == auth.AuthStatus.unauthenticated ||
+          next.status == auth.AuthStatus.initial) {
+        _pollingTimer?.cancel();
+      }
+    });
     ref.onDispose(() => _pollingTimer?.cancel());
     return const DepositState();
   }
@@ -334,6 +340,14 @@ class DepositNotifier extends Notifier<DepositState> {
         );
       }
       // else: still pending, continue polling
+    } on DioException catch (e) {
+      final statusCode = e.response?.statusCode;
+      if (statusCode == 401 || statusCode == 403) {
+        _pollingTimer?.cancel();
+        return;
+      }
+      debugPrint('Deposit status poll error: $e');
+      // Don't stop polling on transient errors
     } catch (e) {
       debugPrint('Deposit status poll error: $e');
       // Don't stop polling on transient errors

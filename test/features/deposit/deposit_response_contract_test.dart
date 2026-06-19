@@ -55,7 +55,7 @@ void main() {
     });
 
     test(
-      'deposit request keeps country explicit for shared-currency markets',
+      'deposit request uses country for phone normalization without posting it',
       () {
         const request = InitiateDepositRequest(
           amount: 5000,
@@ -69,7 +69,6 @@ void main() {
           'amount': 5000,
           'sourceCurrency': 'XOF',
           'channelId': 'orange_money_sn',
-          'countryCode': 'SN',
           'phoneNumber': '+221771234567',
         });
       },
@@ -126,7 +125,6 @@ void main() {
         'amount': 5000,
         'sourceCurrency': 'XOF',
         'channelId': 'orange_money_ci',
-        'countryCode': 'CI',
         'phoneNumber': '+2250748805663',
       });
     });
