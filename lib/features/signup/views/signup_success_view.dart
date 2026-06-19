@@ -7,9 +7,9 @@ import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart'
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
 
-/// Onboarding success screen
-class OnboardingSuccessView extends ConsumerWidget {
-  const OnboardingSuccessView({super.key});
+/// Success screen for explicit account signup.
+class SignupSuccessView extends ConsumerWidget {
+  const SignupSuccessView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -8,15 +8,17 @@ import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
 import 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart';
 
-/// Profile setup screen
-class ProfileSetupView extends ConsumerStatefulWidget {
-  const ProfileSetupView({super.key});
+/// Profile setup screen for explicit account signup.
+class SignupProfileSetupView extends ConsumerStatefulWidget {
+  const SignupProfileSetupView({super.key});
 
   @override
-  ConsumerState<ProfileSetupView> createState() => _ProfileSetupViewState();
+  ConsumerState<SignupProfileSetupView> createState() =>
+      _SignupProfileSetupViewState();
 }
 
-class _ProfileSetupViewState extends ConsumerState<ProfileSetupView> {
+class _SignupProfileSetupViewState
+    extends ConsumerState<SignupProfileSetupView> {
   final _formKey = GlobalKey<FormState>();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();

@@ -6,9 +6,9 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 
-/// KYC prompt screen
-class KycPromptView extends ConsumerWidget {
-  const KycPromptView({super.key});
+/// KYC prompt screen for explicit account signup.
+class SignupKycPromptView extends ConsumerWidget {
+  const SignupKycPromptView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

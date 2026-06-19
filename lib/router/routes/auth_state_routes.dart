@@ -3,16 +3,16 @@ import 'package:usdc_wallet/features/auth/views/login_otp_view.dart';
 import 'package:usdc_wallet/features/auth/views/login_view.dart';
 import 'package:usdc_wallet/features/auth/views/otp_view.dart';
 import 'package:usdc_wallet/features/fsm_states/views/index.dart';
-import 'package:usdc_wallet/features/onboarding/views/kyc_prompt_view.dart';
-import 'package:usdc_wallet/features/onboarding/views/onboarding_pin_view.dart';
-import 'package:usdc_wallet/features/onboarding/views/onboarding_success_view.dart';
 import 'package:usdc_wallet/features/onboarding/views/onboarding_view.dart';
-import 'package:usdc_wallet/features/onboarding/views/otp_verification_view.dart';
 import 'package:usdc_wallet/features/onboarding/views/profile_complete_view.dart';
-import 'package:usdc_wallet/features/onboarding/views/profile_setup_view.dart';
 import 'package:usdc_wallet/features/pin/views/pin_screen.dart';
+import 'package:usdc_wallet/features/signup/views/signup_kyc_prompt_view.dart';
 import 'package:usdc_wallet/features/signup/views/signup_legal_consent_view.dart';
+import 'package:usdc_wallet/features/signup/views/signup_otp_verification_view.dart';
 import 'package:usdc_wallet/features/signup/views/signup_phone_view.dart';
+import 'package:usdc_wallet/features/signup/views/signup_pin_setup_view.dart';
+import 'package:usdc_wallet/features/signup/views/signup_profile_setup_view.dart';
+import 'package:usdc_wallet/features/signup/views/signup_success_view.dart';
 import 'package:usdc_wallet/features/splash/views/splash_view.dart';
 import 'package:usdc_wallet/features/wallet/views/create_wallet_view.dart';
 import 'package:usdc_wallet/router/page_transitions.dart';
@@ -61,35 +61,35 @@ List<RouteBase> authStateRoutes() => [
     path: '/signup/verify-phone',
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
-      child: const OtpVerificationView(),
+      child: const SignupOtpVerificationView(),
     ),
   ),
   GoRoute(
     path: '/signup/profile',
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
-      child: const ProfileSetupView(),
+      child: const SignupProfileSetupView(),
     ),
   ),
   GoRoute(
     path: '/signup/set-pin',
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
-      child: const OnboardingPinView(),
+      child: const SignupPinSetupView(),
     ),
   ),
   GoRoute(
     path: '/signup/kyc-prompt',
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
-      child: const KycPromptView(),
+      child: const SignupKycPromptView(),
     ),
   ),
   GoRoute(
     path: '/signup/success',
     pageBuilder: (context, state) => AppPageTransitions.scaleAndFade(
       state: state,
-      child: const OnboardingSuccessView(),
+      child: const SignupSuccessView(),
     ),
   ),
 

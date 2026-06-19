@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -134,6 +136,40 @@ void main() {
 
       expect(match.isError, isFalse);
       expect(match.matches.last.route, isA<GoRoute>());
+    });
+
+    test('signup step routes render signup-owned screens', () {
+      final source = File(
+        'lib/router/routes/auth_state_routes.dart',
+      ).readAsStringSync();
+
+      expect(source, contains('SignupOtpVerificationView'));
+      expect(source, contains('SignupProfileSetupView'));
+      expect(source, contains('SignupPinSetupView'));
+      expect(source, contains('SignupKycPromptView'));
+      expect(source, contains('SignupSuccessView'));
+      expect(
+        source,
+        isNot(contains("features/onboarding/views/otp_verification_view.dart")),
+      );
+      expect(
+        source,
+        isNot(contains("features/onboarding/views/profile_setup_view.dart")),
+      );
+      expect(
+        source,
+        isNot(contains("features/onboarding/views/onboarding_pin_view.dart")),
+      );
+      expect(
+        source,
+        isNot(contains("features/onboarding/views/kyc_prompt_view.dart")),
+      );
+      expect(
+        source,
+        isNot(
+          contains("features/onboarding/views/onboarding_success_view.dart"),
+        ),
+      );
     });
 
     test('starts anonymous users on login instead of registration', () {

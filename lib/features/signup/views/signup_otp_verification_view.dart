@@ -13,16 +13,17 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
-/// OTP verification screen
-class OtpVerificationView extends ConsumerStatefulWidget {
-  const OtpVerificationView({super.key});
+/// Phone OTP verification screen for explicit account signup.
+class SignupOtpVerificationView extends ConsumerStatefulWidget {
+  const SignupOtpVerificationView({super.key});
 
   @override
-  ConsumerState<OtpVerificationView> createState() =>
-      _OtpVerificationViewState();
+  ConsumerState<SignupOtpVerificationView> createState() =>
+      _SignupOtpVerificationViewState();
 }
 
-class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
+class _SignupOtpVerificationViewState
+    extends ConsumerState<SignupOtpVerificationView> {
   Key _codeInputKey = UniqueKey();
   bool _hasError = false;
   bool _isSubmittingOtp = false;

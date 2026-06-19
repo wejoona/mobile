@@ -9,15 +9,15 @@ import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
 import 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart';
 
-/// PIN setup screen for onboarding
-class OnboardingPinView extends ConsumerStatefulWidget {
-  const OnboardingPinView({super.key});
+/// PIN setup screen for explicit account signup.
+class SignupPinSetupView extends ConsumerStatefulWidget {
+  const SignupPinSetupView({super.key});
 
   @override
-  ConsumerState<OnboardingPinView> createState() => _OnboardingPinViewState();
+  ConsumerState<SignupPinSetupView> createState() => _SignupPinSetupViewState();
 }
 
-class _OnboardingPinViewState extends ConsumerState<OnboardingPinView> {
+class _SignupPinSetupViewState extends ConsumerState<SignupPinSetupView> {
   String _pin = '';
   String? _confirmPin;
   bool _showError = false;
