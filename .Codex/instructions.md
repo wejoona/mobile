@@ -39,5 +39,5 @@ For physical iPhone, use the Mac LAN IP instead of `localhost`.
 - Dev OTP is `123456` when VerifyHQ is started with `VERIFYHQ_DEV_OTP=123456`.
 - Auth payloads are:
   - Register: `{ "phone": "+225...", "countryCode": "CI" }`
-  - Login: `{ "phone": "+225..." }`
-  - Verify OTP: `{ "phone": "+225...", "otp": "123456" }`
+  - Login: `{ "phone": "+225...", "countryCode": "CI" }`
+  - Verify OTP: `{ "phone": "+225...", "countryCode": "CI", "otp": "123456" }`

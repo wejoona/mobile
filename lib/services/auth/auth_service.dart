@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
@@ -54,7 +54,10 @@ class AuthService {
       );
       final response = await _dio.post(
         '/auth/login',
-        data: {'phone': phoneValue.apiPhone},
+        data: {
+          'phone': phoneValue.apiPhone,
+          'countryCode': phoneValue.apiCountryCode,
+        },
       );
       return OtpResponse.fromJson(response.data);
     } on DioException catch (e) {
@@ -78,6 +81,7 @@ class AuthService {
         '/auth/verify-otp',
         data: {
           'phone': phoneValue.apiPhone,
+          'countryCode': phoneValue.apiCountryCode,
           'otp': otp,
           if (verificationId != null) 'verificationId': verificationId,
         },

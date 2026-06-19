@@ -283,6 +283,12 @@ void main() {
         expect(router.routeInformationProvider.value.uri.path, '/pin/reset');
         expect(find.textContaining('Reset Your PIN'), findsWidgets);
 
+        await tester.tap(find.byTooltip('Back'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+
+        expect(router.routeInformationProvider.value.uri.path, '/login');
+
         router.go('/otp');
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));

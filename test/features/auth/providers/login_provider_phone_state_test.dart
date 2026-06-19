@@ -79,7 +79,10 @@ void main() {
       state = container.read(loginProvider);
       expect(state.currentStep.name, 'otp');
       expect(dio.requestHistory.single.path, '/auth/login');
-      expect(dio.requestHistory.single.data, {'phone': '+2250748805663'});
+      expect(dio.requestHistory.single.data, {
+        'phone': '+2250748805663',
+        'countryCode': 'CI',
+      });
       expect(
         await storage.read(key: StorageKeys.rememberedPhone),
         'CI|+225|0748805663|+2250748805663',
@@ -120,7 +123,10 @@ void main() {
         'Too many verification requests. Please try again later.',
       );
       expect(dio.requestHistory.single.path, '/auth/login');
-      expect(dio.requestHistory.single.data, {'phone': '+2250748805663'});
+      expect(dio.requestHistory.single.data, {
+        'phone': '+2250748805663',
+        'countryCode': 'CI',
+      });
     });
 
     test('keeps generic login copy for account-safe failures', () async {

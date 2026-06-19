@@ -16,6 +16,7 @@ import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/auth/auth_service.dart';
 import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
@@ -64,7 +65,9 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           padding: const EdgeInsets.all(AppSpacing.screenPadding),
           child: Column(
             children: [
-              AuthTopBar(onBack: () => context.pop()),
+              AuthTopBar(
+                onBack: () => context.safePop(fallbackRoute: '/login'),
+              ),
               Expanded(child: _buildStepContent(l10n)),
             ],
           ),
@@ -354,7 +357,6 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     });
 
     try {
-      final dio = ref.read(dioProvider);
       final phone = await _resolveRecoveryPhone();
 
       if (phone == null) {
@@ -378,8 +380,9 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         return;
       }
 
-      // Request OTP via login endpoint
-      await dio.post('/auth/login', data: {'phone': phone});
+      await ref
+          .read(authServiceProvider)
+          .login(phone: phone.localNumber, countryCode: phone.apiCountryCode);
 
       if (mounted) {
         setState(() {
@@ -404,7 +407,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     }
   }
 
-  Future<String?> _resolveRecoveryPhone() async {
+  Future<PhoneNumberValue?> _resolveRecoveryPhone() async {
     final authState = ref.read(authProvider);
     final inMemoryPhone = authState.user?.phone ?? authState.phone;
     if (inMemoryPhone != null && inMemoryPhone.isNotEmpty) {
@@ -413,7 +416,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         countryCode: authState.user?.countryCode ?? authState.countryCode,
       );
       if (phoneValue != null) {
-        return phoneValue.e164;
+        return phoneValue;
       }
     }
 
@@ -429,7 +432,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           )
         : null;
     if (storedParts != null) {
-      return storedParts.e164;
+      return storedParts;
     }
 
     final storedE164 = await storage.read(key: StorageKeys.userPhoneE164);
@@ -437,7 +440,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       phoneNumber: storedE164,
     );
     if (storedE164Value != null) {
-      return storedE164Value.e164;
+      return storedE164Value;
     }
 
     final legacyStoredPhone = await storage.read(key: StorageKeys.userPhone);
@@ -445,7 +448,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       phoneNumber: legacyStoredPhone,
     );
     if (legacyValue != null) {
-      return legacyValue.e164;
+      return legacyValue;
     }
 
     final token = await storage.read(key: StorageKeys.accessToken);
@@ -464,7 +467,11 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     if (profilePhone == null || profilePhone.isEmpty) {
       return null;
     }
-    return PhoneNumberValue.tryFromAny(phoneNumber: profilePhone)?.e164;
+    final profileCountry = profileData['countryCode'] as String?;
+    return PhoneNumberValue.tryFromAny(
+      phoneNumber: profilePhone,
+      countryCode: profileCountry,
+    );
   }
 
   /// Verify OTP entered by user

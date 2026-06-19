@@ -13,8 +13,8 @@ Use with local API:
 | Action | Method | Path | Body | Notes |
 | --- | --- | --- | --- | --- |
 | Register/request OTP | POST | `/auth/register` | `{ "phone": "+225...", "countryCode": "CI" }` | Existing phone sends login OTP. |
-| Login/request OTP | POST | `/auth/login` | `{ "phone": "+225..." }` | Requires registered user. |
-| Verify OTP | POST | `/auth/verify-otp` | `{ "phone": "+225...", "otp": "123456" }` | Returns access token, refresh token, user, `kycStatus`, `expiresIn`. |
+| Login/request OTP | POST | `/auth/login` | `{ "phone": "+225...", "countryCode": "CI" }` | Requires registered user. |
+| Verify OTP | POST | `/auth/verify-otp` | `{ "phone": "+225...", "countryCode": "CI", "otp": "123456" }` | Returns access token, refresh token, user, `kycStatus`, `expiresIn`. |
 | Refresh | POST | `/auth/refresh` | `{ "refreshToken": "..." }` | Public endpoint. |
 | Logout | POST | `/auth/logout` | `{ "refreshToken": "..." }` | Authenticated cleanup. |
 | Logout all devices | POST | `/auth/logout-all` | none | Canonical user-facing logout-all route. Invalidates refresh tokens and revokes session rows. |

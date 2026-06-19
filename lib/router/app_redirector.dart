@@ -193,7 +193,7 @@ bool _isWithinSameFlow(String location, String fsmTargetRoute) {
 String? _lockRedirect(String location, bool isLockedState) {
   if (isLockedState &&
       location != '/session-locked' &&
-      location != '/pin/reset') {
+      !_isSecurityRecoveryRoute(location)) {
     return '/session-locked';
   }
   return null;

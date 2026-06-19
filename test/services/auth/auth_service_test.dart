@@ -19,7 +19,10 @@ void main() {
 
       expect(dio.requestHistory.single.method, 'POST');
       expect(dio.requestHistory.single.path, '/auth/login');
-      expect(dio.requestHistory.single.data, {'phone': '+2250748805663'});
+      expect(dio.requestHistory.single.data, {
+        'phone': '+2250748805663',
+        'countryCode': 'CI',
+      });
     });
 
     test(
@@ -41,7 +44,10 @@ void main() {
 
         expect(dio.requestHistory.single.method, 'POST');
         expect(dio.requestHistory.single.path, '/auth/login');
-        expect(dio.requestHistory.single.data, {'phone': '+2250748805663'});
+        expect(dio.requestHistory.single.data, {
+          'phone': '+2250748805663',
+          'countryCode': 'CI',
+        });
       },
     );
 
@@ -107,6 +113,7 @@ void main() {
       expect(dio.requestHistory.single.path, '/auth/verify-otp');
       expect(dio.requestHistory.single.data, {
         'phone': '+2250102030405',
+        'countryCode': 'CI',
         'otp': '123456',
       });
     });
