@@ -4,18 +4,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:usdc_wallet/config/environment_config.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/theme/theme_provider.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
-import 'package:usdc_wallet/services/biometric/biometric_service.dart';
-import 'package:usdc_wallet/services/localization/language_provider.dart';
-import 'package:usdc_wallet/state/index.dart';
-import 'package:usdc_wallet/services/currency/currency_provider.dart';
-import 'package:usdc_wallet/services/currency/currency_service.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/settings/utils/profile_phone_formatter.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/mocks/mock_config.dart';
+import 'package:usdc_wallet/services/biometric/biometric_service.dart';
+import 'package:usdc_wallet/services/currency/currency_provider.dart';
+import 'package:usdc_wallet/services/currency/currency_service.dart';
+import 'package:usdc_wallet/services/localization/language_provider.dart';
+import 'package:usdc_wallet/state/index.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Comprehensive Settings Screen
@@ -858,7 +859,7 @@ class _ProfileCard extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.xxs),
                 // Phone number
                 AppText(
-                  _formatPhone(userState.phone),
+                  formatProfilePhone(userState.phone),
                   variant: AppTextVariant.bodySmall,
                   color: colors.textSecondary,
                 ),
@@ -869,21 +870,5 @@ class _ProfileCard extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  String _formatPhone(String? phone) {
-    if (phone == null || phone.isEmpty) return '';
-    // Format: +225 XX XX XX XX
-    if (phone.startsWith('+') && phone.length > 6) {
-      final countryCode = phone.substring(0, 4); // +225
-      final number = phone.substring(4);
-      // Insert spaces every 2 digits
-      final formatted = number.replaceAllMapped(
-        RegExp(r'.{2}'),
-        (match) => '${match.group(0)} ',
-      );
-      return '$countryCode $formatted'.trim();
-    }
-    return phone;
   }
 }

@@ -8,6 +8,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
 import 'package:usdc_wallet/features/profile/services/profile_picture_service.dart';
+import 'package:usdc_wallet/features/settings/utils/profile_phone_formatter.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
@@ -212,7 +213,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: AppText(
-                        _formatPhone(userState.phone),
+                        formatProfilePhone(userState.phone),
                         variant: AppTextVariant.bodyLarge,
                         color: context.colors.textSecondary,
                       ),
@@ -653,20 +654,6 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         setState(() => _isLoading = false);
       }
     }
-  }
-
-  String _formatPhone(String? phone) {
-    if (phone == null || phone.isEmpty) return '';
-    if (phone.startsWith('+') && phone.length > 6) {
-      final countryCode = phone.substring(0, 4);
-      final number = phone.substring(4);
-      final formatted = number.replaceAllMapped(
-        RegExp(r'.{2}'),
-        (match) => '${match.group(0)} ',
-      );
-      return '$countryCode $formatted'.trim();
-    }
-    return phone;
   }
 
   String? _normalizeUsername(String? value) {
