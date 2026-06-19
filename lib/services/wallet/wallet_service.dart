@@ -21,8 +21,19 @@ class WalletService {
         options: Options(
           receiveTimeout: const Duration(seconds: 10),
           sendTimeout: const Duration(seconds: 10),
+          validateStatus: (status) =>
+              status != null &&
+              ((status >= 200 && status < 300) || status == 404),
         ),
       );
+      if (response.statusCode == 404) {
+        throw ApiException(
+          message: 'Wallet not found',
+          statusCode: response.statusCode,
+          data: response.data,
+          code: ApiException.errorCode(response.data),
+        );
+      }
       return WalletBalanceResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
