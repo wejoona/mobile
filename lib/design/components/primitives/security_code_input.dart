@@ -3,6 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 
+const double _securityPadKeyWidth = 68;
+const double _securityPadKeyHeight = 64;
+const double _securityPadIconSize = 25;
+const double _securityPadDigitSize = 24;
+
 class SecurityCodeDots extends StatelessWidget {
   const SecurityCodeDots({
     super.key,
@@ -90,7 +95,10 @@ class SecurityNumberPad extends StatelessWidget {
                       onPressed: isLoading ? null : onBiometricPressed,
                       isAccent: true,
                     )
-                  : const SizedBox.square(dimension: 64),
+                  : const SizedBox(
+                      width: _securityPadKeyWidth,
+                      height: _securityPadKeyHeight,
+                    ),
             ),
             _PadSlot(
               child: _PadButton.digit(
@@ -378,14 +386,16 @@ class _PadButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.lg),
         splashColor: colors.gold.withValues(alpha: 0.14),
         child: SizedBox(
-          width: 64,
-          height: 60,
+          width: _securityPadKeyWidth,
+          height: _securityPadKeyHeight,
           child: Center(
             child: icon != null
-                ? Icon(icon, color: foreground, size: 23)
+                ? Icon(icon, color: foreground, size: _securityPadIconSize)
                 : AppText(
                     label ?? '',
-                    variant: AppTextVariant.moneyMedium,
+                    style: AppTypography.moneyMedium.copyWith(
+                      fontSize: _securityPadDigitSize,
+                    ),
                     color: foreground,
                   ),
           ),
