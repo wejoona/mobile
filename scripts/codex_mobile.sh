@@ -28,6 +28,7 @@ Usage:
   ./scripts/codex_mobile.sh sim-install
   ./scripts/codex_mobile.sh device-install
   ./scripts/codex_mobile.sh live-crawl
+  ./scripts/codex_mobile.sh live-login
   ./scripts/codex_mobile.sh live-visual
   ./scripts/codex_mobile.sh live-secondary
   ./scripts/codex_mobile.sh live-e2e-wallet
@@ -152,6 +153,9 @@ case "${command}" in
     ;;
   live-crawl)
     run_flutter_for_sim test integration_test/flows/live_api_interactive_crawl_test.dart "$@"
+    ;;
+  live-login)
+    run_flutter_for_sim test integration_test/flows/live_api_login_flow_test.dart "$@"
     ;;
   live-visual)
     run_flutter_for_sim test integration_test/flows/live_api_visual_sweep_test.dart "$@"
