@@ -1,11 +1,11 @@
 # Mobile Current Status
 
-Last updated: 2026-06-19 02:03 GMT
+Last updated: 2026-06-19 02:08 GMT
 
 ## Standing
 
 - Active branch: `develop`, tracking `origin/develop`.
-- Latest pushed mobile code commit: `04dbb142 refactor: remove legacy deposit surfaces`.
+- Latest pushed mobile code/build commit: `cbe3c7cf build: verify ios release with xcode beta`.
 - Latest pushed API commit: `954f7ffc fix: carry deposit country into initiation`.
 - Latest pushed dashboard commit: `0ba72f1 fix: stabilize dashboard support gates`.
 - Repo status should be clean unless a new slice is in progress.
@@ -71,13 +71,14 @@ Last updated: 2026-06-19 02:03 GMT
 - Codemagic-style non-golden Flutter test batches passed locally on 2026-06-18: 469 tests passed, with only the existing skipped tests.
 - Android release bundle is now owned by Gradle instead of a Codemagic-only shell patch: the release build strips the generated `integration_test` plugin registration before Java compilation, `codemagic.yaml` no longer carries the perl registrant edit, the release-config test passed 5 tests, and the Codemagic-equivalent `:app:bundleRelease` command passed locally.
 - iOS release build now passes locally with Xcode Beta 27 without consuming TestFlight: `DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer flutter build ios --release --no-codesign --dart-define=ENV=staging --dart-define=API_URL=https://staging-korido-api.joonapay.com/api/v1` built `build/ios/iphoneos/Runner.app` on 2026-06-19. The build updated `ios/Podfile.lock` from stale `file_picker` to the current `file_selector_ios` plugin graph, matching `pubspec.lock`.
+- iPhone 17 simulator launch now passes with Xcode Beta 27 and the staging API URL on 2026-06-19: the app booted to the dark login screen, issued the expected `GET /config/countries` request to `https://staging-korido-api.joonapay.com/api/v1`, and the screenshot is stored at `/private/tmp/korido-iphone17-smoke.png`.
 - Live staging API smoke passed on 2026-06-18 for the mobile candidate account `+2250748805663` with dev OTP `123456`: login, OTP verification, profile, email status, limits, wallet, transactions, sessions, devices, notifications, contacts, cards capability, deposit providers/channels, and feature subscriptions all returned HTTP 200 with parseable JSON. Wallet remains intentionally degraded/local-mirror with zero balance until ledger availability is restored.
 - Memory refresh completed on 2026-06-19 02:03 GMT: mobile and API repos were clean on `develop` after deposit cleanup; dashboard only had its known generated `.phpunit.cache/test-results` dirt.
 
 ## Known Watch Items
 
 - `staging-korido-api.joonapay.com` resolves publicly through system DNS, Cloudflare DNS, and Google DNS.
-- Staging candidate is not ready until the remaining local simulator/device boot smoke passes with the current API URL.
+- Staging candidate is not ready until the remaining local login/onboarding/session/money-flow simulator smoke passes with the current API URL.
 - Non-golden Flutter tests now pass locally using Codemagic's 40-file batch pattern.
 - Android release bundle passes locally using Codemagic's direct Gradle path.
 - Xcode tooling is visible again. Global `xcode-select` currently points to `/Applications/Xcode.app` 26.5; `/Applications/Xcode-beta.app` 27.0 is installed and should be used for beta iOS 27 checks via `DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer` unless the user wants the global selector changed.
@@ -89,9 +90,9 @@ Last updated: 2026-06-19 02:03 GMT
 
 Immediate next development slice:
 
-- Run an iPhone 17 simulator smoke with Xcode Beta 27 and the staging API URL; keep TestFlight/staging promotion paused until manual feedback or a stable-candidate decision.
+- Run login/PIN/onboarding and first-home smoke on the iPhone 17 simulator with `0748805663` and OTP `123456`; keep TestFlight/staging promotion paused until manual feedback or a stable-candidate decision.
 
 Before promoting to `staging`, finish release-build checks locally without consuming a TestFlight build:
 
-- Boot/login smoke on the iPhone 17 simulator against `https://staging-korido-api.joonapay.com/api/v1`.
+- Login/session/money-flow smoke on the iPhone 17 simulator against `https://staging-korido-api.joonapay.com/api/v1`.
 - Final `git diff --check` before promotion.
