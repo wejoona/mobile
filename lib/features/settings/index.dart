@@ -1,7 +1,7 @@
 /// Barrel exports for settings feature.
 library;
 
-export 'package:usdc_wallet/features/settings/models/device.dart';
+export 'package:usdc_wallet/domain/entities/device.dart';
 export 'package:usdc_wallet/features/settings/models/session.dart';
 export 'package:usdc_wallet/features/settings/providers/app_preferences_provider.dart';
 export 'package:usdc_wallet/features/settings/providers/devices_provider.dart';
