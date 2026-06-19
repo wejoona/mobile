@@ -1,11 +1,11 @@
 # Mobile Current Status
 
-Last updated: 2026-06-19 01:55 GMT
+Last updated: 2026-06-19 02:03 GMT
 
 ## Standing
 
 - Active branch: `develop`, tracking `origin/develop`.
-- Latest pushed mobile code commit: `29007190 fix: carry deposit country through mobile flow`.
+- Latest pushed mobile code commit: `04dbb142 refactor: remove legacy deposit surfaces`.
 - Latest pushed API commit: `954f7ffc fix: carry deposit country into initiation`.
 - Latest pushed dashboard commit: `0ba72f1 fix: stabilize dashboard support gates`.
 - Repo status should be clean unless a new slice is in progress.
@@ -64,21 +64,23 @@ Last updated: 2026-06-19 01:55 GMT
 - Cash-out/withdraw phone handling is now country-aware on current `develop`: withdraw state carries explicit country context, the routed withdraw screen passes the selected country, local cash-out numbers are rejected without a country context, and duplicated/international numbers still normalize to clean E.164. Focused API alignment tests passed 97 tests on 2026-06-19.
 - Send-recipient phone entry is now metadata-driven on current `develop`: the dial-code selector derives from `countriesProvider`/`SupportedCountries`, initializes from user/selected country, derives local length from `CountryConfig`, and no longer keeps a hardcoded `+225` default/list in the screen. Focused API alignment tests passed 98 tests on 2026-06-19.
 - Deposit initiation is now country-aware on current `develop`: routed amount selection stores the effective country with source currency, mobile sends `countryCode` to `/wallet/deposit`, backend resolves shared-currency channels using explicit country before legacy currency fallback, and compatibility helpers no longer invent missing channel/currency values. Focused mobile deposit contract tests, mobile API alignment tests, backend initiate-deposit tests, backend build, analyzer warning gate, and diff checks passed on 2026-06-19.
+- Legacy duplicate deposit surfaces are removed on current `develop`: `MobileMoneyForm`, `DepositScreenWired`, static deposit method cards/tiles/providers, and the legacy deposit repository were deleted after reference checks proved the router uses the API-backed amount/provider/instructions/status flow. Focused deposit/API contract tests passed 116 tests, analyzer found no errors/warnings, and diff check was clean on 2026-06-19.
 - Backoffice device blacklist/deactivation is verified at the dashboard service boundary: Filament user device actions create reasoned blacklist records, sync through Korido API registered-device endpoints when available, deactivate registered devices, disable push tokens, revoke sessions, and record API sync metadata. Focused dashboard Pest tests passed 2 tests / 12 assertions.
 - App-version compatibility is verified for the staging-candidate path: mobile checks `/config/mobile-version` on startup, redirects to `/force-update` when `forceUpgrade=true`, and now has focused coverage that HTTP 426 responses trigger a version-policy refresh. Focused API client and force-update tests passed 34 tests.
 - Codemagic-equivalent analyzer warning gate passed locally on 2026-06-18: `dart analyze --format machine` returned exit code 0 with no `ERROR` or `WARNING` records.
 - Codemagic-style non-golden Flutter test batches passed locally on 2026-06-18: 469 tests passed, with only the existing skipped tests.
 - Android release bundle is now owned by Gradle instead of a Codemagic-only shell patch: the release build strips the generated `integration_test` plugin registration before Java compilation, `codemagic.yaml` no longer carries the perl registrant edit, the release-config test passed 5 tests, and the Codemagic-equivalent `:app:bundleRelease` command passed locally.
+- iOS release build now passes locally with Xcode Beta 27 without consuming TestFlight: `DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer flutter build ios --release --no-codesign --dart-define=ENV=staging --dart-define=API_URL=https://staging-korido-api.joonapay.com/api/v1` built `build/ios/iphoneos/Runner.app` on 2026-06-19. The build updated `ios/Podfile.lock` from stale `file_picker` to the current `file_selector_ios` plugin graph, matching `pubspec.lock`.
 - Live staging API smoke passed on 2026-06-18 for the mobile candidate account `+2250748805663` with dev OTP `123456`: login, OTP verification, profile, email status, limits, wallet, transactions, sessions, devices, notifications, contacts, cards capability, deposit providers/channels, and feature subscriptions all returned HTTP 200 with parseable JSON. Wallet remains intentionally degraded/local-mirror with zero balance until ledger availability is restored.
-- Memory refresh completed on 2026-06-19 01:55 GMT: mobile and API repos were clean on `develop` after deposit country commits; dashboard only had its known generated `.phpunit.cache/test-results` dirt.
+- Memory refresh completed on 2026-06-19 02:03 GMT: mobile and API repos were clean on `develop` after deposit cleanup; dashboard only had its known generated `.phpunit.cache/test-results` dirt.
 
 ## Known Watch Items
 
 - `staging-korido-api.joonapay.com` resolves publicly through system DNS, Cloudflare DNS, and Google DNS.
-- Staging candidate is not ready until the local replay of remaining Codemagic gates passes: iOS release build without signing and simulator/device boot once full Xcode is visible.
+- Staging candidate is not ready until the remaining local simulator/device boot smoke passes with the current API URL.
 - Non-golden Flutter tests now pass locally using Codemagic's 40-file batch pattern.
 - Android release bundle passes locally using Codemagic's direct Gradle path.
-- iOS release-build and simulator/phone-launch status must be rechecked before treating Xcode as blocked; an older status entry said only CommandLineTools were visible, but the user later moved to beta Xcode.
+- Xcode tooling is visible again. Global `xcode-select` currently points to `/Applications/Xcode.app` 26.5; `/Applications/Xcode-beta.app` 27.0 is installed and should be used for beta iOS 27 checks via `DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer` unless the user wants the global selector changed.
 - Local protected-route smoke checks that read an auth token from `/tmp` require unsandboxed network execution in Codex; sandboxed Node/system DNS lookup returned `ENOTFOUND` while `dig` and unsandboxed curl resolved the same hostname.
 - Mobile app version is currently `1.0.0+2`; the staging API version policy does not block that build, but defaults should stay intentional for future pre-release trains.
 - Signup/onboarding naming split is complete at the provider, route-view, and setup-progress layers; account setup views are now signup-owned.
@@ -87,9 +89,9 @@ Last updated: 2026-06-19 01:55 GMT
 
 Immediate next development slice:
 
-- Prune or quarantine non-routed legacy deposit surfaces (`MobileMoneyForm`, `DepositScreenWired`, old deposit method lists) so static CI/mobile-money assumptions cannot leak back into production paths.
+- Run an iPhone 17 simulator smoke with Xcode Beta 27 and the staging API URL; keep TestFlight/staging promotion paused until manual feedback or a stable-candidate decision.
 
 Before promoting to `staging`, finish release-build checks locally without consuming a TestFlight build:
 
-- Select the correct full/beta Xcode installation and rerun iOS release build without signing.
+- Boot/login smoke on the iPhone 17 simulator against `https://staging-korido-api.joonapay.com/api/v1`.
 - Final `git diff --check` before promotion.
