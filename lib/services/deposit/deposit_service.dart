@@ -102,10 +102,24 @@ class DepositService {
     if (channelId == null || channelId.toString().trim().isEmpty) {
       throw ArgumentError('Deposit channel is required');
     }
+    final sourceCurrency = (data['currency'] ?? data['sourceCurrency'])
+        ?.toString()
+        .trim()
+        .toUpperCase();
+    if (sourceCurrency == null || sourceCurrency.isEmpty) {
+      throw ArgumentError('Deposit source currency is required');
+    }
+    final countryCode =
+        (data['countryCode'] as String?)?.trim().isNotEmpty == true
+        ? (data['countryCode'] as String).trim().toUpperCase()
+        : (data['country'] as String?)?.trim().isNotEmpty == true
+        ? (data['country'] as String).trim().toUpperCase()
+        : null;
     final normalized = {
       'amount': data['amount'],
-      'sourceCurrency': data['currency'] ?? data['sourceCurrency'] ?? 'XOF',
+      'sourceCurrency': sourceCurrency,
       'channelId': normalizeDepositChannelId(channelId.toString()),
+      if (countryCode != null) 'countryCode': countryCode,
       if ((data['phoneNumber'] as String?)?.trim().isNotEmpty == true)
         'phoneNumber': data['phoneNumber'],
     };

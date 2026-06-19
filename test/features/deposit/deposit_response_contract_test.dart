@@ -54,6 +54,27 @@ void main() {
       expect(request.toWalletDepositJson()['phoneNumber'], '+2250748805663');
     });
 
+    test(
+      'deposit request keeps country explicit for shared-currency markets',
+      () {
+        const request = InitiateDepositRequest(
+          amount: 5000,
+          provider: 'orange_money_sn',
+          phoneNumber: '77 123 45 67',
+          currency: 'XOF',
+          countryCode: 'SN',
+        );
+
+        expect(request.toWalletDepositJson(), {
+          'amount': 5000,
+          'sourceCurrency': 'XOF',
+          'channelId': 'orange_money_sn',
+          'countryCode': 'SN',
+          'phoneNumber': '+221771234567',
+        });
+      },
+    );
+
     test('normalizes marketing provider names to backend enum codes', () {
       const request = InitiateDepositRequest(
         amount: 5000,
@@ -95,6 +116,7 @@ void main() {
           provider: 'orange_money',
           phoneNumber: '07 48 80 56 63',
           currency: 'XOF',
+          countryCode: 'CI',
         ),
       );
 
@@ -104,6 +126,7 @@ void main() {
         'amount': 5000,
         'sourceCurrency': 'XOF',
         'channelId': 'orange_money_ci',
+        'countryCode': 'CI',
         'phoneNumber': '+2250748805663',
       });
     });

@@ -481,10 +481,15 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
 
   void _handleContinue(ExchangeRate rate) {
     final amount = double.tryParse(_amountController.text) ?? 0;
+    final countryCode = _effectiveCountry(ref).code;
     if (_isXOF) {
-      ref.read(depositProvider.notifier).setAmountXOF(amount, rate);
+      ref
+          .read(depositProvider.notifier)
+          .setAmountXOF(amount, rate, countryCode);
     } else {
-      ref.read(depositProvider.notifier).setAmountUSD(amount, rate);
+      ref
+          .read(depositProvider.notifier)
+          .setAmountUSD(amount, rate, countryCode);
     }
     unawaited(context.push('/deposit/provider'));
   }

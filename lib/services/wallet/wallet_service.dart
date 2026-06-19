@@ -75,6 +75,7 @@ class WalletService {
     required String sourceCurrency,
     required String channelId,
     required String phoneNumber,
+    String? countryCode,
   }) async {
     try {
       final response = await _dio.post(
@@ -83,6 +84,8 @@ class WalletService {
           'amount': amount.round(),
           'sourceCurrency': sourceCurrency,
           'channelId': normalizeDepositChannelId(channelId),
+          if (countryCode?.trim().isNotEmpty == true)
+            'countryCode': countryCode!.trim().toUpperCase(),
           if (phoneNumber.trim().isNotEmpty) 'phoneNumber': phoneNumber.trim(),
         },
         options: Options(

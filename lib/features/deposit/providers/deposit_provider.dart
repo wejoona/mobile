@@ -40,6 +40,7 @@ class DepositState {
   final String? selectedProviderCode;
   final String? selectedProviderMethodType;
   final String? sourceCurrency;
+  final String? sourceCountryCode;
   final String? otpInput;
   final DepositFlowStep step;
 
@@ -55,6 +56,7 @@ class DepositState {
     this.selectedProviderCode,
     this.selectedProviderMethodType,
     this.sourceCurrency,
+    this.sourceCountryCode,
     this.otpInput,
     this.step = DepositFlowStep.selectProvider,
   });
@@ -71,6 +73,7 @@ class DepositState {
     String? selectedProviderCode,
     String? selectedProviderMethodType,
     String? sourceCurrency,
+    String? sourceCountryCode,
     String? otpInput,
     DepositFlowStep? step,
   }) => DepositState(
@@ -86,6 +89,7 @@ class DepositState {
     selectedProviderMethodType:
         selectedProviderMethodType ?? this.selectedProviderMethodType,
     sourceCurrency: sourceCurrency ?? this.sourceCurrency,
+    sourceCountryCode: sourceCountryCode ?? this.sourceCountryCode,
     otpInput: otpInput ?? this.otpInput,
     step: step ?? this.step,
   );
@@ -93,15 +97,14 @@ class DepositState {
 
 /// Deposit method types.
 enum DepositMethod {
-  orangeMoney('Orange Money', '+225 07'),
-  mtnMomo('MTN MoMo', '+225 05'),
-  moovMoney('Moov Money', '+225 01'),
-  wave('Wave', '+225'),
-  bankTransfer('Bank Transfer', '');
+  orangeMoney('Orange Money'),
+  mtnMomo('MTN MoMo'),
+  moovMoney('Moov Money'),
+  wave('Wave'),
+  bankTransfer('Bank Transfer');
 
   final String label;
-  final String prefix;
-  const DepositMethod(this.label, this.prefix);
+  const DepositMethod(this.label);
 }
 
 /// Deposit result.
@@ -232,6 +235,7 @@ class DepositNotifier extends Notifier<DepositState> {
           provider: providerCode,
           phoneNumber: phoneNumber ?? '',
           currency: sourceCurrency,
+          countryCode: state.sourceCountryCode,
         ),
       );
       final result = DepositResult.fromResponse(response);
@@ -261,23 +265,25 @@ class DepositNotifier extends Notifier<DepositState> {
     }
   }
 
-  void setAmountXOF(double amount, [dynamic rate]) {
+  void setAmountXOF(double amount, [dynamic rate, String? countryCode]) {
     final converted = rate is ExchangeRate ? rate.convert(amount) : null;
     state = state.copyWith(
       amount: amount,
       amountXOF: amount,
       amountUSD: converted,
       sourceCurrency: 'XOF',
+      sourceCountryCode: countryCode,
     );
   }
 
-  void setAmountUSD(double amount, [dynamic rate]) {
+  void setAmountUSD(double amount, [dynamic rate, String? countryCode]) {
     final converted = rate is ExchangeRate ? rate.convertBack(amount) : null;
     state = state.copyWith(
       amount: converted ?? amount,
       amountXOF: converted,
       amountUSD: amount,
       sourceCurrency: 'USD',
+      sourceCountryCode: countryCode,
     );
   }
 

@@ -10,12 +10,25 @@ class DepositRepository {
     String? amount,
     String? provider,
     String? mobileNumber,
-  }) => _service.initiateDeposit(
-    amount: double.tryParse(amount ?? '0') ?? 0,
-    sourceCurrency: 'XOF',
-    channelId: provider ?? 'orange_money',
-    phoneNumber: mobileNumber ?? '',
-  );
+    String? sourceCurrency,
+    String? countryCode,
+  }) {
+    final channelId = provider?.trim();
+    if (channelId == null || channelId.isEmpty) {
+      throw ArgumentError('Deposit channel is required');
+    }
+    final currency = sourceCurrency?.trim().toUpperCase();
+    if (currency == null || currency.isEmpty) {
+      throw ArgumentError('Deposit source currency is required');
+    }
+    return _service.initiateDeposit(
+      amount: double.tryParse(amount ?? '0') ?? 0,
+      sourceCurrency: currency,
+      channelId: channelId,
+      phoneNumber: mobileNumber ?? '',
+      countryCode: countryCode,
+    );
+  }
 }
 
 final depositRepositoryProvider = Provider<DepositRepository>((ref) {

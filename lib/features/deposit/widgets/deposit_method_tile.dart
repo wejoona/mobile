@@ -25,16 +25,22 @@ class DepositMethodTile extends StatelessWidget {
 
   IconData get _icon => icon ?? _iconForMethod(method);
   String get _title => title ?? method?.label ?? '';
-  String get _subtitle => subtitle ?? method?.prefix ?? '';
+  String get _subtitle => subtitle ?? '';
 
   static IconData _iconForMethod(DepositMethod? m) {
     switch (m) {
-      case DepositMethod.orangeMoney: return Icons.phone_android;
-      case DepositMethod.mtnMomo: return Icons.phone_android;
-      case DepositMethod.moovMoney: return Icons.phone_android;
-      case DepositMethod.wave: return Icons.waves;
-      case DepositMethod.bankTransfer: return Icons.account_balance;
-      default: return Icons.payment;
+      case DepositMethod.orangeMoney:
+        return Icons.phone_android;
+      case DepositMethod.mtnMomo:
+        return Icons.phone_android;
+      case DepositMethod.moovMoney:
+        return Icons.phone_android;
+      case DepositMethod.wave:
+        return Icons.waves;
+      case DepositMethod.bankTransfer:
+        return Icons.account_balance;
+      default:
+        return Icons.payment;
     }
   }
 
@@ -63,15 +69,9 @@ class DepositMethodTile extends StatelessWidget {
         ),
         subtitle: Text(
           _subtitle,
-          style: TextStyle(
-            color: colors.textSecondary,
-            fontSize: 13,
-          ),
+          style: TextStyle(color: colors.textSecondary, fontSize: 13),
         ),
-        trailing: Icon(
-          Icons.chevron_right,
-          color: colors.textSecondary,
-        ),
+        trailing: Icon(Icons.chevron_right, color: colors.textSecondary),
       ),
     );
   }
