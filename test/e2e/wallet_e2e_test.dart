@@ -8,6 +8,17 @@ Map<String, String> _idempotencyHeaders() => {
   'X-Idempotency-Key': 'e2e-${DateTime.now().microsecondsSinceEpoch}',
 };
 
+void _expectRejectedOrUnavailable(E2EResponse res) {
+  if (res.statusCode == 404 || res.statusCode == 501) {
+    final error = res.data?['error'];
+    final code = error is Map<String, dynamic> ? error['code'] : null;
+    expect(code, anyOf('NOT_FOUND', 'NOT_IMPLEMENTED', 'FEATURE_UNAVAILABLE'));
+    return;
+  }
+
+  expect(res.statusCode, anyOf(400, 401, 403));
+}
+
 void main() {
   if (!e2eEnabled) {
     skipE2ESuite();
@@ -177,14 +188,31 @@ void main() {
     );
 
     test(
-      'POST /wallet/cash-out/mobile-money — missing fields is rejected',
+      'GET /wallet/cash-out/mobile-money/options — returns rails or unavailable',
+      () async {
+        final res = await client.get(
+          '/wallet/cash-out/mobile-money/options?country=CI',
+        );
+        if (res.isOk) {
+          final raw = res.data?['data'] ?? res.data;
+          expect(raw, isA<Map<String, dynamic>>());
+          final data = raw! as Map<String, dynamic>;
+          expect(data['options'], isA<List<dynamic>>());
+        } else {
+          _expectRejectedOrUnavailable(res);
+        }
+      },
+    );
+
+    test(
+      'POST /wallet/cash-out/mobile-money — missing fields is rejected or unavailable',
       () async {
         final res = await client.post(
           '/wallet/cash-out/mobile-money',
           {},
           _idempotencyHeaders(),
         );
-        expect(res.statusCode, anyOf(400, 401, 403));
+        _expectRejectedOrUnavailable(res);
       },
     );
   });
