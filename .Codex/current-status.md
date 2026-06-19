@@ -1,6 +1,6 @@
 # Mobile Current Status
 
-Last updated: 2026-06-19 01:22 GMT
+Last updated: 2026-06-19 01:25 GMT
 
 ## Standing
 
@@ -23,7 +23,7 @@ Last updated: 2026-06-19 01:22 GMT
 - Home balance refresh/display: closed on current `develop`. `GET /wallet` is the canonical balance source, zero-balance wallets are loaded states, degraded/local-mirror balances show warnings instead of endless loading, and pull-to-refresh has bounded recovery. Focused wallet state/balance tests, mobile API alignment tests, backend get-balance tests, and wallet controller e2e passed on 2026-06-19.
 - Transaction history fake/stale data concern: closed on current `develop`. Full History and home transaction refresh use `/wallet/transactions`; the duplicate feature-local transaction parser was removed so the domain `Transaction`/`TransactionPage` models are the only mobile transaction parser. Focused transaction state/API alignment tests and backend transaction controller e2e passed on 2026-06-19.
 - Login OTP no-feedback report: closed on current `develop`. `/login/otp` shows the full-screen `OtpVerificationOverlay` with "Code accepted. Securing your session..." while verification/PIN handoff runs, holds it for at least 1.6 seconds, then routes to `/login/pin`. Focused login interaction tests passed on 2026-06-19.
-- Signup/onboarding file-ownership confusion: closed on current `develop`. Account-creation screens now live under `features/signup/views` with `Signup*` class names, while `features/onboarding` keeps the product tutorial/post-login onboarding surfaces. Focused auth/router tests passed on 2026-06-19.
+- Signup/onboarding file-ownership confusion: closed on current `develop`. Account-creation screens now live under `features/signup/views` with `Signup*` class names, signup steps use the generic design-system `FlowStepProgress`, and `features/onboarding` keeps the product tutorial/post-login onboarding surfaces. Focused auth/router tests passed on 2026-06-19.
 
 ## Verified Recently
 
@@ -78,7 +78,7 @@ Last updated: 2026-06-19 01:22 GMT
 - Simulator/phone launch is currently blocked for the same local Xcode visibility issue; Flutter sees only macOS and Chrome devices.
 - Local protected-route smoke checks that read an auth token from `/tmp` require unsandboxed network execution in Codex; sandboxed Node/system DNS lookup returned `ENOTFOUND` while `dig` and unsandboxed curl resolved the same hostname.
 - Mobile app version is currently `1.0.0+2`; the staging API version policy does not block that build, but defaults should stay intentional for future pre-release trains.
-- Signup/onboarding naming split is complete at the provider and route-view layers; account setup views are now signup-owned.
+- Signup/onboarding naming split is complete at the provider, route-view, and setup-progress layers; account setup views are now signup-owned.
 
 ## Next Gate
 

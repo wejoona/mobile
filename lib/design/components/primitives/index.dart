@@ -8,6 +8,7 @@ export 'package:usdc_wallet/design/components/primitives/app_select.dart';
 export 'package:usdc_wallet/design/components/primitives/app_skeleton.dart';
 export 'package:usdc_wallet/design/components/primitives/app_refresh_indicator.dart';
 export 'package:usdc_wallet/design/components/primitives/app_toggle.dart';
+export 'package:usdc_wallet/design/components/primitives/flow_step_progress.dart';
 export 'package:usdc_wallet/design/components/primitives/user_avatar.dart';
 export 'package:usdc_wallet/design/components/primitives/identity_badge.dart';
 export 'package:usdc_wallet/design/components/primitives/info_callout.dart';

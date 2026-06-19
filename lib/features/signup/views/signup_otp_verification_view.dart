@@ -8,7 +8,6 @@ import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/auth/widgets/otp_progress_cue.dart';
 import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
-import 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
@@ -61,7 +60,7 @@ class _SignupOtpVerificationViewState
                         const SizedBox(height: AppSpacing.lg),
                         AuthTopBar(onBack: () => context.go('/signup')),
                         const SizedBox(height: AppSpacing.lg),
-                        const OnboardingProgress(currentStep: 2, totalSteps: 5),
+                        const FlowStepProgress(currentStep: 2, totalSteps: 5),
                         const SizedBox(height: AppSpacing.xxl),
                         AuthScreenHeader(
                           appName: l10n.appName,

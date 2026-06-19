@@ -6,7 +6,6 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
-import 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart';
 
 /// Profile setup screen for explicit account signup.
 class SignupProfileSetupView extends ConsumerStatefulWidget {
@@ -47,7 +46,7 @@ class _SignupProfileSetupViewState
             children: [
               AuthTopBar(onBack: () => context.go('/signup/verify-phone')),
               const SizedBox(height: AppSpacing.lg),
-              const OnboardingProgress(currentStep: 3, totalSteps: 5),
+              const FlowStepProgress(currentStep: 3, totalSteps: 5),
               const SizedBox(height: AppSpacing.xxl),
               AuthScreenHeader(
                 appName: l10n.appName,

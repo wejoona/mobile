@@ -7,7 +7,6 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
-import 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart';
 
 /// PIN setup screen for explicit account signup.
 class SignupPinSetupView extends ConsumerStatefulWidget {
@@ -46,7 +45,7 @@ class _SignupPinSetupViewState extends ConsumerState<SignupPinSetupView> {
                       const SizedBox(height: AppSpacing.lg),
                       AuthTopBar(onBack: _handleBack),
                       const SizedBox(height: AppSpacing.lg),
-                      const OnboardingProgress(currentStep: 4, totalSteps: 5),
+                      const FlowStepProgress(currentStep: 4, totalSteps: 5),
                       const SizedBox(height: AppSpacing.xxl),
                       AuthScreenHeader(
                         appName: l10n.appName,

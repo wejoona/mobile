@@ -170,6 +170,22 @@ void main() {
           contains("features/onboarding/views/onboarding_success_view.dart"),
         ),
       );
+
+      for (final path in [
+        'lib/features/signup/views/signup_otp_verification_view.dart',
+        'lib/features/signup/views/signup_profile_setup_view.dart',
+        'lib/features/signup/views/signup_pin_setup_view.dart',
+      ]) {
+        final signupSource = File(path).readAsStringSync();
+        expect(signupSource, contains('FlowStepProgress'));
+        expect(
+          signupSource,
+          isNot(
+            contains("features/onboarding/widgets/onboarding_progress.dart"),
+          ),
+          reason: '$path should use generic flow progress, not onboarding UI',
+        );
+      }
     });
 
     test('starts anonymous users on login instead of registration', () {
