@@ -547,12 +547,39 @@ void main() {
     final reviewBody = _methodBody(resetSource, '_routePinResetToManualReview');
 
     expect(livenessSource, contains('onManualReviewRequired'));
+    expect(livenessSource, contains('onManualReviewAcknowledged'));
+    expect(livenessSource, contains('ph.Permission.camera.request()'));
+    expect(livenessSource, contains('_LivenessState.cameraPermissionRequired'));
+    expect(livenessSource, contains('Continue with manual review'));
+    expect(livenessSource, contains("'camera_permission_unavailable'"));
+    expect(livenessSource, contains("'liveness_challenge_unavailable'"));
     expect(livenessSource, contains('_LivenessState.manualReview'));
     expect(livenessSource, contains('Manual review needed'));
+    expect(livenessSource, contains('_releaseCamera()'));
+    expect(
+      livenessSource,
+      contains('_state != _LivenessState.manualReview'),
+      reason:
+          'manual-review fallback must not keep a close button that can erase the review state',
+    );
+    expect(
+      livenessSource,
+      contains(
+        "AppButton(label: 'Continue', onPressed: _acknowledgeManualReview)",
+      ),
+      reason:
+          'manual-review continue must acknowledge the outcome, not use the cancel/back action',
+    );
     expect(resetSource, contains('onManualReviewRequired'));
+    expect(
+      resetSource,
+      contains('onManualReviewAcknowledged: _openManualReviewStepFromLiveness'),
+    );
     expect(reviewBody, contains("'/support/tickets'"));
     expect(reviewBody, contains("'category': 'account_recovery'"));
     expect(reviewBody, contains("'priority': 'high'"));
+    expect(reviewBody, contains('_applyManualReviewFallback(reason)'));
+    expect(resetSource, contains('_applyManualReviewFallback'));
     expect(resetSource, contains("'step_up_challenge_unavailable'"));
     expect(resetSource, contains('_buildManualReviewStep'));
     expect(riskSource, contains("'account_recovery': StepUpType.manualReview"));
@@ -577,6 +604,9 @@ void main() {
       final kycLivenessSource = File(
         'lib/features/kyc/views/kyc_liveness_view.dart',
       ).readAsStringSync();
+      final riskStepUpSource = File(
+        'lib/features/wallet/widgets/risk_step_up_dialog.dart',
+      ).readAsStringSync();
 
       final manualReviewBody = _methodBody(
         kycLivenessSource,
@@ -588,7 +618,20 @@ void main() {
       expect(serviceSource, contains("'mediaType': captureMode.value"));
       expect(widgetSource, contains('LivenessClientCapabilities'));
       expect(widgetSource, contains('LivenessCaptureMode.photo'));
+      expect(widgetSource, contains('ph.Permission.camera.request()'));
+      expect(widgetSource, contains('_LivenessState.cameraPermissionRequired'));
       expect(kycLivenessSource, contains('onManualReviewRequired'));
+      expect(
+        kycLivenessSource,
+        contains('onManualReviewAcknowledged: _acknowledgeManualReview'),
+      );
+      expect(riskStepUpSource, contains('onManualReviewRequired'));
+      expect(
+        riskStepUpSource,
+        contains(
+          'onManualReviewAcknowledged: _acknowledgeLivenessManualReview',
+        ),
+      );
       expect(manualReviewBody, contains("'/support/tickets'"));
       expect(manualReviewBody, contains("'category': 'kyc'"));
       expect(manualReviewBody, contains("'priority': 'high'"));

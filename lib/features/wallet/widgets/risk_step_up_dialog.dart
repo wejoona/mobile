@@ -584,6 +584,8 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
       decoration: _sheetDecoration(context),
       child: LivenessCheckWidget(
         onComplete: _onLivenessComplete,
+        onManualReviewRequired: _onLivenessManualReviewRequired,
+        onManualReviewAcknowledged: _acknowledgeLivenessManualReview,
         onCancel: () {
           setState(() {
             _showLiveness = false;
@@ -592,6 +594,25 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
         },
       ),
     );
+  }
+
+  void _onLivenessManualReviewRequired(String reason) {
+    if (!mounted) return;
+    setState(() {
+      _showLiveness = false;
+      _isProcessing = false;
+      _error =
+          'This operation needs manual review before it can continue. Reason: ${reason.replaceAll('_', ' ')}.';
+    });
+  }
+
+  void _acknowledgeLivenessManualReview() {
+    if (!mounted) return;
+    setState(() {
+      _showLiveness = false;
+      _isProcessing = false;
+      _error = 'This operation needs manual review before it can continue.';
+    });
   }
 
   Future<void> _onLivenessComplete(LivenessResult result) async {

@@ -97,6 +97,7 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
       return LivenessCheckWidget(
         onComplete: _onLivenessComplete,
         onManualReviewRequired: _routeKycToManualReview,
+        onManualReviewAcknowledged: _acknowledgeManualReview,
         onCancel: _onCancel,
       );
     }
@@ -250,6 +251,21 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
 
     _navigationTimer?.cancel();
     _navigationTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) context.fsmGo('/kyc/submitted');
+    });
+  }
+
+  void _acknowledgeManualReview() {
+    if (!mounted) return;
+    _navigationTimer?.cancel();
+    setState(() {
+      _isCreatingManualReview = false;
+      _isComplete = true;
+      _hasFailed = false;
+      _decision = LivenessDecision.manualReview;
+      _errorMessage = null;
+    });
+    _navigationTimer = Timer(const Duration(seconds: 1), () {
       if (mounted) context.fsmGo('/kyc/submitted');
     });
   }

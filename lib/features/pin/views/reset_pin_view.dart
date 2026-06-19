@@ -51,6 +51,8 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   String? _manualReviewStatus;
   String? _manualReviewSlaLabel;
   String? _manualReviewResolutionDueAt;
+  String? _manualReviewReason;
+  String? _lastManualReviewReason;
 
   @override
   void initState() {
@@ -177,6 +179,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
             child: LivenessCheckWidget(
               onComplete: _handleLivenessComplete,
               onManualReviewRequired: _routePinResetToManualReview,
+              onManualReviewAcknowledged: _openManualReviewStepFromLiveness,
               onCancel: () {
                 setState(() {
                   _step = 2;
@@ -248,6 +251,14 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
             variant: AppTextVariant.bodySmall,
             color: context.colors.textTertiary,
             textAlign: TextAlign.center,
+          ),
+        ],
+        if (_manualReviewReason != null) ...[
+          const SizedBox(height: AppSpacing.md),
+          InfoCallout(
+            icon: Icons.verified_user_outlined,
+            title: 'Reason: ${_manualReviewReason!.replaceAll('_', ' ')}',
+            tone: InfoCalloutTone.info,
           ),
         ],
         const SizedBox(height: AppSpacing.xxxl),
@@ -704,6 +715,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
 
   Future<void> _routePinResetToManualReview(String reason) async {
     if (!mounted) return;
+    _lastManualReviewReason = reason;
 
     setState(() {
       _isLoading = true;
@@ -737,23 +749,40 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       if (!mounted) return;
       setState(() {
         _applyManualReviewTicket(data);
+        _manualReviewReason = reason;
         _isLoading = false;
         _step = 6;
       });
-    } on DioException catch (e) {
+    } on DioException {
       if (!mounted) return;
       setState(() {
+        _applyManualReviewFallback(reason);
         _isLoading = false;
-        _errorMessage = ApiException.fromDioError(e).message;
+        _step = 6;
+        _errorMessage = null;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
+        _applyManualReviewFallback(reason);
         _isLoading = false;
-        _errorMessage =
-            'We could not create the manual review request. Please try again.';
+        _step = 6;
+        _errorMessage = null;
       });
     }
+  }
+
+  void _openManualReviewStepFromLiveness() {
+    if (!mounted) return;
+    setState(() {
+      _applyManualReviewFallback(
+        _lastManualReviewReason ?? 'liveness_manual_review_required',
+      );
+      _isLoading = false;
+      _showError = false;
+      _errorMessage = null;
+      _step = 6;
+    });
   }
 
   Future<bool> _loadActiveAccountRecoveryReview() async {
@@ -795,6 +824,14 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         reviewSla['resolutionDueAt']?.toString(),
       );
     }
+  }
+
+  void _applyManualReviewFallback(String reason) {
+    _manualReviewStatus ??= 'pending_manual_review';
+    _manualReviewSlaLabel ??=
+        'Expected first response: within 30 minutes for locked account recovery.';
+    _manualReviewResolutionDueAt ??= null;
+    _manualReviewReason = reason;
   }
 
   String? _formatReviewDueAt(String? raw) {

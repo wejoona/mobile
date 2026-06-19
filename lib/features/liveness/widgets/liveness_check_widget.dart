@@ -4,6 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:permission_handler/permission_handler.dart' as ph;
 
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -21,12 +22,14 @@ import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 class LivenessCheckWidget extends ConsumerStatefulWidget {
   final void Function(LivenessResult result)? onComplete;
   final void Function(String reason)? onManualReviewRequired;
+  final VoidCallback? onManualReviewAcknowledged;
   final VoidCallback? onCancel;
 
   const LivenessCheckWidget({
     super.key,
     this.onComplete,
     this.onManualReviewRequired,
+    this.onManualReviewAcknowledged,
     this.onCancel,
   });
 
@@ -37,6 +40,7 @@ class LivenessCheckWidget extends ConsumerStatefulWidget {
 
 enum _LivenessState {
   initializing,
+  cameraPermissionRequired,
   ready,
   capturing,
   uploading,
@@ -58,6 +62,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
   int _currentChallengeIndex = 0;
   String? _errorMessage;
   String? _manualReviewReason;
+  bool _cameraPermissionPermanentlyDenied = false;
 
   @override
   void initState() {
@@ -67,7 +72,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
 
   @override
   void dispose() {
-    _cameraController?.dispose();
+    unawaited(_releaseCamera());
     super.dispose();
   }
 
@@ -90,13 +95,21 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
     setState(() => _statusMessage = 'Initializing camera...');
 
     try {
+      final hasPermission = await _ensureCameraPermission();
+      if (!hasPermission) {
+        return;
+      }
+
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
-        if (!kReleaseMode) {
+        if (!kReleaseMode && ref.read(mockCameraProvider)) {
           await _completeMockLiveness();
           return;
         }
-        _fail('No cameras available');
+        _fail(
+          'No front camera is available on this device.',
+          manualReviewReason: 'camera_unavailable',
+        );
         return;
       }
 
@@ -115,8 +128,41 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
       await _cameraController!.initialize();
       if (mounted) setState(() {});
     } catch (e) {
-      _fail('Camera initialization failed: $e');
+      _fail(
+        'Camera initialization failed.',
+        manualReviewReason: 'camera_initialization_failed',
+      );
     }
+  }
+
+  Future<bool> _ensureCameraPermission() async {
+    final currentStatus = await ph.Permission.camera.status;
+    if (currentStatus.isGranted || currentStatus.isLimited) {
+      return true;
+    }
+
+    if (mounted) {
+      setState(() => _statusMessage = 'Requesting camera permission...');
+    }
+
+    final requestedStatus = await ph.Permission.camera.request();
+    if (requestedStatus.isGranted || requestedStatus.isLimited) {
+      return true;
+    }
+
+    if (!mounted) {
+      return false;
+    }
+
+    setState(() {
+      _state = _LivenessState.cameraPermissionRequired;
+      _statusMessage = 'Camera permission needed';
+      _cameraPermissionPermanentlyDenied =
+          requestedStatus.isPermanentlyDenied || requestedStatus.isRestricted;
+      _errorMessage =
+          'Korido needs camera access to complete this face and liveness check.';
+    });
+    return false;
   }
 
   Future<void> _completeMockLiveness() async {
@@ -169,6 +215,13 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
           );
           return;
         }
+        if (session.challenges.isEmpty) {
+          _fail(
+            'The verification provider did not return a liveness challenge.',
+            manualReviewReason: 'liveness_challenge_unavailable',
+          );
+          return;
+        }
 
         setState(() {
           _sessionToken = session.sessionToken;
@@ -192,6 +245,15 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
     if (_state == _LivenessState.capturing ||
         _state == _LivenessState.uploading)
       return;
+    if (_sessionToken == null ||
+        _challenges.isEmpty ||
+        _currentChallengeIndex >= _challenges.length) {
+      _fail(
+        'The liveness session is not ready.',
+        manualReviewReason: 'liveness_session_not_ready',
+      );
+      return;
+    }
 
     setState(() {
       _state = _LivenessState.capturing;
@@ -210,6 +272,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
       final livenessService = ref.read(livenessServiceProvider);
       final challenge = _challenges[_currentChallengeIndex];
       if (_requiresUnsupportedCapture(challenge)) {
+        await _deleteTempPhoto(photo.path);
         _fail(
           'This challenge requires ${challenge.recommendedCaptureMode.value} evidence, but this device flow currently supports photo capture only.',
           manualReviewReason:
@@ -224,6 +287,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
           : _evidencePolicy.requiredCaptureMode;
 
       if (captureMode != LivenessCaptureMode.photo) {
+        await _deleteTempPhoto(photo.path);
         _fail(
           'This challenge requires ${captureMode.value} evidence, but this device flow currently supports photo capture only.',
           manualReviewReason: 'liveness_capture_mode_unsupported',
@@ -243,9 +307,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
       }
 
       // Clean up temp photo
-      try {
-        File(photo.path).deleteSync();
-      } catch (_) {}
+      await _deleteTempPhoto(photo.path);
 
       if (!mounted) return;
 
@@ -289,6 +351,12 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
     }
   }
 
+  Future<void> _deleteTempPhoto(String path) async {
+    try {
+      await File(path).delete();
+    } catch (_) {}
+  }
+
   bool _requiresUnsupportedCapture(LivenessChallenge challenge) {
     if (challenge.requiredCaptureMode == LivenessCaptureMode.video) {
       return true;
@@ -311,6 +379,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
 
   void _fail(String message, {String? manualReviewReason}) {
     if (mounted) {
+      unawaited(_releaseCamera());
       setState(() {
         _state = manualReviewReason == null
             ? _LivenessState.failed
@@ -327,12 +396,28 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
     }
   }
 
+  Future<void> _releaseCamera() async {
+    final controller = _cameraController;
+    _cameraController = null;
+    await controller?.dispose();
+  }
+
+  void _acknowledgeManualReview() {
+    final acknowledge = widget.onManualReviewAcknowledged;
+    if (acknowledge != null) {
+      acknowledge();
+      return;
+    }
+    widget.onCancel?.call();
+  }
+
   void _retry() {
     setState(() {
       _state = _LivenessState.initializing;
       _statusMessage = 'Initializing...';
       _errorMessage = null;
       _manualReviewReason = null;
+      _cameraPermissionPermanentlyDenied = false;
       _sessionToken = null;
       _challenges = [];
       _submittedEvidence.clear();
@@ -370,7 +455,8 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
             variant: AppTextVariant.titleMedium,
             color: colors.textPrimary,
           ),
-          if (_state != _LivenessState.completed)
+          if (_state != _LivenessState.completed &&
+              _state != _LivenessState.manualReview)
             IconButton(
               icon: const Icon(Icons.close),
               onPressed: widget.onCancel,
@@ -385,6 +471,9 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
     switch (_state) {
       case _LivenessState.initializing:
         return _buildLoading(colors, _statusMessage);
+
+      case _LivenessState.cameraPermissionRequired:
+        return _buildCameraPermissionRequired(colors);
 
       case _LivenessState.ready:
         return _buildCameraWithChallenge(colors);
@@ -419,6 +508,10 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
   }
 
   Widget _buildCameraWithChallenge(ThemeColors colors) {
+    if (_challenges.isEmpty || _currentChallengeIndex >= _challenges.length) {
+      return _buildLoading(colors, 'Preparing liveness challenge...');
+    }
+
     final challenge = _challenges[_currentChallengeIndex];
 
     return Column(
@@ -474,6 +567,85 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
         // Camera preview
         Expanded(child: _buildCameraPreview(colors)),
       ],
+    );
+  }
+
+  Widget _buildCameraPermissionRequired(ThemeColors colors) {
+    final canUseManualReview = widget.onManualReviewRequired != null;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: colors.goldSubtle,
+                border: Border.all(color: colors.borderGold),
+              ),
+              child: Icon(
+                Icons.photo_camera_front_rounded,
+                size: 38,
+                color: colors.gold,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            AppText(
+              'Camera permission needed',
+              variant: AppTextVariant.titleMedium,
+              color: colors.textPrimary,
+              textAlign: TextAlign.center,
+              fontWeight: FontWeight.w700,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            AppText(
+              _cameraPermissionPermanentlyDenied
+                  ? 'Camera access is disabled for Korido. Open Settings, allow camera access, then return to continue.'
+                  : _errorMessage ??
+                        'Korido needs camera access to complete this face and liveness check.',
+              color: colors.textSecondary,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            AppButton(
+              label: _cameraPermissionPermanentlyDenied
+                  ? 'Open Settings'
+                  : 'Allow camera access',
+              onPressed: _cameraPermissionPermanentlyDenied
+                  ? () => unawaited(ph.openAppSettings())
+                  : _retry,
+              isFullWidth: true,
+            ),
+            if (_cameraPermissionPermanentlyDenied) ...[
+              const SizedBox(height: AppSpacing.sm),
+              AppButton(
+                label: 'I allowed access',
+                variant: AppButtonVariant.secondary,
+                onPressed: _retry,
+                isFullWidth: true,
+              ),
+            ],
+            if (canUseManualReview) ...[
+              const SizedBox(height: AppSpacing.sm),
+              TextButton(
+                onPressed: () => _fail(
+                  'Camera permission is unavailable.',
+                  manualReviewReason: 'camera_permission_unavailable',
+                ),
+                child: AppText(
+                  'Continue with manual review',
+                  variant: AppTextVariant.labelLarge,
+                  color: colors.textSecondary,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 
@@ -597,7 +769,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
               ),
             ],
             const SizedBox(height: AppSpacing.xl),
-            AppButton(label: 'Continue', onPressed: widget.onCancel),
+            AppButton(label: 'Continue', onPressed: _acknowledgeManualReview),
           ],
         ),
       ),
