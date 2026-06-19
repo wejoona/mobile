@@ -691,60 +691,71 @@ void main() {
     );
   });
 
-  test(
-    'KYC liveness declares capture capability and has manual review fallback',
-    () {
-      final serviceSource = File(
-        'lib/services/liveness/liveness_service.dart',
-      ).readAsStringSync();
-      final widgetSource = File(
-        'lib/features/liveness/widgets/liveness_check_widget.dart',
-      ).readAsStringSync();
-      final kycLivenessSource = File(
-        'lib/features/kyc/views/kyc_liveness_view.dart',
-      ).readAsStringSync();
-      final riskStepUpSource = File(
-        'lib/features/wallet/widgets/risk_step_up_dialog.dart',
-      ).readAsStringSync();
+  test('KYC liveness declares capture capability and has manual review fallback', () {
+    final serviceSource = File(
+      'lib/services/liveness/liveness_service.dart',
+    ).readAsStringSync();
+    final widgetSource = File(
+      'lib/features/liveness/widgets/liveness_check_widget.dart',
+    ).readAsStringSync();
+    final kycLivenessSource = File(
+      'lib/features/kyc/views/kyc_liveness_view.dart',
+    ).readAsStringSync();
+    final riskStepUpSource = File(
+      'lib/features/wallet/widgets/risk_step_up_dialog.dart',
+    ).readAsStringSync();
 
-      final manualReviewBody = _methodBody(
-        kycLivenessSource,
-        '_routeKycToManualReview',
-      );
+    final manualReviewBody = _methodBody(
+      kycLivenessSource,
+      '_routeKycToManualReview',
+    );
+    final riskStepUpLivenessBody = _methodBody(
+      riskStepUpSource,
+      '_onLivenessComplete',
+    );
 
-      expect(serviceSource, contains("'capabilities': capabilities.toJson()"));
-      expect(serviceSource, contains("'captureMode': captureMode.value"));
-      expect(serviceSource, contains("'mediaType': captureMode.value"));
-      expect(widgetSource, contains('LivenessClientCapabilities'));
-      expect(widgetSource, contains('LivenessCaptureMode.photo'));
-      expect(widgetSource, contains('ph.Permission.camera.request()'));
-      expect(widgetSource, contains('_LivenessState.cameraPermissionRequired'));
-      expect(widgetSource, contains('verification == null'));
-      expect(widgetSource, contains('await _releaseCamera()'));
-      expect(kycLivenessSource, contains('onManualReviewRequired'));
-      expect(
-        kycLivenessSource,
-        contains('onManualReviewAcknowledged: _acknowledgeManualReview'),
-      );
-      expect(riskStepUpSource, contains('onManualReviewRequired'));
-      expect(
-        riskStepUpSource,
-        contains(
-          'onManualReviewAcknowledged: _acknowledgeLivenessManualReview',
-        ),
-      );
-      expect(riskStepUpSource, contains('LivenessDecision.autoApprove'));
-      expect(manualReviewBody, contains("'/support/tickets'"));
-      expect(manualReviewBody, contains("'category': 'kyc'"));
-      expect(manualReviewBody, contains("'priority': 'high'"));
-      expect(
-        manualReviewBody,
-        contains('identity document, profile photo, reference selfie'),
-        reason:
-            'manual KYC review must preserve the same evidence graph as automated face matching',
-      );
-    },
-  );
+    expect(serviceSource, contains("'capabilities': capabilities.toJson()"));
+    expect(serviceSource, contains("'captureMode': captureMode.value"));
+    expect(serviceSource, contains("'mediaType': captureMode.value"));
+    expect(widgetSource, contains('LivenessClientCapabilities'));
+    expect(widgetSource, contains('LivenessCaptureMode.photo'));
+    expect(widgetSource, contains('ph.Permission.camera.request()'));
+    expect(widgetSource, contains('_LivenessState.cameraPermissionRequired'));
+    expect(widgetSource, contains('verification == null'));
+    expect(widgetSource, contains('await _releaseCamera()'));
+    expect(kycLivenessSource, contains('onManualReviewRequired'));
+    expect(
+      kycLivenessSource,
+      contains('onManualReviewAcknowledged: _acknowledgeManualReview'),
+    );
+    expect(riskStepUpSource, contains('onManualReviewRequired'));
+    expect(
+      riskStepUpSource,
+      contains('onManualReviewAcknowledged: _acknowledgeLivenessManualReview'),
+    );
+    expect(riskStepUpSource, contains('LivenessDecision.autoApprove'));
+    expect(
+      riskStepUpLivenessBody,
+      contains('result.stepUpProofId'),
+      reason:
+          'money-flow step-up must prefer backend livenessProofId and only fall back through LivenessResult.stepUpProofId',
+    );
+    expect(
+      riskStepUpLivenessBody,
+      contains('challengeToken == null || challengeToken.isEmpty'),
+      reason:
+          'money-flow liveness must fail closed instead of crashing when a backend challenge token is missing',
+    );
+    expect(manualReviewBody, contains("'/support/tickets'"));
+    expect(manualReviewBody, contains("'category': 'kyc'"));
+    expect(manualReviewBody, contains("'priority': 'high'"));
+    expect(
+      manualReviewBody,
+      contains('identity document, profile photo, reference selfie'),
+      reason:
+          'manual KYC review must preserve the same evidence graph as automated face matching',
+    );
+  });
 }
 
 String _methodBody(String source, String methodName) {

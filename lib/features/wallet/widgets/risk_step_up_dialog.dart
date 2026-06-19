@@ -637,10 +637,16 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
 
     // Validate with backend
     try {
+      final challengeToken = widget.decision.challengeToken;
+      if (challengeToken == null || challengeToken.isEmpty) {
+        setState(() => _error = 'Verification challenge is missing.');
+        return;
+      }
+
       final securityService = ref.read(riskBasedSecurityServiceProvider);
       final validated = await securityService.validateStepUp(
-        challengeToken: widget.decision.challengeToken!,
-        livenessSessionId: result.sessionId,
+        challengeToken: challengeToken,
+        livenessSessionId: result.stepUpProofId,
         biometricVerified:
             widget.decision.stepUpType == StepUpType.biometricAndLiveness,
       );
