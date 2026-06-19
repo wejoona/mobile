@@ -1,6 +1,6 @@
 # Mobile Current Status
 
-Last updated: 2026-06-19 01:06 GMT
+Last updated: 2026-06-19 01:15 GMT
 
 ## Standing
 
@@ -22,6 +22,7 @@ Last updated: 2026-06-19 01:06 GMT
 - Send-money recipient safety: closed. Mobile rejects self-send by id/phone/username before submit, sends one canonical recipient identifier, and backend rejects self-transfer again before ledger movement. Focused send mobile tests and backend transfer tests passed.
 - Home balance refresh/display: closed on current `develop`. `GET /wallet` is the canonical balance source, zero-balance wallets are loaded states, degraded/local-mirror balances show warnings instead of endless loading, and pull-to-refresh has bounded recovery. Focused wallet state/balance tests, mobile API alignment tests, backend get-balance tests, and wallet controller e2e passed on 2026-06-19.
 - Transaction history fake/stale data concern: closed on current `develop`. Full History and home transaction refresh use `/wallet/transactions`; the duplicate feature-local transaction parser was removed so the domain `Transaction`/`TransactionPage` models are the only mobile transaction parser. Focused transaction state/API alignment tests and backend transaction controller e2e passed on 2026-06-19.
+- Login OTP no-feedback report: closed on current `develop`. `/login/otp` shows the full-screen `OtpVerificationOverlay` with "Code accepted. Securing your session..." while verification/PIN handoff runs, holds it for at least 1.6 seconds, then routes to `/login/pin`. Focused login interaction tests passed on 2026-06-19.
 
 ## Verified Recently
 

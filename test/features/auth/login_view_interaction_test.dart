@@ -138,6 +138,20 @@ void main() {
           'The intro carousel must not be wired as the login sign-up target',
     );
   });
+
+  test('login OTP shows a visible verification cue before PIN handoff', () {
+    final source = File(
+      'lib/features/auth/views/login_otp_view.dart',
+    ).readAsStringSync();
+
+    expect(source, contains('OtpVerificationOverlay'));
+    expect(source, contains('visible: isBusy'));
+    expect(source, contains('_isSubmittingOtp = true'));
+    expect(source, contains("en: 'Code accepted. Securing your session...'"));
+    expect(source, contains('_holdOtpCue(submittedAt)'));
+    expect(source, contains('Duration(milliseconds: 1600)'));
+    expect(source, contains("context.go('/login/pin')"));
+  });
 }
 
 Future<void> _pumpLoginView(
