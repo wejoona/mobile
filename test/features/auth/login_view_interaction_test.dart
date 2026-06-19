@@ -107,10 +107,10 @@ void main() {
     ).readAsStringSync();
 
     expect(source, contains('loginProvider'));
-    expect(source, contains("context.go('/login/otp')"));
+    expect(source, contains("context.fsmGo('/login/otp')"));
     expect(
       source,
-      isNot(contains("context.go('/otp')")),
+      isNot(contains("context.fsmGo('/otp')")),
       reason:
           'returning-user login must use the login OTP/PIN handoff, not the legacy OTP route',
     );
@@ -121,19 +121,19 @@ void main() {
     );
     expect(
       source,
-      contains("context.go('/signup')"),
+      contains("context.fsmGo('/signup')"),
       reason:
           'Sign up from login must open the explicit signup flow, not the intro carousel',
     );
     expect(
       source,
-      isNot(contains("context.go('/onboarding/phone')")),
+      isNot(contains("context.fsmGo('/onboarding/phone')")),
       reason:
           'The signup flow should not use onboarding names for account creation',
     );
     expect(
       source,
-      isNot(contains("context.go('/onboarding')")),
+      isNot(contains("context.fsmGo('/onboarding')")),
       reason:
           'The intro carousel must not be wired as the login sign-up target',
     );
@@ -150,7 +150,7 @@ void main() {
     expect(source, contains("en: 'Code accepted. Securing your session...'"));
     expect(source, contains('_holdOtpCue(submittedAt)'));
     expect(source, contains('Duration(milliseconds: 1600)'));
-    expect(source, contains("context.go('/login/pin')"));
+    expect(source, contains("context.fsmGo('/login/pin')"));
   });
 }
 
