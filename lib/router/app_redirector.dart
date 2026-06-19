@@ -80,6 +80,7 @@ String? appRedirect(BuildContext context, GoRouterState state) {
   final isSignupRoute =
       _isSignupRoute(location) || _isLegacySignupRoute(location);
   final isFsmRoute = _isFsmRoute(location);
+  final isPublicRoute = _isPublicRoute(location);
 
   if (location == '/') {
     return null;
@@ -133,13 +134,14 @@ String? appRedirect(BuildContext context, GoRouterState state) {
     isLockedState: isLockedState,
     isFsmRoute: isFsmRoute,
     isOnboardingRoute: isOnboardingRoute || isSignupRoute,
+    isPublicRoute: isPublicRoute,
     isWithinSameFlow: isWithinSameFlow,
   );
   if (fsmRedirect != null) {
     return fsmRedirect;
   }
 
-  if (!isAuthenticated && !isLockedState && !_isPublicRoute(location)) {
+  if (!isAuthenticated && !isLockedState && !isPublicRoute) {
     return '/login';
   }
 
@@ -214,11 +216,13 @@ String? _fsmRedirect({
   required bool isLockedState,
   required bool isFsmRoute,
   required bool isOnboardingRoute,
+  required bool isPublicRoute,
   required bool isWithinSameFlow,
 }) {
   if (!isLockedState &&
       !isFsmRoute &&
       !isOnboardingRoute &&
+      !isPublicRoute &&
       fsmTargetRoute != location &&
       fsmTargetRoute != '/home' &&
       !isWithinSameFlow) {
@@ -342,9 +346,12 @@ String? _featureFlagRedirect(String location, Map<String, bool> flags) {
 
 bool _isPublicRoute(String location) =>
     _isExplicitPublicRoute(location) ||
-    location.startsWith('/pin/reset') ||
+    _isSecurityRecoveryRoute(location) ||
     location == '/force-update' ||
     location.startsWith('/session-locked');
+
+bool _isSecurityRecoveryRoute(String location) =>
+    location.startsWith('/pin/reset');
 
 bool _isExplicitPublicRoute(String location) =>
     location == '/' ||

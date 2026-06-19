@@ -245,5 +245,50 @@ void main() {
         expect(find.textContaining('Privacy Policy'), findsNothing);
       },
     );
+
+    testWidgets(
+      'public recovery and verification routes are not hijacked by login FSM',
+      (tester) async {
+        await tester.binding.setSurfaceSize(const Size(430, 932));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+
+        SharedPreferences.setMockInitialValues({});
+        final sharedPreferences = await SharedPreferences.getInstance();
+        final container = buildContainer(sharedPreferences: sharedPreferences);
+        addTearDown(container.dispose);
+        final router = container.read(routerProvider);
+
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp.router(
+              routerConfig: router,
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: AppLocalizations.supportedLocales,
+              theme: TestTheme.darkTheme,
+            ),
+          ),
+        );
+
+        await tester.pump();
+        router.go('/pin/reset');
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+
+        expect(router.routeInformationProvider.value.uri.path, '/pin/reset');
+        expect(find.textContaining('Reset Your PIN'), findsWidgets);
+
+        router.go('/otp');
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+
+        expect(router.routeInformationProvider.value.uri.path, '/otp');
+      },
+    );
   });
 }
