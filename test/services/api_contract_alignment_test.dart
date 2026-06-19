@@ -2716,6 +2716,19 @@ void main() {
       },
     );
 
+    test('send recipient screen derives phone country UI from metadata', () {
+      final source = File(
+        'lib/features/send/views/recipient_screen.dart',
+      ).readAsStringSync();
+
+      expect(source, contains('SupportedCountries.all'));
+      expect(source, contains('selectedCountryProvider'));
+      expect(source, contains('_selectedCountry().phoneLength'));
+      expect(source, contains('_selectedDialCode()'));
+      expect(source, isNot(contains("_selectedCountryCode = '+225'")));
+      expect(source, isNot(contains('_supportedDialCodes')));
+    });
+
     test(
       'send recipient validation rejects current user before lookup',
       () async {
