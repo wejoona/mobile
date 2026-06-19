@@ -1173,15 +1173,18 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   }
 
   Future<bool> _unlockAfterReset() async {
-    try {
-      final unlocked = await ref
-          .read(authProvider.notifier)
-          .unlockAfterAccountRecovery();
-      if (!unlocked || !mounted) {
+    final pendingLoginCompleted = await _completePendingLoginAfterPinReset();
+    if (!pendingLoginCompleted) {
+      try {
+        final unlocked = await ref
+            .read(authProvider.notifier)
+            .unlockAfterAccountRecovery();
+        if (!unlocked || !mounted) {
+          return false;
+        }
+      } on Object {
         return false;
       }
-    } on Object {
-      return false;
     }
 
     try {
@@ -1206,6 +1209,26 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     return authState.isAuthenticated &&
         !authState.isLocked &&
         !sessionState.isLocked;
+  }
+
+  Future<bool> _completePendingLoginAfterPinReset() async {
+    final loginState = ref.read(loginProvider);
+    final accessToken = loginState.sessionToken;
+    if (accessToken == null || accessToken.isEmpty) {
+      return false;
+    }
+
+    return ref
+        .read(authProvider.notifier)
+        .completePinLogin(
+          accessToken: accessToken,
+          refreshToken: loginState.refreshToken,
+          user: loginState.user,
+          phone: loginState.phoneNumber,
+          countryCode: loginState.dialCode,
+          kycStatus: loginState.kycStatus,
+          expiresIn: loginState.sessionExpiresIn,
+        );
   }
 
   void _resetNewPin() {

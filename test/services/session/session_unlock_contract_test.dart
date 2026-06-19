@@ -216,7 +216,24 @@ void main() {
       'unlockAfterAccountRecovery',
     );
 
+    expect(unlockBody, contains('_completePendingLoginAfterPinReset()'));
     expect(unlockBody, contains('unlockAfterAccountRecovery()'));
+    expect(
+      unlockBody.indexOf('_completePendingLoginAfterPinReset()'),
+      lessThan(unlockBody.indexOf('unlockAfterAccountRecovery()')),
+      reason:
+          'OTP-before-PIN recovery must complete the pending login session before falling back to stored-session recovery',
+    );
+    final pendingLoginBody = _methodBody(
+      source,
+      '_completePendingLoginAfterPinReset',
+    );
+    expect(pendingLoginBody, contains('ref.read(loginProvider)'));
+    expect(pendingLoginBody, contains('sessionToken'));
+    expect(pendingLoginBody, contains('completePinLogin('));
+    expect(pendingLoginBody, contains('refreshToken: loginState.refreshToken'));
+    expect(pendingLoginBody, contains('user: loginState.user'));
+    expect(pendingLoginBody, contains('kycStatus: loginState.kycStatus'));
     expect(
       unlockBody,
       contains('authState.isAuthenticated'),
