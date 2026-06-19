@@ -2851,6 +2851,12 @@ void main() {
         reason:
             'screen entry should show the permission card; the OS prompt belongs to the explicit Allow action',
       );
+      expect(
+        contactsListSource,
+        isNot(contains("context.go('/contacts/permission')")),
+        reason:
+            'contacts should keep permission handling inline while preserving Korido lookup without phone-book access',
+      );
     });
 
     test('contact lookup accepts backend nested user envelope', () async {

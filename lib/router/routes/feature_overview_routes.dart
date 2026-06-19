@@ -1,9 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/features/bill_payments/views/bill_payments_view.dart';
 import 'package:usdc_wallet/features/cards/views/cards_list_view.dart';
-import 'package:usdc_wallet/features/contacts/views/contacts_entry_screen.dart';
 import 'package:usdc_wallet/features/contacts/views/contacts_list_screen.dart';
-import 'package:usdc_wallet/features/contacts/views/contacts_permission_screen.dart';
 import 'package:usdc_wallet/features/insights/views/insights_view.dart';
 import 'package:usdc_wallet/features/payment_links/views/create_link_view.dart';
 import 'package:usdc_wallet/features/recurring_transfers/views/recurring_transfers_list_view.dart';
@@ -54,14 +52,14 @@ List<RouteBase> featureOverviewRoutes() => [
     path: '/contacts',
     pageBuilder: (context, state) => AppPageTransitions.fade(
       state: state,
-      child: const ContactsEntryScreen(),
+      child: const ContactsListScreen(),
     ),
   ),
   GoRoute(
     path: '/contacts/permission',
     pageBuilder: (context, state) => AppPageTransitions.fade(
       state: state,
-      child: const ContactsPermissionScreen(),
+      child: const ContactsListScreen(),
     ),
   ),
   GoRoute(
