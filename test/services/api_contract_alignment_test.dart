@@ -916,6 +916,7 @@ void main() {
         securityHeadersSource,
         contains('Future<Map<String, String>> buildHeadersForPath'),
       );
+      expect(securityHeadersSource, contains('requestData: options.data'));
       expect(
         securityHeadersSource,
         contains("headers['X-Device-Id']"),
@@ -925,6 +926,13 @@ void main() {
         securityHeadersSource,
         contains("headers['X-Device-Fingerprint']"),
       );
+      expect(
+        securityHeadersSource,
+        contains("operation == 'account_recovery'"),
+        reason:
+            'account recovery must not inherit transfer risk scoring when deciding OTP-only versus liveness',
+      );
+      expect(securityHeadersSource, contains('RiskAction.accountRecovery'));
 
       for (final source in [apiClientSource, sessionServiceSource]) {
         expect(source, contains('securityHeadersInterceptorProvider'));
