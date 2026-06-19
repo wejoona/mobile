@@ -186,6 +186,10 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
   void setPhoneNumber(String phone, {String? countryCode}) =>
       state = state.copyWith(phoneNumber: phone, countryCode: countryCode);
 
+  void setSecurityCheckUnavailable() => state = state.copyWith(
+    error: 'Security check unavailable. Please try again before withdrawing.',
+  );
+
   /// Quote fees from the same backend commercial terms path used for submission.
   Future<void> setAmount(double amount) async {
     state = state.copyWith(amount: amount, fee: 0, error: null);

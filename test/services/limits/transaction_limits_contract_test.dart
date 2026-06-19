@@ -114,6 +114,34 @@ void main() {
       },
     );
 
+    test('withdraw confirmation fails closed when risk check is unavailable', () {
+      final viewSource = File(
+        'lib/features/wallet/views/withdraw_screen_wired.dart',
+      ).readAsStringSync();
+      final providerSource = File(
+        'lib/features/wallet/providers/withdraw_provider.dart',
+      ).readAsStringSync();
+
+      expect(viewSource, contains('evaluateTransaction('));
+      expect(viewSource, contains('setSecurityCheckUnavailable()'));
+      expect(providerSource, contains('setSecurityCheckUnavailable()'));
+      expect(providerSource, contains('Security check unavailable'));
+
+      final riskFailureIndex = viewSource.indexOf('} catch (_) {');
+      final pinTokenIndex = viewSource.indexOf('getPinToken()');
+      final submitIndex = viewSource.indexOf('await notifier.submit(');
+      expect(riskFailureIndex, isNonNegative);
+      expect(pinTokenIndex, isNonNegative);
+      expect(submitIndex, isNonNegative);
+      expect(riskFailureIndex, lessThan(pinTokenIndex));
+      expect(
+        viewSource.substring(riskFailureIndex, pinTokenIndex),
+        contains('return;'),
+        reason:
+            'withdrawal must not request PIN or submit cash-out when adaptive risk screening is unavailable.',
+      );
+    });
+
     test('parses live nested /user/limits response', () {
       final limits = TransactionLimits.fromJson({
         'tier': 'verified',
