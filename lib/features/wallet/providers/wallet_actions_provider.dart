@@ -6,6 +6,7 @@ import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
 import 'package:usdc_wallet/features/limits/utils/money_flow_limit_errors.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
+import 'package:usdc_wallet/features/wallet/utils/cash_out_availability.dart';
 import 'package:usdc_wallet/features/wallet/utils/cash_out_phone_normalizer.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/limits/limits_service.dart';
@@ -34,24 +35,32 @@ class WalletActions {
     if (normalizedPhoneNumber == null) {
       throw const FormatException('Enter a valid mobile money phone number.');
     }
-    // ignore: avoid_dynamic_calls
-    final response = await _dio.post(
-      ApiEndpoints.mobileMoneyCashOut,
-      data: {
-        'amount': toCents(amount),
-        'providerCode': _providerToCode(provider),
-        'phoneNumber': normalizedPhoneNumber,
-        'currency': 'XOF',
-      },
-      options: pinToken == null
-          ? null
-          : Options(
-              headers: transactionHeaders(
-                pinToken: pinToken,
-                idempotencyKey: idempotencyKey,
+    Response<dynamic> response;
+    try {
+      // ignore: avoid_dynamic_calls
+      response = await _dio.post(
+        ApiEndpoints.mobileMoneyCashOut,
+        data: {
+          'amount': toCents(amount),
+          'providerCode': _providerToCode(provider),
+          'phoneNumber': normalizedPhoneNumber,
+          'currency': 'XOF',
+        },
+        options: pinToken == null
+            ? null
+            : Options(
+                headers: transactionHeaders(
+                  pinToken: pinToken,
+                  idempotencyKey: idempotencyKey,
+                ),
               ),
-            ),
-    );
+      );
+    } catch (e) {
+      if (isCashOutUnavailableError(e)) {
+        throw const CashOutUnavailableException();
+      }
+      rethrow;
+    }
     _ref.invalidate(walletBalanceProvider);
     // ignore: avoid_dynamic_calls
     return response.data as Map<String, dynamic>;
@@ -83,11 +92,17 @@ class WalletActions {
     }
     if (type == 'withdrawal') {
       final optionsCountry = _requireCountryCode(countryCode);
-      // ignore: avoid_dynamic_calls
-      final response = await _dio.get(
-        ApiEndpoints.mobileMoneyCashOutOptions,
-        queryParameters: {'country': optionsCountry},
-      );
+      Response<dynamic> response;
+      try {
+        // ignore: avoid_dynamic_calls
+        response = await _dio.get(
+          ApiEndpoints.mobileMoneyCashOutOptions,
+          queryParameters: {'country': optionsCountry},
+        );
+      } catch (e) {
+        if (isCashOutUnavailableError(e)) return 0.0;
+        rethrow;
+      }
       // ignore: avoid_dynamic_calls
       final options = response.data['options'] as List<dynamic>? ?? const [];
       final normalizedProvider = providerCode?.toUpperCase();

@@ -15,7 +15,6 @@ import 'package:usdc_wallet/features/notifications/providers/notification_count_
     as notification_count;
 import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart'
     as notification_feed;
-import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 import 'package:usdc_wallet/features/payment_links/repositories/payment_links_repository.dart';
 import 'package:usdc_wallet/features/payment_links/providers/pay_link_provider.dart';
 import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
@@ -27,6 +26,7 @@ import 'package:usdc_wallet/features/send/providers/send_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/wallet_actions_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/transaction_stats_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/withdraw_provider.dart';
+import 'package:usdc_wallet/features/wallet/utils/cash_out_availability.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/api/providers/contacts_api.dart';
 import 'package:usdc_wallet/services/api/providers/wallet_api.dart';
@@ -503,6 +503,45 @@ void main() {
     });
 
     test(
+      'wallet actions treats absent cash-out options as unavailable',
+      () async {
+        final dio = MockDio()
+          ..queueErrorResponse(statusCode: 404, message: 'Cannot GET options');
+        final container = ProviderContainer(
+          overrides: [dioProvider.overrideWithValue(dio)],
+        );
+        addTearDown(container.dispose);
+
+        final fee = await container
+            .read(walletActionsProvider)
+            .estimateFee(
+              amount: 250,
+              type: 'withdrawal',
+              providerCode: 'MTNCI',
+              countryCode: 'CI',
+            );
+
+        expect(fee, 0);
+      },
+    );
+
+    test('withdraw quote surfaces unavailable rails cleanly', () async {
+      final dio = MockDio()
+        ..queueErrorResponse(statusCode: 404, message: 'Cannot POST quote');
+      final container = ProviderContainer(
+        overrides: [dioProvider.overrideWithValue(dio)],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(withdrawProvider.notifier)
+        ..selectMethod(WithdrawMethod.orangeMoney);
+      await notifier.setAmount(25);
+
+      expect(container.read(withdrawProvider).fee, 0);
+      expect(container.read(withdrawProvider).error, cashOutUnavailableMessage);
+    });
+
+    test(
       'withdraw notifier checks live limits before cash-out submit',
       () async {
         final dio = MockDio()
@@ -713,6 +752,72 @@ void main() {
         expect(options.single.providerCode, 'WAVECI');
         expect(options.single.isMobileMoney, isTrue);
         expect(options.single.payoutCurrency, 'XOF');
+      },
+    );
+
+    test(
+      'withdrawal options provider returns no rails when route is unavailable',
+      () async {
+        final dio = MockDio()
+          ..queueErrorResponse(statusCode: 404, message: 'Cannot GET options');
+        final container = ProviderContainer(
+          overrides: [dioProvider.overrideWithValue(dio)],
+        );
+        addTearDown(container.dispose);
+
+        final options = await container.read(
+          withdrawalOptionsProvider('CI').future,
+        );
+
+        final request = dio.requestHistory.single;
+        expect(request.method, 'GET');
+        expect(request.path, '/wallet/cash-out/mobile-money/options');
+        expect(options, isEmpty);
+      },
+    );
+
+    test(
+      'wallet actions surfaces unavailable cash-out route cleanly',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'currency': 'USDC',
+            'daily': {
+              'withdraw': {'limit': 5000, 'used': 100},
+            },
+            'monthly': {
+              'total': {'limit': 50000, 'used': 500},
+            },
+            'perTransaction': {'withdraw': 2500},
+          })
+          ..queueErrorResponse(
+            statusCode: 404,
+            message: 'Cannot POST cash-out',
+          );
+        final container = ProviderContainer(
+          overrides: [dioProvider.overrideWithValue(dio)],
+        );
+        addTearDown(container.dispose);
+
+        await expectLater(
+          container
+              .read(walletActionsProvider)
+              .requestWithdrawal(
+                amount: 25,
+                provider: 'orangeMoney',
+                phoneNumber: '+2250748805663',
+                countryCode: 'CI',
+                pinToken: 'pin_token_123',
+                idempotencyKey: 'idem-withdraw-123',
+              ),
+          throwsA(
+            isA<CashOutUnavailableException>().having(
+              (error) => error.message,
+              'message',
+              cashOutUnavailableMessage,
+            ),
+          ),
+        );
       },
     );
 

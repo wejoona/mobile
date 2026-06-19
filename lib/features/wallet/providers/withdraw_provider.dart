@@ -7,6 +7,7 @@ import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
 import 'package:usdc_wallet/features/limits/utils/money_flow_limit_errors.dart';
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
+import 'package:usdc_wallet/features/wallet/utils/cash_out_availability.dart';
 import 'package:usdc_wallet/features/wallet/utils/cash_out_phone_normalizer.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/limits/limits_service.dart';
@@ -208,7 +209,9 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
       state = state.copyWith(
         amount: amount,
         fee: 0,
-        error: 'Unable to estimate withdrawal fee. Please try again.',
+        error: isCashOutUnavailableError(e)
+            ? cashOutUnavailableMessage
+            : 'Unable to estimate withdrawal fee. Please try again.',
       );
     }
   }
@@ -277,7 +280,12 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
       ref.invalidate(walletBalanceProvider);
       ref.invalidate(transactionsProvider);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        error: isCashOutUnavailableError(e)
+            ? cashOutUnavailableMessage
+            : e.toString(),
+      );
     }
   }
 
@@ -336,10 +344,16 @@ final withdrawProvider = NotifierProvider<WithdrawNotifier, WithdrawState>(
 final withdrawalOptionsProvider =
     FutureProvider.family<List<WithdrawalOption>, String>((ref, country) async {
       final dio = ref.read(dioProvider);
-      final response = await dio.get(
-        ApiEndpoints.mobileMoneyCashOutOptions,
-        queryParameters: {'country': country},
-      );
+      Response<dynamic> response;
+      try {
+        response = await dio.get(
+          ApiEndpoints.mobileMoneyCashOutOptions,
+          queryParameters: {'country': country},
+        );
+      } catch (e) {
+        if (isCashOutUnavailableError(e)) return const [];
+        rethrow;
+      }
       final payload = response.data is Map
           ? Map<String, dynamic>.from(response.data as Map)
           : <String, dynamic>{};
