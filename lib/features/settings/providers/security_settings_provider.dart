@@ -6,25 +6,21 @@ class SecuritySettings {
   final bool screenshotProtection;
   final bool pinOnAppOpen;
   final int autoLockMinutes;
-  final bool transactionAlerts;
 
   const SecuritySettings({
     this.screenshotProtection = true,
     this.pinOnAppOpen = true,
     this.autoLockMinutes = 5,
-    this.transactionAlerts = true,
   });
 
   SecuritySettings copyWith({
     bool? screenshotProtection,
     bool? pinOnAppOpen,
     int? autoLockMinutes,
-    bool? transactionAlerts,
   }) => SecuritySettings(
     screenshotProtection: screenshotProtection ?? this.screenshotProtection,
     pinOnAppOpen: pinOnAppOpen ?? this.pinOnAppOpen,
     autoLockMinutes: autoLockMinutes ?? this.autoLockMinutes,
-    transactionAlerts: transactionAlerts ?? this.transactionAlerts,
   );
 }
 
@@ -42,13 +38,11 @@ class SecuritySettingsNotifier extends Notifier<SecuritySettings> {
       final screenshot = await prefs.read('security_screenshot');
       final pinOnOpen = await prefs.read('security_pin_open');
       final autoLock = await prefs.read('security_auto_lock');
-      final alerts = await prefs.read('security_alerts');
 
       state = SecuritySettings(
         screenshotProtection: screenshot != 'false',
         pinOnAppOpen: pinOnOpen != 'false',
         autoLockMinutes: int.tryParse(autoLock ?? '5') ?? 5,
-        transactionAlerts: alerts != 'false',
       );
     } catch (_) {}
   }
@@ -68,11 +62,6 @@ class SecuritySettingsNotifier extends Notifier<SecuritySettings> {
     await _save('security_auto_lock', minutes.toString());
   }
 
-  Future<void> setTransactionAlerts(bool value) async {
-    state = state.copyWith(transactionAlerts: value);
-    await _save('security_alerts', value.toString());
-  }
-
   Future<void> _save(String key, String value) async {
     try {
       final prefs = ref.read(securePrefsProvider);
@@ -83,5 +72,5 @@ class SecuritySettingsNotifier extends Notifier<SecuritySettings> {
 
 final securitySettingsProvider =
     NotifierProvider<SecuritySettingsNotifier, SecuritySettings>(
-  SecuritySettingsNotifier.new,
-);
+      SecuritySettingsNotifier.new,
+    );

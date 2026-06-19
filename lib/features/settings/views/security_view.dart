@@ -87,9 +87,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               colors: colors,
               icon: Icons.timer_rounded,
               title: l10n.security_autoLock,
-              subtitle: l10n.security_autoLockMinutes(
-                settings.autoLockMinutes,
-              ),
+              subtitle: l10n.security_autoLockMinutes(settings.autoLockMinutes),
               status: l10n.security_minutesFormat(settings.autoLockMinutes),
               onTap: () => _showAutoLockPicker(l10n),
             ),
@@ -132,15 +130,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.md),
-            _buildToggleOption(
-              l10n: l10n,
-              colors: colors,
-              icon: Icons.notifications_active_rounded,
-              title: l10n.security_transactionAlerts,
-              subtitle: l10n.security_transactionAlertsSubtitle,
-              value: settings.transactionAlerts,
-              onChanged: settingsNotifier.setTransactionAlerts,
-            ),
+            _buildTransactionAlertOption(l10n: l10n, colors: colors),
             const SizedBox(height: AppSpacing.sm),
             _buildSecurityAlertOption(
               l10n: l10n,
@@ -542,6 +532,35 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
       title: title,
       subtitle: prefsState.error == null
           ? subtitle
+          : l10n.notifications_loadError,
+      status: status,
+      onTap: () => context.push('/settings/notifications'),
+    );
+  }
+
+  Widget _buildTransactionAlertOption({
+    required AppLocalizations l10n,
+    required ThemeColors colors,
+  }) {
+    final prefsState = ref.watch(notificationPreferencesProvider);
+    final prefs = prefsState.preferences;
+    final enabled =
+        (prefs?.pushTransactions ?? false) ||
+        (prefs?.smsTransactions ?? false) ||
+        (prefs?.emailTransactions ?? false);
+    final status = prefsState.isLoading
+        ? l10n.security_loading
+        : (enabled
+              ? l10n.biometric_settings_status_enabled
+              : l10n.settings_preferences);
+
+    return _buildStatusOption(
+      l10n: l10n,
+      colors: colors,
+      icon: Icons.notifications_active_rounded,
+      title: l10n.security_transactionAlerts,
+      subtitle: prefsState.error == null
+          ? l10n.security_transactionAlertsSubtitle
           : l10n.notifications_loadError,
       status: status,
       onTap: () => context.push('/settings/notifications'),

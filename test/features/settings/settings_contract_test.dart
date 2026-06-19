@@ -117,9 +117,11 @@ void main() {
       expect(source, contains("context.push('/settings/pin')"));
       expect(source, contains("context.push('/settings/devices')"));
       expect(source, contains('securitySettingsProvider'));
+      expect(source, contains('notificationPreferencesProvider'));
       expect(source, contains('setPinOnAppOpen'));
       expect(source, contains('setScreenshotProtection'));
-      expect(source, contains('setTransactionAlerts'));
+      expect(source, isNot(contains('setTransactionAlerts')));
+      expect(source, contains("context.push('/settings/notifications')"));
       expect(source, contains('setAutoLock'));
       expect(profileSecuritySource, contains("context.push('/settings/pin')"));
       expect(
