@@ -10,6 +10,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/mocks/mock_config_provider.dart';
+import 'package:usdc_wallet/services/api/api_client.dart' show ApiException;
 import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 
 /// Challenge-based liveness check widget
@@ -64,6 +65,8 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
   int _currentChallengeIndex = 0;
   String? _errorMessage;
   String? _manualReviewReason;
+  String? _manualReviewTitle;
+  String? _manualReviewSlaLabel;
   bool _cameraPermissionPermanentlyDenied = false;
 
   @override
@@ -87,32 +90,40 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
       return;
     }
 
-    await _initializeCamera();
-    if (mounted && _cameraController != null) {
-      await _createSession();
+    final sessionReady = await _createSession();
+    if (!mounted || !sessionReady) {
+      return;
+    }
+
+    final cameraReady = await _initializeCamera();
+    if (mounted && cameraReady && _cameraController != null) {
+      setState(() {
+        _state = _LivenessState.ready;
+        _statusMessage = 'Follow the liveness challenge';
+      });
     }
   }
 
-  Future<void> _initializeCamera() async {
+  Future<bool> _initializeCamera() async {
     setState(() => _statusMessage = 'Initializing camera...');
 
     try {
       final hasPermission = await _ensureCameraPermission();
       if (!hasPermission) {
-        return;
+        return false;
       }
 
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
         if (!kReleaseMode && ref.read(mockCameraProvider)) {
           await _completeMockLiveness();
-          return;
+          return true;
         }
         _fail(
           'No front camera is available on this device.',
           manualReviewReason: 'camera_unavailable',
         );
-        return;
+        return false;
       }
 
       final frontCamera = cameras.firstWhere(
@@ -129,11 +140,13 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
 
       await _cameraController!.initialize();
       if (mounted) setState(() {});
+      return true;
     } catch (e) {
       _fail(
         'Camera initialization failed.',
         manualReviewReason: 'camera_initialization_failed',
       );
+      return false;
     }
   }
 
@@ -149,6 +162,10 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
 
     final requestedStatus = await ph.Permission.camera.request();
     if (requestedStatus.isGranted || requestedStatus.isLimited) {
+      if (mounted) {
+        setState(() => _statusMessage = 'Camera access allowed...');
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 250));
       return true;
     }
 
@@ -181,8 +198,8 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
     );
   }
 
-  Future<void> _createSession() async {
-    setState(() => _statusMessage = 'Creating liveness session...');
+  Future<bool> _createSession() async {
+    setState(() => _statusMessage = 'Preparing secure liveness session...');
 
     try {
       final livenessService = ref.read(livenessServiceProvider);
@@ -204,7 +221,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
             'This liveness check requires ${session.evidencePolicy.requiredCaptureMode.value} evidence, but this device flow currently supports photo capture only.',
             manualReviewReason: 'liveness_capture_mode_unsupported',
           );
-          return;
+          return false;
         }
         final unsupportedChallenge = _firstUnsupportedChallenge(
           session.challenges,
@@ -216,14 +233,14 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
                 unsupportedChallenge.manualReviewReason ??
                 'liveness_motion_capture_unsupported',
           );
-          return;
+          return false;
         }
         if (session.challenges.isEmpty) {
           _fail(
             'The verification provider did not return a liveness challenge.',
             manualReviewReason: 'liveness_challenge_unavailable',
           );
-          return;
+          return false;
         }
 
         setState(() {
@@ -231,15 +248,20 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
           _challenges = session.challenges;
           _evidencePolicy = session.evidencePolicy;
           _currentChallengeIndex = 0;
-          _state = _LivenessState.ready;
         });
+        return true;
       }
     } catch (e) {
+      final review = _manualReviewFromError(e);
       _fail(
-        'Failed to create liveness session: $e',
-        manualReviewReason: 'liveness_session_unavailable',
+        review.message,
+        manualReviewReason: review.reason,
+        manualReviewTitle: review.title,
+        manualReviewSlaLabel: review.slaLabel,
       );
+      return false;
     }
+    return false;
   }
 
   Future<void> _captureAndSubmit() async {
@@ -402,7 +424,12 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
     return null;
   }
 
-  void _fail(String message, {String? manualReviewReason}) {
+  void _fail(
+    String message, {
+    String? manualReviewReason,
+    String? manualReviewTitle,
+    String? manualReviewSlaLabel,
+  }) {
     if (mounted) {
       unawaited(_releaseCamera());
       setState(() {
@@ -414,11 +441,66 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
             : 'Manual review needed';
         _errorMessage = message;
         _manualReviewReason = manualReviewReason;
+        _manualReviewTitle = manualReviewTitle;
+        _manualReviewSlaLabel = manualReviewSlaLabel;
       });
       if (manualReviewReason != null) {
         widget.onManualReviewRequired?.call(manualReviewReason);
       }
     }
+  }
+
+  ({String title, String message, String reason, String? slaLabel})
+  _manualReviewFromError(Object error) {
+    if (error is ApiException) {
+      final data = _apiErrorData(error.data);
+      final supportReviewRequired = data['supportReviewRequired'] == true;
+      final reason =
+          data['featureReason']?.toString() ??
+          data['reason']?.toString() ??
+          error.code ??
+          'liveness_session_unavailable';
+      final reviewSla = data['reviewSla'];
+      final slaLabel = reviewSla is Map ? reviewSla['label']?.toString() : null;
+
+      return (
+        title: supportReviewRequired
+            ? 'Manual review started'
+            : 'Manual review needed',
+        message: supportReviewRequired
+            ? error.message
+            : 'We could not safely start the automated identity check. A Korido reviewer will continue this flow.',
+        reason: reason,
+        slaLabel: slaLabel,
+      );
+    }
+
+    return (
+      title: 'Manual review needed',
+      message:
+          'We could not safely start the automated identity check. A Korido reviewer will continue this flow.',
+      reason: 'liveness_session_unavailable',
+      slaLabel: null,
+    );
+  }
+
+  Map<String, dynamic> _apiErrorData(Object? raw) {
+    if (raw is Map<String, dynamic>) {
+      final error = raw['error'];
+      if (error is Map) {
+        return {...raw, ...Map<String, dynamic>.from(error)};
+      }
+      return raw;
+    }
+    if (raw is Map) {
+      final map = Map<String, dynamic>.from(raw);
+      final error = map['error'];
+      if (error is Map) {
+        return {...map, ...Map<String, dynamic>.from(error)};
+      }
+      return map;
+    }
+    return const <String, dynamic>{};
   }
 
   Future<void> _releaseCamera() async {
@@ -442,6 +524,8 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
       _statusMessage = 'Initializing...';
       _errorMessage = null;
       _manualReviewReason = null;
+      _manualReviewTitle = null;
+      _manualReviewSlaLabel = null;
       _cameraPermissionPermanentlyDenied = false;
       _sessionToken = null;
       _challenges = [];
@@ -773,7 +857,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
             ),
             const SizedBox(height: AppSpacing.lg),
             AppText(
-              'Manual review needed',
+              _manualReviewTitle ?? 'Manual review needed',
               variant: AppTextVariant.titleMedium,
               color: colors.textPrimary,
               textAlign: TextAlign.center,
@@ -781,10 +865,19 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
             ),
             const SizedBox(height: AppSpacing.sm),
             AppText(
-              'We could not safely complete the automated identity check. A Korido reviewer will use your identity evidence to continue this flow.',
+              _errorMessage ??
+                  'We could not safely complete the automated identity check. A Korido reviewer will use your identity evidence to continue this flow.',
               color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
+            if (_manualReviewSlaLabel != null) ...[
+              const SizedBox(height: AppSpacing.lg),
+              InfoCallout(
+                icon: Icons.schedule_rounded,
+                title: _manualReviewSlaLabel!,
+                tone: InfoCalloutTone.info,
+              ),
+            ],
             if (_manualReviewReason != null) ...[
               const SizedBox(height: AppSpacing.lg),
               InfoCallout(

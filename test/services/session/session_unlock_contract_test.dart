@@ -545,6 +545,7 @@ void main() {
     ).readAsStringSync();
 
     final reviewBody = _methodBody(resetSource, '_routePinResetToManualReview');
+    final livenessStartBody = _methodBody(livenessSource, '_start');
 
     expect(livenessSource, contains('onManualReviewRequired'));
     expect(livenessSource, contains('onManualReviewAcknowledged'));
@@ -558,6 +559,14 @@ void main() {
     expect(livenessSource, contains('_releaseCamera()'));
     expect(livenessSource, contains('useRecoveryToken'));
     expect(livenessSource, contains("'liveness_result_unavailable'"));
+    expect(livenessSource, contains('supportReviewRequired'));
+    expect(livenessSource, contains('_manualReviewSlaLabel'));
+    expect(
+      livenessStartBody.indexOf('await _createSession()'),
+      lessThan(livenessStartBody.indexOf('await _initializeCamera()')),
+      reason:
+          'do not request camera permission when the provider cannot create a usable liveness session',
+    );
     expect(
       livenessSource,
       contains('nextChallengeIndex >= _challenges.length'),
