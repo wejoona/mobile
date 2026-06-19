@@ -14,7 +14,8 @@ import 'package:http/io_client.dart';
 import 'package:test/test.dart';
 
 /// Live E2E tests are opt-in because they call real backend services.
-final bool runLiveE2E = Platform.environment['RUN_LIVE_E2E'] == 'true' ||
+final bool runLiveE2E =
+    Platform.environment['RUN_LIVE_E2E'] == 'true' ||
     const bool.fromEnvironment('RUN_LIVE_E2E');
 
 const String liveE2ESkipReason =
@@ -90,12 +91,12 @@ String uniqueE2EPhone() {
 /// Lightweight HTTP wrapper for E2E tests.
 class E2EClient {
   E2EClient({String? baseUrl})
-      : baseUrl = baseUrl ?? _envApiUrl,
-        _client = IOClient(
-          HttpClient()
-            ..connectionTimeout = const Duration(seconds: 15)
-            ..badCertificateCallback = (cert, host, port) => true,
-        );
+    : baseUrl = baseUrl ?? _envApiUrl,
+      _client = IOClient(
+        HttpClient()
+          ..connectionTimeout = const Duration(seconds: 15)
+          ..badCertificateCallback = (cert, host, port) => true,
+      );
 
   final String baseUrl;
   final http.Client _client;
@@ -245,9 +246,11 @@ class E2EClient {
 
     // Step 1: Register is idempotent and sends an OTP for both new and
     // existing users, so avoid a second OTP request through /auth/login.
+    final consentPayload = await registrationConsentPayload();
     final registerRes = await post('/auth/register', {
       'phone': phone,
       'countryCode': 'CI',
+      ...consentPayload,
     });
     _expectAuthStepOk('register', registerRes);
 
@@ -310,6 +313,30 @@ class E2EClient {
       'Status: ${response.statusCode}\n'
       'Body: ${response.body}',
     );
+  }
+
+  Future<Map<String, dynamic>> registrationConsentPayload() async {
+    final termsVersion = await _legalDocumentVersion('/legal/terms');
+    final privacyVersion = await _legalDocumentVersion('/legal/privacy');
+    return {
+      'acceptedTerms': true,
+      if (termsVersion != null) 'termsVersion': termsVersion,
+      if (privacyVersion != null) 'privacyVersion': privacyVersion,
+    };
+  }
+
+  Future<String?> _legalDocumentVersion(String path) async {
+    try {
+      final res = await get(path);
+      if (!res.isOk) return null;
+
+      final body = res.data;
+      final payload = body?['data'];
+      final document = payload is Map<String, dynamic> ? payload : body;
+      return document?['version']?.toString();
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<String> resolveOtp(String phone) async {

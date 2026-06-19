@@ -8,6 +8,7 @@ export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode-beta.app/Contents/Dev
 KORIDO_SIM_UDID="${KORIDO_SIM_UDID:-AE43EA55-17BE-4E86-9B7E-A0E564FEA4F8}"
 KORIDO_ENV="${KORIDO_ENV:-staging}"
 KORIDO_API_URL="${KORIDO_API_URL:-https://staging-korido-api.joonapay.com/api/v1}"
+KORIDO_DEFAULT_OTP="${KORIDO_DEFAULT_OTP:-123456}"
 
 flutter_defines=(
   "--dart-define=ENV=${KORIDO_ENV}"
@@ -29,6 +30,9 @@ Usage:
   ./scripts/codex_mobile.sh live-crawl
   ./scripts/codex_mobile.sh live-visual
   ./scripts/codex_mobile.sh live-secondary
+  ./scripts/codex_mobile.sh live-e2e-wallet
+  ./scripts/codex_mobile.sh live-e2e-auth
+  ./scripts/codex_mobile.sh live-e2e-core
   ./scripts/codex_mobile.sh analyze
   ./scripts/codex_mobile.sh analyze-gate
   ./scripts/codex_mobile.sh test-auth
@@ -50,6 +54,7 @@ Defaults:
   KORIDO_SIM_UDID=AE43EA55-17BE-4E86-9B7E-A0E564FEA4F8
   KORIDO_ENV=staging
   KORIDO_API_URL=https://staging-korido-api.joonapay.com/api/v1
+  KORIDO_DEFAULT_OTP=123456
 
 Override with env vars when needed. Keep this wrapper as the stable approval
 surface for Codex simulator installs and verification commands.
@@ -93,6 +98,14 @@ run_codemagic_tests() {
   xargs -n 40 flutter test < .dart_tool/codex_flutter_tests.txt
 }
 
+run_live_e2e() {
+  RUN_E2E=true \
+  RUN_LIVE_E2E=true \
+  API_URL="${KORIDO_API_URL}" \
+  DEFAULT_OTP="${KORIDO_DEFAULT_OTP}" \
+    flutter test "$@"
+}
+
 command="${1:-help}"
 shift || true
 
@@ -131,6 +144,27 @@ case "${command}" in
     ;;
   live-secondary)
     run_flutter_for_sim test integration_test/flows/live_api_secondary_surfaces_flow_test.dart "$@"
+    ;;
+  live-e2e-wallet)
+    run_live_e2e \
+      test/e2e/health_e2e_test.dart \
+      test/e2e/wallet_e2e_test.dart \
+      "$@"
+    ;;
+  live-e2e-auth)
+    run_live_e2e \
+      test/e2e/health_e2e_test.dart \
+      test/e2e/auth_e2e_test.dart \
+      "$@"
+    ;;
+  live-e2e-core)
+    run_live_e2e \
+      test/e2e/health_e2e_test.dart \
+      test/e2e/auth_e2e_test.dart \
+      test/e2e/wallet_e2e_test.dart \
+      test/e2e/transactions_e2e_test.dart \
+      test/e2e/devices_e2e_test.dart \
+      "$@"
     ;;
   analyze)
     dart analyze "$@"

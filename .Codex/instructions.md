@@ -14,6 +14,10 @@ Use this file first for mobile tasks.
 
 ## Fast Commands
 
+Use `./scripts/codex_mobile.sh <recipe>` as the stable Codex command surface.
+Do not prefix commands with `RUN_E2E=... API_URL=...`; add or reuse a named
+recipe in the wrapper so approvals remain reusable.
+
 ```bash
 cd /Users/macbook/JoonaPay/USDC-Wallet/mobile
 flutter pub get
