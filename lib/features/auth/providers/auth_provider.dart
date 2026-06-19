@@ -303,6 +303,8 @@ class AuthNotifier extends Notifier<AuthState> {
   /// Force the local auth/session state back to active after a trusted account
   /// recovery flow such as a server-approved PIN reset.
   Future<bool> unlockAfterAccountRecovery() async {
+    _sessionMutationVersion++;
+
     var token = await _storage.read(key: StorageKeys.accessToken);
     if (token == null || token.isEmpty) {
       return false;
@@ -320,6 +322,14 @@ class AuthNotifier extends Notifier<AuthState> {
     final refreshToken = await _storage.read(key: StorageKeys.refreshToken);
     final userId = await _storage.read(key: StorageKeys.userId);
 
+    await ref
+        .read(sessionServiceProvider.notifier)
+        .startSession(
+          accessToken: token,
+          refreshToken: refreshToken,
+          tokenValidity: const Duration(minutes: 15),
+        );
+
     state = state.copyWith(status: AuthStatus.authenticated, error: null);
 
     try {
@@ -330,9 +340,6 @@ class AuthNotifier extends Notifier<AuthState> {
             accessToken: token,
             refreshToken: refreshToken,
           );
-    } catch (_) {}
-    try {
-      ref.read(sessionServiceProvider.notifier).unlockSession();
     } catch (_) {}
     try {
       ref.read(appFsmProvider.notifier).unlockSession();

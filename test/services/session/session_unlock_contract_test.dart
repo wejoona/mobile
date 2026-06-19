@@ -206,8 +206,15 @@ void main() {
     final source = File(
       'lib/features/pin/views/reset_pin_view.dart',
     ).readAsStringSync();
+    final authProviderSource = File(
+      'lib/features/auth/providers/auth_provider.dart',
+    ).readAsStringSync();
 
     final unlockBody = _methodBody(source, '_unlockAfterReset');
+    final accountRecoveryUnlockBody = _methodBody(
+      authProviderSource,
+      'unlockAfterAccountRecovery',
+    );
 
     expect(unlockBody, contains('unlockAfterAccountRecovery()'));
     expect(
@@ -229,6 +236,18 @@ void main() {
       unlockBody,
       isNot(contains('currentRoute')),
       reason: 'trusted PIN reset should not fail because a lock route is stale',
+    );
+    expect(
+      accountRecoveryUnlockBody,
+      contains('_sessionMutationVersion++'),
+      reason:
+          'account recovery must cancel stale startup restores that can relock the app',
+    );
+    expect(
+      accountRecoveryUnlockBody,
+      contains('startSession('),
+      reason:
+          'trusted PIN reset should start an active local session instead of only clearing a lock flag',
     );
 
     final submitBody = _methodBody(source, '_submitReset');
