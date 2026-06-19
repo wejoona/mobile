@@ -1,12 +1,13 @@
 /// Bank Verification View
 library;
+
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/typography.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
@@ -85,7 +86,7 @@ class _BankVerificationViewState extends ConsumerState<BankVerificationView> {
         backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
       ),
       body: SafeArea(
@@ -204,10 +205,7 @@ class _BankVerificationViewState extends ConsumerState<BankVerificationView> {
       decoration: BoxDecoration(
         color: context.colors.surface,
         border: Border(
-          top: BorderSide(
-            color: context.colors.elevated,
-            width: 1,
-          ),
+          top: BorderSide(color: context.colors.elevated, width: 1),
         ),
       ),
       child: SafeArea(
@@ -239,8 +237,9 @@ class _BankVerificationViewState extends ConsumerState<BankVerificationView> {
     setState(() => _isLoading = true);
 
     try {
-      final success =
-          await ref.read(bankLinkingProvider.notifier).verifyWithOtp(otp);
+      final success = await ref
+          .read(bankLinkingProvider.notifier)
+          .verifyWithOtp(otp);
 
       if (!mounted) return;
 
@@ -255,7 +254,7 @@ class _BankVerificationViewState extends ConsumerState<BankVerificationView> {
           ),
         );
         // Navigate back to linked accounts
-        context.go('/bank-linking');
+        context.fsmGo('/bank-linking');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/countries.dart' as app_config;
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -12,6 +11,7 @@ import 'package:usdc_wallet/features/onboarding/widgets/country_picker_widget.da
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/utils/input_formatters.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Phone input screen for explicit account signup.
 class SignupPhoneView extends ConsumerStatefulWidget {
@@ -148,7 +148,7 @@ class _SignupPhoneViewState extends ConsumerState<SignupPhoneView> {
             // Login link
             Center(
               child: TextButton(
-                onPressed: () => context.go('/login'),
+                onPressed: () => context.fsmGo('/login'),
                 child: AppText(
                   l10n.onboarding_phoneInput_loginLink,
                   style: AppTypography.bodyMedium.copyWith(color: colors.gold),
@@ -209,7 +209,7 @@ class _SignupPhoneViewState extends ConsumerState<SignupPhoneView> {
           _selectedCountry.dialCode,
         );
     if (mounted) {
-      context.go('/signup/legal-consent');
+      context.fsmGo('/signup/legal-consent');
     }
   }
 

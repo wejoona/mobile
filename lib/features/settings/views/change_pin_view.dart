@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -10,6 +9,7 @@ import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
 import 'package:usdc_wallet/features/kyc/widgets/kyc_instruction_screen.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 enum ChangePinPhase { livenessExplanation, livenessCheck, pinEntry }
 
@@ -66,7 +66,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
           buttonLabel: l10n.common_continue,
           onContinue: () =>
               setState(() => _phase = ChangePinPhase.livenessCheck),
-          onBack: () => context.safePop(fallbackRoute: '/settings/security'),
+          onBack: () => context.fsmSafePop(fallbackRoute: '/settings/security'),
         );
 
       case ChangePinPhase.livenessCheck:
@@ -112,7 +112,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
           icon: Icon(Icons.arrow_back, color: context.colors.gold),
           onPressed: () {
             if (_currentStep == PinStep.current) {
-              context.safePop(fallbackRoute: '/settings/security');
+              context.fsmSafePop(fallbackRoute: '/settings/security');
             } else {
               _goBack();
             }
@@ -437,7 +437,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
               backgroundColor: context.colors.success,
             ),
           );
-          context.safePop(fallbackRoute: '/settings/security');
+          context.fsmSafePop(fallbackRoute: '/settings/security');
         } else {
           setState(() {
             _error = l10n.changePin_errorFailedToSet;

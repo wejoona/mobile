@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/offline/providers/offline_provider.dart';
 import 'package:usdc_wallet/features/send/widgets/send_flow_visuals.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Dialog shown when queuing a transfer while offline
 class OfflineQueueDialog extends ConsumerWidget {
@@ -106,7 +106,7 @@ class OfflineQueueDialog extends ConsumerWidget {
           label: l10n.offline_viewPending,
           onPressed: () {
             Navigator.pop(context);
-            context.push('/offline/pending-transfers');
+            context.fsmPush('/offline/pending-transfers');
           },
           variant: AppButtonVariant.secondary,
           size: AppButtonSize.small,

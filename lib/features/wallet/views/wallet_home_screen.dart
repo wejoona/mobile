@@ -1,9 +1,9 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdc_wallet/core/orientation/orientation_helper.dart';
 import 'package:usdc_wallet/design/animations/staggered_entrance.dart';
@@ -246,7 +246,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     return Stack(
       children: [
         IconButton(
-          onPressed: () => unawaited(context.push('/notifications')),
+          onPressed: () => unawaited(context.fsmPush('/notifications')),
           icon: Icon(Icons.notifications_outlined, color: colors.textSecondary),
           tooltip: l10n.settings_notifications,
         ),
@@ -304,7 +304,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                 lastName: userState.lastName,
                 showBorder: true,
                 borderColor: colors.gold,
-                onTap: () => unawaited(context.push('/settings/profile')),
+                onTap: () => unawaited(context.fsmPush('/settings/profile')),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -333,7 +333,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
           children: [
             _buildNotificationIcon(context, ref, colors, l10n),
             IconButton(
-              onPressed: () => context.go('/settings'),
+              onPressed: () => context.fsmGo('/settings'),
               icon: Icon(Icons.settings_outlined, color: colors.textSecondary),
               tooltip: l10n.navigation_settings,
             ),
@@ -1034,7 +1034,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     final permissions = limits?.permissions;
 
     if (permissions == null || permissions.can(operation)) {
-      unawaited(context.push(route));
+      unawaited(context.fsmPush(route));
       return;
     }
 
@@ -1055,7 +1055,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
           ? null
           : SnackBarAction(
               label: l10n.auth_verify,
-              onPressed: () => unawaited(context.push('/kyc')),
+              onPressed: () => unawaited(context.fsmPush('/kyc')),
             ),
     );
   }
@@ -1083,7 +1083,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     return Column(
       children: [
         GestureDetector(
-          onTap: () => unawaited(context.push('/kyc')),
+          onTap: () => unawaited(context.fsmPush('/kyc')),
           child: Container(
             padding: const EdgeInsets.all(AppSpacing.lg),
             margin: const EdgeInsets.only(bottom: AppSpacing.xxl),
@@ -1191,7 +1191,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     // Show only 3-5 recent transactions
     return TransactionList(
       title: l10n.home_recentActivity,
-      onViewAllTap: () => unawaited(context.push('/transactions')),
+      onViewAllTap: () => unawaited(context.fsmPush('/transactions')),
       transactions: txState.transactions
           .take(5)
           .map(
@@ -1202,8 +1202,9 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
               currencyCode: tx.currency,
               date: tx.createdAt,
               type: _mapTransactionType(tx),
-              onTap: () =>
-                  unawaited(context.push('/transactions/${tx.id}', extra: tx)),
+              onTap: () => unawaited(
+                context.fsmPush('/transactions/${tx.id}', extra: tx),
+              ),
             ),
           )
           .toList(),

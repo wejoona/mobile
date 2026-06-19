@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// PIN Locked View — consistent with lock/OTP screen design.
 class PinLockedView extends ConsumerStatefulWidget {
@@ -23,7 +23,7 @@ class _PinLockedViewState extends ConsumerState<PinLockedView> {
 
     if (!pinState.isLocked) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.pop();
+        context.fsmPop();
       });
     }
 
@@ -44,11 +44,7 @@ class _PinLockedViewState extends ConsumerState<PinLockedView> {
                   shape: BoxShape.circle,
                   border: Border.all(color: colors.border),
                 ),
-                child: Icon(
-                  Icons.lock_clock,
-                  color: colors.error,
-                  size: 40,
-                ),
+                child: Icon(Icons.lock_clock, color: colors.error, size: 40),
               ),
               const SizedBox(height: AppSpacing.xxl),
               AppText(
@@ -91,7 +87,7 @@ class _PinLockedViewState extends ConsumerState<PinLockedView> {
               const SizedBox(height: AppSpacing.xxxl),
               AppButton(
                 label: l10n.pin_resetViaOtp,
-                onPressed: () => context.push('/pin/reset'),
+                onPressed: () => context.fsmPush('/pin/reset'),
                 variant: AppButtonVariant.secondary,
                 isFullWidth: true,
               ),

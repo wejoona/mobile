@@ -1,7 +1,6 @@
 // ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/composed/pin_confirmation_sheet.dart';
@@ -9,6 +8,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/entities/card.dart';
 import 'package:usdc_wallet/features/cards/providers/cards_provider.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Card Settings View
 ///
@@ -252,13 +252,7 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
 
   Widget _backButton(BuildContext context, ThemeColors colors) => IconButton(
     icon: Icon(Icons.arrow_back_rounded, color: colors.textPrimary),
-    onPressed: () {
-      if (context.canPop()) {
-        context.pop();
-      } else {
-        context.go('/cards');
-      }
-    },
+    onPressed: () => context.fsmSafePop(fallbackRoute: '/cards'),
   );
 
   Future<void> _toggleFreeze(
@@ -468,8 +462,8 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
           // Refresh cards list
           ref.invalidate(cardsEnvelopeProvider);
           ref.invalidate(cardsProvider);
-          context.pop();
-          context.pop();
+          context.fsmPop();
+          context.fsmPop();
         }
       } catch (e) {
         if (context.mounted) {

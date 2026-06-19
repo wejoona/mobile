@@ -59,6 +59,7 @@ class StorageKeys {
   static const String userDialCode = 'user_dial_code';
   static const String userLocalPhone = 'user_local_phone';
   static const String userPhoneE164 = 'user_phone_e164';
+  static const String recoveryAccessToken = 'recovery_access_token';
   static const String userPin = 'user_pin';
   static const String biometricEnabled = 'biometric_enabled';
   static const String rememberedPhone = 'remembered_phone';
@@ -185,18 +186,7 @@ class AuthInterceptor extends Interceptor {
     RequestInterceptorHandler handler,
   ) async {
     // Skip auth for public endpoints
-    final publicEndpoints = [
-      '/auth/register',
-      '/auth/verify-otp',
-      '/auth/login',
-      '/auth/refresh',
-      '/config/countries',
-      '/config/mobile-version',
-    ];
-    final isPublicEndpoint = publicEndpoints.any(
-      (e) => options.path.contains(e),
-    );
-    if (isPublicEndpoint) {
+    if (_isPublicEndpoint(options.path)) {
       return handler.next(options);
     }
 
@@ -207,6 +197,13 @@ class AuthInterceptor extends Interceptor {
     if (token != null) {
       _sessionInvalidated = false;
       options.headers['Authorization'] = 'Bearer $token';
+    } else if (_isAccountRecoveryEndpoint(options.path)) {
+      final recoveryToken = await storage.read(
+        key: StorageKeys.recoveryAccessToken,
+      );
+      if (recoveryToken != null && recoveryToken.isNotEmpty) {
+        options.headers['Authorization'] = 'Bearer $recoveryToken';
+      }
     }
 
     handler.next(options);
@@ -217,16 +214,9 @@ class AuthInterceptor extends Interceptor {
     _scheduleVersionPolicyCheck(err);
 
     // Check if this is an authenticated endpoint
-    final publicEndpoints = [
-      '/auth/register',
-      '/auth/verify-otp',
-      '/auth/login',
-      '/auth/refresh',
-      '/config/countries',
-      '/config/mobile-version',
-    ];
-    final isPublicEndpoint = publicEndpoints.any(
-      (e) => err.requestOptions.path.contains(e),
+    final isPublicEndpoint = _isPublicEndpoint(err.requestOptions.path);
+    final isAccountRecoveryEndpoint = _isAccountRecoveryEndpoint(
+      err.requestOptions.path,
     );
     final optionalAuthEndpoints = ['/feature-flags/me'];
     final isOptionalAuthEndpoint = optionalAuthEndpoints.any(
@@ -234,6 +224,13 @@ class AuthInterceptor extends Interceptor {
     );
 
     if (err.response?.statusCode == 401 && isOptionalAuthEndpoint) {
+      return handler.next(err);
+    }
+
+    if (err.response?.statusCode == 401 && isAccountRecoveryEndpoint) {
+      await _ref
+          .read(secureStorageProvider)
+          .delete(key: StorageKeys.recoveryAccessToken);
       return handler.next(err);
     }
 
@@ -245,6 +242,7 @@ class AuthInterceptor extends Interceptor {
     // Handle connection errors on authenticated endpoints - may be server rejecting expired token
     // Connection reset can happen when server sends 401 but connection closes before response arrives
     if (!isPublicEndpoint &&
+        !isAccountRecoveryEndpoint &&
         err.response == null &&
         (err.type == DioExceptionType.connectionError ||
             err.type == DioExceptionType.unknown)) {
@@ -362,6 +360,29 @@ class AuthInterceptor extends Interceptor {
         statusCode == 410 ||
         statusCode == 426 ||
         statusCode >= 500;
+  }
+
+  bool _isPublicEndpoint(String path) {
+    const publicEndpoints = [
+      '/auth/register',
+      '/auth/verify-otp',
+      '/auth/login',
+      '/auth/refresh',
+      '/config/countries',
+      '/config/mobile-version',
+    ];
+    return publicEndpoints.any(path.contains);
+  }
+
+  bool _isAccountRecoveryEndpoint(String path) {
+    const recoveryEndpoints = [
+      '/step-up/operation',
+      '/step-up/validate',
+      '/support/tickets',
+      '/user/pin/reset',
+      '/kyc/liveness',
+    ];
+    return recoveryEndpoints.any(path.contains);
   }
 
   Future<Response<dynamic>> _retryWithAccessToken(

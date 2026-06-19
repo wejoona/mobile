@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -9,6 +8,7 @@ import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/legal/legal_documents_service.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Explicit signup consent step.
 ///
@@ -139,7 +139,7 @@ class _SignupLegalConsentViewState
               child: TextButton(
                 onPressed: _isSubmitting || state.isLoading
                     ? null
-                    : () => context.go('/signup'),
+                    : () => context.fsmGo('/signup'),
                 child: AppText(
                   'Use a different phone number',
                   color: colors.gold,
@@ -175,7 +175,7 @@ class _SignupLegalConsentViewState
   Future<void> _handleAcceptAndSubmit() async {
     final state = ref.read(signupFlowProvider);
     if (state.phoneNumber == null) {
-      context.go('/signup');
+      context.fsmGo('/signup');
       return;
     }
 
@@ -201,7 +201,7 @@ class _SignupLegalConsentViewState
         return;
       }
       if (ref.read(signupFlowProvider).error == null) {
-        context.go('/signup/verify-phone');
+        context.fsmGo('/signup/verify-phone');
       }
     } on Object catch (error) {
       if (!mounted) {

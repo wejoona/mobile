@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/kyc/widgets/kyc_instruction_screen.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Écran d'instructions pour la vérification de présence (liveness)
 /// Affiché AVANT l'écran de défi caméra, comme pour le selfie et le document.
@@ -20,8 +20,8 @@ class KycLivenessInstructionsView extends ConsumerWidget {
       icon: Icons.videocam_outlined,
       instructions: KycInstructions.liveness,
       buttonLabel: l10n.common_continue,
-      onContinue: () => context.go('/kyc/liveness'),
-      onBack: () => context.pop(),
+      onContinue: () => context.fsmGo('/kyc/liveness'),
+      onBack: () => context.fsmPop(),
     );
   }
 }

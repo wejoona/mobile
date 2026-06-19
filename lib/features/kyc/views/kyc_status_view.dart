@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
@@ -269,7 +268,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
     debugPrint('[KYC] v4 - Start Verification tapped');
     ref.read(kycProvider.notifier).resetFlow();
     debugPrint('[KYC] v4 - Navigating to /kyc/document-type');
-    context.push('/kyc/document-type');
+    context.fsmPush('/kyc/document-type');
     debugPrint('[KYC] v4 - Navigation called');
   }
 
@@ -279,6 +278,6 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
     ref
         .read(appFsmProvider.notifier)
         .onKycStatusLoaded(tier: fsm.KycTier.none, status: 'pending');
-    context.go('/home');
+    context.fsmGo('/home');
   }
 }

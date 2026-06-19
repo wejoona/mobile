@@ -5,7 +5,6 @@ import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/core/utils/formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -16,6 +15,7 @@ import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
 import 'package:usdc_wallet/features/payment_links/models/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Screen for paying via a received payment link
 /// Shows link details and allows user to complete payment
@@ -153,7 +153,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
         if (!mounted) return;
 
         // Show success and navigate to receipt
-        context.go(
+        context.fsmGo(
           '/send/result',
           extra: {
             'success': true,
@@ -261,7 +261,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
             SizedBox(height: AppSpacing.xl),
             AppButton(
               label: l10n.common_close,
-              onPressed: () => context.pop(),
+              onPressed: () => context.fsmPop(),
               variant: AppButtonVariant.secondary,
             ),
           ],
@@ -294,7 +294,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
             SizedBox(height: AppSpacing.xl),
             AppButton(
               label: l10n.common_close,
-              onPressed: () => context.pop(),
+              onPressed: () => context.fsmPop(),
               variant: AppButtonVariant.secondary,
             ),
           ],
@@ -351,7 +351,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
             SizedBox(height: AppSpacing.xl),
             AppButton(
               label: l10n.common_close,
-              onPressed: () => context.pop(),
+              onPressed: () => context.fsmPop(),
               variant: AppButtonVariant.secondary,
             ),
           ],
@@ -384,7 +384,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
             SizedBox(height: AppSpacing.xl),
             AppButton(
               label: l10n.common_close,
-              onPressed: () => context.pop(),
+              onPressed: () => context.fsmPop(),
               variant: AppButtonVariant.secondary,
             ),
           ],

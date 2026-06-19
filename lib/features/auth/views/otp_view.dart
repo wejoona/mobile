@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 import 'package:usdc_wallet/config/environment_config.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -14,9 +13,9 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/auth/widgets/otp_progress_cue.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class OtpView extends ConsumerStatefulWidget {
   const OtpView({super.key});
@@ -159,7 +158,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
                         child: Column(
                           children: [
                             const SizedBox(height: AppSpacing.lg),
-                            AuthTopBar(onBack: () => context.go('/login')),
+                            AuthTopBar(onBack: () => context.fsmGo('/login')),
                             const SizedBox(height: AppSpacing.xl),
                             AuthScreenHeader(
                               appName: l10n.appName,
@@ -389,9 +388,9 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
     final user = authState.user;
     final hasPin = user?.hasPin ?? false;
     if (!hasPin) {
-      context.go('/pin/setup');
+      context.fsmGo('/pin/setup');
     } else {
-      context.enterAuthenticatedApp();
+      context.fsmEnterAuthenticatedApp();
     }
   }
 

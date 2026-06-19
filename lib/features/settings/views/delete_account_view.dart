@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 const _deleteConfirmationPhrase = 'DELETE';
 
@@ -50,7 +49,7 @@ class _DeleteAccountViewState extends ConsumerState<DeleteAccountView> {
           icon: Icon(Icons.arrow_back, color: colors.gold),
           onPressed: _isDeleting
               ? null
-              : () => context.safePop(fallbackRoute: '/settings/security'),
+              : () => context.fsmSafePop(fallbackRoute: '/settings/security'),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -128,7 +127,7 @@ class _DeleteAccountViewState extends ConsumerState<DeleteAccountView> {
             variant: AppButtonVariant.ghost,
             onPressed: _isDeleting
                 ? null
-                : () => context.safePop(fallbackRoute: '/settings/security'),
+                : () => context.fsmSafePop(fallbackRoute: '/settings/security'),
           ),
         ],
       ),
@@ -150,7 +149,7 @@ class _DeleteAccountViewState extends ConsumerState<DeleteAccountView> {
       if (!mounted) {
         return;
       }
-      context.go('/login');
+      context.fsmGo('/login');
     } on Object catch (error) {
       if (!mounted) {
         return;

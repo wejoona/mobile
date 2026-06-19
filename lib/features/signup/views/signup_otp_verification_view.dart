@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/environment_config.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -9,8 +8,8 @@ import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/auth/widgets/otp_progress_cue.dart';
 import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Phone OTP verification screen for explicit account signup.
 class SignupOtpVerificationView extends ConsumerStatefulWidget {
@@ -58,7 +57,7 @@ class _SignupOtpVerificationViewState
                     child: Column(
                       children: [
                         const SizedBox(height: AppSpacing.lg),
-                        AuthTopBar(onBack: () => context.go('/signup')),
+                        AuthTopBar(onBack: () => context.fsmGo('/signup')),
                         const SizedBox(height: AppSpacing.lg),
                         const FlowStepProgress(currentStep: 2, totalSteps: 5),
                         const SizedBox(height: AppSpacing.xxl),
@@ -207,12 +206,12 @@ class _SignupOtpVerificationViewState
 
     if (hasName && hasPin) {
       await ref.read(signupFlowProvider.notifier).completeSignupFlow();
-      if (mounted) context.enterAuthenticatedApp();
+      if (mounted) context.fsmEnterAuthenticatedApp();
       return;
     }
 
     if (!mounted) return;
-    context.go(hasName ? '/signup/set-pin' : '/signup/profile');
+    context.fsmGo(hasName ? '/signup/set-pin' : '/signup/profile');
   }
 
   String _formatPhoneForDisplay(String phone, String dialCode) {

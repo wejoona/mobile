@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/design/components/primitives/app_input.dart';
@@ -301,6 +301,6 @@ class _KycPersonalInfoViewState extends ConsumerState<KycPersonalInfoView> {
       'documentNumber': _documentNumberController.text.trim(),
     });
 
-    unawaited(context.push('/kyc/document-capture'));
+    unawaited(context.fsmPush('/kyc/document-capture'));
   }
 }

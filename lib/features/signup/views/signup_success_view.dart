@@ -5,7 +5,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Success screen for explicit account signup.
 class SignupSuccessView extends ConsumerWidget {
@@ -117,6 +117,6 @@ class SignupSuccessView extends ConsumerWidget {
 
   void _handleContinue(BuildContext context, WidgetRef ref) {
     ref.read(signupFlowProvider.notifier).completeSignupFlow();
-    context.enterAuthenticatedApp();
+    context.fsmEnterAuthenticatedApp();
   }
 }

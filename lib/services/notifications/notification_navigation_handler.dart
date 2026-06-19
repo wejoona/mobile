@@ -1,16 +1,17 @@
-import 'package:go_router/go_router.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:usdc_wallet/utils/logger.dart';
+
+typedef NotificationRoutePusher = void Function(String route);
 
 /// Notification Navigation Handler
 ///
 /// Handles deep linking and navigation based on notification data.
 /// This is used when user taps on a notification.
 class NotificationNavigationHandler {
-  final GoRouter router;
+  final NotificationRoutePusher pushRoute;
   static final _logger = AppLogger('NotificationNavigation');
 
-  NotificationNavigationHandler(this.router);
+  NotificationNavigationHandler(this.pushRoute);
 
   /// Handle navigation from notification message
   void handleNotificationNavigation(RemoteMessage message) {
@@ -27,7 +28,7 @@ class NotificationNavigationHandler {
 
     // Custom route takes precedence
     if (route != null && route.isNotEmpty) {
-      router.push(route);
+      pushRoute(route);
       return;
     }
 
@@ -37,45 +38,45 @@ class NotificationNavigationHandler {
       case 'transactionComplete':
       case 'transactionFailed':
         if (transactionId != null) {
-          router.push('/transactions/$transactionId');
+          pushRoute('/transactions/$transactionId');
         } else {
-          router.push('/transactions');
+          pushRoute('/transactions');
         }
         break;
 
       case 'security':
       case 'securityAlert':
       case 'newDeviceLogin':
-        router.push('/settings/security');
+        pushRoute('/settings/security');
         break;
 
       case 'deposit':
       case 'depositComplete':
-        router.push('/home');
+        pushRoute('/home');
         break;
 
       case 'withdrawal':
       case 'withdrawalPending':
         if (transactionId != null) {
-          router.push('/transactions/$transactionId');
+          pushRoute('/transactions/$transactionId');
         } else {
-          router.push('/transactions');
+          pushRoute('/transactions');
         }
         break;
 
       case 'kyc':
       case 'kycApproved':
       case 'kycRejected':
-        router.push('/settings/kyc');
+        pushRoute('/settings/kyc');
         break;
 
       case 'promotion':
       case 'referral':
-        router.push('/referrals');
+        pushRoute('/referrals');
         break;
 
       case 'lowBalance':
-        router.push('/deposit');
+        pushRoute('/deposit');
         break;
 
       case 'largeTransaction':
@@ -83,17 +84,17 @@ class NotificationNavigationHandler {
       case 'rapidTransactions':
       case 'suspiciousPattern':
       case 'failedAttempts':
-        router.push('/settings/security');
+        pushRoute('/settings/security');
         break;
 
       case 'priceAlert':
       case 'weeklySpendingSummary':
-        router.push('/home');
+        pushRoute('/home');
         break;
 
       default:
         // Default to notifications list
-        router.push('/notifications');
+        pushRoute('/notifications');
         break;
     }
   }

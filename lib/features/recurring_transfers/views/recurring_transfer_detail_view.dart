@@ -2,7 +2,6 @@ import 'package:usdc_wallet/features/recurring_transfers/models/recurring_transf
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/recurring_transfers/providers/recurring_transfers_provider.dart';
@@ -11,6 +10,7 @@ import 'package:usdc_wallet/features/recurring_transfers/models/recurring_transf
 import 'package:usdc_wallet/features/recurring_transfers/widgets/execution_history_list.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class RecurringTransferDetailView extends ConsumerWidget {
   const RecurringTransferDetailView({super.key, required this.transferId});
@@ -523,7 +523,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
 
     if (success) {
       ref.invalidate(recurringTransfersProvider);
-      context.pop();
+      context.fsmPop();
     }
   }
 

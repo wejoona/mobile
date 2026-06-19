@@ -2,13 +2,13 @@ import 'package:usdc_wallet/features/savings_pots/models/savings_pots_state.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
 import 'package:usdc_wallet/features/savings_pots/widgets/pot_card.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Main screen showing list of savings pots
 class PotsListView extends ConsumerStatefulWidget {
@@ -32,8 +32,11 @@ class _PotsListViewState extends ConsumerState<PotsListView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(savingsPotsStateProvider);
-        final colors = context.colors;
-    final currencyFormat = NumberFormat.currency(symbol: r"$", decimalDigits: 2);
+    final colors = context.colors;
+    final currencyFormat = NumberFormat.currency(
+      symbol: r"$",
+      decimalDigits: 2,
+    );
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -51,11 +54,11 @@ class _PotsListViewState extends ConsumerState<PotsListView> {
         child: state.isLoading && state.pots.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : state.pots.isEmpty
-                ? _buildEmptyState(l10n)
-                : _buildPotsList(state, currencyFormat, l10n),
+            ? _buildEmptyState(l10n)
+            : _buildPotsList(state, currencyFormat, l10n),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/savings-pots/create'),
+        onPressed: () => context.fsmPush('/savings-pots/create'),
         backgroundColor: colors.gold,
         child: Icon(Icons.add, color: colors.textInverse),
       ),
@@ -88,7 +91,7 @@ class _PotsListViewState extends ConsumerState<PotsListView> {
             SizedBox(height: AppSpacing.xl),
             AppButton(
               label: l10n.savingsPots_createFirst,
-              onPressed: () => context.push('/savings-pots/create'),
+              onPressed: () => context.fsmPush('/savings-pots/create'),
             ),
           ],
         ),
@@ -157,7 +160,7 @@ class _PotsListViewState extends ConsumerState<PotsListView> {
               pot: pot,
               onTap: () {
                 ref.read(savingsPotsActionsProvider).selectPot(pot.id);
-                context.push('/savings-pots/detail/${pot.id}');
+                context.fsmPush('/savings-pots/detail/${pot.id}');
               },
             );
           },

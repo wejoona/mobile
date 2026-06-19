@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/composed/pin_confirmation_sheet.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
@@ -14,6 +13,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/utils/context_extensions.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Cards list screen with visual card display.
 class CardsListView extends ConsumerWidget {
@@ -47,14 +47,7 @@ class CardsListView extends ConsumerWidget {
             Icons.arrow_back_rounded,
             color: context.colors.textPrimary,
           ),
-          onPressed: () {
-            final router = GoRouter.of(context);
-            if (router.canPop()) {
-              router.pop();
-            } else {
-              context.go('/home');
-            }
-          },
+          onPressed: () => context.fsmSafePop(),
         ),
         title: AppText(
           l10n.cards_myCards,
@@ -78,7 +71,7 @@ class CardsListView extends ConsumerWidget {
               canCreateCard: envelope.canRequestCard,
               reason: envelope.featureReason ?? envelope.reason,
               onCreateCard: envelope.canRequestCard
-                  ? () => context.push('/cards/request')
+                  ? () => context.fsmPush('/cards/request')
                   : null,
               onNotifyMe: envelope.canRequestCard
                   ? null
@@ -121,9 +114,10 @@ class CardsListView extends ConsumerWidget {
                     onBlock: () async {
                       await _confirmBlockCard(context, ref, l10n, card.id);
                     },
-                    onDetails: () => context.push('/cards/detail/${card.id}'),
+                    onDetails: () =>
+                        context.fsmPush('/cards/detail/${card.id}'),
                     onSettings: () =>
-                        context.push('/cards/settings/${card.id}'),
+                        context.fsmPush('/cards/settings/${card.id}'),
                   ),
                 ],
               );

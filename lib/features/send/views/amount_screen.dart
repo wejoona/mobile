@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
@@ -12,6 +11,7 @@ import 'package:usdc_wallet/features/send/providers/send_provider.dart';
 import 'package:usdc_wallet/features/send/widgets/send_flow_visuals.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class AmountScreen extends ConsumerStatefulWidget {
   const AmountScreen({super.key});
@@ -49,7 +49,7 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
 
     if (state.recipient == null) {
       // Navigate back if no recipient
-      Future.microtask(() => context.go('/send'));
+      Future.microtask(() => context.fsmGo('/send'));
       return const SizedBox.shrink();
     }
 
@@ -489,7 +489,7 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
       ref.read(sendMoneyProvider.notifier).setNote(note);
 
       if (mounted) {
-        context.push('/send/confirm');
+        context.fsmPush('/send/confirm');
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

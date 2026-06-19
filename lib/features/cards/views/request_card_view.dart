@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/cards/providers/cards_provider.dart';
@@ -8,6 +7,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Request Card View
 ///
@@ -61,13 +61,7 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
         backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded, color: colors.textPrimary),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/cards');
-            }
-          },
+          onPressed: () => context.fsmSafePop(fallbackRoute: '/cards'),
         ),
         title: AppText(
           l10n.cards_requestCard,
@@ -240,7 +234,7 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
           const SizedBox(height: AppSpacing.xxl),
           AppButton(
             label: l10n.cards_completeKYC,
-            onPressed: () => context.push('/kyc'),
+            onPressed: () => context.fsmPush('/kyc'),
             icon: Icons.arrow_forward,
           ),
         ],
@@ -326,7 +320,7 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
           backgroundColor: context.colors.success,
         ),
       );
-      context.pop();
+      context.fsmPop();
     } on Object {
       if (!mounted) {
         return;

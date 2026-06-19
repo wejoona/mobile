@@ -48,7 +48,7 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 ///   size: UserAvatar.sizeLarge,
 ///   showOnlineIndicator: true,
 ///   isOnline: true,
-///   onTap: () => context.push('/profile/${user.id}'),
+///   onTap: () => context.fsmPush('/profile/${user.id}'),
 /// )
 ///
 /// // Initials only (no image)

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/theme/theme_provider.dart';
 import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Theme Settings View - Beautiful theme selection with animated preview cards
 class ThemeSettingsView extends ConsumerWidget {
@@ -29,7 +29,7 @@ class ThemeSettingsView extends ConsumerWidget {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.gold),
-          onPressed: () => context.safePop(fallbackRoute: '/settings'),
+          onPressed: () => context.fsmSafePop(fallbackRoute: '/settings'),
         ),
       ),
       body: SafeArea(

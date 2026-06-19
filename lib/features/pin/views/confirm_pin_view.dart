@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Confirm PIN View
 /// Used to confirm PIN entry during setup
@@ -43,7 +43,7 @@ class _ConfirmPinViewState extends ConsumerState<ConfirmPinView> {
                   child: Column(
                     children: [
                       const SizedBox(height: AppSpacing.lg),
-                      AuthTopBar(onBack: () => context.pop()),
+                      AuthTopBar(onBack: () => context.fsmPop()),
                       const SizedBox(height: AppSpacing.xl),
                       AuthScreenHeader(
                         appName: l10n.appName,
@@ -147,7 +147,7 @@ class _ConfirmPinViewState extends ConsumerState<ConfirmPinView> {
           ),
         );
         // Prompt biometric enrollment before going home
-        context.go('/settings/biometric/enrollment');
+        context.fsmGo('/settings/biometric/enrollment');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -155,7 +155,7 @@ class _ConfirmPinViewState extends ConsumerState<ConfirmPinView> {
             backgroundColor: context.colors.error,
           ),
         );
-        context.pop();
+        context.fsmPop();
       }
     }
   }

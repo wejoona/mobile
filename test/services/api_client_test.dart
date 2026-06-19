@@ -94,6 +94,33 @@ class _UpgradeRequiredAdapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
+class _RecordingStatusAdapter implements HttpClientAdapter {
+  _RecordingStatusAdapter({this.statusCode = 200});
+
+  final int statusCode;
+  final requests = <RequestOptions>[];
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    requests.add(options);
+
+    return ResponseBody.fromString(
+      jsonEncode({'success': statusCode < 400}),
+      statusCode,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
+
 void main() {
   late MockSecureStorage mockStorage;
 
@@ -109,40 +136,135 @@ void main() {
   });
 
   group('AuthInterceptor session invalidation', () {
-    test('checks mobile version policy after upgrade-required responses', () async {
+    test('uses scoped recovery token for account recovery endpoints', () async {
       final container = ProviderContainer(
-        overrides: [
-          secureStorageProvider.overrideWithValue(mockStorage),
-          mobileVersionPolicyProvider.overrideWith(
-            _RecordingVersionPolicyController.new,
-          ),
-        ],
+        overrides: [secureStorageProvider.overrideWithValue(mockStorage)],
       );
       addTearDown(container.dispose);
 
       await mockStorage.write(
-        key: StorageKeys.accessToken,
-        value: 'valid.access',
+        key: StorageKeys.recoveryAccessToken,
+        value: 'recovery.access',
       );
 
+      final adapter = _RecordingStatusAdapter();
       final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
-        ..httpClientAdapter = const _UpgradeRequiredAdapter()
+        ..httpClientAdapter = adapter
         ..interceptors.add(container.read(_authInterceptorTestProvider));
 
-      await expectLater(
-        dio.get('/wallet'),
-        throwsA(
-          isA<DioException>().having(
-            (error) => error.response?.statusCode,
-            'statusCode',
-            426,
-          ),
-        ),
-      );
-      await pumpEventQueue(times: 5);
+      await dio.post('/user/pin/reset');
 
-      expect(_RecordingVersionPolicyController.reasons, contains('http_426'));
+      expect(
+        adapter.requests.single.headers['Authorization'],
+        'Bearer recovery.access',
+      );
     });
+
+    test(
+      'does not use recovery token for normal authenticated endpoints',
+      () async {
+        final container = ProviderContainer(
+          overrides: [secureStorageProvider.overrideWithValue(mockStorage)],
+        );
+        addTearDown(container.dispose);
+
+        await mockStorage.write(
+          key: StorageKeys.recoveryAccessToken,
+          value: 'recovery.access',
+        );
+
+        final adapter = _RecordingStatusAdapter();
+        final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
+          ..httpClientAdapter = adapter
+          ..interceptors.add(container.read(_authInterceptorTestProvider));
+
+        await dio.get('/wallet');
+
+        expect(adapter.requests.single.headers['Authorization'], isNull);
+      },
+    );
+
+    test(
+      'recovery 401 clears recovery token without invalidating app session',
+      () async {
+        final container = ProviderContainer(
+          overrides: [secureStorageProvider.overrideWithValue(mockStorage)],
+        );
+        addTearDown(container.dispose);
+
+        await mockStorage.write(
+          key: StorageKeys.accessToken,
+          value: 'active.access',
+        );
+        await mockStorage.write(
+          key: StorageKeys.refreshToken,
+          value: 'active.refresh',
+        );
+        await mockStorage.write(
+          key: StorageKeys.recoveryAccessToken,
+          value: 'recovery.access',
+        );
+
+        final adapter = _RecordingStatusAdapter(statusCode: 401);
+        final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
+          ..httpClientAdapter = adapter
+          ..interceptors.add(container.read(_authInterceptorTestProvider));
+
+        await expectLater(
+          dio.post('/user/pin/reset'),
+          throwsA(
+            isA<DioException>().having(
+              (error) => error.response?.statusCode,
+              'statusCode',
+              401,
+            ),
+          ),
+        );
+
+        expect(mockStorage.storage[StorageKeys.recoveryAccessToken], isNull);
+        expect(mockStorage.storage[StorageKeys.accessToken], 'active.access');
+        expect(mockStorage.storage[StorageKeys.refreshToken], 'active.refresh');
+        expect(container.read(authSessionInvalidatedProvider), equals(0));
+      },
+    );
+
+    test(
+      'checks mobile version policy after upgrade-required responses',
+      () async {
+        final container = ProviderContainer(
+          overrides: [
+            secureStorageProvider.overrideWithValue(mockStorage),
+            mobileVersionPolicyProvider.overrideWith(
+              _RecordingVersionPolicyController.new,
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await mockStorage.write(
+          key: StorageKeys.accessToken,
+          value: 'valid.access',
+        );
+
+        final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
+          ..httpClientAdapter = const _UpgradeRequiredAdapter()
+          ..interceptors.add(container.read(_authInterceptorTestProvider));
+
+        await expectLater(
+          dio.get('/wallet'),
+          throwsA(
+            isA<DioException>().having(
+              (error) => error.response?.statusCode,
+              'statusCode',
+              426,
+            ),
+          ),
+        );
+        await pumpEventQueue(times: 5);
+
+        expect(_RecordingVersionPolicyController.reasons, contains('http_426'));
+      },
+    );
 
     test(
       'clears local session and emits invalidation when device is blacklisted',
@@ -598,6 +720,7 @@ void main() {
     test('should have correct key values', () {
       expect(StorageKeys.accessToken, equals('access_token'));
       expect(StorageKeys.refreshToken, equals('refresh_token'));
+      expect(StorageKeys.recoveryAccessToken, equals('recovery_access_token'));
       expect(StorageKeys.userPin, equals('user_pin'));
       expect(StorageKeys.biometricEnabled, equals('biometric_enabled'));
     });

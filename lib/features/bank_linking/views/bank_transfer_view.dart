@@ -3,7 +3,6 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/design/components/composed/pin_confirmation_sheet.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
@@ -14,6 +13,7 @@ import 'package:usdc_wallet/features/bank_linking/providers/bank_linking_provide
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class BankTransferView extends ConsumerStatefulWidget {
   const BankTransferView({
@@ -63,7 +63,7 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
         backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
       ),
       body: SafeArea(
@@ -404,7 +404,7 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
       );
 
       // Navigate back
-      context.pop();
+      context.fsmPop();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

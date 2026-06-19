@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -8,6 +7,7 @@ import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Enter PIN View — reusable PIN verification screen.
 /// Uses design system PinDots + PinPad for consistency with OTP/lock screens.
@@ -41,7 +41,7 @@ class _EnterPinViewState extends ConsumerState<EnterPinView> {
 
     if (pinState.isLocked) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.go('/pin/locked');
+        context.fsmGo('/pin/locked');
       });
     }
 
@@ -108,7 +108,9 @@ class _EnterPinViewState extends ConsumerState<EnterPinView> {
 
                         if (pinState.remainingAttempts < PinService.maxAttempts)
                           AppText(
-                            l10n.pin_attemptsRemaining(pinState.remainingAttempts),
+                            l10n.pin_attemptsRemaining(
+                              pinState.remainingAttempts,
+                            ),
                             variant: AppTextVariant.bodyMedium,
                             color: colors.warningText,
                           ),
@@ -120,13 +122,15 @@ class _EnterPinViewState extends ConsumerState<EnterPinView> {
                           onDigitPressed: _handleDigitPressed,
                           onDeletePressed: _handleDeletePressed,
                           showBiometric: widget.showBiometric,
-                          onBiometricPressed: widget.showBiometric ? _handleBiometric : null,
+                          onBiometricPressed: widget.showBiometric
+                              ? _handleBiometric
+                              : null,
                         ),
 
                         const SizedBox(height: AppSpacing.xxl),
 
                         TextButton(
-                          onPressed: () => context.push('/pin/reset'),
+                          onPressed: () => context.fsmPush('/pin/reset'),
                           child: AppText(
                             l10n.pin_forgotPin,
                             variant: AppTextVariant.bodyMedium,
@@ -178,7 +182,7 @@ class _EnterPinViewState extends ConsumerState<EnterPinView> {
       if (widget.onSuccess != null) {
         widget.onSuccess!('');
       } else {
-        context.pop(true);
+        context.fsmPop(true);
       }
     }
   }
@@ -191,7 +195,7 @@ class _EnterPinViewState extends ConsumerState<EnterPinView> {
         if (widget.onSuccess != null) {
           widget.onSuccess!(_pin);
         } else {
-          context.pop(true);
+          context.fsmPop(true);
         }
       } else {
         setState(() => _hasError = true);

@@ -4,9 +4,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
-import 'package:usdc_wallet/router/app_router.dart';
 import 'package:usdc_wallet/services/notifications/push_notification_service.dart';
 import 'package:usdc_wallet/services/notifications/rich_notification_helper.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Notification Handler Widget
 ///
@@ -83,7 +83,7 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
 
   /// Handle navigation based on notification data
   void _handleNavigation(Map<String, dynamic> data) {
-    unawaited(ref.read(routerProvider).push(routeForNotificationData(data)));
+    unawaited(context.fsmPush(routeForNotificationData(data)));
   }
 
   @override

@@ -1,9 +1,9 @@
 import 'dart:io';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/components/primitives/app_input.dart';
@@ -405,7 +405,7 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
       ref.invalidate(expensesProvider);
 
       if (mounted) {
-        context.go('/expenses');
+        context.fsmGo('/expenses');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(

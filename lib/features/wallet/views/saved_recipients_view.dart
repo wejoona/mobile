@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -58,7 +58,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.textPrimary),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
         actions: [
           IconButton(
@@ -283,7 +283,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
   }
 
   void _sendToRecipient(Contact contact) {
-    unawaited(context.push('/send', extra: contact));
+    unawaited(context.fsmPush('/send', extra: contact));
   }
 
   Future<void> _toggleFavorite(String id) async {

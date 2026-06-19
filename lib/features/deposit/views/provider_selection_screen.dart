@@ -1,10 +1,10 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:usdc_wallet/features/deposit/models/provider_data.dart';
 import 'package:usdc_wallet/providers/missing_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/countries.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -386,7 +386,7 @@ class ProviderSelectionScreen extends ConsumerWidget {
     // Navigate to payment instructions if successful, passing response as extra
     final response = ref.read(depositProvider).response;
     if (response != null) {
-      unawaited(context.push('/deposit/instructions', extra: response));
+      unawaited(context.fsmPush('/deposit/instructions', extra: response));
     }
   }
 }

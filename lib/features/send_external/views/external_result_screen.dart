@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/send_external/providers/external_transfer_provider.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class ExternalResultScreen extends ConsumerWidget {
   const ExternalResultScreen({super.key});
@@ -23,7 +23,7 @@ class ExternalResultScreen extends ConsumerWidget {
 
     if (result == null) {
       // Navigate back if no result
-      Future.microtask(() => context.go('/send-external'));
+      Future.microtask(() => context.fsmGo('/send-external'));
       return const SizedBox.shrink();
     }
 
@@ -340,6 +340,6 @@ class ExternalResultScreen extends ConsumerWidget {
     // Reset state
     ref.read(externalTransferProvider.notifier).reset();
     // Navigate to home
-    context.go('/home');
+    context.fsmGo('/home');
   }
 }

@@ -1,9 +1,9 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/countries.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -704,7 +704,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
       }
 
       if (mounted) {
-        unawaited(context.push('/send/amount'));
+        unawaited(context.fsmPush('/send/amount'));
       }
     } finally {
       if (mounted) {

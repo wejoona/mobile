@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
 import 'package:usdc_wallet/features/savings_pots/widgets/emoji_picker.dart';
 import 'package:usdc_wallet/features/savings_pots/widgets/color_picker.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Screen for editing an existing savings pot
 class EditPotView extends ConsumerStatefulWidget {
@@ -37,9 +37,7 @@ class _EditPotViewState extends ConsumerState<EditPotView> {
       _nameController.text = pot.name;
       _selectedEmoji = pot.emoji;
       _selectedColor = pot.color;
-      if (pot.targetAmount != null) { // ignore: unnecessary_null_comparison
-        _targetController.text = pot.targetAmount.toStringAsFixed(2);
-      }
+      _targetController.text = pot.targetAmount.toStringAsFixed(2);
     });
   }
 
@@ -137,19 +135,25 @@ class _EditPotViewState extends ConsumerState<EditPotView> {
         ? null
         : double.tryParse(_targetController.text);
 
-    final success = await ref.read(savingsPotsActionsProvider).updatePot(
+    final success = await ref
+        .read(savingsPotsActionsProvider)
+        .updatePot(
           id: widget.potId,
           name: _nameController.text,
           emoji: _selectedEmoji,
-          color: _selectedColor != null ? '#${_selectedColor!.toARGB32().toRadixString(16).padLeft(8, '0')}' : null,
+          color: _selectedColor != null
+              ? '#${_selectedColor!.toARGB32().toRadixString(16).padLeft(8, '0')}'
+              : null,
           targetAmount: targetAmount,
         );
 
     if (success && mounted) {
-      context.pop();
+      context.fsmPop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.savingsPots_updateSuccess),
+          content: Text(
+            AppLocalizations.of(context)!.savingsPots_updateSuccess,
+          ),
           backgroundColor: context.colors.success,
         ),
       );

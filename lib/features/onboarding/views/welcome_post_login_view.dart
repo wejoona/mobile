@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:confetti/confetti.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/features/onboarding/providers/onboarding_progress_provider.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Welcome screen shown after successful registration
 class WelcomePostLoginView extends ConsumerStatefulWidget {
@@ -153,7 +152,7 @@ class _WelcomePostLoginViewState extends ConsumerState<WelcomePostLoginView>
                     // Action buttons
                     AppButton(
                       label: l10n.welcome_addFunds,
-                      onPressed: () => context.go('/deposit'),
+                      onPressed: () => context.fsmGo('/deposit'),
                       variant: AppButtonVariant.primary,
                       size: AppButtonSize.large,
                       isFullWidth: true,
@@ -162,7 +161,7 @@ class _WelcomePostLoginViewState extends ConsumerState<WelcomePostLoginView>
 
                     AppButton(
                       label: l10n.welcome_exploreDashboard,
-                      onPressed: () => context.enterAuthenticatedApp(),
+                      onPressed: () => context.fsmEnterAuthenticatedApp(),
                       variant: AppButtonVariant.secondary,
                       size: AppButtonSize.large,
                       isFullWidth: true,

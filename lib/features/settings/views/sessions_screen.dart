@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -306,7 +306,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
             SizedBox(height: AppSpacing.lg),
             AppButton(
               label: l10n.auth_tapToUnlock,
-              onPressed: () => context.go(
+              onPressed: () => context.fsmGo(
                 '/session-locked?returnTo=${Uri.encodeComponent('/settings/sessions')}',
               ),
               variant: AppButtonVariant.primary,
@@ -488,6 +488,6 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
         backgroundColor: context.colors.success,
       ),
     );
-    context.go('/login');
+    context.fsmGo('/login');
   }
 }

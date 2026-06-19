@@ -1,13 +1,13 @@
 // ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/services/currency/currency_service.dart';
 import 'package:usdc_wallet/services/currency/currency_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class CurrencyView extends ConsumerWidget {
   const CurrencyView({super.key});
@@ -29,7 +29,7 @@ class CurrencyView extends ConsumerWidget {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.gold),
-          onPressed: () => context.safePop(fallbackRoute: '/settings'),
+          onPressed: () => context.fsmSafePop(fallbackRoute: '/settings'),
         ),
       ),
       body: SingleChildScrollView(
@@ -86,11 +86,7 @@ class CurrencyView extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.check_circle,
-                    color: colors.gold,
-                    size: 24,
-                  ),
+                  Icon(Icons.check_circle, color: colors.gold, size: 24),
                 ],
               ),
             ),
@@ -123,7 +119,9 @@ class CurrencyView extends ConsumerWidget {
                   Switch(
                     value: currencyState.showReference,
                     onChanged: (value) {
-                      ref.read(currencyProvider.notifier).toggleShowReference(value);
+                      ref
+                          .read(currencyProvider.notifier)
+                          .toggleShowReference(value);
                     },
                     activeTrackColor: colors.gold.withValues(alpha: 0.5),
                     activeColor: colors.gold,
@@ -155,12 +153,18 @@ class CurrencyView extends ConsumerWidget {
                       color: colors.textTertiary,
                     ),
                     const SizedBox(height: AppSpacing.md),
-                    ...ref.read(currencyProvider.notifier).getSupportedCurrencies().map(
+                    ...ref
+                        .read(currencyProvider.notifier)
+                        .getSupportedCurrencies()
+                        .map(
                           (currency) => _CurrencyOption(
                             currency: currency,
-                            isSelected: currencyState.referenceCurrency == currency,
+                            isSelected:
+                                currencyState.referenceCurrency == currency,
                             onTap: () {
-                              ref.read(currencyProvider.notifier).setReferenceCurrency(currency);
+                              ref
+                                  .read(currencyProvider.notifier)
+                                  .setReferenceCurrency(currency);
                             },
                           ),
                         ),
@@ -190,7 +194,9 @@ class CurrencyView extends ConsumerWidget {
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     AppText(
-                      ref.read(currencyProvider.notifier).getFormattedReference(100),
+                      ref
+                          .read(currencyProvider.notifier)
+                          .getFormattedReference(100),
                       variant: AppTextVariant.bodyMedium,
                       color: colors.textSecondary,
                     ),
@@ -232,7 +238,9 @@ class _CurrencyOption extends ConsumerWidget {
           child: Container(
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color: isSelected ? colors.gold.withValues(alpha: 0.1) : colors.container,
+              color: isSelected
+                  ? colors.gold.withValues(alpha: 0.1)
+                  : colors.container,
               borderRadius: BorderRadius.circular(AppRadius.md),
               border: Border.all(
                 color: isSelected ? colors.gold : colors.border,
@@ -242,10 +250,7 @@ class _CurrencyOption extends ConsumerWidget {
             child: Row(
               children: [
                 // Flag
-                AppText(
-                  currency.flag,
-                  variant: AppTextVariant.titleLarge,
-                ),
+                AppText(currency.flag, variant: AppTextVariant.titleLarge),
                 const SizedBox(width: AppSpacing.md),
                 // Currency info
                 Expanded(
@@ -268,11 +273,7 @@ class _CurrencyOption extends ConsumerWidget {
                 ),
                 // Check mark
                 if (isSelected)
-                  Icon(
-                    Icons.check_circle,
-                    color: colors.gold,
-                    size: 22,
-                  ),
+                  Icon(Icons.check_circle, color: colors.gold, size: 22),
               ],
             ),
           ),
@@ -283,7 +284,9 @@ class _CurrencyOption extends ConsumerWidget {
 
   String _formatRate(double rate) {
     if (rate >= 100) {
-      return rate.toStringAsFixed(0).replaceAllMapped(
+      return rate
+          .toStringAsFixed(0)
+          .replaceAllMapped(
             RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
             (match) => '${match[1]} ',
           );

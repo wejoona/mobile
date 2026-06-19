@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/send_external/providers/external_transfer_provider.dart';
 import 'package:usdc_wallet/features/send_external/models/external_transfer_request.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class ExternalAmountScreen extends ConsumerStatefulWidget {
   const ExternalAmountScreen({super.key});
@@ -36,7 +36,7 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
 
     if (!state.hasValidAddress) {
       // Navigate back if no address
-      Future.microtask(() => context.go('/send-external'));
+      Future.microtask(() => context.fsmGo('/send-external'));
       return const SizedBox.shrink();
     }
 
@@ -419,7 +419,7 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
     setState(() => _isLoading = true);
     try {
       if (mounted) {
-        context.push('/send-external/confirm');
+        context.fsmPush('/send-external/confirm');
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

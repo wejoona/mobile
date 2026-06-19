@@ -1,13 +1,13 @@
 import 'package:usdc_wallet/core/utils/formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/offline/providers/offline_provider.dart';
 import 'package:usdc_wallet/features/send/providers/send_provider.dart';
 import 'package:usdc_wallet/services/offline/pending_transfer_queue.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Helper function to format currency
 String formatCurrency(double amount) => Formatters.formatCurrency(amount);
@@ -397,7 +397,7 @@ class PendingTransfersScreen extends ConsumerWidget {
     if (!context.mounted) {
       return;
     }
-    await context.push('/send/confirm');
+    await context.fsmPush('/send/confirm');
   }
 
   Future<void> _cancelTransfer(

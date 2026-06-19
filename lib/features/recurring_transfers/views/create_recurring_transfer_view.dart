@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/pin_confirmation_sheet.dart';
@@ -13,6 +12,7 @@ import 'package:usdc_wallet/features/recurring_transfers/widgets/frequency_picke
 import 'package:usdc_wallet/features/recurring_transfers/widgets/end_condition_picker.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class CreateRecurringTransferView extends ConsumerStatefulWidget {
   const CreateRecurringTransferView({
@@ -330,7 +330,7 @@ class _CreateRecurringTransferViewState
       );
       ref.invalidate(recurringTransfersProvider);
       ref.read(createRecurringTransferProvider.notifier).reset();
-      context.pop();
+      context.fsmPop();
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

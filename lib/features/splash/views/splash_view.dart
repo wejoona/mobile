@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -9,7 +8,7 @@ import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class SplashView extends ConsumerStatefulWidget {
   const SplashView({super.key});
@@ -114,7 +113,7 @@ class _SplashViewState extends ConsumerState<SplashView>
         !currentState.isAuthenticated &&
         !currentState.isLocked) {
       _hasNavigated = true;
-      context.go('/login');
+      context.fsmGo('/login');
       return;
     }
 
@@ -127,7 +126,7 @@ class _SplashViewState extends ConsumerState<SplashView>
     Future.delayed(const Duration(seconds: 5), () {
       if (!mounted || _hasNavigated) return;
       _hasNavigated = true;
-      context.go('/login');
+      context.fsmGo('/login');
     });
   }
 
@@ -139,11 +138,11 @@ class _SplashViewState extends ConsumerState<SplashView>
     }
     _hasNavigated = true;
     if (authState.isAuthenticated) {
-      context.enterAuthenticatedApp();
+      context.fsmEnterAuthenticatedApp();
     } else if (authState.isLocked) {
-      context.go('/session-locked');
+      context.fsmGo('/session-locked');
     } else {
-      context.go('/login');
+      context.fsmGo('/login');
     }
     return true;
   }

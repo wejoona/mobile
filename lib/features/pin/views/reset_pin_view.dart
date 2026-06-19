@@ -4,17 +4,16 @@ import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
 import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/auth/auth_service.dart';
 import 'package:usdc_wallet/services/liveness/liveness_service.dart';
@@ -66,7 +65,10 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           child: Column(
             children: [
               AuthTopBar(
-                onBack: () => context.safePop(fallbackRoute: '/login'),
+                onBack: () {
+                  unawaited(_clearRecoveryAuthorization());
+                  context.fsmSafePop(fallbackRoute: '/login');
+                },
               ),
               Expanded(child: _buildStepContent(l10n)),
             ],
@@ -228,7 +230,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         const SizedBox(height: AppSpacing.xxxl),
         AppButton(
           label: 'Return to sign in',
-          onPressed: () => context.go('/login'),
+          onPressed: () => context.fsmGo('/login'),
           isFullWidth: true,
         ),
       ],
@@ -357,6 +359,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     });
 
     try {
+      await _ensureRecoveryAuthorization();
       final phone = await _resolveRecoveryPhone();
 
       if (phone == null) {
@@ -492,6 +495,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     });
 
     try {
+      await _ensureRecoveryAuthorization();
       final riskService = ref.read(riskBasedSecurityServiceProvider);
       final decision = await riskService.evaluateOperation(
         operation: 'account_recovery',
@@ -648,6 +652,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     });
 
     try {
+      await _ensureRecoveryAuthorization();
       final response = await ref
           .read(dioProvider)
           .post(
@@ -835,6 +840,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     setState(() => _isLoading = true);
 
     try {
+      await _ensureRecoveryAuthorization();
       final dio = ref.read(dioProvider);
       final stepUpChallengeToken = _stepUpChallengeToken;
 
@@ -881,6 +887,8 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       }
 
       setState(() => _isLoading = false);
+      await _clearRecoveryAuthorization();
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -888,7 +896,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           backgroundColor: context.colors.success,
         ),
       );
-      context.enterAuthenticatedApp();
+      context.fsmEnterAuthenticatedApp();
     } on DioException catch (e) {
       if (mounted) {
         final apiError = ApiException.fromDioError(e);
@@ -919,6 +927,30 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         _resetConfirmPin();
       }
     }
+  }
+
+  Future<void> _ensureRecoveryAuthorization() async {
+    final storage = ref.read(secureStorageProvider);
+    final existingRecoveryToken = await storage.read(
+      key: StorageKeys.recoveryAccessToken,
+    );
+    if (existingRecoveryToken != null && existingRecoveryToken.isNotEmpty) {
+      return;
+    }
+
+    final pendingToken = ref.read(loginProvider).sessionToken;
+    if (pendingToken != null && pendingToken.isNotEmpty) {
+      await storage.write(
+        key: StorageKeys.recoveryAccessToken,
+        value: pendingToken,
+      );
+    }
+  }
+
+  Future<void> _clearRecoveryAuthorization() async {
+    await ref
+        .read(secureStorageProvider)
+        .delete(key: StorageKeys.recoveryAccessToken);
   }
 
   bool _applyBackendManualReview(ApiException error) {

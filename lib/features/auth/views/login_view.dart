@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/countries.dart';
 import 'package:usdc_wallet/config/environment_config.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -13,7 +13,6 @@ import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/utils/input_formatters.dart';
@@ -117,7 +116,7 @@ class _LoginViewState extends ConsumerState<LoginView>
             .read(authProvider.notifier)
             .loginWithBiometric(refreshToken, expectedUserId: expectedUserId);
         if (success && mounted) {
-          context.enterAuthenticatedApp();
+          context.fsmEnterAuthenticatedApp();
           return;
         }
         if (mounted) {
@@ -182,7 +181,7 @@ class _LoginViewState extends ConsumerState<LoginView>
       }
       if (next.currentStep == LoginStep.otp &&
           prev?.currentStep != LoginStep.otp) {
-        context.go('/login/otp');
+        context.fsmGo('/login/otp');
       } else if (next.error != null && next.error != prev?.error) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -406,7 +405,7 @@ class _LoginViewState extends ConsumerState<LoginView>
 
                   // Toggle register/login
                   GestureDetector(
-                    onTap: () => context.go('/signup'),
+                    onTap: () => context.fsmGo('/signup'),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                         vertical: AppSpacing.sm,

@@ -1,8 +1,8 @@
 import 'dart:io';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
@@ -147,7 +147,7 @@ class _KycViewState extends ConsumerState<KycView> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.gold),
-          onPressed: () => context.safePop(fallbackRoute: '/settings'),
+          onPressed: () => context.fsmSafePop(fallbackRoute: '/settings'),
         ),
       ),
       body: Column(
@@ -1250,7 +1250,7 @@ class _KycViewState extends ConsumerState<KycView> {
               backgroundColor: context.colors.success,
             ),
           );
-          context.safePop(fallbackRoute: '/settings');
+          context.fsmSafePop(fallbackRoute: '/settings');
         }
       } catch (e) {
         if (mounted) {
@@ -1326,7 +1326,7 @@ class _KycViewState extends ConsumerState<KycView> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.gold),
-          onPressed: () => context.safePop(fallbackRoute: '/settings'),
+          onPressed: () => context.fsmSafePop(fallbackRoute: '/settings'),
         ),
       ),
       body: Center(
@@ -1379,7 +1379,7 @@ class _KycViewState extends ConsumerState<KycView> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.gold),
-          onPressed: () => context.safePop(fallbackRoute: '/settings'),
+          onPressed: () => context.fsmSafePop(fallbackRoute: '/settings'),
         ),
       ),
       body: Center(

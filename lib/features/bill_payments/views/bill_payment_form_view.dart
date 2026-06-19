@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/index.dart';
@@ -12,6 +11,7 @@ import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/features/bill_payments/providers/bill_payments_provider.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Bill Payment Form View
 /// Account entry, validation, and amount input
@@ -93,7 +93,7 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
           elevation: 0,
           leading: IconButton(
             icon: Icon(Icons.arrow_back, color: colors.icon),
-            onPressed: () => context.pop(),
+            onPressed: () => context.fsmPop(),
           ),
         ),
         body: Center(child: CircularProgressIndicator(color: colors.gold)),
@@ -114,7 +114,7 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.icon),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
       ),
       body: Form(
@@ -518,7 +518,7 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
     if (success && mounted) {
       final result = ref.read(billPaymentProvider).result;
       if (result != null) {
-        context.go('/bill-payments/success/${result.paymentId}');
+        context.fsmGo('/bill-payments/success/${result.paymentId}');
       }
     } else if (mounted) {
       final l10n = AppLocalizations.of(context)!;

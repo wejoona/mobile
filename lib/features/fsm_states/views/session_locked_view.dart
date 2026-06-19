@@ -2,14 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
@@ -99,7 +97,7 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView>
         ref.read(authProvider.notifier).unlock();
         ref.read(sessionServiceProvider.notifier).unlockSession();
         ref.read(appFsmProvider.notifier).unlockSession();
-        context.enterAuthenticatedApp();
+        context.fsmEnterAuthenticatedApp();
       } on Object {
         if (mounted) {
           _restoreUnlockControls();
@@ -129,7 +127,7 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView>
       await ref.read(authProvider.notifier).clearLocalSession();
     }
     if (mounted) {
-      context.go('/login');
+      context.fsmGo('/login');
     }
   }
 
@@ -291,7 +289,7 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView>
 
                         // Forgot PIN
                         TextButton(
-                          onPressed: () => context.push('/pin/reset'),
+                          onPressed: () => context.fsmPush('/pin/reset'),
                           child: AppText(
                             l10n.pin_forgotPin,
                             variant: AppTextVariant.bodyMedium,

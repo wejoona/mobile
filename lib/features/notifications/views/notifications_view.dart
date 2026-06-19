@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -8,6 +7,7 @@ import 'package:usdc_wallet/domain/entities/notification.dart';
 import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart';
 import 'package:usdc_wallet/features/notifications/widgets/notification_tile.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Notifications list screen.
 class NotificationsView extends ConsumerStatefulWidget {
@@ -164,7 +164,7 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
             _NotificationsEmptyState(
               title: l10n.notifications_emptyTitle,
               subtitle: l10n.notifications_emptyMessage,
-              onPreferences: () => context.push('/settings/notifications'),
+              onPreferences: () => context.fsmPush('/settings/notifications'),
             ),
           ],
         ),
@@ -254,7 +254,7 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
 
     final route = notification.navigationRoute;
     if (route != null && mounted) {
-      await context.push(route);
+      await context.fsmPush(route);
     }
   }
 }

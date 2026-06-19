@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/onboarding/providers/onboarding_progress_provider.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Enhanced onboarding view with beautiful animations and illustrations
 class EnhancedOnboardingView extends ConsumerStatefulWidget {
   const EnhancedOnboardingView({super.key});
 
   @override
-  ConsumerState<EnhancedOnboardingView> createState() => _EnhancedOnboardingViewState();
+  ConsumerState<EnhancedOnboardingView> createState() =>
+      _EnhancedOnboardingViewState();
 }
 
 class _EnhancedOnboardingViewState extends ConsumerState<EnhancedOnboardingView>
@@ -171,13 +172,13 @@ class _EnhancedOnboardingViewState extends ConsumerState<EnhancedOnboardingView>
     return FadeTransition(
       opacity: _animationController,
       child: SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(0, 0.1),
-          end: Offset.zero,
-        ).animate(CurvedAnimation(
-          parent: _animationController,
-          curve: Curves.easeOutCubic,
-        )),
+        position: Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero)
+            .animate(
+              CurvedAnimation(
+                parent: _animationController,
+                curve: Curves.easeOutCubic,
+              ),
+            ),
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.screenPadding,
@@ -246,11 +247,7 @@ class _EnhancedOnboardingViewState extends ConsumerState<EnhancedOnboardingView>
                 ),
               ],
             ),
-            child: Icon(
-              page.icon,
-              size: 80,
-              color: Colors.white,
-            ),
+            child: Icon(page.icon, size: 80, color: Colors.white),
           ),
         );
       },
@@ -269,11 +266,7 @@ class _EnhancedOnboardingViewState extends ConsumerState<EnhancedOnboardingView>
               color: colors.gold.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              Icons.check_rounded,
-              color: colors.gold,
-              size: 16,
-            ),
+            child: Icon(Icons.check_rounded, color: colors.gold, size: 16),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -288,7 +281,11 @@ class _EnhancedOnboardingViewState extends ConsumerState<EnhancedOnboardingView>
     );
   }
 
-  Widget _buildFooter(AppLocalizations l10n, ThemeColors colors, int pageCount) {
+  Widget _buildFooter(
+    AppLocalizations l10n,
+    ThemeColors colors,
+    int pageCount,
+  ) {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
       child: Column(
@@ -298,10 +295,8 @@ class _EnhancedOnboardingViewState extends ConsumerState<EnhancedOnboardingView>
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(
               pageCount,
-              (index) => _PageDot(
-                isActive: index == _currentPage,
-                colors: colors,
-              ),
+              (index) =>
+                  _PageDot(isActive: index == _currentPage, colors: colors),
             ),
           ),
           const SizedBox(height: AppSpacing.xxl),
@@ -309,8 +304,8 @@ class _EnhancedOnboardingViewState extends ConsumerState<EnhancedOnboardingView>
           // Button
           AppButton(
             label: _currentPage == pageCount - 1
-              ? l10n.onboarding_getStarted
-              : l10n.action_next,
+                ? l10n.onboarding_getStarted
+                : l10n.action_next,
             onPressed: _onNextPressed,
             variant: AppButtonVariant.primary,
             size: AppButtonSize.large,
@@ -335,7 +330,7 @@ class _EnhancedOnboardingViewState extends ConsumerState<EnhancedOnboardingView>
   Future<void> _completeOnboarding() async {
     await ref.read(onboardingProgressProvider.notifier).markTutorialCompleted();
     if (mounted) {
-      context.go('/login');
+      context.fsmGo('/login');
     }
   }
 }

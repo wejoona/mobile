@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class UpgradePrompt extends StatelessWidget {
   final String? nextTierName;
@@ -23,7 +23,7 @@ class UpgradePrompt extends StatelessWidget {
     final colors = context.colors;
 
     return GestureDetector(
-      onTap: () => context.push('/kyc'),
+      onTap: () => context.fsmPush('/kyc'),
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
@@ -47,11 +47,7 @@ class UpgradePrompt extends StatelessWidget {
                 color: colors.gold.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.trending_up,
-                color: colors.gold,
-                size: 24,
-              ),
+              child: Icon(Icons.trending_up, color: colors.gold, size: 24),
             ),
             const SizedBox(width: AppSpacing.lg),
             Expanded(
@@ -71,7 +67,8 @@ class UpgradePrompt extends StatelessWidget {
                     variant: AppTextVariant.bodySmall,
                     color: colors.textSecondary,
                   ),
-                  if (nextTierDailyLimit != null && nextTierMonthlyLimit != null) ...[
+                  if (nextTierDailyLimit != null &&
+                      nextTierMonthlyLimit != null) ...[
                     const SizedBox(height: AppSpacing.xs),
                     AppText(
                       '\$${nextTierDailyLimit!.toStringAsFixed(0)}/${l10n.limits_day} • \$${nextTierMonthlyLimit!.toStringAsFixed(0)}/${l10n.limits_month}',
@@ -83,10 +80,7 @@ class UpgradePrompt extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
-              Icons.arrow_forward,
-              color: colors.gold,
-            ),
+            Icon(Icons.arrow_forward, color: colors.gold),
           ],
         ),
       ),

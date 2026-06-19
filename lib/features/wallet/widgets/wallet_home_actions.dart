@@ -1,9 +1,9 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 
@@ -106,7 +106,7 @@ class _WalletQuickActionButton extends StatelessWidget {
           onTap();
           return;
         }
-        unawaited(context.push(_action.route));
+        unawaited(context.fsmPush(_action.route));
       },
       padding: const EdgeInsets.symmetric(
         vertical: AppSpacing.lg,

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/core/utils/formatters.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart';
@@ -12,6 +11,7 @@ import 'package:usdc_wallet/features/send/widgets/pin_input_widget.dart';
 import 'package:usdc_wallet/features/send/widgets/send_flow_visuals.dart';
 import 'package:usdc_wallet/features/send/views/offline_queue_dialog.dart';
 import 'package:usdc_wallet/services/offline/offline_queue_interceptor.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class PinVerificationScreen extends ConsumerStatefulWidget {
   const PinVerificationScreen({super.key});
@@ -282,7 +282,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
         if (success) {
-          context.go('/send/result');
+          context.fsmGo('/send/result');
         } else {
           final state = ref.read(sendMoneyProvider);
           if (await _queueOfflineTransferIfEligible(state)) return;
@@ -339,7 +339,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
         if (success) {
-          context.go('/send/result');
+          context.fsmGo('/send/result');
         } else {
           final state = ref.read(sendMoneyProvider);
           if (await _queueOfflineTransferIfEligible(state)) return;

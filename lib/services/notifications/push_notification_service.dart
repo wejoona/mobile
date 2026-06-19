@@ -257,22 +257,8 @@ class PushNotificationService {
       'transactionId': transactionId,
     });
 
-    // Navigation logic would go here
-    // This should integrate with your router (e.g., GoRouter)
-    // Example:
-    // switch (type) {
-    //   case 'transaction':
-    //     if (transactionId != null) {
-    //       router.push('/transactions/$transactionId');
-    //     }
-    //     break;
-    //   case 'security':
-    //     router.push('/settings/security');
-    //     break;
-    //   case 'kyc':
-    //     router.push('/kyc');
-    //     break;
-    // }
+    // Notification route intents are surfaced through [onNavigate]. Widgets
+    // translate them into FSM-owned navigation so services never own routing.
   }
 
   /// Subscribe to a topic

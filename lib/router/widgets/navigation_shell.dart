@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/connectivity/connectivity_provider.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Navigation shell for bottom navigation - derives state from current route.
 class MainShell extends ConsumerWidget {
@@ -54,16 +55,16 @@ class MainShell extends ConsumerWidget {
           // Navigate based on index.
           switch (index) {
             case 0:
-              context.go('/home');
+              context.fsmGo('/home');
               break;
             case 1:
-              context.go('/cards');
+              context.fsmGo('/cards');
               break;
             case 2:
-              context.go('/transactions');
+              context.fsmGo('/transactions');
               break;
             case 3:
-              context.go('/settings');
+              context.fsmGo('/settings');
               break;
           }
         },

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/core/deep_linking/deep_link_security.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Deep link handler for custom scheme (joonapay://) and universal links
 /// Storage keys for pending deep links
@@ -30,8 +30,9 @@ class DeepLinkHandler {
         for (final pair in paramsStr.split('&')) {
           final parts = pair.split('=');
           if (parts.length == 2) {
-            params[Uri.decodeComponent(parts[0])] =
-                Uri.decodeComponent(parts[1]);
+            params[Uri.decodeComponent(parts[0])] = Uri.decodeComponent(
+              parts[1],
+            );
           }
         }
       }
@@ -78,10 +79,19 @@ class DeepLinkHandler {
     // Deep links should never carry authentication tokens as they can be
     // intercepted, logged, or leaked via referrer headers
     final sanitizedParams = Map<String, String>.from(params);
-    const sensitiveKeys = ['token', 'access_token', 'refresh_token', 'auth_token', 'session_token', 'api_key'];
+    const sensitiveKeys = [
+      'token',
+      'access_token',
+      'refresh_token',
+      'auth_token',
+      'session_token',
+      'api_key',
+    ];
     for (final key in sensitiveKeys) {
       if (sanitizedParams.containsKey(key)) {
-        debugPrint('SECURITY: Stripped sensitive parameter "$key" from deep link');
+        debugPrint(
+          'SECURITY: Stripped sensitive parameter "$key" from deep link',
+        );
         sanitizedParams.remove(key);
       }
     }
@@ -99,9 +109,9 @@ class DeepLinkHandler {
       debugPrint('Deep link error: $e');
       _showError(context, 'Invalid link');
       if (isAuthenticated) {
-        context.go('/home');
+        context.fsmGo('/home');
       } else {
-        context.go('/login');
+        context.fsmGo('/login');
       }
     }
   }
@@ -122,9 +132,9 @@ class DeepLinkHandler {
         normalizedPath == 'wallet' ||
         normalizedPath.isEmpty) {
       if (isAuthenticated) {
-        context.go('/home');
+        context.fsmGo('/home');
       } else {
-        context.go('/login');
+        context.fsmGo('/login');
       }
       return;
     }
@@ -133,7 +143,7 @@ class DeepLinkHandler {
     if (normalizedPath == 'send') {
       if (!isAuthenticated) {
         _saveForLater(context, '/send', params);
-        context.go('/login');
+        context.fsmGo('/login');
         return;
       }
 
@@ -144,21 +154,24 @@ class DeepLinkHandler {
       // Validate parameters
       if (to != null && !DeepLinkSecurity.isValidPhoneNumber(to)) {
         _showError(context, 'Invalid phone number');
-        context.go('/home');
+        context.fsmGo('/home');
         return;
       }
 
       if (amount != null && !DeepLinkSecurity.isValidAmount(amount)) {
         _showError(context, 'Invalid amount');
-        context.go('/home');
+        context.fsmGo('/home');
         return;
       }
 
-      context.push('/send', extra: {
-        if (to != null) 'recipient': to,
-        if (amount != null) 'amount': double.parse(amount),
-        if (note != null) 'note': note,
-      });
+      context.fsmPush(
+        '/send',
+        extra: {
+          if (to != null) 'recipient': to,
+          if (amount != null) 'amount': double.parse(amount),
+          if (note != null) 'note': note,
+        },
+      );
       return;
     }
 
@@ -166,20 +179,21 @@ class DeepLinkHandler {
     if (normalizedPath == 'receive') {
       if (!isAuthenticated) {
         _saveForLater(context, '/receive', params);
-        context.go('/login');
+        context.fsmGo('/login');
         return;
       }
 
       final amount = params['amount'];
       if (amount != null && !DeepLinkSecurity.isValidAmount(amount)) {
         _showError(context, 'Invalid amount');
-        context.go('/home');
+        context.fsmGo('/home');
         return;
       }
 
-      context.push('/receive', extra: {
-        if (amount != null) 'amount': double.parse(amount),
-      });
+      context.fsmPush(
+        '/receive',
+        extra: {if (amount != null) 'amount': double.parse(amount)},
+      );
       return;
     }
 
@@ -188,21 +202,21 @@ class DeepLinkHandler {
         normalizedPath.startsWith('transactions/')) {
       if (!isAuthenticated) {
         _saveForLater(context, '/transaction', params);
-        context.go('/login');
+        context.fsmGo('/login');
         return;
       }
 
       final parts = normalizedPath.split('/');
       if (parts.length < 2) {
         _showError(context, 'Invalid transaction link');
-        context.go('/home');
+        context.fsmGo('/home');
         return;
       }
 
       final transactionId = parts[1];
       if (!DeepLinkSecurity.isValidUuid(transactionId)) {
         _showError(context, 'Invalid transaction ID');
-        context.go('/home');
+        context.fsmGo('/home');
         return;
       }
 
@@ -213,12 +227,12 @@ class DeepLinkHandler {
       } catch (e) {
         if (context.mounted) {
           _showError(context, 'Transaction not found');
-          context.go('/home');
+          context.fsmGo('/home');
         }
         return;
       }
 
-      context.push('/transactions/$transactionId');
+      context.fsmPush('/transactions/$transactionId');
       return;
     }
 
@@ -226,19 +240,17 @@ class DeepLinkHandler {
     if (normalizedPath == 'kyc' || normalizedPath.startsWith('kyc/')) {
       if (!isAuthenticated) {
         _saveForLater(context, '/kyc', params);
-        context.go('/login');
+        context.fsmGo('/login');
         return;
       }
 
       if (normalizedPath == 'kyc/status') {
-        context.push('/kyc');
+        context.fsmPush('/kyc');
         return;
       }
 
       final tier = params['tier'];
-      context.push('/kyc', extra: {
-        if (tier != null) 'targetTier': tier,
-      });
+      context.fsmPush('/kyc', extra: {if (tier != null) 'targetTier': tier});
       return;
     }
 
@@ -246,13 +258,13 @@ class DeepLinkHandler {
     if (normalizedPath.startsWith('settings')) {
       if (!isAuthenticated) {
         _saveForLater(context, '/settings', params);
-        context.go('/login');
+        context.fsmGo('/login');
         return;
       }
 
       final parts = normalizedPath.split('/');
       if (parts.length == 1) {
-        context.go('/settings');
+        context.fsmGo('/settings');
         return;
       }
 
@@ -272,9 +284,9 @@ class DeepLinkHandler {
 
       final route = settingsRoutes[subPath];
       if (route != null) {
-        context.push(route);
+        context.fsmPush(route);
       } else {
-        context.go('/settings');
+        context.fsmGo('/settings');
       }
       return;
     }
@@ -284,21 +296,21 @@ class DeepLinkHandler {
         normalizedPath.startsWith('payment-link/')) {
       if (!isAuthenticated) {
         _saveForLater(context, path, params);
-        context.go('/login');
+        context.fsmGo('/login');
         return;
       }
 
       final parts = normalizedPath.split('/');
       if (parts.length < 2) {
         _showError(context, 'Invalid payment link');
-        context.go('/home');
+        context.fsmGo('/home');
         return;
       }
 
       final linkCode = parts[1];
       if (linkCode.isEmpty) {
         _showError(context, 'Invalid payment link code');
-        context.go('/home');
+        context.fsmGo('/home');
         return;
       }
 
@@ -311,19 +323,19 @@ class DeepLinkHandler {
         if (status == 'deactivated' || status == 'expired') {
           if (context.mounted) {
             _showError(context, 'This payment link is no longer active');
-            context.go('/home');
+            context.fsmGo('/home');
           }
           return;
         }
       } catch (e) {
         if (context.mounted) {
           _showError(context, 'Invalid payment link');
-          context.go('/home');
+          context.fsmGo('/home');
         }
         return;
       }
 
-      context.push('/pay/$linkCode');
+      context.fsmPush('/pay/$linkCode');
       return;
     }
 
@@ -331,14 +343,15 @@ class DeepLinkHandler {
     if (normalizedPath == 'deposit') {
       if (!isAuthenticated) {
         _saveForLater(context, '/deposit', params);
-        context.go('/login');
+        context.fsmGo('/login');
         return;
       }
 
       final method = params['method'];
-      context.push('/deposit', extra: {
-        if (method != null) 'provider': method,
-      });
+      context.fsmPush(
+        '/deposit',
+        extra: {if (method != null) 'provider': method},
+      );
       return;
     }
 
@@ -346,11 +359,11 @@ class DeepLinkHandler {
     if (normalizedPath == 'withdraw') {
       if (!isAuthenticated) {
         _saveForLater(context, '/withdraw', params);
-        context.go('/login');
+        context.fsmGo('/login');
         return;
       }
 
-      context.push('/withdraw');
+      context.fsmPush('/withdraw');
       return;
     }
 
@@ -358,18 +371,18 @@ class DeepLinkHandler {
     if (normalizedPath == 'bills' || normalizedPath.startsWith('bills/')) {
       if (!isAuthenticated) {
         _saveForLater(context, '/bills', params);
-        context.go('/login');
+        context.fsmGo('/login');
         return;
       }
 
       final parts = normalizedPath.split('/');
       if (parts.length == 1) {
-        context.push('/bill-payments');
+        context.fsmPush('/bill-payments');
         return;
       }
 
       final providerId = parts[1];
-      context.push('/bill-payments/form/$providerId');
+      context.fsmPush('/bill-payments/form/$providerId');
       return;
     }
 
@@ -377,11 +390,11 @@ class DeepLinkHandler {
     if (normalizedPath == 'airtime') {
       if (!isAuthenticated) {
         _saveForLater(context, '/airtime', params);
-        context.go('/login');
+        context.fsmGo('/login');
         return;
       }
 
-      context.push('/airtime');
+      context.fsmPush('/airtime');
       return;
     }
 
@@ -389,11 +402,11 @@ class DeepLinkHandler {
     if (normalizedPath == 'scan' || normalizedPath == 'scan-to-pay') {
       if (!isAuthenticated) {
         _saveForLater(context, '/scan', params);
-        context.go('/login');
+        context.fsmGo('/login');
         return;
       }
 
-      context.push('/scan-to-pay');
+      context.fsmPush('/scan-to-pay');
       return;
     }
 
@@ -401,14 +414,15 @@ class DeepLinkHandler {
     if (normalizedPath == 'referrals') {
       if (!isAuthenticated) {
         _saveForLater(context, '/referrals', params);
-        context.go('/login');
+        context.fsmGo('/login');
         return;
       }
 
       final code = params['code'];
-      context.push('/referrals', extra: {
-        if (code != null) 'referralCode': code,
-      });
+      context.fsmPush(
+        '/referrals',
+        extra: {if (code != null) 'referralCode': code},
+      );
       return;
     }
 
@@ -417,29 +431,30 @@ class DeepLinkHandler {
         normalizedPath.startsWith('notifications/')) {
       if (!isAuthenticated) {
         _saveForLater(context, '/notifications', params);
-        context.go('/login');
+        context.fsmGo('/login');
         return;
       }
 
       final parts = normalizedPath.split('/');
       if (parts.length == 1) {
-        context.push('/notifications');
+        context.fsmPush('/notifications');
         return;
       }
 
       final notificationId = parts[1];
-      context.push('/notifications', extra: {
-        'notificationId': notificationId,
-      });
+      context.fsmPush(
+        '/notifications',
+        extra: {'notificationId': notificationId},
+      );
       return;
     }
 
     // Unknown path - go to home or login
     _showError(context, 'Unknown link destination');
     if (isAuthenticated) {
-      context.go('/home');
+      context.fsmGo('/home');
     } else {
-      context.go('/login');
+      context.fsmGo('/login');
     }
   }
 
@@ -453,8 +468,10 @@ class DeepLinkHandler {
       await _storage.write(key: _kPendingDeepLinkPath, value: path);
       if (params.isNotEmpty) {
         final encoded = params.entries
-            .map((e) =>
-                '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+            .map(
+              (e) =>
+                  '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}',
+            )
             .join('&');
         await _storage.write(key: _kPendingDeepLinkParams, value: encoded);
       }
@@ -479,14 +496,17 @@ class DeepLinkHandler {
   static void _logDeepLinkEvent(Uri uri, WidgetRef ref) {
     try {
       final analytics = AnalyticsService();
-      analytics.trackAction('deep_link_opened', properties: {
-        'uri': uri.toString(),
-        'path': uri.path,
-        'params': uri.queryParameters,
-        'utm_source': uri.queryParameters['utm_source'] ?? 'unknown',
-        'utm_campaign': uri.queryParameters['utm_campaign'] ?? 'unknown',
-        'utm_medium': uri.queryParameters['utm_medium'] ?? 'unknown',
-      });
+      analytics.trackAction(
+        'deep_link_opened',
+        properties: {
+          'uri': uri.toString(),
+          'path': uri.path,
+          'params': uri.queryParameters,
+          'utm_source': uri.queryParameters['utm_source'] ?? 'unknown',
+          'utm_campaign': uri.queryParameters['utm_campaign'] ?? 'unknown',
+          'utm_medium': uri.queryParameters['utm_medium'] ?? 'unknown',
+        },
+      );
       debugPrint('Deep link opened: ${uri.toString()}');
     } catch (e) {
       debugPrint('Analytics error: $e');

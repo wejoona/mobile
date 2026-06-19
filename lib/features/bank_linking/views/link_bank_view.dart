@@ -1,11 +1,12 @@
 /// Link Bank View
 library;
+
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/typography.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
@@ -42,7 +43,7 @@ class _LinkBankViewState extends ConsumerState<LinkBankView> {
 
     if (selectedBank == null) {
       // Should not happen, but handle it
-      Future.microtask(() => context.pop());
+      Future.microtask(() => context.fsmPop());
       return const SizedBox.shrink();
     }
 
@@ -56,7 +57,7 @@ class _LinkBankViewState extends ConsumerState<LinkBankView> {
         backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
       ),
       body: SafeArea(
@@ -184,11 +185,7 @@ class _LinkBankViewState extends ConsumerState<LinkBankView> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.info_outline,
-            color: context.colors.gold,
-            size: 20,
-          ),
+          Icon(Icons.info_outline, color: context.colors.gold, size: 20),
           SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
@@ -222,10 +219,7 @@ class _LinkBankViewState extends ConsumerState<LinkBankView> {
       decoration: BoxDecoration(
         color: context.colors.surface,
         border: Border(
-          top: BorderSide(
-            color: context.colors.elevated,
-            width: 1,
-          ),
+          top: BorderSide(color: context.colors.elevated, width: 1),
         ),
       ),
       child: SafeArea(
@@ -245,17 +239,18 @@ class _LinkBankViewState extends ConsumerState<LinkBankView> {
     setState(() => _isLoading = true);
 
     try {
-      final success =
-          await ref.read(bankLinkingProvider.notifier).linkBankAccount(
-                accountNumber: _accountNumberController.text.trim(),
-                accountHolderName: _accountHolderNameController.text.trim(),
-              );
+      final success = await ref
+          .read(bankLinkingProvider.notifier)
+          .linkBankAccount(
+            accountNumber: _accountNumberController.text.trim(),
+            accountHolderName: _accountHolderNameController.text.trim(),
+          );
 
       if (!mounted) return;
 
       if (success) {
         // Navigate to verification
-        context.push('/bank-linking/verify');
+        context.fsmPush('/bank-linking/verify');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

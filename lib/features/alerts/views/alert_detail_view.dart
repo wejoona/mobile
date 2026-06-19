@@ -4,19 +4,16 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/alerts/models/index.dart';
 import 'package:usdc_wallet/features/alerts/providers/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class AlertDetailView extends ConsumerStatefulWidget {
-  const AlertDetailView({
-    super.key,
-    required this.alertId,
-  });
+  const AlertDetailView({super.key, required this.alertId});
 
   final String alertId;
 
@@ -43,22 +40,17 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
       ),
       body: alertAsync.when(
-        loading: () => Center(
-          child: CircularProgressIndicator(color: colors.gold),
-        ),
+        loading: () =>
+            Center(child: CircularProgressIndicator(color: colors.gold)),
         error: (error, _) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.error_outline,
-                color: context.colors.error,
-                size: 48,
-              ),
+              Icon(Icons.error_outline, color: context.colors.error, size: 48),
               const SizedBox(height: AppSpacing.lg),
               AppText(
                 "Impossible de charger l'alerte",
@@ -68,7 +60,8 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
               const SizedBox(height: AppSpacing.lg),
               AppButton(
                 label: l10n.action_retry,
-                onPressed: () => ref.invalidate(alertDetailProvider(widget.alertId)),
+                onPressed: () =>
+                    ref.invalidate(alertDetailProvider(widget.alertId)),
                 size: AppButtonSize.small,
               ),
             ],
@@ -91,7 +84,11 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
     );
   }
 
-  Widget _buildContent(TransactionAlert alert, ThemeColors colors, AppLocalizations l10n) {
+  Widget _buildContent(
+    TransactionAlert alert,
+    ThemeColors colors,
+    AppLocalizations l10n,
+  ) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
       child: Column(
@@ -138,9 +135,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
       decoration: BoxDecoration(
         color: alert.alertType.color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(
-          color: alert.alertType.color.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: alert.alertType.color.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -179,7 +174,8 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
                         color: alert.severity.color,
                       ),
                     ),
-                    if (alert.isActionRequired && alert.actionTaken == null) ...[
+                    if (alert.isActionRequired &&
+                        alert.actionTaken == null) ...[
                       const SizedBox(width: AppSpacing.sm),
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -268,7 +264,11 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
           _buildDetailRow('Severity', alert.severity.displayName, colors),
           _buildDetailRow('Created', _formatDateTime(alert.createdAt), colors),
           if (alert.amount != null)
-            _buildDetailRow('Amount', '${alert.amount?.toStringAsFixed(2)} ${alert.currency ?? 'USD'}', colors),
+            _buildDetailRow(
+              'Amount',
+              '${alert.amount?.toStringAsFixed(2)} ${alert.currency ?? 'USD'}',
+              colors,
+            ),
         ],
       ),
     );
@@ -291,13 +291,18 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
             color: colors.textTertiary,
           ),
           const SizedBox(height: AppSpacing.md),
-          _buildDetailRow('Transaction ID', alert.transactionId!.substring(0, 8), colors),
+          _buildDetailRow(
+            'Transaction ID',
+            alert.transactionId!.substring(0, 8),
+            colors,
+          ),
           const SizedBox(height: AppSpacing.md),
           AppButton(
             label: AppLocalizations.of(context)!.transactions_viewTransaction,
             icon: Icons.receipt_long,
             variant: AppButtonVariant.secondary,
-            onPressed: () => context.push('/transactions/${alert.transactionId}'),
+            onPressed: () =>
+                context.fsmPush('/transactions/${alert.transactionId}'),
             isFullWidth: true,
           ),
         ],
@@ -317,11 +322,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.check_circle,
-            color: context.colors.success,
-            size: 24,
-          ),
+          Icon(Icons.check_circle, color: context.colors.success, size: 24),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
@@ -371,20 +372,25 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
     );
   }
 
-  Widget _buildActionButton(TransactionAlert alert, AlertAction action, ThemeColors colors) {
-    final isDanger = action == AlertAction.freezeAccount ||
+  Widget _buildActionButton(
+    TransactionAlert alert,
+    AlertAction action,
+    ThemeColors colors,
+  ) {
+    final isDanger =
+        action == AlertAction.freezeAccount ||
         action == AlertAction.reportSuspicious;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: _isProcessingAction
-          ? Center(
-              child: CircularProgressIndicator(color: colors.gold),
-            )
+          ? Center(child: CircularProgressIndicator(color: colors.gold))
           : AppButton(
               label: action.displayName,
               icon: action.icon,
-              variant: isDanger ? AppButtonVariant.danger : AppButtonVariant.secondary,
+              variant: isDanger
+                  ? AppButtonVariant.danger
+                  : AppButtonVariant.secondary,
               onPressed: () => _handleAction(alert, action),
               isFullWidth: true,
             ),
@@ -414,17 +420,17 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
 
   Future<void> _handleAction(TransactionAlert alert, AlertAction action) async {
     // Show confirmation for dangerous actions
-    if (action == AlertAction.freezeAccount || action == AlertAction.blockRecipient) {
+    if (action == AlertAction.freezeAccount ||
+        action == AlertAction.blockRecipient) {
       final confirmed = await _showConfirmationDialog(action);
       if (!confirmed) return;
     }
 
     setState(() => _isProcessingAction = true);
 
-    final success = await ref.read(alertsProvider.notifier).takeAction(
-      alert.alertId,
-      action.name,
-    );
+    final success = await ref
+        .read(alertsProvider.notifier)
+        .takeAction(alert.alertId, action.name);
 
     setState(() => _isProcessingAction = false);
 
@@ -439,7 +445,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
       );
 
       if (action == AlertAction.dismiss) {
-        context.pop();
+        context.fsmPop();
       }
     }
   }
@@ -494,7 +500,8 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
     final today = DateTime(now.year, now.month, now.day);
     final date = DateTime(dateTime.year, dateTime.month, dateTime.day);
 
-    final timeStr = '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+    final timeStr =
+        '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
 
     if (date == today) {
       return 'Today at $timeStr';

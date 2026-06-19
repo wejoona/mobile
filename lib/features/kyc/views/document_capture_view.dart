@@ -4,10 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:camera/camera.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:usdc_wallet/design/tokens/colors.dart';
@@ -22,6 +20,7 @@ import 'package:usdc_wallet/services/kyc/image_quality_checker.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/mocks/mock_config_provider.dart';
 import 'package:usdc_wallet/features/kyc/widgets/kyc_instruction_screen.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class DocumentCaptureView extends ConsumerStatefulWidget {
   const DocumentCaptureView({super.key});
@@ -306,7 +305,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
                 AppButton(
                   label: l10n.common_cancel,
                   variant: AppButtonVariant.ghost,
-                  onPressed: () => context.pop(),
+                  onPressed: () => context.fsmPop(),
                   isFullWidth: true,
                 ),
               ],
@@ -368,7 +367,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
         setState(() => _showInstructions = false);
         _initializeCamera();
       },
-      onBack: () => context.safePop(),
+      onBack: () => context.fsmSafePop(),
     );
   }
 
@@ -451,7 +450,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
                         color: Colors.white,
                         size: 28,
                       ),
-                      onPressed: () => context.safePop(),
+                      onPressed: () => context.fsmSafePop(),
                     ),
                     const Spacer(),
                     IconButton(
@@ -784,7 +783,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
       debugPrint(
         '[DocumentCapture] All documents captured - navigating to /kyc/selfie',
       );
-      context.go('/kyc/selfie');
+      context.fsmGo('/kyc/selfie');
     }
   }
 }

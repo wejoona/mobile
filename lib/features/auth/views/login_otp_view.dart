@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/environment_config.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -10,6 +9,7 @@ import 'package:usdc_wallet/features/auth/models/login_state.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/auth/widgets/otp_progress_cue.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Login OTP verification screen
 class LoginOtpView extends ConsumerStatefulWidget {
@@ -55,7 +55,7 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
                     child: Column(
                       children: [
                         const SizedBox(height: AppSpacing.lg),
-                        AuthTopBar(onBack: () => context.go('/login')),
+                        AuthTopBar(onBack: () => context.fsmGo('/login')),
                         const SizedBox(height: AppSpacing.xl),
                         AuthScreenHeader(
                           appName: l10n.appName,
@@ -162,7 +162,7 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
       if (mounted) {
         final state = ref.read(loginProvider);
         if (state.currentStep == LoginStep.pin) {
-          context.go('/login/pin');
+          context.fsmGo('/login/pin');
         } else if (state.error != null) {
           setState(() {
             _hasError = true;

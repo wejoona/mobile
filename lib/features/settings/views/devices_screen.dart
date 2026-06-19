@@ -1,9 +1,9 @@
 import 'dart:io';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/components/dialogs/index.dart'
     hide AlertDialog;
@@ -13,7 +13,6 @@ import 'package:usdc_wallet/domain/entities/device.dart';
 import 'package:usdc_wallet/features/settings/models/devices_state.dart';
 import 'package:usdc_wallet/features/settings/providers/devices_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/utils/device_names.dart';
 
 final _localDeviceInfoProvider = FutureProvider<Map<String, String>>((
@@ -66,7 +65,8 @@ class DevicesScreen extends ConsumerWidget {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.gold),
-          onPressed: () => context.safePop(fallbackRoute: '/settings/security'),
+          onPressed: () =>
+              context.fsmSafePop(fallbackRoute: '/settings/security'),
         ),
       ),
       body: RefreshIndicator(
@@ -250,7 +250,7 @@ class DevicesScreen extends ConsumerWidget {
             const SizedBox(height: AppSpacing.xl),
             AppButton(
               label: l10n.auth_tapToUnlock,
-              onPressed: () => context.go('/session-locked'),
+              onPressed: () => context.fsmGo('/session-locked'),
               variant: AppButtonVariant.primary,
             ),
           ],

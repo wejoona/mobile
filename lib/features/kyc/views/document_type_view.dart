@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/design/components/primitives/app_card.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
@@ -146,6 +146,6 @@ class _DocumentTypeViewState extends ConsumerState<DocumentTypeView> {
     }
 
     ref.read(kycProvider.notifier).selectDocumentType(_selectedType!);
-    unawaited(context.push('/kyc/personal-info'));
+    unawaited(context.fsmPush('/kyc/personal-info'));
   }
 }

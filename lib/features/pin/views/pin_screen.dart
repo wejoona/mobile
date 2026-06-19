@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -10,7 +9,6 @@ import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
@@ -158,7 +156,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
             if (!mounted) {
               return;
             }
-            context.enterAuthenticatedApp(
+            context.fsmEnterAuthenticatedApp(
               route: widget.successRoute ?? '/home',
             );
           });
@@ -188,7 +186,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
                 } on Object {}
               }),
             );
-            context.enterAuthenticatedApp(
+            context.fsmEnterAuthenticatedApp(
               route: widget.successRoute ?? '/home',
             );
           });
@@ -196,7 +194,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
       case PinContext.confirmAction:
         // Just pop with true — caller decides what to do
-        if (mounted) context.pop(true);
+        if (mounted) context.fsmPop(true);
     }
   }
 
@@ -463,10 +461,10 @@ class _PinScreenState extends ConsumerState<PinScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       if (widget.pinContext == PinContext.login && !authState.isAuthenticated) {
-        context.go('/login');
+        context.fsmGo('/login');
         return;
       }
-      context.enterAuthenticatedApp(route: widget.successRoute ?? '/home');
+      context.fsmEnterAuthenticatedApp(route: widget.successRoute ?? '/home');
     });
   }
 
@@ -500,7 +498,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
     } on Object {
       await ref.read(authProvider.notifier).clearLocalSession();
     }
-    if (mounted) context.go('/login');
+    if (mounted) context.fsmGo('/login');
   }
 
   @override
@@ -660,7 +658,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
                       const SizedBox(height: AppSpacing.xxl),
                       TextButton(
-                        onPressed: () => context.push('/pin/reset'),
+                        onPressed: () => context.fsmPush('/pin/reset'),
                         child: AppText(
                           l10n.login_forgotPin,
                           variant: AppTextVariant.bodyMedium,
@@ -685,7 +683,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
         alignment: Alignment.centerLeft,
         child: IconButton(
           tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-          onPressed: () => context.pop(false),
+          onPressed: () => context.fsmPop(false),
           icon: Icon(Icons.arrow_back, color: colors.textPrimary),
         ),
       );
@@ -771,7 +769,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
                 const SizedBox(height: AppSpacing.xxl),
                 AppButton(
                   label: l10n.common_ok,
-                  onPressed: () => context.go('/login'),
+                  onPressed: () => context.fsmGo('/login'),
                   variant: AppButtonVariant.primary,
                   isFullWidth: true,
                 ),

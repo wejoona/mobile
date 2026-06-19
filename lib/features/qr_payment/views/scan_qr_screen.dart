@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -13,6 +12,7 @@ import 'package:usdc_wallet/features/qr_payment/models/qr_payment_data.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Screen for scanning QR codes to send payments
 class ScanQrScreen extends ConsumerStatefulWidget {
@@ -67,7 +67,9 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
         setState(() => _isScannerInitialized = true);
       }
     } catch (e) {
-      AppLogger('Scanner initialization error').error('Scanner initialization error', e);
+      AppLogger(
+        'Scanner initialization error',
+      ).error('Scanner initialization error', e);
       if (mounted) {
         setState(() => _permissionDenied = true);
       }
@@ -88,14 +90,14 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
       ),
       body: _scannedData != null
           ? _buildScannedResult()
           : _permissionDenied
-              ? _buildPermissionDenied()
-              : _buildScanner(),
+          ? _buildPermissionDenied()
+          : _buildScanner(),
     );
   }
 
@@ -121,16 +123,11 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
     return Stack(
       children: [
         // Scanner
-        MobileScanner(
-          controller: _scannerController!,
-          onDetect: _onDetect,
-        ),
+        MobileScanner(controller: _scannerController!, onDetect: _onDetect),
 
         // Dark overlay
         Container(
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.5),
-          ),
+          decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.5)),
         ),
 
         // Scanner frame
@@ -170,7 +167,9 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
                 Positioned(
                   bottom: 0,
                   right: 0,
-                  child: _CornerDecoration(position: CornerPosition.bottomRight),
+                  child: _CornerDecoration(
+                    position: CornerPosition.bottomRight,
+                  ),
                 ),
               ],
             ),
@@ -298,7 +297,8 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
                     value: _qrService.formatPhone(_scannedData!.phone),
                     colors: colors,
                   ),
-                  if (_scannedData!.name != null && _scannedData!.name!.isNotEmpty)
+                  if (_scannedData!.name != null &&
+                      _scannedData!.name!.isNotEmpty)
                     _InfoRow(
                       label: 'Name',
                       value: _scannedData!.name!,
@@ -307,10 +307,12 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
                   if (_scannedData!.amount != null)
                     _InfoRow(
                       label: 'Amount',
-                      value: '\$${_scannedData!.amount} ${_scannedData!.currency ?? "USD"}',
+                      value:
+                          '\$${_scannedData!.amount} ${_scannedData!.currency ?? "USD"}',
                       colors: colors,
                     ),
-                  if (_scannedData!.reference != null && _scannedData!.reference!.isNotEmpty)
+                  if (_scannedData!.reference != null &&
+                      _scannedData!.reference!.isNotEmpty)
                     _InfoRow(
                       label: 'Reference',
                       value: _scannedData!.reference!,
@@ -326,17 +328,25 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
               label: 'Send Money',
               onPressed: () {
                 // Analytics: QR scan payment initiated
-                ref.read(analyticsServiceProvider).trackAction('qr_payment_scanned', properties: {
-                  'has_amount': _scannedData!.amount != null,
-                  'currency': _scannedData!.currency ?? 'USD',
-                });
+                ref
+                    .read(analyticsServiceProvider)
+                    .trackAction(
+                      'qr_payment_scanned',
+                      properties: {
+                        'has_amount': _scannedData!.amount != null,
+                        'currency': _scannedData!.currency ?? 'USD',
+                      },
+                    );
                 // Navigate to send view with prefilled data
-                context.pop(); // Close scanner
-                context.push('/send', extra: {
-                  'phone': _scannedData!.phone,
-                  'amount': _scannedData!.amount?.toString(),
-                  'reference': _scannedData!.reference,
-                });
+                context.fsmPop(); // Close scanner
+                context.fsmPush(
+                  '/send',
+                  extra: {
+                    'phone': _scannedData!.phone,
+                    'amount': _scannedData!.amount?.toString(),
+                    'reference': _scannedData!.reference,
+                  },
+                );
               },
               variant: AppButtonVariant.primary,
               isFullWidth: true,
@@ -485,9 +495,7 @@ class _CornerDecoration extends StatelessWidget {
     return SizedBox(
       width: 30,
       height: 30,
-      child: CustomPaint(
-        painter: _CornerPainter(position: position),
-      ),
+      child: CustomPaint(painter: _CornerPainter(position: position)),
     );
   }
 }

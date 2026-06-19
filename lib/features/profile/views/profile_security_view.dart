@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/gradient_card.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/primitives/list_tile_card.dart';
@@ -11,6 +10,7 @@ import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/biometric/biometric_provider.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart'
     show userStateMachineProvider;
 
@@ -44,14 +44,14 @@ class ProfileSecurityView extends ConsumerWidget {
             title: l10n.security_changePin,
             subtitle: l10n.security_changePinSubtitle,
             status: _SecurityStatus.active,
-            onTap: () => context.push('/settings/pin'),
+            onTap: () => context.fsmPush('/settings/pin'),
           ),
           _SecurityOption(
             icon: Icons.fingerprint,
             title: l10n.security_biometricLogin,
             subtitle: l10n.security_biometricSubtitle,
             status: _SecurityStatus.active,
-            onTap: () => context.push('/settings/biometric'),
+            onTap: () => context.fsmPush('/settings/biometric'),
           ),
           const SizedBox(height: AppSpacing.xxl),
           SectionHeader(title: l10n.security_devices),
@@ -61,14 +61,14 @@ class ProfileSecurityView extends ConsumerWidget {
             title: l10n.security_devices,
             subtitle: l10n.security_devicesSubtitle,
             status: _SecurityStatus.info,
-            onTap: () => context.push('/settings/devices'),
+            onTap: () => context.fsmPush('/settings/devices'),
           ),
           _SecurityOption(
             icon: Icons.history,
             title: l10n.security_activeSessions,
             subtitle: l10n.security_activeSessionsSubtitle,
             status: _SecurityStatus.info,
-            onTap: () => context.push('/settings/sessions'),
+            onTap: () => context.fsmPush('/settings/sessions'),
           ),
         ],
       ),

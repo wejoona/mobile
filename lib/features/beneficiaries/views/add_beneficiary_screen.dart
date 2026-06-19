@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/beneficiaries/providers/beneficiaries_provider.dart';
 import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Add/Edit Beneficiary Screen
 class AddBeneficiaryScreen extends ConsumerStatefulWidget {
@@ -254,7 +254,7 @@ class _AddBeneficiaryScreenState extends ConsumerState<AddBeneficiaryScreen> {
               backgroundColor: colors.success,
             ),
           );
-          context.safePop(fallbackRoute: '/beneficiaries');
+          context.fsmSafePop(fallbackRoute: '/beneficiaries');
         }
       } else {
         // Create new beneficiary
@@ -291,7 +291,7 @@ class _AddBeneficiaryScreenState extends ConsumerState<AddBeneficiaryScreen> {
               backgroundColor: colors.success,
             ),
           );
-          context.safePop(fallbackRoute: '/beneficiaries');
+          context.fsmSafePop(fallbackRoute: '/beneficiaries');
         }
       }
     } catch (e) {

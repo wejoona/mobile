@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Profile setup screen for explicit account signup.
 class SignupProfileSetupView extends ConsumerStatefulWidget {
@@ -44,7 +44,7 @@ class _SignupProfileSetupViewState
           child: ListView(
             padding: const EdgeInsets.all(AppSpacing.xl),
             children: [
-              AuthTopBar(onBack: () => context.go('/signup/verify-phone')),
+              AuthTopBar(onBack: () => context.fsmGo('/signup/verify-phone')),
               const SizedBox(height: AppSpacing.lg),
               const FlowStepProgress(currentStep: 3, totalSteps: 5),
               const SizedBox(height: AppSpacing.xxl),
@@ -157,7 +157,7 @@ class _SignupProfileSetupViewState
         );
 
     if (mounted && ref.read(signupFlowProvider).error == null) {
-      context.go('/signup/set-pin');
+      context.fsmGo('/signup/set-pin');
     }
   }
 }

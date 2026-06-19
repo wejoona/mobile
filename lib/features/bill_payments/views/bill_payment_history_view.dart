@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -9,16 +8,19 @@ import 'package:usdc_wallet/services/bill_payments/bill_payments_service.dart';
 import 'package:usdc_wallet/features/bill_payments/providers/bill_payments_provider.dart';
 import 'package:usdc_wallet/features/bill_payments/widgets/provider_card.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Bill Payment History View
 class BillPaymentHistoryView extends ConsumerStatefulWidget {
   const BillPaymentHistoryView({super.key});
 
   @override
-  ConsumerState<BillPaymentHistoryView> createState() => _BillPaymentHistoryViewState();
+  ConsumerState<BillPaymentHistoryView> createState() =>
+      _BillPaymentHistoryViewState();
 }
 
-class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView> {
+class _BillPaymentHistoryViewState
+    extends ConsumerState<BillPaymentHistoryView> {
   String? _selectedCategory;
   String? _selectedStatus;
   bool _isLoadingMore = false;
@@ -28,12 +30,14 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
     final historyAsync = ref.watch(
-      billPaymentHistoryProvider(BillPaymentHistoryParams(
-        page: 1,
-        limit: 20,
-        category: _selectedCategory,
-        status: _selectedStatus,
-      )),
+      billPaymentHistoryProvider(
+        BillPaymentHistoryParams(
+          page: 1,
+          limit: 20,
+          category: _selectedCategory,
+          status: _selectedStatus,
+        ),
+      ),
     );
 
     return Scaffold(
@@ -48,7 +52,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.icon),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
         actions: [
           IconButton(
@@ -116,9 +120,8 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
                   ),
                 );
               },
-              loading: () => Center(
-                child: CircularProgressIndicator(color: colors.gold),
-              ),
+              loading: () =>
+                  Center(child: CircularProgressIndicator(color: colors.gold)),
               error: (error, _) => _buildErrorState(l10n, error.toString()),
             ),
           ),
@@ -184,16 +187,9 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
     return Chip(
       label: Text(
         label,
-        style: TextStyle(
-          color: colors.textPrimary,
-          fontSize: 12,
-        ),
+        style: TextStyle(color: colors.textPrimary, fontSize: 12),
       ),
-      deleteIcon: Icon(
-        Icons.close,
-        size: 16,
-        color: colors.iconSecondary,
-      ),
+      deleteIcon: Icon(Icons.close, size: 16, color: colors.iconSecondary),
       onDeleted: onRemove,
       backgroundColor: colors.elevated,
       side: BorderSide(color: colors.borderSubtle),
@@ -240,7 +236,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
           const SizedBox(height: AppSpacing.xl),
           AppButton(
             label: 'Payer une facture',
-            onPressed: () => context.push('/bill-payments'),
+            onPressed: () => context.fsmPush('/bill-payments'),
             icon: Icons.add,
           ),
         ],
@@ -260,11 +256,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
               color: colors.errorBg,
               borderRadius: BorderRadius.circular(AppRadius.full),
             ),
-            child: Icon(
-              Icons.error_outline,
-              size: 48,
-              color: colors.errorText,
-            ),
+            child: Icon(Icons.error_outline, size: 48, color: colors.errorText),
           ),
           const SizedBox(height: AppSpacing.xl),
           AppText(
@@ -363,7 +355,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
   }
 
   void _onItemTap(BillPaymentHistoryItem item) {
-    context.push('/bill-payments/success/${item.id}');
+    context.fsmPush('/bill-payments/success/${item.id}');
   }
 
   String _capitalizeStatus(String status) {
@@ -397,13 +389,15 @@ class _HistoryGroup extends StatelessWidget {
             color: colors.textTertiary,
           ),
         ),
-        ...items.map((item) => Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: ProviderListItem(
-                payment: item,
-                onTap: () => onItemTap(item),
-              ),
-            )),
+        ...items.map(
+          (item) => Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+            child: ProviderListItem(
+              payment: item,
+              onTap: () => onItemTap(item),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -477,12 +471,14 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
               _buildFilterOption(null, 'All', _category == null, (v) {
                 setState(() => _category = v);
               }),
-              ...BillCategory.values.map((cat) => _buildFilterOption(
-                    cat.value,
-                    cat.displayName,
-                    _category == cat.value,
-                    (v) => setState(() => _category = v),
-                  )),
+              ...BillCategory.values.map(
+                (cat) => _buildFilterOption(
+                  cat.value,
+                  cat.displayName,
+                  _category == cat.value,
+                  (v) => setState(() => _category = v),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.xl),
@@ -501,10 +497,17 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
               _buildFilterOption(null, 'All', _status == null, (v) {
                 setState(() => _status = v);
               }),
-              _buildFilterOption('completed', 'Completed', _status == 'completed', (v) {
-                setState(() => _status = v);
-              }),
-              _buildFilterOption('pending', 'Pending', _status == 'pending', (v) {
+              _buildFilterOption(
+                'completed',
+                'Completed',
+                _status == 'completed',
+                (v) {
+                  setState(() => _status = v);
+                },
+              ),
+              _buildFilterOption('pending', 'Pending', _status == 'pending', (
+                v,
+              ) {
                 setState(() => _status = v);
               }),
               _buildFilterOption('failed', 'Failed', _status == 'failed', (v) {
@@ -543,14 +546,18 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
           color: isSelected ? context.colors.gold : context.colors.container,
           borderRadius: BorderRadius.circular(AppRadius.full),
           border: Border.all(
-            color: isSelected ? context.colors.gold : context.colors.borderSubtle,
+            color: isSelected
+                ? context.colors.gold
+                : context.colors.borderSubtle,
             width: 1,
           ),
         ),
         child: AppText(
           label,
           variant: AppTextVariant.labelMedium,
-          color: isSelected ? context.colors.canvas : context.colors.textPrimary,
+          color: isSelected
+              ? context.colors.canvas
+              : context.colors.textPrimary,
         ),
       ),
     );

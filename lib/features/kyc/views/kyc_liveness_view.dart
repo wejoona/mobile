@@ -1,9 +1,9 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
@@ -53,14 +53,14 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
         // High score — auto-approve, proceed to review
         setState(() => _isComplete = true);
         _navigationTimer = Timer(const Duration(seconds: 2), () {
-          if (mounted) context.go('/kyc/review');
+          if (mounted) context.fsmGo('/kyc/review');
         });
 
       case LivenessDecision.manualReview:
         // Medium score — submit for manual review, show pending screen
         setState(() => _isComplete = true);
         _navigationTimer = Timer(const Duration(seconds: 2), () {
-          if (mounted) context.go('/kyc/submitted');
+          if (mounted) context.fsmGo('/kyc/submitted');
         });
 
       case LivenessDecision.decline:
@@ -76,7 +76,7 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
 
   void _onCancel() {
     // Go back to selfie capture
-    context.pop();
+    context.fsmPop();
   }
 
   void _retry() {
@@ -250,7 +250,7 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
 
     _navigationTimer?.cancel();
     _navigationTimer = Timer(const Duration(seconds: 3), () {
-      if (mounted) context.go('/kyc/submitted');
+      if (mounted) context.fsmGo('/kyc/submitted');
     });
   }
 }

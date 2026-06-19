@@ -3,6 +3,7 @@ import 'package:usdc_wallet/state/fsm/auth_fsm.dart';
 import 'package:usdc_wallet/state/fsm/wallet_fsm.dart';
 import 'package:usdc_wallet/state/fsm/kyc_fsm.dart';
 import 'package:usdc_wallet/state/fsm/session_fsm.dart';
+import 'package:usdc_wallet/state/fsm/app_route_contract.dart';
 
 /// ┌─────────────────────────────────────────────────────────────────┐
 /// │                    APP FSM (ORCHESTRATOR)                        │
@@ -369,18 +370,17 @@ class AppGuards {
 
   /// Check if route is allowed
   GuardResult canAccessRoute(String route) {
-    // Public routes - always allowed
-    if (_isPublicRoute(route)) {
+    final contract = appRouteContractFor(route);
+
+    if (contract.isPublic) {
       return const GuardAllowed();
     }
 
-    // Must be authenticated for all other routes
     if (!state.isAuthenticated) {
       return const GuardDenied('/login', 'Authentication required');
     }
 
-    // Routes that require wallet
-    if (_requiresWallet(route)) {
+    if (contract.requiresWallet) {
       if (!state.hasWallet) {
         if (state.needsWalletCreation) {
           return const GuardDenied('/create-wallet', 'Wallet required');
@@ -389,48 +389,23 @@ class AppGuards {
       }
     }
 
-    // Routes that require KYC tier 1
-    if (_requiresKycTier1(route)) {
+    if (contract.requiresVerifiedKyc && !state.isKycVerified) {
+      return const GuardDenied('/kyc', 'Verified KYC required');
+    }
+
+    if (contract.requiresKycTier1) {
       if (!state.kyc.canPerform(KycTier.tier1)) {
         return const GuardDenied('/kyc', 'KYC verification required');
       }
     }
 
-    // Routes that require KYC tier 2
-    if (_requiresKycTier2(route)) {
+    if (contract.requiresKycTier2) {
       if (!state.kyc.canPerform(KycTier.tier2)) {
         return const GuardDenied('/kyc/upgrade', 'KYC upgrade required');
       }
     }
 
     return const GuardAllowed();
-  }
-
-  bool _isPublicRoute(String route) {
-    const publicRoutes = ['/', '/login', '/otp', '/register'];
-    return publicRoutes.any((r) => route.startsWith(r));
-  }
-
-  bool _requiresWallet(String route) {
-    const walletRoutes = [
-      '/home',
-      '/send',
-      '/receive',
-      '/deposit',
-      '/withdraw',
-      '/transactions',
-    ];
-    return walletRoutes.any((r) => route.startsWith(r));
-  }
-
-  bool _requiresKycTier1(String route) {
-    const tier1Routes = ['/deposit', '/withdraw'];
-    return tier1Routes.any((r) => route.startsWith(r));
-  }
-
-  bool _requiresKycTier2(String route) {
-    const tier2Routes = ['/international-transfer', '/high-value'];
-    return tier2Routes.any((r) => route.startsWith(r));
   }
 }
 

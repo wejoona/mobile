@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/state/transaction_state_machine.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Payment method universe/category
 enum PaymentUniverse { mobileMoney, bankTransfer, card, crypto }
@@ -88,7 +87,7 @@ class _DepositViewState extends ConsumerState<DepositView> {
 
     ref.listen(depositProvider, (prev, next) {
       if (next.response != null) {
-        context.go('/deposit/instructions', extra: next.response);
+        context.fsmGo('/deposit/instructions', extra: next.response);
         // Refresh wallet and transactions via FSM after deposit initiated.
         // Navigate first so router refreshes cannot bounce the user off the
         // instructions screen while the deposit form is still active.
@@ -111,7 +110,7 @@ class _DepositViewState extends ConsumerState<DepositView> {
         title: AppText(l10n.deposit_title, variant: AppTextVariant.titleLarge),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.safePop(),
+          onPressed: () => context.fsmSafePop(),
         ),
       ),
       body: SingleChildScrollView(

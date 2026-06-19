@@ -8,6 +8,7 @@ import 'package:usdc_wallet/features/transactions/views/transactions_view.dart';
 import 'package:usdc_wallet/features/wallet/views/wallet_home_screen.dart';
 import 'package:usdc_wallet/router/page_transitions.dart';
 import 'package:usdc_wallet/router/widgets/navigation_shell.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 List<RouteBase> primaryShellRoutes() => [
   // Main App Routes (with bottom nav - no animation for tab switching)
@@ -75,7 +76,7 @@ class _ProtectedRootTab extends StatelessWidget {
     canPop: false,
     onPopInvokedWithResult: (didPop, _) {
       if (!didPop) {
-        context.go('/home');
+        context.fsmGo('/home');
       }
     },
     child: child,

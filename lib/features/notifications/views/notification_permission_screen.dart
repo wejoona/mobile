@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/notifications/providers/notification_permission_provider.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Notification Permission Screen
 ///
@@ -33,7 +33,7 @@ class NotificationPermissionScreen extends ConsumerWidget {
                 alignment: Alignment.topRight,
                 child: IconButton(
                   icon: Icon(Icons.close, color: colors.textSecondary),
-                  onPressed: () => context.pop(),
+                  onPressed: () => context.fsmPop(),
                 ),
               ),
 
@@ -161,7 +161,7 @@ class NotificationPermissionScreen extends ConsumerWidget {
 
               // Maybe later button
               TextButton(
-                onPressed: () => context.pop(),
+                onPressed: () => context.fsmPop(),
                 child: AppText(
                   l10n.notifications_maybe_later,
                   variant: AppTextVariant.bodyLarge,
@@ -183,7 +183,7 @@ class NotificationPermissionScreen extends ConsumerWidget {
       final colors = context.colors;
       if (success) {
         // Permission granted - navigate back or to next screen
-        context.pop();
+        context.fsmPop();
 
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(

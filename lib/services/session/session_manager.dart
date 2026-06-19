@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
@@ -273,15 +273,11 @@ class _SessionManagerState extends ConsumerState<SessionManager>
 
   void _go(String location) {
     try {
-      ref.read(routerProvider).go(location);
-    } on Object {
-      try {
-        context.go(location);
-      } on Object catch (fallbackError) {
-        AppLogger(
-          'SessionManager',
-        ).error('Could not navigate to $location', fallbackError);
-      }
+      context.fsmGo(location);
+    } on Object catch (fallbackError) {
+      AppLogger(
+        'SessionManager',
+      ).error('Could not navigate to $location', fallbackError);
     }
   }
 }

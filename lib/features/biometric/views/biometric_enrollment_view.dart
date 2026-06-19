@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Biometric Enrollment View
 /// Shows benefits and guides user through biometric setup
@@ -45,7 +45,7 @@ class _BiometricEnrollmentViewState
         leading: widget.isOptional
             ? IconButton(
                 icon: Icon(Icons.close, color: context.colors.gold),
-                onPressed: () => context.pop(),
+                onPressed: () => context.fsmPop(),
               )
             : null,
       ),
@@ -301,7 +301,7 @@ class _BiometricEnrollmentViewState
                 label: l10n.action_continue,
                 onPressed: () {
                   widget.onComplete?.call();
-                  context.pop(true);
+                  context.fsmPop(true);
                 },
                 isFullWidth: true,
               ),
@@ -402,7 +402,7 @@ class _BiometricEnrollmentViewState
 
     if (confirmed == true && mounted) {
       widget.onComplete?.call();
-      context.pop(false);
+      context.fsmPop(false);
     }
   }
 

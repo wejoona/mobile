@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
@@ -8,10 +7,10 @@ import 'package:usdc_wallet/features/settings/providers/notification_preferences
 import 'package:usdc_wallet/features/settings/providers/security_settings_provider.dart';
 import 'package:usdc_wallet/features/settings/providers/sessions_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
 import 'package:usdc_wallet/utils/context_extensions.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class SecurityView extends ConsumerStatefulWidget {
   const SecurityView({super.key});
@@ -41,7 +40,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.gold),
-          onPressed: () => context.safePop(fallbackRoute: '/settings'),
+          onPressed: () => context.fsmSafePop(fallbackRoute: '/settings'),
         ),
       ),
       body: SingleChildScrollView(
@@ -67,7 +66,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               icon: Icons.lock_outline,
               title: l10n.security_changePin,
               subtitle: l10n.security_changePinSubtitle,
-              onTap: () => context.push('/settings/pin'),
+              onTap: () => context.fsmPush('/settings/pin'),
             ),
             const SizedBox(height: AppSpacing.sm),
             _buildBiometricOption(l10n, colors),
@@ -163,7 +162,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               icon: Icons.devices,
               title: l10n.security_devices,
               subtitle: l10n.security_devicesSubtitle,
-              onTap: () => context.push('/settings/devices'),
+              onTap: () => context.fsmPush('/settings/devices'),
             ),
             const SizedBox(height: AppSpacing.sm),
             _buildSecurityOption(
@@ -172,7 +171,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               icon: Icons.smartphone,
               title: l10n.security_activeSessions,
               subtitle: l10n.security_activeSessionsSubtitle,
-              onTap: () => context.push('/settings/sessions'),
+              onTap: () => context.fsmPush('/settings/sessions'),
             ),
             const SizedBox(height: AppSpacing.sm),
             _buildSecurityOption(
@@ -219,7 +218,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               icon: Icons.delete_forever,
               title: l10n.security_deleteAccount,
               subtitle: l10n.security_deleteAccountSubtitle,
-              onTap: () => context.push('/settings/delete-account'),
+              onTap: () => context.fsmPush('/settings/delete-account'),
               isDanger: true,
             ),
           ],
@@ -534,7 +533,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
           ? subtitle
           : l10n.notifications_loadError,
       status: status,
-      onTap: () => context.push('/settings/notifications'),
+      onTap: () => context.fsmPush('/settings/notifications'),
     );
   }
 
@@ -563,7 +562,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
           ? l10n.security_transactionAlertsSubtitle
           : l10n.notifications_loadError,
       status: status,
-      onTap: () => context.push('/settings/notifications'),
+      onTap: () => context.fsmPush('/settings/notifications'),
     );
   }
 
@@ -838,7 +837,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
         subtitle: enabled
             ? l10n.biometric_settings_enabled_subtitle
             : l10n.biometric_settings_disabled_subtitle,
-        onTap: () => context.push('/settings/biometric'),
+        onTap: () => context.fsmPush('/settings/biometric'),
       ),
       loading: () => _buildSecurityOption(
         l10n: l10n,
@@ -846,7 +845,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
         icon: Icons.fingerprint,
         title: l10n.security_biometricLogin,
         subtitle: l10n.security_loading,
-        onTap: () => context.push('/settings/biometric'),
+        onTap: () => context.fsmPush('/settings/biometric'),
       ),
       error: (_, __) => _buildSecurityOption(
         l10n: l10n,
@@ -854,7 +853,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
         icon: Icons.fingerprint,
         title: l10n.security_biometricLogin,
         subtitle: l10n.security_errorLoadingState,
-        onTap: () => context.push('/settings/biometric'),
+        onTap: () => context.fsmPush('/settings/biometric'),
       ),
     );
   }
@@ -950,7 +949,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                   ),
                 );
                 if (success) {
-                  context.go('/login');
+                  context.fsmGo('/login');
                 }
               },
               variant: AppButtonVariant.danger,

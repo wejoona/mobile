@@ -3,11 +3,11 @@ import 'package:usdc_wallet/providers/missing_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/features/insights/widgets/top_recipients_chart.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class TopRecipientsSection extends ConsumerWidget {
   const TopRecipientsSection({super.key});
@@ -42,7 +42,7 @@ class TopRecipientsSection extends ConsumerWidget {
                     color: context.colors.textPrimary,
                   ),
                   TextButton(
-                    onPressed: () => context.push('/recipients'),
+                    onPressed: () => context.fsmPush('/recipients'),
                     child: AppText(
                       'View All',
                       variant: AppTextVariant.bodySmall,

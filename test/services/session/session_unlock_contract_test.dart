@@ -48,7 +48,7 @@ void main() {
       reason:
           'PIN unlock should not race session state changes against routing',
     );
-    expect(pinSuccessBody, contains('context.enterAuthenticatedApp('));
+    expect(pinSuccessBody, contains('context.fsmEnterAuthenticatedApp('));
     expect(
       pinScreenSource,
       contains('ref.listenManual<AuthState>'),
@@ -85,7 +85,7 @@ void main() {
           'FSM biometric prompt must use Korido user-bound biometric service, not raw device auth',
     );
     expect(biometricUnlockBody, contains('addPostFrameCallback'));
-    expect(biometricUnlockBody, contains('context.enterAuthenticatedApp()'));
+    expect(biometricUnlockBody, contains('context.fsmEnterAuthenticatedApp()'));
     expect(
       sessionLockedUnlockBody,
       contains('appFsmProvider.notifier).unlockSession()'),
@@ -94,13 +94,14 @@ void main() {
     );
     expect(
       sessionLockedUnlockBody,
-      contains('context.enterAuthenticatedApp()'),
+      contains('context.fsmEnterAuthenticatedApp()'),
     );
     expect(navigationExtensionSource, contains('enterAuthenticatedApp'));
     expect(
       navigationExtensionSource,
-      contains('router.go(route);'),
-      reason: 'authenticated entry should rely on GoRouter stack replacement',
+      contains('fsmEnterAuthenticatedApp(route: route);'),
+      reason:
+          'authenticated entry should delegate to the FSM navigation facade',
     );
     expect(
       navigationExtensionSource,
@@ -332,6 +333,9 @@ void main() {
     final redirectorSource = File(
       'lib/router/app_redirector.dart',
     ).readAsStringSync();
+    final routeContractSource = File(
+      'lib/state/fsm/app_route_contract.dart',
+    ).readAsStringSync();
     final legacyLoginPinSource = File(
       'lib/features/auth/views/login_pin_view.dart',
     ).readAsStringSync();
@@ -368,9 +372,15 @@ void main() {
     expect(redirectorSource, contains('pendingPinSessionToken'));
     expect(
       redirectorSource,
-      contains("location == '/login/pin'"),
+      contains("location != '/login/pin'"),
       reason:
           'returning login PIN entry is pre-auth but must stay protected by the pending OTP session guard',
+    );
+    expect(
+      redirectorSource,
+      contains("hasPendingPinSession ? null : '/login'"),
+      reason:
+          'login PIN may stay open only while the OTP-created pending PIN session exists',
     );
     expect(
       File('lib/features/pin/views/pin_screen.dart').readAsStringSync(),
@@ -379,8 +389,9 @@ void main() {
           'PIN success should own one authenticated-app navigation instead of racing the auth-state listener',
     );
     expect(redirectorSource, isNot(contains('isPublicPath(location)')));
-    expect(redirectorSource, contains("location == '/signup'"));
-    expect(redirectorSource, contains("location == '/signup/verify-phone'"));
+    expect(routeContractSource, contains("pattern: '/signup'"));
+    expect(routeContractSource, contains("pattern: '/signup/verify-phone'"));
+    expect(redirectorSource, contains('isSignupAppRoute(location)'));
     expect(redirectorSource, contains("return '/home'"));
     expect(
       legacyLoginPinSource,

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/theme/theme_extensions.dart';
 import 'package:usdc_wallet/features/beneficiaries/providers/beneficiaries_provider.dart';
 import 'package:usdc_wallet/features/beneficiaries/widgets/beneficiary_card.dart';
 import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Beneficiaries Screen
 ///
@@ -104,7 +104,9 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
                 hint: l10n.beneficiaries_searchHint,
                 prefixIcon: Icons.search,
                 onChanged: (value) {
-                  ref.read(beneficiariesProvider.notifier).setSearchQuery(value);
+                  ref
+                      .read(beneficiariesProvider.notifier)
+                      .setSearchQuery(value);
                 },
                 suffixIcon: _searchController.text.isNotEmpty
                     ? Icons.clear
@@ -204,7 +206,11 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 64, color: colors.textSecondary.withValues(alpha: 0.5)),
+            Icon(
+              icon,
+              size: 64,
+              color: colors.textSecondary.withValues(alpha: 0.5),
+            ),
             SizedBox(height: AppSpacing.md),
             AppText(
               title,
@@ -270,11 +276,11 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
 
   void _selectBeneficiary(BuildContext context, Beneficiary beneficiary) {
     // Navigate to detail view
-    context.push('/beneficiaries/detail/${beneficiary.id}');
+    context.fsmPush('/beneficiaries/detail/${beneficiary.id}');
   }
 
   void _navigateToAddBeneficiary(BuildContext context) {
-    context.push('/beneficiaries/add').then((_) {
+    context.fsmPush('/beneficiaries/add').then((_) {
       // Refresh list after adding
       ref.read(beneficiariesProvider.notifier).loadBeneficiaries();
     });
@@ -311,10 +317,7 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
             SizedBox(height: AppSpacing.md),
 
             // Title
-            AppText(
-              beneficiary.name,
-              variant: AppTextVariant.headlineSmall,
-            ),
+            AppText(beneficiary.name, variant: AppTextVariant.headlineSmall),
             SizedBox(height: AppSpacing.lg),
 
             // Edit
@@ -322,10 +325,10 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
               leading: Icon(Icons.edit, color: appColors.gold500),
               title: AppText(l10n.beneficiaries_menuEdit),
               onTap: () {
-                context.pop();
-                context
-                    .push('/beneficiaries/edit/${beneficiary.id}')
-                    .then((_) {
+                context.fsmPop();
+                context.fsmPush('/beneficiaries/edit/${beneficiary.id}').then((
+                  _,
+                ) {
                   ref.read(beneficiariesProvider.notifier).loadBeneficiaries();
                 });
               },
@@ -340,7 +343,7 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
                 color: colors.error,
               ),
               onTap: () {
-                context.pop();
+                context.fsmPop();
                 _showDeleteConfirmation(context, beneficiary, l10n);
               },
             ),
@@ -365,9 +368,7 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
           l10n.beneficiaries_deleteTitle,
           variant: AppTextVariant.headlineSmall,
         ),
-        content: AppText(
-          l10n.beneficiaries_deleteMessage(beneficiary.name),
-        ),
+        content: AppText(l10n.beneficiaries_deleteMessage(beneficiary.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),

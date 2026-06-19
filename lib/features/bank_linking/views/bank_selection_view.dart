@@ -4,13 +4,13 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/typography.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/features/bank_linking/providers/bank_linking_provider.dart';
 import 'package:usdc_wallet/features/bank_linking/models/bank.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class BankSelectionView extends ConsumerStatefulWidget {
   const BankSelectionView({super.key});
@@ -24,9 +24,7 @@ class _BankSelectionViewState extends ConsumerState<BankSelectionView> {
   void initState() {
     super.initState();
     // Load available banks
-    Future.microtask(
-      () => ref.read(bankLinkingProvider.notifier).loadBanks(),
-    );
+    Future.microtask(() => ref.read(bankLinkingProvider.notifier).loadBanks());
   }
 
   @override
@@ -44,7 +42,7 @@ class _BankSelectionViewState extends ConsumerState<BankSelectionView> {
         backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
       ),
       body: SafeArea(
@@ -110,10 +108,7 @@ class _BankSelectionViewState extends ConsumerState<BankSelectionView> {
         decoration: BoxDecoration(
           color: context.colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(
-            color: context.colors.elevated,
-            width: 1,
-          ),
+          border: Border.all(color: context.colors.elevated, width: 1),
         ),
         child: Row(
           children: [
@@ -150,16 +145,16 @@ class _BankSelectionViewState extends ConsumerState<BankSelectionView> {
                     children: [
                       if (bank.supportsBalanceCheck)
                         _buildFeatureBadge(
-                          AppLocalizations.of(context)!
-                              .bankLinking_balanceCheck,
+                          AppLocalizations.of(
+                            context,
+                          )!.bankLinking_balanceCheck,
                           Icons.account_balance_wallet,
                         ),
                       if (bank.supportsDirectDebit) ...[
                         if (bank.supportsBalanceCheck)
                           SizedBox(width: AppSpacing.xs),
                         _buildFeatureBadge(
-                          AppLocalizations.of(context)!
-                              .bankLinking_directDebit,
+                          AppLocalizations.of(context)!.bankLinking_directDebit,
                           Icons.swap_horiz,
                         ),
                       ],
@@ -168,10 +163,7 @@ class _BankSelectionViewState extends ConsumerState<BankSelectionView> {
                 ],
               ),
             ),
-            Icon(
-              Icons.chevron_right,
-              color: context.colors.textSecondary,
-            ),
+            Icon(Icons.chevron_right, color: context.colors.textSecondary),
           ],
         ),
       ),
@@ -180,10 +172,7 @@ class _BankSelectionViewState extends ConsumerState<BankSelectionView> {
 
   Widget _buildFeatureBadge(String label, IconData icon) {
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.xs,
-        vertical: 2,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: 2),
       decoration: BoxDecoration(
         color: context.colors.gold.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppRadius.xs),
@@ -208,6 +197,6 @@ class _BankSelectionViewState extends ConsumerState<BankSelectionView> {
 
   void _handleBankSelected(Bank bank) {
     ref.read(bankLinkingProvider.notifier).selectBank(bank);
-    context.push('/bank-linking/link');
+    context.fsmPush('/bank-linking/link');
   }
 }

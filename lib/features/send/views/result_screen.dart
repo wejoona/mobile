@@ -1,9 +1,9 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -325,7 +325,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
       children: [
         AppButton(
           label: l10n.action_retry,
-          onPressed: () => context.go('/send/confirm'),
+          onPressed: () => context.fsmGo('/send/confirm'),
           isFullWidth: true,
         ),
         const SizedBox(height: AppSpacing.sm),
@@ -420,6 +420,6 @@ ${l10n.appName}
     // Reset the send state
     ref.read(sendMoneyProvider.notifier).reset();
     // Navigate to home
-    context.go('/home');
+    context.fsmGo('/home');
   }
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,7 +9,6 @@ import 'package:usdc_wallet/domain/entities/notification_preferences.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/settings/providers/notification_preferences_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
 
 class NotificationSettingsView extends ConsumerStatefulWidget {
@@ -460,7 +460,7 @@ class _NotificationSettingsViewState
               backgroundColor: context.colors.success,
             ),
           );
-          context.safePop(fallbackRoute: '/settings');
+          context.fsmSafePop(fallbackRoute: '/settings');
         } else {
           setState(() => _isSaving = false);
           final l10n = AppLocalizations.of(context)!;
@@ -555,7 +555,7 @@ class _NotificationSettingsViewState
               TextButton(
                 onPressed: () {
                   Navigator.of(dialogContext).pop();
-                  context.safePop(fallbackRoute: '/settings');
+                  context.fsmSafePop(fallbackRoute: '/settings');
                 },
                 child: AppText(
                   l10n.action_discard,
@@ -567,7 +567,7 @@ class _NotificationSettingsViewState
         },
       );
     } else {
-      context.safePop(fallbackRoute: '/settings');
+      context.fsmSafePop(fallbackRoute: '/settings');
     }
   }
 }

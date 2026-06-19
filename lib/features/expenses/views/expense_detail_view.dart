@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
@@ -15,19 +14,20 @@ import 'package:usdc_wallet/design/components/primitives/app_card.dart';
 import 'package:usdc_wallet/features/expenses/providers/expenses_provider.dart';
 import 'package:usdc_wallet/domain/entities/expense.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class ExpenseDetailView extends ConsumerWidget {
-  const ExpenseDetailView({
-    super.key,
-    required this.expense,
-  });
+  const ExpenseDetailView({super.key, required this.expense});
 
   final Expense expense;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final currencyFormat = NumberFormat.currency(symbol: 'XOF', decimalDigits: 0);
+    final currencyFormat = NumberFormat.currency(
+      symbol: 'XOF',
+      decimalDigits: 0,
+    );
     final dateFormat = DateFormat('MMMM dd, yyyy');
     final timeFormat = DateFormat('hh:mm a');
 
@@ -141,7 +141,7 @@ class ExpenseDetailView extends ConsumerWidget {
                         expense.description!,
                         Icons.description,
                       ),
-                    if (expense.transactionId != null) // ignore: unnecessary_null_comparison
+                    if (expense.transactionId.isNotEmpty)
                       _buildDetailRow(
                         l10n.expenses_linkedTransaction,
                         expense.transactionId,
@@ -173,11 +173,7 @@ class ExpenseDetailView extends ConsumerWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            icon,
-            size: 20,
-            color: AppColors.textSecondary,
-          ),
+          Icon(icon, size: 20, color: AppColors.textSecondary),
           SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
@@ -190,10 +186,7 @@ class ExpenseDetailView extends ConsumerWidget {
                   ),
                 ),
                 SizedBox(height: AppSpacing.xs),
-                AppText(
-                  value,
-                  style: AppTypography.bodyMedium,
-                ),
+                AppText(value, style: AppTypography.bodyMedium),
               ],
             ),
           ),
@@ -235,7 +228,7 @@ class ExpenseDetailView extends ConsumerWidget {
       try {
         ref.invalidate(expensesProvider);
         if (context.mounted) {
-          context.pop();
+          context.fsmPop();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.expenses_deletedSuccessfully),
@@ -257,13 +250,21 @@ class ExpenseDetailView extends ConsumerWidget {
   }
 
   void _shareExpense(BuildContext context, AppLocalizations l10n) {
-    final currencyFormat =
-        NumberFormat.currency(symbol: 'XOF', decimalDigits: 0);
+    final currencyFormat = NumberFormat.currency(
+      symbol: 'XOF',
+      decimalDigits: 0,
+    );
     final dateFormat = DateFormat('MMMM dd, yyyy');
     final text = StringBuffer();
-    text.writeln('${l10n.expenses_expenseDetails}: ${expense.description ?? ''}');
-    text.writeln('${l10n.expenses_amount}: ${currencyFormat.format(expense.amount)}');
-    text.writeln('${l10n.expenses_category}: ${_getCategoryLabel(l10n, expense.category)}');
+    text.writeln(
+      '${l10n.expenses_expenseDetails}: ${expense.description ?? ''}',
+    );
+    text.writeln(
+      '${l10n.expenses_amount}: ${currencyFormat.format(expense.amount)}',
+    );
+    text.writeln(
+      '${l10n.expenses_category}: ${_getCategoryLabel(l10n, expense.category)}',
+    );
     text.writeln('${l10n.expenses_date}: ${dateFormat.format(expense.date)}');
     if (expense.vendor != null) {
       text.writeln('${l10n.expenses_vendor}: ${expense.vendor}');

@@ -1,8 +1,8 @@
 import 'dart:io';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/design/components/primitives/app_card.dart';
@@ -452,9 +452,9 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
       // Check if video verification is needed
       final state = ref.read(kycProvider);
       if (state.targetTier?.level == 3) {
-        context.push('/kyc/video');
+        context.fsmPush('/kyc/video');
       } else {
-        context.go('/kyc/submitted');
+        context.fsmGo('/kyc/submitted');
       }
     } catch (e) {
       if (!mounted) return;

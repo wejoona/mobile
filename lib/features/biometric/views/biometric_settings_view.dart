@@ -1,12 +1,12 @@
 // ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/biometric/providers/biometric_settings_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Biometric Settings View
 /// Manage biometric authentication preferences
@@ -35,7 +35,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: context.colors.gold),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
       ),
       body: SingleChildScrollView(
@@ -622,7 +622,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
   );
 
   Widget _buildFallbackToPinButton(AppLocalizations l10n) => InkWell(
-    onTap: () => context.push('/settings/pin'),
+    onTap: () => context.fsmPush('/settings/pin'),
     borderRadius: BorderRadius.circular(AppRadius.md),
     child: AppCard(
       variant: AppCardVariant.subtle,
@@ -708,7 +708,9 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
   Future<void> _handleBiometricToggle(bool value, AppLocalizations l10n) async {
     if (value) {
       // Navigate to enrollment view
-      final result = await context.push<bool>('/settings/biometric/enrollment');
+      final result = await context.fsmPush<bool>(
+        '/settings/biometric/enrollment',
+      );
       if (result ?? false) {
         _refreshBiometricEnrollmentState();
       }
@@ -902,7 +904,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
 
       // Navigate to enrollment
       if (mounted) {
-        final result = await context.push<bool>(
+        final result = await context.fsmPush<bool>(
           '/settings/biometric/enrollment',
         );
         if (result ?? false) {

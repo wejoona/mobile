@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class SubmittedView extends ConsumerWidget {
   const SubmittedView({super.key});
@@ -47,17 +47,11 @@ class SubmittedView extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: colors.info.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppRadius.xl),
-                  border: Border.all(
-                    color: colors.info.withValues(alpha: 0.3),
-                  ),
+                  border: Border.all(color: colors.info.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.access_time,
-                      color: colors.infoText,
-                      size: 28,
-                    ),
+                    Icon(Icons.access_time, color: colors.infoText, size: 28),
                     SizedBox(width: AppSpacing.lg),
                     Expanded(
                       child: AppText(
@@ -72,7 +66,7 @@ class SubmittedView extends ConsumerWidget {
               const Spacer(),
               AppButton(
                 label: l10n.common_done,
-                onPressed: () => context.go('/home'),
+                onPressed: () => context.fsmGo('/home'),
                 isFullWidth: true,
               ),
             ],
@@ -98,11 +92,7 @@ class SubmittedView extends ConsumerWidget {
               shape: BoxShape.circle,
               color: colors.success.withValues(alpha: 0.1),
             ),
-            child: Icon(
-              Icons.check_circle,
-              size: 64,
-              color: colors.success,
-            ),
+            child: Icon(Icons.check_circle, size: 64, color: colors.success),
           ),
         );
       },

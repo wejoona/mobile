@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
@@ -8,6 +7,7 @@ import 'package:usdc_wallet/features/sub_business/providers/sub_business_provide
 import 'package:usdc_wallet/features/sub_business/widgets/sub_business_card.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Main screen showing list of sub-businesses
 class SubBusinessesView extends ConsumerStatefulWidget {
@@ -54,7 +54,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
             : _buildSubBusinessesList(state, l10n),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/sub-businesses/create'),
+        onPressed: () => context.fsmPush('/sub-businesses/create'),
         backgroundColor: context.colors.gold,
         child: Icon(Icons.add, color: context.colors.canvas),
       ),
@@ -89,7 +89,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
             SizedBox(height: AppSpacing.xl),
             AppButton(
               label: l10n.subBusiness_createFirst,
-              onPressed: () => context.push('/sub-businesses/create'),
+              onPressed: () => context.fsmPush('/sub-businesses/create'),
             ),
           ],
         ),
@@ -159,7 +159,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
             child: SubBusinessCard(
               subBusiness: subBusiness,
               onTap: () =>
-                  context.push('/sub-businesses/detail/${subBusiness.id}'),
+                  context.fsmPush('/sub-businesses/detail/${subBusiness.id}'),
             ),
           );
         }),

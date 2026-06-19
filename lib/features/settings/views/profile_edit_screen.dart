@@ -3,19 +3,18 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
 import 'package:usdc_wallet/features/profile/services/profile_picture_service.dart';
 import 'package:usdc_wallet/features/settings/utils/profile_phone_formatter.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/image_analysis/image_analysis_service.dart';
 import 'package:usdc_wallet/services/user/avatar_multipart.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/state/index.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 enum _AvatarAction { camera, gallery, remove }
 
@@ -98,7 +97,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: context.colors.gold),
-          onPressed: () => context.safePop(fallbackRoute: '/settings'),
+          onPressed: () => context.fsmSafePop(fallbackRoute: '/settings'),
         ),
       ),
       body: SafeArea(
@@ -729,9 +728,9 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
           savedEmail.isNotEmpty &&
           !profile.emailVerified) {
         final successRoute = Uri.encodeComponent('/settings/profile');
-        context.go('/profile/verify-email?successRoute=$successRoute');
+        context.fsmGo('/profile/verify-email?successRoute=$successRoute');
       } else {
-        context.safePop(fallbackRoute: '/settings');
+        context.fsmSafePop(fallbackRoute: '/settings');
       }
     } catch (e) {
       if (mounted) {

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/merchant_pay/providers/merchant_provider.dart';
@@ -9,6 +8,7 @@ import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart
 import 'package:usdc_wallet/features/merchant_pay/widgets/qr_scanner_widget.dart';
 import 'package:usdc_wallet/features/merchant_pay/views/payment_confirm_view.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Scan QR View
 /// Customer interface for scanning merchant QR codes
@@ -80,7 +80,7 @@ class _ScanQrViewState extends ConsumerState<ScanQrView> {
   void _showSuccessAndNavigate() {
     final payment = ref.read(scanToPayProvider).payment;
     if (payment != null) {
-      context.push('/payment-receipt', extra: payment);
+      context.fsmPush('/payment-receipt', extra: payment);
     }
   }
 
@@ -135,7 +135,10 @@ class _ScanQrViewState extends ConsumerState<ScanQrView> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.error_outline, color: context.colors.textPrimary),
+                    Icon(
+                      Icons.error_outline,
+                      color: context.colors.textPrimary,
+                    ),
                     SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: AppText(
@@ -148,7 +151,10 @@ class _ScanQrViewState extends ConsumerState<ScanQrView> {
                         ref.read(scanToPayProvider.notifier).goBackToScanning();
                         _scannedQrData = null;
                       },
-                      icon: Icon(Icons.close, color: context.colors.textPrimary),
+                      icon: Icon(
+                        Icons.close,
+                        color: context.colors.textPrimary,
+                      ),
                     ),
                   ],
                 ),

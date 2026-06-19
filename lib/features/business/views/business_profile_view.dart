@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/enums/account_type.dart';
 import 'package:usdc_wallet/features/business/providers/business_provider.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Business Profile View - view and edit business info
 class BusinessProfileView extends ConsumerWidget {
@@ -28,12 +28,12 @@ class BusinessProfileView extends ConsumerWidget {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.gold),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
         actions: [
           IconButton(
             icon: Icon(Icons.edit, color: colors.gold),
-            onPressed: () => context.push('/settings/business-setup'),
+            onPressed: () => context.fsmPush('/settings/business-setup'),
           ),
         ],
       ),
@@ -56,7 +56,8 @@ class BusinessProfileView extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.xl),
                   AppButton(
                     label: l10n.business_setupNow,
-                    onPressed: () => context.push('/settings/business-setup'),
+                    onPressed: () =>
+                        context.fsmPush('/settings/business-setup'),
                   ),
                 ],
               ),
@@ -82,14 +83,10 @@ class BusinessProfileView extends ConsumerWidget {
           // Verification Status
           Container(
             decoration: BoxDecoration(
-              color: profile.isVerified
-                  ? colors.successBg
-                  : colors.warningBg,
+              color: profile.isVerified ? colors.successBg : colors.warningBg,
               borderRadius: BorderRadius.circular(AppRadius.xl),
               border: Border.all(
-                color: profile.isVerified
-                    ? colors.success
-                    : colors.warning,
+                color: profile.isVerified ? colors.success : colors.warning,
                 width: 1,
               ),
             ),
@@ -97,12 +94,8 @@ class BusinessProfileView extends ConsumerWidget {
             child: Row(
               children: [
                 Icon(
-                  profile.isVerified
-                      ? Icons.verified
-                      : Icons.hourglass_top,
-                  color: profile.isVerified
-                      ? colors.success
-                      : colors.warning,
+                  profile.isVerified ? Icons.verified : Icons.hourglass_top,
+                  color: profile.isVerified ? colors.success : colors.warning,
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
@@ -185,10 +178,7 @@ class BusinessProfileView extends ConsumerWidget {
                       color: colors.gold.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
-                    child: Icon(
-                      Icons.verified_user,
-                      color: colors.gold,
-                    ),
+                    child: Icon(Icons.verified_user, color: colors.gold),
                   ),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
@@ -209,10 +199,7 @@ class BusinessProfileView extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.chevron_right,
-                    color: colors.gold,
-                  ),
+                  Icon(Icons.chevron_right, color: colors.gold),
                 ],
               ),
             ),

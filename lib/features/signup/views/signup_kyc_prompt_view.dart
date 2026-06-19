@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// KYC prompt screen for explicit account signup.
 class SignupKycPromptView extends ConsumerWidget {
@@ -129,11 +129,11 @@ class SignupKycPromptView extends ConsumerWidget {
     ref.read(signupFlowProvider.notifier).startKyc();
     // Navigate to KYC document type selection
     // After KYC submission, user will be redirected to home
-    context.push('/kyc/document-type');
+    context.fsmPush('/kyc/document-type');
   }
 
   void _handleMaybeLater(BuildContext context, WidgetRef ref) {
     ref.read(signupFlowProvider.notifier).skipKyc();
-    context.go('/signup/success');
+    context.fsmGo('/signup/success');
   }
 }

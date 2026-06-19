@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:usdc_wallet/config/environment_config.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -18,6 +17,7 @@ import 'package:usdc_wallet/services/currency/currency_service.dart';
 import 'package:usdc_wallet/services/localization/language_provider.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Comprehensive Settings Screen
 /// Integrates profile, security, preferences, devices, sessions, and support
@@ -67,7 +67,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Profile Card - shows user info, KYC status
-            _ProfileCard(onTap: () => context.push('/settings/profile')),
+            _ProfileCard(onTap: () => context.fsmPush('/settings/profile')),
 
             const SizedBox(height: AppSpacing.xxl),
 
@@ -78,9 +78,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               icon: Icons.edit_outlined,
               title: l10n.settings_profile,
               subtitle: l10n.settings_profileDescription,
-              onTap: () => context.push('/settings/profile/edit'),
+              onTap: () => context.fsmPush('/settings/profile/edit'),
             ),
-            _KycTile(onTap: () => context.push('/settings/kyc')),
+            _KycTile(onTap: () => context.fsmPush('/settings/kyc')),
 
             const SizedBox(height: AppSpacing.xxl),
 
@@ -91,32 +91,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               icon: Icons.lock_outline,
               title: l10n.pin_changeTitle,
               subtitle: l10n.settings_securityDescription,
-              onTap: () => context.push('/settings/pin'),
+              onTap: () => context.fsmPush('/settings/pin'),
             ),
             const _BiometricTile(),
             _SettingsTile(
               icon: Icons.devices,
               title: l10n.settings_devices,
               subtitle: l10n.settings_devicesDescription,
-              onTap: () => context.push('/settings/devices'),
+              onTap: () => context.fsmPush('/settings/devices'),
             ),
             _SettingsTile(
               icon: Icons.history,
               title: l10n.settings_activeSessions,
               subtitle: l10n.security_activeSessionsSubtitle,
-              onTap: () => context.push('/settings/sessions'),
+              onTap: () => context.fsmPush('/settings/sessions'),
             ),
             _SettingsTile(
               icon: Icons.security,
               title: l10n.settings_securitySettings,
               subtitle: l10n.settings_securityDescription,
-              onTap: () => context.push('/settings/security'),
+              onTap: () => context.fsmPush('/settings/security'),
             ),
             _SettingsTile(
               icon: Icons.speed,
               title: l10n.settings_transactionLimits,
               subtitle: l10n.settings_limitsDescription,
-              onTap: () => context.push('/settings/limits'),
+              onTap: () => context.fsmPush('/settings/limits'),
             ),
 
             const SizedBox(height: AppSpacing.xxl),
@@ -131,7 +131,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               icon: Icons.notifications_outlined,
               title: l10n.settings_notifications,
               subtitle: l10n.notifications_transactionsDescription,
-              onTap: () => context.push('/settings/notifications'),
+              onTap: () => context.fsmPush('/settings/notifications'),
             ),
 
             const SizedBox(height: AppSpacing.xxl),
@@ -143,7 +143,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               icon: Icons.help_outline,
               title: l10n.settings_helpSupport,
               subtitle: l10n.settings_helpDescription,
-              onTap: () => context.push('/settings/help'),
+              onTap: () => context.fsmPush('/settings/help'),
             ),
             _SettingsTile(
               icon: Icons.description_outlined,
@@ -161,7 +161,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             // Referral Card - Gold accent
             AppCard(
               variant: AppCardVariant.goldAccent,
-              onTap: () => context.push('/referrals'),
+              onTap: () => context.fsmPush('/referrals'),
               child: Row(
                 children: [
                   Container(
@@ -363,7 +363,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               onPressed: () {
                 Navigator.pop(dialogContext);
                 ref.read(authProvider.notifier).logout();
-                context.go('/login');
+                context.fsmGo('/login');
               },
               variant: AppButtonVariant.danger,
               size: AppButtonSize.small,
@@ -616,7 +616,7 @@ class _LanguageTile extends ConsumerWidget {
       icon: Icons.language,
       title: l10n.settings_language,
       subtitle: currentLanguageName,
-      onTap: () => context.push('/settings/language'),
+      onTap: () => context.fsmPush('/settings/language'),
     );
   }
 }
@@ -642,7 +642,7 @@ class _CurrencyTile extends ConsumerWidget {
       icon: Icons.attach_money,
       title: l10n.settings_defaultCurrency,
       subtitle: subtitle,
-      onTap: () => context.push('/settings/currency'),
+      onTap: () => context.fsmPush('/settings/currency'),
     );
   }
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -11,6 +10,7 @@ import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/receipts/views/share_receipt_sheet.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/services/transactions/transactions_service.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 final transactionByIdProvider = FutureProvider.family<Transaction, String>((
   ref,
@@ -99,7 +99,7 @@ class TransactionDetailView extends ConsumerWidget {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
         actions: [
           IconButton(
@@ -378,7 +378,7 @@ class TransactionDetailView extends ConsumerWidget {
             AppButton(
               label: l10n.help_needHelp,
               onPressed: () {
-                context.push('/settings/help');
+                context.fsmPush('/settings/help');
               },
               variant: AppButtonVariant.secondary,
               isFullWidth: true,

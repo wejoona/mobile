@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:usdc_wallet/core/utils/formatters.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
@@ -14,6 +13,7 @@ import 'package:usdc_wallet/features/deposit/models/deposit_response.dart';
 import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
 import 'package:usdc_wallet/features/qr_payment/widgets/branded_qr_image.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Payment Instructions Screen
 ///
@@ -56,7 +56,7 @@ class _PaymentInstructionsScreenState
           (current.step == DepositFlowStep.completed ||
               current.step == DepositFlowStep.failed);
       if (didReachTerminalStep) {
-        context.push('/deposit/status');
+        context.fsmPush('/deposit/status');
       }
     });
 
@@ -535,7 +535,7 @@ class _PaymentInstructionsScreenState
   void _handleBack() {
     // Stop polling and go back
     ref.read(depositProvider.notifier).goBack();
-    context.pop();
+    context.fsmPop();
   }
 }
 

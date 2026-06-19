@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -10,6 +9,7 @@ import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
 import 'package:usdc_wallet/features/beneficiaries/providers/beneficiaries_provider.dart';
 import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Beneficiary Detail View
 ///
@@ -103,8 +103,8 @@ class BeneficiaryDetailView extends ConsumerWidget {
               AppButton(
                 label: l10n.send_title,
                 onPressed: () {
-                  context.pop(beneficiary);
-                  context.push('/send');
+                  context.fsmPop(beneficiary);
+                  context.fsmPush('/send');
                 },
                 icon: Icons.send,
               ),
@@ -442,7 +442,7 @@ class BeneficiaryDetailView extends ConsumerWidget {
   ) async {
     switch (action) {
       case 'edit':
-        context.push('/beneficiaries/edit/${beneficiary.id}').then((_) {
+        context.fsmPush('/beneficiaries/edit/${beneficiary.id}').then((_) {
           ref.read(beneficiariesProvider.notifier).loadBeneficiaries();
         });
         break;
@@ -492,7 +492,7 @@ class BeneficiaryDetailView extends ConsumerWidget {
                 backgroundColor: colors.success,
               ),
             );
-            context.pop();
+            context.fsmPop();
           }
         }
         break;

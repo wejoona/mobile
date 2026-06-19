@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// PIN setup screen for explicit account signup.
 class SignupPinSetupView extends ConsumerStatefulWidget {
@@ -165,7 +165,7 @@ class _SignupPinSetupViewState extends ConsumerState<SignupPinSetupView> {
         _showError = false;
       });
     } else {
-      context.go('/signup/profile');
+      context.fsmGo('/signup/profile');
     }
   }
 
@@ -241,7 +241,7 @@ class _SignupPinSetupViewState extends ConsumerState<SignupPinSetupView> {
     await ref.read(signupFlowProvider.notifier).submitPin(_pin);
 
     if (mounted && ref.read(signupFlowProvider).error == null) {
-      context.go('/signup/kyc-prompt');
+      context.fsmGo('/signup/kyc-prompt');
     }
   }
 

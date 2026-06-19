@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
@@ -177,12 +177,12 @@ class DepositStatusScreen extends ConsumerWidget {
 
   void _handleTryAgain(WidgetRef ref, BuildContext context) {
     ref.read(depositProvider.notifier).reset();
-    context.go('/deposit/amount');
+    context.fsmGo('/deposit/amount');
   }
 
   void _handleGoHome(WidgetRef ref, BuildContext context) {
     ref.read(depositProvider.notifier).reset();
-    context.go('/home');
+    context.fsmGo('/home');
   }
 }
 

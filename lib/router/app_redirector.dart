@@ -345,27 +345,12 @@ String? _featureFlagRedirect(String location, Map<String, bool> flags) {
 }
 
 bool _isPublicRoute(String location) =>
-    _isExplicitPublicRoute(location) ||
-    _isSecurityRecoveryRoute(location) ||
+    isPublicAppRoute(location) ||
     location == '/force-update' ||
     location.startsWith('/session-locked');
 
 bool _isSecurityRecoveryRoute(String location) =>
-    location.startsWith('/pin/reset');
-
-bool _isExplicitPublicRoute(String location) =>
-    location == '/' ||
-    location == '/login' ||
-    location == '/login/otp' ||
-    location == '/login/pin' ||
-    location == '/otp' ||
-    location == '/signup' ||
-    location == '/signup/legal-consent' ||
-    location == '/signup/verify-phone' ||
-    location == '/onboarding' ||
-    location == '/onboarding/phone' ||
-    location == '/onboarding/otp' ||
-    location.startsWith('/pay/');
+    isSecurityRecoveryAppRoute(location);
 
 String? _invalidPinLoginRedirect({
   required String location,
@@ -389,48 +374,19 @@ String? _invalidPinLoginRedirect({
 bool _isOnboardingRoute(String location) =>
     location == '/onboarding' ||
     location == '/profile-complete' ||
-    location.startsWith('/settings/kyc') ||
-    location.startsWith('/settings/profile');
+    isSetupAppRoute(location);
 
-bool _isSignupRoute(String location) => location.startsWith('/signup');
+bool _isSignupRoute(String location) => isSignupAppRoute(location);
 
-bool _isLegacySignupRoute(String location) =>
-    location == '/onboarding/phone' ||
-    location == '/onboarding/legal-consent' ||
-    location == '/onboarding/otp' ||
-    location == '/onboarding/profile' ||
-    location == '/onboarding/pin' ||
-    location == '/onboarding/kyc-prompt' ||
-    location == '/onboarding/success';
+bool _isLegacySignupRoute(String location) => isLegacySignupAppRoute(location);
 
-bool _isFsmRoute(String location) {
-  const fsmRoutes = [
-    '/otp-expired',
-    '/auth-locked',
-    '/auth-suspended',
-    '/session-locked',
-    '/biometric-prompt',
-    '/device-verification',
-    '/session-conflict',
-    '/wallet-frozen',
-    '/wallet-under-review',
-    '/kyc-expired',
-    '/force-update',
-  ];
-  return fsmRoutes.any(location.startsWith);
-}
+bool _isFsmRoute(String location) => isFsmOwnedAppRoute(location);
 
 bool _isAuthRoute(String location) =>
     location.startsWith('/login') || location == '/otp';
 
 bool _isAuthenticatedDeadEndRoute(String location) =>
-    _isAuthRoute(location) ||
-    location == '/signup' ||
-    location == '/signup/legal-consent' ||
-    location == '/signup/verify-phone' ||
-    location == '/onboarding' ||
-    location == '/onboarding/phone' ||
-    location == '/onboarding/otp';
+    isAuthDeadEndAppRoute(location);
 
 bool _isMerchantQrPath(String location) =>
     location == '/scan-to-pay' ||
@@ -439,16 +395,8 @@ bool _isMerchantQrPath(String location) =>
     location == '/create-payment-request' ||
     location == '/merchant-transactions';
 
-bool _requiresVerifiedKycPath(String location) {
-  const regulatedPrefixes = [
-    '/send-external',
-    '/withdraw',
-    '/cards/request',
-    '/bulk-payments',
-    '/payment-links/create',
-  ];
-  return regulatedPrefixes.any(location.startsWith);
-}
+bool _requiresVerifiedKycPath(String location) =>
+    requiresVerifiedKycAppRoute(location);
 
 String _routeBase(String location) =>
     '/${location.split('/').where((segment) => segment.isNotEmpty).take(1).join('/')}';

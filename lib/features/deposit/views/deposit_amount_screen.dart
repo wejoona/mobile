@@ -1,11 +1,11 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:usdc_wallet/providers/missing_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/countries.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -64,7 +64,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
         title: AppText(l10n.deposit_title, variant: AppTextVariant.titleLarge),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
       ),
       body: SafeArea(
@@ -491,7 +491,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
           .read(depositProvider.notifier)
           .setAmountUSD(amount, rate, countryCode);
     }
-    unawaited(context.push('/deposit/provider'));
+    unawaited(context.fsmPush('/deposit/provider'));
   }
 
   String get _currency => _isXOF ? 'XOF' : 'USD';

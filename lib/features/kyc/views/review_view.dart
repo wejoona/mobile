@@ -1,8 +1,8 @@
 import 'dart:io';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/design/components/primitives/app_card.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
@@ -316,12 +316,12 @@ class ReviewView extends ConsumerWidget {
 
   void _handleEditDocument(BuildContext context, int index) {
     // Remove the document and go back to capture screen
-    context.go('/kyc/document-capture');
+    context.fsmGo('/kyc/document-capture');
   }
 
   void _handleEditSelfie(BuildContext context) {
     // Go back to selfie screen
-    context.go('/kyc/selfie');
+    context.fsmGo('/kyc/selfie');
   }
 
   Future<void> _handleSubmit(BuildContext context, WidgetRef ref) async {
@@ -352,7 +352,7 @@ class ReviewView extends ConsumerWidget {
     }
 
     if (context.mounted) {
-      context.go('/kyc/submitted');
+      context.fsmGo('/kyc/submitted');
     }
   }
 

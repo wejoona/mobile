@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/services/wallet/wallet_service.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class CurrencyConverterView extends ConsumerStatefulWidget {
   const CurrencyConverterView({super.key});
@@ -142,7 +142,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
         actions: [
           IconButton(

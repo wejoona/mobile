@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Provider to track if onboarding has been completed
 final onboardingCompletedProvider = FutureProvider<bool>((ref) async {
@@ -78,7 +78,7 @@ class _OnboardingViewState extends ConsumerState<OnboardingView>
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
     if (prefs.getBool('onboarding_completed') ?? false) {
-      context.go('/login');
+      context.fsmGo('/login');
     }
   }
 
@@ -232,12 +232,12 @@ class _OnboardingViewState extends ConsumerState<OnboardingView>
 
   Future<void> _skipIntro() async {
     await completeOnboarding();
-    if (mounted) context.go('/login');
+    if (mounted) context.fsmGo('/login');
   }
 
   Future<void> _startRegistration() async {
     await completeOnboarding();
-    if (mounted) context.go('/signup');
+    if (mounted) context.fsmGo('/signup');
   }
 }
 

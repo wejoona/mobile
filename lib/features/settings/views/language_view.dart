@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/services/localization/language_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Language selection view for changing app language
 class LanguageView extends ConsumerWidget {
@@ -33,7 +33,7 @@ class LanguageView extends ConsumerWidget {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.gold),
-          onPressed: () => context.safePop(fallbackRoute: '/settings'),
+          onPressed: () => context.fsmSafePop(fallbackRoute: '/settings'),
         ),
       ),
       body: ListView(
@@ -55,12 +55,16 @@ class LanguageView extends ConsumerWidget {
               child: _LanguageTile(
                 languageCode: code,
                 nativeName: nativeName,
-                displayName: code == 'en' ? l10n.language_english : l10n.language_french,
+                displayName: code == 'en'
+                    ? l10n.language_english
+                    : l10n.language_french,
                 isSelected: isSelected,
                 isLoading: localeState.isLoading,
                 onTap: () async {
                   if (!isSelected) {
-                    await ref.read(localeProvider.notifier).changeLanguage(code);
+                    await ref
+                        .read(localeProvider.notifier)
+                        .changeLanguage(code);
                   }
                 },
               ),
@@ -157,10 +161,7 @@ class _LanguageTile extends StatelessWidget {
               width: 24,
               height: 24,
               decoration: BoxDecoration(
-                border: Border.all(
-                  color: colors.textTertiary,
-                  width: 2,
-                ),
+                border: Border.all(color: colors.textTertiary, width: 2),
                 shape: BoxShape.circle,
               ),
             ),

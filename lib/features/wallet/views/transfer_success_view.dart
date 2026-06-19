@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -206,7 +206,7 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
                     const SizedBox(height: AppSpacing.sm),
                     AppButton(
                       label: l10n.common_done,
-                      onPressed: () => context.go('/home'),
+                      onPressed: () => context.fsmGo('/home'),
                       isFullWidth: true,
                     ),
                   ],

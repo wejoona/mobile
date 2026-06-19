@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
@@ -443,7 +443,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   void _handleContactTap(SyncedContact contact) {
     if (contact.isKoridoUser) {
       // Navigate to send screen with pre-filled recipient
-      unawaited(context.push('/send', extra: _sendExtra(contact)));
+      unawaited(context.fsmPush('/send', extra: _sendExtra(contact)));
     } else {
       _handleInvite(contact);
     }
@@ -467,7 +467,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   }
 
   void _handleSend(SyncedContact contact) {
-    unawaited(context.push('/send', extra: _sendExtra(contact)));
+    unawaited(context.fsmPush('/send', extra: _sendExtra(contact)));
   }
 
   Map<String, String?> _sendExtra(SyncedContact contact) => {

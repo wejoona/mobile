@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
@@ -99,7 +97,7 @@ class _BiometricPromptViewState extends ConsumerState<BiometricPromptView> {
           const AppSessionEvent(SessionLock(reason: 'Biometric unavailable')),
         );
     if (mounted) {
-      context.go('/session-locked');
+      context.fsmGo('/session-locked');
     }
   }
 
@@ -111,7 +109,7 @@ class _BiometricPromptViewState extends ConsumerState<BiometricPromptView> {
       ref.read(authProvider.notifier).unlock();
       ref.read(sessionServiceProvider.notifier).unlockSession();
       ref.read(appFsmProvider.notifier).unlockSession();
-      context.enterAuthenticatedApp();
+      context.fsmEnterAuthenticatedApp();
     });
   }
 
