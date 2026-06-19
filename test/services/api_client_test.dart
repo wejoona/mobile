@@ -161,6 +161,71 @@ void main() {
     });
 
     test(
+      'explicit recovery scope wins over active access token for liveness',
+      () async {
+        final container = ProviderContainer(
+          overrides: [secureStorageProvider.overrideWithValue(mockStorage)],
+        );
+        addTearDown(container.dispose);
+
+        await mockStorage.write(
+          key: StorageKeys.accessToken,
+          value: 'active.access',
+        );
+        await mockStorage.write(
+          key: StorageKeys.recoveryAccessToken,
+          value: 'recovery.access',
+        );
+
+        final adapter = _RecordingStatusAdapter();
+        final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
+          ..httpClientAdapter = adapter
+          ..interceptors.add(container.read(_authInterceptorTestProvider));
+
+        await dio.post(
+          '/kyc/liveness/session',
+          options: Options(extra: {ApiRequestExtra.useRecoveryToken: true}),
+        );
+
+        expect(
+          adapter.requests.single.headers['Authorization'],
+          'Bearer recovery.access',
+        );
+      },
+    );
+
+    test(
+      'normal liveness keeps active access token when recovery is not scoped',
+      () async {
+        final container = ProviderContainer(
+          overrides: [secureStorageProvider.overrideWithValue(mockStorage)],
+        );
+        addTearDown(container.dispose);
+
+        await mockStorage.write(
+          key: StorageKeys.accessToken,
+          value: 'active.access',
+        );
+        await mockStorage.write(
+          key: StorageKeys.recoveryAccessToken,
+          value: 'recovery.access',
+        );
+
+        final adapter = _RecordingStatusAdapter();
+        final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
+          ..httpClientAdapter = adapter
+          ..interceptors.add(container.read(_authInterceptorTestProvider));
+
+        await dio.post('/kyc/liveness/session');
+
+        expect(
+          adapter.requests.single.headers['Authorization'],
+          'Bearer active.access',
+        );
+      },
+    );
+
+    test(
       'does not use recovery token for normal authenticated endpoints',
       () async {
         final container = ProviderContainer(

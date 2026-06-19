@@ -82,7 +82,10 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
   }
 
   void _onLivenessComplete(LivenessResult result) {
-    if (result.isLive && result.decision != LivenessDecision.decline) {
+    final faceScore = result.faceMatchScore ?? 1.0;
+    if (result.isLive &&
+        result.decision == LivenessDecision.autoApprove &&
+        faceScore >= 0.85) {
       setState(() => _phase = ChangePinPhase.pinEntry);
     } else {
       // Liveness failed — go back to explanation

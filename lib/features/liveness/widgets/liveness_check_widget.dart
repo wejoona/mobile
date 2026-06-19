@@ -24,6 +24,7 @@ class LivenessCheckWidget extends ConsumerStatefulWidget {
   final void Function(String reason)? onManualReviewRequired;
   final VoidCallback? onManualReviewAcknowledged;
   final VoidCallback? onCancel;
+  final bool useRecoveryToken;
 
   const LivenessCheckWidget({
     super.key,
@@ -31,6 +32,7 @@ class LivenessCheckWidget extends ConsumerStatefulWidget {
     this.onManualReviewRequired,
     this.onManualReviewAcknowledged,
     this.onCancel,
+    this.useRecoveryToken = false,
   });
 
   @override
@@ -192,6 +194,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
           supportsOnDeviceFaceDetection: false,
           supportsReferenceSelfie: true,
         ),
+        useRecoveryToken: widget.useRecoveryToken,
       );
 
       if (mounted) {
@@ -301,6 +304,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
         photoPath: photo.path,
         captureMode: captureMode,
         mimeType: 'image/jpeg',
+        useRecoveryToken: widget.useRecoveryToken,
       );
       if (result.evidence != null) {
         _submittedEvidence.add(result.evidence!);
@@ -311,35 +315,56 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
 
       if (!mounted) return;
 
-      if (result.allComplete && result.result != null) {
+      if (result.allComplete) {
+        final verification = result.result;
+        if (verification == null) {
+          _fail(
+            'The verification provider did not return a final liveness decision.',
+            manualReviewReason: 'liveness_result_unavailable',
+          );
+          return;
+        }
+
+        await _releaseCamera();
+        if (!mounted) return;
+
         // All challenges done — show result
         setState(() {
-          _state = result.result!.isAlive
+          _state = verification.isAlive
               ? _LivenessState.completed
               : _LivenessState.failed;
-          _statusMessage = result.result!.isAlive
+          _statusMessage = verification.isAlive
               ? 'Verification passed!'
               : 'Verification failed';
-          _errorMessage = result.result!.failureReason;
+          _errorMessage = verification.failureReason;
         });
 
-        if (result.result!.isAlive) {
+        if (verification.isAlive) {
           widget.onComplete?.call(
             LivenessResult(
               sessionId: result.sessionToken,
               livenessProofId: result.livenessProofId,
               isLive: true,
-              confidence: result.result!.confidence / 100.0,
-              faceMatchScore: result.result!.faceMatchScore / 100.0,
+              confidence: verification.confidence / 100.0,
+              faceMatchScore: verification.faceMatchScore / 100.0,
               completedAt: DateTime.now(),
               evidence: List.unmodifiable(_submittedEvidence),
             ),
           );
         }
       } else {
+        final nextChallengeIndex = _currentChallengeIndex + 1;
+        if (nextChallengeIndex >= _challenges.length) {
+          _fail(
+            'The verification provider did not return a final liveness decision after the last challenge.',
+            manualReviewReason: 'liveness_result_unavailable',
+          );
+          return;
+        }
+
         // Move to next challenge
         setState(() {
-          _currentChallengeIndex++;
+          _currentChallengeIndex = nextChallengeIndex;
           _state = _LivenessState.ready;
         });
       }

@@ -66,6 +66,11 @@ class StorageKeys {
   static const String avatarUrl = 'avatar_url';
 }
 
+/// Dio request metadata keys used by app services.
+abstract final class ApiRequestExtra {
+  static const String useRecoveryToken = 'useRecoveryToken';
+}
+
 /// Secure Storage Provider
 final secureStorageProvider = Provider<FlutterSecureStorage>((ref) {
   return const FlutterSecureStorage(
@@ -190,8 +195,21 @@ class AuthInterceptor extends Interceptor {
       return handler.next(options);
     }
 
-    // Add token
     final storage = _ref.read(secureStorageProvider);
+    final useRecoveryToken =
+        options.extra[ApiRequestExtra.useRecoveryToken] == true;
+
+    if (useRecoveryToken) {
+      final recoveryToken = await storage.read(
+        key: StorageKeys.recoveryAccessToken,
+      );
+      if (recoveryToken != null && recoveryToken.isNotEmpty) {
+        options.headers['Authorization'] = 'Bearer $recoveryToken';
+      }
+      return handler.next(options);
+    }
+
+    // Add token
     final token = await storage.read(key: StorageKeys.accessToken);
 
     if (token != null) {

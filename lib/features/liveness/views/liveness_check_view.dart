@@ -21,7 +21,10 @@ class _LivenessCheckViewState extends ConsumerState<LivenessCheckView> {
   String? _errorMessage;
 
   void _onComplete(LivenessResult result) {
-    if (result.isLive) {
+    final faceScore = result.faceMatchScore ?? 1.0;
+    if (result.isLive &&
+        result.decision == LivenessDecision.autoApprove &&
+        faceScore >= 0.85) {
       setState(() => _isComplete = true);
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) context.fsmPop(true);

@@ -556,6 +556,14 @@ void main() {
     expect(livenessSource, contains('_LivenessState.manualReview'));
     expect(livenessSource, contains('Manual review needed'));
     expect(livenessSource, contains('_releaseCamera()'));
+    expect(livenessSource, contains('useRecoveryToken'));
+    expect(livenessSource, contains("'liveness_result_unavailable'"));
+    expect(
+      livenessSource,
+      contains('nextChallengeIndex >= _challenges.length'),
+      reason:
+          'a terminal backend response without a final result must not leave the UI spinning on a missing next challenge',
+    );
     expect(
       livenessSource,
       contains('_state != _LivenessState.manualReview'),
@@ -575,6 +583,10 @@ void main() {
       resetSource,
       contains('onManualReviewAcknowledged: _openManualReviewStepFromLiveness'),
     );
+    expect(resetSource, contains('useRecoveryToken: true'));
+    expect(resetSource, contains('ApiRequestExtra.useRecoveryToken'));
+    expect(resetSource, contains('LivenessDecision.autoApprove'));
+    expect(resetSource, contains("'liveness_manual_review_confidence'"));
     expect(reviewBody, contains("'/support/tickets'"));
     expect(reviewBody, contains("'category': 'account_recovery'"));
     expect(reviewBody, contains("'priority': 'high'"));
@@ -620,6 +632,8 @@ void main() {
       expect(widgetSource, contains('LivenessCaptureMode.photo'));
       expect(widgetSource, contains('ph.Permission.camera.request()'));
       expect(widgetSource, contains('_LivenessState.cameraPermissionRequired'));
+      expect(widgetSource, contains('verification == null'));
+      expect(widgetSource, contains('await _releaseCamera()'));
       expect(kycLivenessSource, contains('onManualReviewRequired'));
       expect(
         kycLivenessSource,
@@ -632,6 +646,7 @@ void main() {
           'onManualReviewAcknowledged: _acknowledgeLivenessManualReview',
         ),
       );
+      expect(riskStepUpSource, contains('LivenessDecision.autoApprove'));
       expect(manualReviewBody, contains("'/support/tickets'"));
       expect(manualReviewBody, contains("'category': 'kyc'"));
       expect(manualReviewBody, contains("'priority': 'high'"));

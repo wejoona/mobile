@@ -191,11 +191,13 @@ class RiskBasedSecurityService {
   Future<StepUpDecision> evaluateOperation({
     required String operation,
     Map<String, dynamic>? metadata,
+    bool useRecoveryToken = false,
   }) async {
     try {
       final response = await _dio.post(
         '/step-up/operation',
         data: {'operation': operation, 'metadata': metadata},
+        options: _recoveryOptions(useRecoveryToken),
       );
 
       // ignore: avoid_dynamic_calls
@@ -290,6 +292,7 @@ class RiskBasedSecurityService {
     required String challengeToken,
     String? livenessSessionId,
     bool? biometricVerified,
+    bool useRecoveryToken = false,
   }) async {
     try {
       final response = await _dio.post(
@@ -299,6 +302,7 @@ class RiskBasedSecurityService {
           'livenessSessionId': livenessSessionId,
           'biometricVerified': biometricVerified,
         },
+        options: _recoveryOptions(useRecoveryToken),
       );
 
       final body = response.data is Map
@@ -323,6 +327,13 @@ class RiskBasedSecurityService {
       ).error('Step-up validation failed', e);
       return false;
     }
+  }
+
+  Options? _recoveryOptions(bool useRecoveryToken) {
+    if (!useRecoveryToken) {
+      return null;
+    }
+    return Options(extra: {ApiRequestExtra.useRecoveryToken: true});
   }
 
   bool _requiresSupportReview(Object? data) {

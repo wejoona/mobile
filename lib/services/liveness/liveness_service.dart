@@ -536,11 +536,15 @@ class LivenessService {
   Future<LivenessSession> createSession({
     LivenessClientCapabilities capabilities =
         const LivenessClientCapabilities(),
+    bool useRecoveryToken = false,
   }) async {
     try {
       final response = await _dio.post(
         '/kyc/liveness/session',
         data: {'capabilities': capabilities.toJson()},
+        options: useRecoveryToken
+            ? Options(extra: {ApiRequestExtra.useRecoveryToken: true})
+            : null,
       );
       return LivenessSession.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
@@ -556,6 +560,7 @@ class LivenessService {
     required String photoPath,
     LivenessCaptureMode captureMode = LivenessCaptureMode.photo,
     String mimeType = 'image/jpeg',
+    bool useRecoveryToken = false,
   }) async {
     try {
       final formData = FormData.fromMap({
@@ -574,6 +579,9 @@ class LivenessService {
       final response = await _dio.post(
         '/kyc/liveness/challenge',
         data: formData,
+        options: useRecoveryToken
+            ? Options(extra: {ApiRequestExtra.useRecoveryToken: true})
+            : null,
       );
       return ChallengeSubmitResult.fromJson(
         response.data as Map<String, dynamic>,

@@ -626,6 +626,14 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
       setState(() => _isProcessing = false);
       return;
     }
+    if (result.decision != LivenessDecision.autoApprove || faceScore < 0.85) {
+      setState(
+        () => _error =
+            'This operation needs manual review before it can continue.',
+      );
+      setState(() => _isProcessing = false);
+      return;
+    }
 
     // Validate with backend
     try {

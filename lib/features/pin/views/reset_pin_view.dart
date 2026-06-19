@@ -180,6 +180,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
               onComplete: _handleLivenessComplete,
               onManualReviewRequired: _routePinResetToManualReview,
               onManualReviewAcknowledged: _openManualReviewStepFromLiveness,
+              useRecoveryToken: true,
               onCancel: () {
                 setState(() {
                   _step = 2;
@@ -574,6 +575,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           'flow': 'pin_reset',
           'otpLength': _otpController.text.length,
         },
+        useRecoveryToken: true,
       );
 
       if (!mounted) return;
@@ -671,6 +673,10 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       await _routePinResetToManualReview('liveness_low_confidence');
       return;
     }
+    if (result.decision != LivenessDecision.autoApprove || faceScore < 0.85) {
+      await _routePinResetToManualReview('liveness_manual_review_confidence');
+      return;
+    }
 
     final challengeToken = _riskDecision?.challengeToken;
     if (challengeToken == null) {
@@ -689,6 +695,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           .validateStepUp(
             challengeToken: challengeToken,
             livenessSessionId: result.stepUpProofId,
+            useRecoveryToken: true,
           );
     } on ManualReviewRequiredException {
       await _routePinResetToManualReview(
@@ -738,6 +745,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
                   'Reason: $reason. Flow: pin_reset. '
                   'Please review identity evidence and approve or reject recovery.',
             },
+            options: _recoveryOptions(),
           );
       final body = response.data is Map
           ? Map<String, dynamic>.from(response.data as Map)
@@ -792,6 +800,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           .get(
             '/support/tickets/active',
             queryParameters: {'category': 'account_recovery'},
+            options: _recoveryOptions(),
           );
       final body = response.data;
       final tickets = body is List
@@ -961,6 +970,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           'newPinHash': _hashPinForBackend(_newPin),
           'stepUpChallengeToken': stepUpChallengeToken,
         },
+        options: _recoveryOptions(),
       );
 
       // Also update local PIN storage and in-memory PIN state.
@@ -1114,6 +1124,10 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     }
 
     return error.response?.statusCode == 503;
+  }
+
+  Options _recoveryOptions() {
+    return Options(extra: {ApiRequestExtra.useRecoveryToken: true});
   }
 
   /// Hash PIN using SHA256 for backend transmission
