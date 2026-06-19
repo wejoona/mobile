@@ -12,6 +12,7 @@ import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
+import 'package:usdc_wallet/features/pin/models/pin_reset_route_context.dart';
 import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
@@ -25,7 +26,9 @@ import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 /// Reset PIN View
 /// Multi-step flow to reset PIN via OTP
 class ResetPinView extends ConsumerStatefulWidget {
-  const ResetPinView({super.key});
+  const ResetPinView({super.key, this.initialContext});
+
+  final PinResetRouteContext? initialContext;
 
   @override
   ConsumerState<ResetPinView> createState() => _ResetPinViewState();
@@ -35,6 +38,8 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   int _step =
       1; // 1: request OTP, 2: enter OTP, 5: liveness, 3/4: PIN, 6: review
   final _otpController = TextEditingController();
+  final _phoneController = TextEditingController();
+  PhoneNumberValue? _recoveryPhone;
   String _newPin = '';
   String _confirmPin = '';
   bool _showError = false;
@@ -48,8 +53,16 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   String? _manualReviewResolutionDueAt;
 
   @override
+  void initState() {
+    super.initState();
+    _setRecoveryPhone(widget.initialContext?.phoneValue);
+    unawaited(_prefillRecoveryPhone());
+  }
+
+  @override
   void dispose() {
     _otpController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -108,15 +121,25 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           markSize: 52,
           titleVariant: AppTextVariant.titleLarge,
         ),
+        const SizedBox(height: AppSpacing.xl),
+        AppInput(
+          fieldKey: const ValueKey('pin_reset_phone_field'),
+          label: l10n.auth_phoneNumber,
+          controller: _phoneController,
+          hint: l10n.error_phoneRequired,
+          prefixIcon: Icons.phone_iphone_rounded,
+          keyboardType: TextInputType.phone,
+          readOnly: true,
+        ),
         if (_errorMessage != null) ...[
-          const SizedBox(height: AppSpacing.xl),
+          const SizedBox(height: AppSpacing.md),
           InfoCallout(
             icon: Icons.error_outline,
             title: _errorMessage!,
             tone: InfoCalloutTone.danger,
           ),
         ],
-        const SizedBox(height: AppSpacing.xxxl),
+        const SizedBox(height: AppSpacing.xxl),
         AppButton(
           label: l10n.pin_reset_sendOtp,
           onPressed: _requestOtp,
@@ -372,6 +395,10 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         return;
       }
 
+      if (mounted) {
+        setState(() => _setRecoveryPhone(phone));
+      }
+
       final hasActiveReview = await _loadActiveAccountRecoveryReview();
       if (hasActiveReview) {
         if (mounted) {
@@ -385,7 +412,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
 
       await ref
           .read(authServiceProvider)
-          .login(phone: phone.localNumber, countryCode: phone.apiCountryCode);
+          .login(phone: phone.apiPhone, countryCode: phone.apiCountryCode);
 
       if (mounted) {
         setState(() {
@@ -411,6 +438,21 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   }
 
   Future<PhoneNumberValue?> _resolveRecoveryPhone() async {
+    final routePhone = widget.initialContext?.phoneValue;
+    if (routePhone != null) {
+      return routePhone;
+    }
+
+    final cachedPhone = _recoveryPhone;
+    if (cachedPhone != null) {
+      return cachedPhone;
+    }
+
+    final loginPhone = ref.read(loginProvider).phoneValue;
+    if (loginPhone != null) {
+      return loginPhone;
+    }
+
     final authState = ref.read(authProvider);
     final inMemoryPhone = authState.user?.phone ?? authState.phone;
     if (inMemoryPhone != null && inMemoryPhone.isNotEmpty) {
@@ -475,6 +517,24 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       phoneNumber: profilePhone,
       countryCode: profileCountry,
     );
+  }
+
+  Future<void> _prefillRecoveryPhone() async {
+    final phone = await _resolveRecoveryPhone();
+    if (!mounted || phone == null) {
+      return;
+    }
+
+    setState(() => _setRecoveryPhone(phone));
+  }
+
+  void _setRecoveryPhone(PhoneNumberValue? phone) {
+    if (phone == null) {
+      return;
+    }
+
+    _recoveryPhone = phone;
+    _phoneController.text = phone.displayInternational;
   }
 
   /// Verify OTP entered by user
@@ -935,6 +995,15 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       key: StorageKeys.recoveryAccessToken,
     );
     if (existingRecoveryToken != null && existingRecoveryToken.isNotEmpty) {
+      return;
+    }
+
+    final routeToken = widget.initialContext?.recoveryAccessToken;
+    if (routeToken != null && routeToken.isNotEmpty) {
+      await storage.write(
+        key: StorageKeys.recoveryAccessToken,
+        value: routeToken,
+      );
       return;
     }
 

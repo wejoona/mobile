@@ -259,6 +259,53 @@ void main() {
     );
   });
 
+  test('reset PIN is opened with canonical phone recovery context', () {
+    final resetSource = File(
+      'lib/features/pin/views/reset_pin_view.dart',
+    ).readAsStringSync();
+    final pinScreenSource = File(
+      'lib/features/pin/views/pin_screen.dart',
+    ).readAsStringSync();
+    final routesSource = File(
+      'lib/router/routes/card_account_routes.dart',
+    ).readAsStringSync();
+    final fsmSource = File(
+      'lib/state/fsm/fsm_provider.dart',
+    ).readAsStringSync();
+
+    expect(routesSource, contains('state.extra is PinResetRouteContext'));
+    expect(
+      routesSource,
+      contains('ResetPinView(initialContext: resetContext)'),
+      reason: 'PIN reset route must forward recovery context to the screen',
+    );
+    expect(
+      resetSource,
+      contains("ValueKey('pin_reset_phone_field')"),
+      reason:
+          'PIN reset should show the registered phone before sending an OTP',
+    );
+    expect(resetSource, contains('widget.initialContext?.phoneValue'));
+    expect(resetSource, contains('ref.read(loginProvider).phoneValue'));
+    expect(resetSource, contains('login(phone: phone.apiPhone'));
+    expect(
+      resetSource,
+      contains('widget.initialContext?.recoveryAccessToken'),
+      reason:
+          'OTP-before-PIN recovery must keep the pending auth session token',
+    );
+    expect(pinScreenSource, contains('context.fsmOpenPinReset('));
+    expect(pinScreenSource, contains('phone: loginState.phoneValue'));
+    expect(
+      pinScreenSource,
+      contains('recoveryAccessToken: loginState.sessionToken'),
+    );
+    expect(
+      fsmSource,
+      contains('openPinReset<T>(BuildContext context, {Object? extra})'),
+    );
+  });
+
   test('session lock screen restores PIN and biometric if unlock stalls', () {
     final source = File(
       'lib/features/fsm_states/views/session_locked_view.dart',

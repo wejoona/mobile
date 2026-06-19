@@ -8,10 +8,12 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/pin/models/pin_reset_route_context.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Lock screen — same design as OTP/login screens.
 /// Uses the design system PinDots + PinPad for consistency.
@@ -289,7 +291,7 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView>
 
                         // Forgot PIN
                         TextButton(
-                          onPressed: () => context.fsmPush('/pin/reset'),
+                          onPressed: _openPinReset,
                           child: AppText(
                             l10n.pin_forgotPin,
                             variant: AppTextVariant.bodyMedium,
@@ -368,6 +370,18 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView>
         .read(key: StorageKeys.userId);
     final normalized = storedUserId?.trim();
     return normalized == null || normalized.isEmpty ? null : normalized;
+  }
+
+  void _openPinReset() {
+    final authState = ref.read(authProvider);
+    final phone = PhoneNumberValue.tryFromAny(
+      phoneNumber: authState.user?.phone ?? authState.phone,
+      countryCode: authState.user?.countryCode ?? authState.countryCode,
+    );
+
+    context.fsmOpenPinReset(
+      extra: PinResetRouteContext.fromOptionalPhoneValue(phone: phone),
+    );
   }
 
   bool get _shouldShowBiometricUnlock =>

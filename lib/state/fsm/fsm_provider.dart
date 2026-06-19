@@ -459,10 +459,11 @@ class AppFsmNotifier extends FsmNotifier<AppState, AppEvent> {
     );
   }
 
-  Future<T?> openPinReset<T>(BuildContext context) {
+  Future<T?> openPinReset<T>(BuildContext context, {Object? extra}) {
     return pushRoute<T>(
       context,
       '/pin/reset',
+      extra: extra,
       event: AppNavigationEvent.forgotPinSelected,
     );
   }
@@ -550,6 +551,10 @@ extension AppFsmNavigationContext on BuildContext {
 
   void fsmEnterAuthenticatedApp({String route = '/home'}) {
     _appFsmNotifier.enterAuthenticatedApp(this, route: route);
+  }
+
+  Future<T?> fsmOpenPinReset<T>({Object? extra}) {
+    return _appFsmNotifier.openPinReset<T>(this, extra: extra);
   }
 }
 

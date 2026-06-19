@@ -8,6 +8,7 @@ import 'package:usdc_wallet/features/cards/views/request_card_view.dart';
 import 'package:usdc_wallet/features/deposit/views/payment_instructions_screen.dart';
 import 'package:usdc_wallet/features/kyc/views/kyc_status_view.dart';
 import 'package:usdc_wallet/features/notifications/views/notifications_view.dart';
+import 'package:usdc_wallet/features/pin/models/pin_reset_route_context.dart';
 import 'package:usdc_wallet/features/pin/views/confirm_pin_view.dart';
 import 'package:usdc_wallet/features/pin/views/enter_pin_view.dart';
 import 'package:usdc_wallet/features/pin/views/pin_locked_view.dart';
@@ -160,10 +161,15 @@ List<RouteBase> cardAccountRoutes() => [
   ),
   GoRoute(
     path: '/pin/reset',
-    pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
-      state: state,
-      child: const ResetPinView(),
-    ),
+    pageBuilder: (context, state) {
+      final resetContext = state.extra is PinResetRouteContext
+          ? state.extra as PinResetRouteContext
+          : null;
+      return AppPageTransitions.verticalSlide(
+        state: state,
+        child: ResetPinView(initialContext: resetContext),
+      );
+    },
   ),
   GoRoute(
     path: '/pin/confirm',

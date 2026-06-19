@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/pin/models/pin_reset_route_context.dart';
 import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// PIN Locked View — consistent with lock/OTP screen design.
 class PinLockedView extends ConsumerStatefulWidget {
@@ -87,7 +90,7 @@ class _PinLockedViewState extends ConsumerState<PinLockedView> {
               const SizedBox(height: AppSpacing.xxxl),
               AppButton(
                 label: l10n.pin_resetViaOtp,
-                onPressed: () => context.fsmPush('/pin/reset'),
+                onPressed: _openPinReset,
                 variant: AppButtonVariant.secondary,
                 isFullWidth: true,
               ),
@@ -102,5 +105,17 @@ class _PinLockedViewState extends ConsumerState<PinLockedView> {
     final minutes = seconds ~/ 60;
     final remainingSeconds = seconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
+  }
+
+  void _openPinReset() {
+    final authState = ref.read(authProvider);
+    final phone = PhoneNumberValue.tryFromAny(
+      phoneNumber: authState.user?.phone ?? authState.phone,
+      countryCode: authState.user?.countryCode ?? authState.countryCode,
+    );
+
+    context.fsmOpenPinReset(
+      extra: PinResetRouteContext.fromOptionalPhoneValue(phone: phone),
+    );
   }
 }

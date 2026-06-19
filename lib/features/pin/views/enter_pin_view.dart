@@ -4,10 +4,13 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/pin/models/pin_reset_route_context.dart';
 import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Enter PIN View — reusable PIN verification screen.
 /// Uses design system PinDots + PinPad for consistency with OTP/lock screens.
@@ -130,7 +133,7 @@ class _EnterPinViewState extends ConsumerState<EnterPinView> {
                         const SizedBox(height: AppSpacing.xxl),
 
                         TextButton(
-                          onPressed: () => context.fsmPush('/pin/reset'),
+                          onPressed: _openPinReset,
                           child: AppText(
                             l10n.pin_forgotPin,
                             variant: AppTextVariant.bodyMedium,
@@ -185,6 +188,18 @@ class _EnterPinViewState extends ConsumerState<EnterPinView> {
         context.fsmPop(true);
       }
     }
+  }
+
+  void _openPinReset() {
+    final authState = ref.read(authProvider);
+    final phone = PhoneNumberValue.tryFromAny(
+      phoneNumber: authState.user?.phone ?? authState.phone,
+      countryCode: authState.user?.countryCode ?? authState.countryCode,
+    );
+
+    context.fsmOpenPinReset(
+      extra: PinResetRouteContext.fromOptionalPhoneValue(phone: phone),
+    );
   }
 
   Future<void> _verifyPin() async {

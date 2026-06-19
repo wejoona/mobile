@@ -9,6 +9,7 @@ import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
+import 'package:usdc_wallet/features/pin/models/pin_reset_route_context.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
@@ -16,6 +17,7 @@ import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/state/transaction_state_machine.dart';
 import 'package:usdc_wallet/state/fsm/index.dart' hide AuthState, SessionState;
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Where the PIN screen was opened from — determines what happens on success.
 enum PinContext {
@@ -436,6 +438,22 @@ class _PinScreenState extends ConsumerState<PinScreen>
     return normalized == null || normalized.isEmpty ? null : normalized;
   }
 
+  void _openPinReset() {
+    final loginState = ref.read(loginProvider);
+    final authState = ref.read(authProvider);
+    final authPhone = PhoneNumberValue.tryFromAny(
+      phoneNumber: authState.user?.phone ?? authState.phone,
+      countryCode: authState.user?.countryCode ?? authState.countryCode,
+    );
+
+    context.fsmOpenPinReset(
+      extra: PinResetRouteContext.fromOptionalPhoneValue(
+        phone: loginState.phoneValue ?? authPhone,
+        recoveryAccessToken: loginState.sessionToken,
+      ),
+    );
+  }
+
   void _dismissIfAlreadyUnlocked() {
     if (_queuedUnlockedRedirect ||
         widget.pinContext == PinContext.confirmAction) {
@@ -658,7 +676,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
                       const SizedBox(height: AppSpacing.xxl),
                       TextButton(
-                        onPressed: () => context.fsmPush('/pin/reset'),
+                        onPressed: _openPinReset,
                         child: AppText(
                           l10n.login_forgotPin,
                           variant: AppTextVariant.bodyMedium,
