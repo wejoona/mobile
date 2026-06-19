@@ -22,6 +22,7 @@ Do not reopen these unless new evidence changes them.
 - Once a reported issue is verified solved on current `develop`, treat it as closed and do not re-audit it every session. Reopen only with fresh user evidence, a failing focused check, or a related code change that could regress it.
 - Initial users are in Abidjan and the USA.
 - Region-specific rails and labels should be data-driven.
+- Phone numbers are canonical value objects, not display strings. Keep country ISO, dial/calling code, local national number, E.164/MSISDN, and display text as explicit fields when useful; never concatenate UI fragments like `+225|+225...` into API state, and never hardcode `+225` in money-flow provider logic outside fixtures or CI-specific tests.
 - Contact features should identify Korido users clearly, but similar small high-leverage improvements should be found across the product, not only contacts.
 - Savings goals must stay API-backed through Savings Pots. The old wallet-local `SavingsGoalsView` was removed because it used hardcoded in-memory data and could diverge from money-flow reality.
 - Profile photos are protected media. Mobile must preserve auth headers for protected avatar URLs and resolve relative API paths without inventing public storage URLs.

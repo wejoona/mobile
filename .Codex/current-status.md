@@ -1,11 +1,11 @@
 # Mobile Current Status
 
-Last updated: 2026-06-19 01:25 GMT
+Last updated: 2026-06-19 01:29 GMT
 
 ## Standing
 
 - Active branch: `develop`, tracking `origin/develop`.
-- Latest pushed mobile code commit: use `git log -1 --oneline develop` as the source of truth.
+- Latest pushed mobile code commit: `f7938f81 refactor: generic signup step progress`.
 - Latest pushed API commit: `b2728ec5 fix: canonicalize auth country inputs`.
 - Latest pushed dashboard commit: `0ba72f1 fix: stabilize dashboard support gates`.
 - Repo status should be clean unless a new slice is in progress.
@@ -67,9 +67,11 @@ Last updated: 2026-06-19 01:25 GMT
 - Codemagic-style non-golden Flutter test batches passed locally on 2026-06-18: 469 tests passed, with only the existing skipped tests.
 - Android release bundle is now owned by Gradle instead of a Codemagic-only shell patch: the release build strips the generated `integration_test` plugin registration before Java compilation, `codemagic.yaml` no longer carries the perl registrant edit, the release-config test passed 5 tests, and the Codemagic-equivalent `:app:bundleRelease` command passed locally.
 - Live staging API smoke passed on 2026-06-18 for the mobile candidate account `+2250748805663` with dev OTP `123456`: login, OTP verification, profile, email status, limits, wallet, transactions, sessions, devices, notifications, contacts, cards capability, deposit providers/channels, and feature subscriptions all returned HTTP 200 with parseable JSON. Wallet remains intentionally degraded/local-mirror with zero balance until ledger availability is restored.
+- Memory refresh completed on 2026-06-19: mobile and API repos were clean on `develop`; dashboard only had its known generated `.phpunit.cache/test-results` dirt.
 
 ## Known Watch Items
 
+- Next implementation slice: cash-out/withdraw mobile-money phone handling still needs a focused pass to remove remaining provider-level `+225` assumptions. Use selected country/dial-code plus local number through the canonical phone value/normalizer, then extend API alignment coverage for non-CI numbers and duplicated-prefix repair.
 - `staging-korido-api.joonapay.com` resolves publicly through system DNS, Cloudflare DNS, and Google DNS.
 - Staging candidate is not ready until the local replay of remaining Codemagic gates passes: iOS release build without signing and simulator/device boot once full Xcode is visible.
 - Non-golden Flutter tests now pass locally using Codemagic's 40-file batch pattern.
