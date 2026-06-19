@@ -596,6 +596,19 @@ void main() {
     expect(resetSource, contains('ApiRequestExtra.useRecoveryToken'));
     expect(resetSource, contains('LivenessDecision.autoApprove'));
     expect(resetSource, contains("'liveness_manual_review_confidence'"));
+    expect(resetSource, contains('if (decision.stepUpRequired)'));
+    expect(
+      resetSource.indexOf('if (_requiresFaceAndLiveness(decision))'),
+      lessThan(resetSource.indexOf('if (decision.stepUpRequired)')),
+      reason:
+          'PIN recovery must branch high-risk liveness before generic step-up handling',
+    );
+    expect(
+      resetSource.indexOf('if (_stepUpChallengeToken == null)'),
+      lessThan(resetSource.indexOf('_step = 3')),
+      reason:
+          'low-risk account recovery should continue to new PIN setup once the backend decision token exists',
+    );
     expect(reviewBody, contains("'/support/tickets'"));
     expect(reviewBody, contains("'category': 'account_recovery'"));
     expect(reviewBody, contains("'priority': 'high'"));
@@ -605,6 +618,11 @@ void main() {
     expect(resetSource, contains('_buildManualReviewStep'));
     expect(riskSource, contains("'account_recovery': StepUpType.manualReview"));
     expect(riskSource, contains('stepUpType == StepUpType.manualReview'));
+    expect(
+      riskSource,
+      contains('low-risk recovery proceeds\n  /// with OTP only'),
+      reason: 'account recovery must stay risk-based, not hardcoded liveness',
+    );
     expect(
       resetSource,
       contains('Expected first response: within 30 minutes'),
