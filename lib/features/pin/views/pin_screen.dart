@@ -252,6 +252,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
       await navigate();
     }
 
+    _queuedUnlockedRedirect = true;
     setState(() => _showUnlockTransition = true);
     unawaited(
       Future.delayed(const Duration(milliseconds: 220), () {

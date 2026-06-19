@@ -1,8 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:usdc_wallet/design/components/primitives/app_button.dart';
-
 import '../helpers/korido_flow_driver.dart';
 
 void main() {
@@ -63,6 +61,13 @@ void main() {
       await driver.waitForHome();
       await driver.exerciseDepositFromHome();
       await _openLiveSecondarySurfaces(driver);
+      await _logoutFromLiveSession(driver);
+
+      await driver.loginReturningUser(
+        phone: phone,
+        resolveOtp: () => _resolveOtp(phone),
+      );
+      await driver.pullToRefreshHome();
       await _logoutFromLiveSession(driver);
     },
   );
@@ -180,7 +185,7 @@ Future<void> _openLiveSecondarySurfaces(KoridoFlowDriver driver) async {
 
 Future<void> _logoutFromLiveSession(KoridoFlowDriver driver) async {
   await driver.goToRoute('/settings');
-  await driver.tapTextAfterScroll(['Logout', 'Déconnexion'], maxScrolls: 12);
+  await driver.tapKeyAfterScroll('settings_logout_button', maxScrolls: 20);
 
   await driver.pumpUntil(
     () => driver.hasAnyText([
@@ -191,8 +196,7 @@ Future<void> _logoutFromLiveSession(KoridoFlowDriver driver) async {
     timeout: const Duration(seconds: 10),
   );
 
-  await driver.tester.tap(find.byType(AppButton).last);
-  await driver.tester.pump(const Duration(milliseconds: 500));
+  await driver.tapKeyAfterScroll('settings_logout_confirm_button');
 
   await driver.pumpUntil(
     () => driver.hasAnyText([

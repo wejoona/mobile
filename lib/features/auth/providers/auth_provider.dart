@@ -566,6 +566,13 @@ class AuthNotifier extends Notifier<AuthState> {
             refreshToken: response.refreshToken,
           );
 
+      state = state.copyWith(
+        status: AuthStatus.authenticated,
+        user: response.user,
+        phone: phoneValue?.localNumber ?? state.phone,
+        countryCode: phoneValue?.isoCountryCode ?? response.user.countryCode,
+      );
+
       // Also report KYC status from the auth response to avoid waiting for separate fetch
       // This ensures the FSM knows the KYC state immediately
       if (response.kycStatus != null) {
@@ -573,13 +580,6 @@ class AuthNotifier extends Notifier<AuthState> {
             .read(kycStateMachineProvider.notifier)
             .updateFromAuthResponse(response.kycStatus);
       }
-
-      state = state.copyWith(
-        status: AuthStatus.authenticated,
-        user: response.user,
-        phone: phoneValue?.localNumber ?? state.phone,
-        countryCode: phoneValue?.isoCountryCode ?? response.user.countryCode,
-      );
 
       // Populate UserStateMachine with profile data from auth response
       // Home screen reads displayName from userStateMachineProvider
@@ -674,20 +674,6 @@ class AuthNotifier extends Notifier<AuthState> {
         rethrow;
       }
 
-      ref
-          .read(appFsmProvider.notifier)
-          .onAuthVerified(
-            userId: user?.id ?? '',
-            accessToken: accessToken,
-            refreshToken: refreshToken,
-          );
-
-      if (kycStatus != null) {
-        ref
-            .read(kycStateMachineProvider.notifier)
-            .updateFromAuthResponse(kycStatus);
-      }
-
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: user,
@@ -696,6 +682,21 @@ class AuthNotifier extends Notifier<AuthState> {
             phoneValue?.isoCountryCode ?? countryCode ?? user?.countryCode,
         error: null,
       );
+
+      ref
+          .read(appFsmProvider.notifier)
+          .completeAuthenticatedSession(
+            userId: user?.id ?? '',
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+            phone: phoneValue?.localNumber ?? phone ?? user?.phone ?? '',
+          );
+
+      if (kycStatus != null) {
+        ref
+            .read(kycStateMachineProvider.notifier)
+            .updateFromAuthResponse(kycStatus);
+      }
 
       if (user != null) {
         ref
@@ -784,21 +785,21 @@ class AuthNotifier extends Notifier<AuthState> {
             tokenValidity: Duration(seconds: response.expiresIn),
           );
 
-      // Sync with FSM: notify that auth verification succeeded
-      ref
-          .read(appFsmProvider.notifier)
-          .onAuthVerified(
-            userId: response.user?.id ?? '',
-            accessToken: response.accessToken,
-            refreshToken: response.refreshToken,
-          );
-
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: response.user,
         phone: phoneValue?.localNumber,
         countryCode: phoneValue?.isoCountryCode ?? response.user?.countryCode,
       );
+
+      ref
+          .read(appFsmProvider.notifier)
+          .completeAuthenticatedSession(
+            userId: response.user?.id ?? '',
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken,
+            phone: phoneValue?.localNumber ?? response.user?.phone ?? '',
+          );
 
       if (response.user != null) {
         ref

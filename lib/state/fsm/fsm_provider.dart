@@ -184,12 +184,13 @@ class AppFsmNotifier extends FsmNotifier<AppState, AppEvent> {
     required String userId,
     required String accessToken,
     String? refreshToken,
+    String phone = '',
   }) {
     // Force FSM to authenticated state with active session
     state = state.copyWith(
       auth: AuthAuthenticated(
         userId: userId,
-        phone: '', // not available from storage
+        phone: phone,
         accessToken: accessToken,
         refreshToken: refreshToken,
       ),
@@ -199,6 +200,24 @@ class AppFsmNotifier extends FsmNotifier<AppState, AppEvent> {
         timeout: const Duration(minutes: 30),
       ),
     );
+  }
+
+  /// Complete a trusted post-factor login path, such as local PIN or
+  /// biometric refresh-token login. This is intentionally separate from
+  /// [onAuthVerified], which belongs to the OTP FSM transition.
+  void completeAuthenticatedSession({
+    required String userId,
+    required String accessToken,
+    String? refreshToken,
+    String phone = '',
+  }) {
+    restoreSession(
+      userId: userId,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      phone: phone,
+    );
+    hydrateAuthenticatedSession();
   }
 
   /// Hydrate authenticated resources after the session is unlocked.

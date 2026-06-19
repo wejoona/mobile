@@ -350,6 +350,7 @@ bool _isExplicitPublicRoute(String location) =>
     location == '/' ||
     location == '/login' ||
     location == '/login/otp' ||
+    location == '/login/pin' ||
     location == '/otp' ||
     location == '/signup' ||
     location == '/signup/legal-consent' ||

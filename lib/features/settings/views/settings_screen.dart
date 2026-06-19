@@ -202,6 +202,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             // ACCOUNT ACTIONS
             // Logout Button
             AppButton(
+              key: const ValueKey('settings_logout_button'),
               label: l10n.common_logout,
               onPressed: () => _showLogoutDialog(context, ref, l10n),
               variant: AppButtonVariant.secondary,
@@ -357,6 +358,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               size: AppButtonSize.small,
             ),
             AppButton(
+              key: const ValueKey('settings_logout_confirm_button'),
               label: l10n.common_logout,
               onPressed: () {
                 Navigator.pop(dialogContext);

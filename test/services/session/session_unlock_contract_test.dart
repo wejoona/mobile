@@ -99,15 +99,14 @@ void main() {
     expect(navigationExtensionSource, contains('enterAuthenticatedApp'));
     expect(
       navigationExtensionSource,
-      contains('final navigator = Navigator.maybeOf(this)'),
+      contains('router.go(route);'),
+      reason: 'authenticated entry should rely on GoRouter stack replacement',
     );
-    expect(navigationExtensionSource, contains('while (navigator.canPop()'));
-    expect(navigationExtensionSource, contains('router.go(route);'));
     expect(
-      navigationExtensionSource.indexOf('while (navigator.canPop()'),
-      lessThan(navigationExtensionSource.indexOf('router.go(route);')),
+      navigationExtensionSource,
+      isNot(contains('navigator.pop()')),
       reason:
-          'auth stack cleanup must happen before routing home so PIN/login cannot remain underneath Home',
+          'manual Navigator pops can corrupt the shell child even when the URI is /home',
     );
   });
 
@@ -352,6 +351,12 @@ void main() {
           'auth success routes must clear stale OTP/PIN pages before showing home',
     );
     expect(
+      File('lib/router/navigation_extensions.dart').readAsStringSync(),
+      isNot(contains('navigator.pop()')),
+      reason:
+          'authenticated entry must use GoRouter.go stack replacement, not manual Navigator pops that can corrupt the shell child',
+    );
+    expect(
       shellRoutesSource,
       contains('pageBuilder: (context, state, child) => NoTransitionPage'),
       reason:
@@ -361,6 +366,18 @@ void main() {
     expect(redirectorSource, contains('_invalidPinLoginRedirect'));
     expect(redirectorSource, contains("location != '/login/pin'"));
     expect(redirectorSource, contains('pendingPinSessionToken'));
+    expect(
+      redirectorSource,
+      contains("location == '/login/pin'"),
+      reason:
+          'returning login PIN entry is pre-auth but must stay protected by the pending OTP session guard',
+    );
+    expect(
+      File('lib/features/pin/views/pin_screen.dart').readAsStringSync(),
+      contains('_queuedUnlockedRedirect = true;'),
+      reason:
+          'PIN success should own one authenticated-app navigation instead of racing the auth-state listener',
+    );
     expect(redirectorSource, isNot(contains('isPublicPath(location)')));
     expect(redirectorSource, contains("location == '/signup'"));
     expect(redirectorSource, contains("location == '/signup/verify-phone'"));

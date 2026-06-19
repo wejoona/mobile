@@ -223,17 +223,70 @@ class KoridoFlowDriver {
 
   Future<void> waitForHome() async {
     await pumpUntil(
-      () =>
-          hasAnyText([
-            'Available Balance',
-            'Total Balance',
-            'Solde disponible',
-            'Solde total',
-          ]) &&
-          hasAnyText(['USDC']) &&
-          hasAnyText(['Send', 'Envoyer']) &&
-          hasAnyText(['Deposit', 'Dépôt']),
+      hasHomeDashboard,
       reason: 'home dashboard with balance and quick actions',
+    );
+  }
+
+  bool hasHomeDashboard() =>
+      hasAnyText([
+        'Available Balance',
+        'Total Balance',
+        'Solde disponible',
+        'Solde total',
+      ]) &&
+      hasAnyText(['USDC']) &&
+      hasAnyText(['Send', 'Envoyer']) &&
+      hasAnyText(['Deposit', 'Dépôt']);
+
+  Future<void> loginReturningUser({
+    required String phone,
+    Future<String> Function()? resolveOtp,
+    String otp = '123456',
+    String pin = defaultPin,
+  }) async {
+    await submitLoginPhone(phone);
+    await enterOtp(resolveOtp == null ? otp : await resolveOtp());
+
+    await pumpUntil(
+      () =>
+          hasHomeDashboard() ||
+          hasAnyText([
+            'Enter your PIN',
+            'Enter PIN',
+            'Saisissez votre PIN',
+            'Entrez votre PIN',
+          ]),
+      reason: 'returning login PIN or home screen',
+      timeout: const Duration(seconds: 35),
+    );
+
+    if (!hasHomeDashboard()) {
+      await enterPin(pin);
+      await waitForHome();
+    }
+  }
+
+  Future<void> submitLoginPhone(String phone) async {
+    await pumpUntil(
+      () =>
+          hasAnyText(['Welcome back', 'Bon retour']) ||
+          hasAnyText(['Enter your phone number', 'Entrez votre numéro']),
+      reason: 'login phone entry screen',
+      timeout: const Duration(seconds: 12),
+    );
+
+    await enterFirstTextFormField(phone);
+    await tapText(['Continue', 'Continuer']);
+
+    await pumpUntil(
+      () =>
+          find
+              .byKey(const ValueKey('security_code_input'))
+              .evaluate()
+              .isNotEmpty ||
+          hasAnyText(['Verify your number', 'Vérifiez votre numéro']),
+      reason: 'login OTP input screen',
     );
   }
 
@@ -472,33 +525,41 @@ class KoridoFlowDriver {
   }
 
   Future<void> tapText(List<String> candidates) async {
-    Finder? button = findButton(candidates);
-    Finder? finder = findText(candidates);
+    Finder? finder = findText(candidates, hitTestableOnly: true);
+    Finder? button = findButton(candidates, hitTestableOnly: true);
 
     if (button == null && finder == null) {
       await scrollUntilText(candidates, maxScrolls: 6);
-      button = findButton(candidates);
-      finder = findText(candidates);
+      finder = findText(candidates, hitTestableOnly: true);
+      button = findButton(candidates, hitTestableOnly: true);
     }
 
-    if (button != null) {
-      await tester.ensureVisible(button);
+    if (finder != null) {
+      await tester.ensureVisible(finder);
       await tester.pump(const Duration(milliseconds: 150));
-      await tester.tap(button);
+      final target = findText(candidates, hitTestableOnly: true) ?? finder;
+      await tester.tap(target, warnIfMissed: false);
       await tester.pump(const Duration(milliseconds: 350));
       return;
     }
 
-    if (finder == null) {
+    button ??= findButton(candidates);
+
+    if (button != null) {
+      await tester.ensureVisible(button);
+      await tester.pump(const Duration(milliseconds: 150));
+      final target = findButton(candidates, hitTestableOnly: true) ?? button;
+      await tester.tap(target, warnIfMissed: false);
+      await tester.pump(const Duration(milliseconds: 350));
+      return;
+    }
+
+    if (button == null) {
       throw TestFailure(
         'Could not find any text: ${candidates.join(', ')}. '
         'Visible text: ${visibleTextSnapshot()}',
       );
     }
-    await tester.ensureVisible(finder);
-    await tester.pump(const Duration(milliseconds: 150));
-    await tester.tap(finder);
-    await tester.pump(const Duration(milliseconds: 350));
   }
 
   Future<void> tapTextAfterScroll(
@@ -509,12 +570,61 @@ class KoridoFlowDriver {
     await tapText(candidates);
   }
 
+  Future<void> tapKeyAfterScroll(String key, {int maxScrolls = 10}) async {
+    final finder = find.byKey(ValueKey(key));
+    for (var i = 0; i <= maxScrolls; i++) {
+      final inkWell = find.descendant(
+        of: finder,
+        matching: find.byType(InkWell),
+      );
+      final visibleInkWell = inkWell.hitTestable();
+      if (visibleInkWell.evaluate().isNotEmpty) {
+        await tester.tap(visibleInkWell, warnIfMissed: false);
+        await tester.pump(const Duration(milliseconds: 350));
+        return;
+      }
+
+      final visibleKey = finder.hitTestable();
+      if (visibleKey.evaluate().isNotEmpty) {
+        await tester.tap(visibleKey, warnIfMissed: false);
+        await tester.pump(const Duration(milliseconds: 350));
+        return;
+      }
+
+      if (finder.evaluate().isNotEmpty && i == maxScrolls) {
+        await tester.ensureVisible(finder);
+        await tester.pump(const Duration(milliseconds: 150));
+        final target = inkWell.evaluate().isNotEmpty ? inkWell.last : finder;
+        await tester.tap(target, warnIfMissed: false);
+        await tester.pump(const Duration(milliseconds: 350));
+        return;
+      }
+
+      final scrollables = find.byType(Scrollable);
+      if (scrollables.evaluate().isEmpty) {
+        break;
+      }
+
+      await tester.drag(
+        scrollables.last,
+        const Offset(0, -360),
+        warnIfMissed: false,
+      );
+      await tester.pump(const Duration(milliseconds: 250));
+    }
+
+    throw TestFailure(
+      'Could not tap key "$key". Visible text: ${visibleTextSnapshot()}',
+    );
+  }
+
   Future<void> scrollUntilText(
     List<String> candidates, {
     int maxScrolls = 10,
   }) async {
     for (var i = 0; i <= maxScrolls; i++) {
-      if (findText(candidates) != null) {
+      if (findButton(candidates, hitTestableOnly: true) != null ||
+          findText(candidates, hitTestableOnly: true) != null) {
         return;
       }
 
@@ -537,28 +647,33 @@ class KoridoFlowDriver {
     );
   }
 
-  Finder? findText(List<String> candidates) {
+  Finder? findText(List<String> candidates, {bool hitTestableOnly = false}) {
     for (final candidate in candidates) {
       final exact = find.text(candidate);
-      if (exact.evaluate().isNotEmpty) {
-        return exact.first;
+      final exactTarget = hitTestableOnly ? exact.hitTestable() : exact;
+      if (exactTarget.evaluate().isNotEmpty) {
+        return exactTarget;
       }
 
       final containing = find.textContaining(candidate);
-      if (containing.evaluate().isNotEmpty) {
-        return containing.first;
+      final containingTarget = hitTestableOnly
+          ? containing.hitTestable()
+          : containing;
+      if (containingTarget.evaluate().isNotEmpty) {
+        return containingTarget;
       }
     }
     return null;
   }
 
-  Finder? findButton(List<String> candidates) {
+  Finder? findButton(List<String> candidates, {bool hitTestableOnly = false}) {
     final labels = candidates.toSet();
     final button = find.byWidgetPredicate(
       (widget) => widget is AppButton && labels.contains(widget.label),
     );
-    if (button.evaluate().isNotEmpty) {
-      return button.first;
+    final target = hitTestableOnly ? button.hitTestable() : button;
+    if (target.evaluate().isNotEmpty) {
+      return target;
     }
     return null;
   }
@@ -587,8 +702,48 @@ class KoridoFlowDriver {
       }
     }
     throw TestFailure(
-      'Timed out waiting for $reason. Visible text: ${visibleTextSnapshot()}',
+      'Timed out waiting for $reason. Route: ${currentRouteSnapshot()}. '
+      'Visible text: ${visibleTextSnapshot()}. '
+      'Route error: ${routeErrorSnapshot()}. '
+      'Widgets: ${widgetTypeSnapshot()}',
     );
+  }
+
+  String currentRouteSnapshot() {
+    try {
+      final scaffold = find.byType(Scaffold);
+      if (scaffold.evaluate().isEmpty) {
+        return '<no scaffold>';
+      }
+      final context = tester.element(scaffold.last);
+      return GoRouter.of(context).routeInformationProvider.value.uri.toString();
+    } on Object catch (error) {
+      return '<route unavailable: $error>';
+    }
+  }
+
+  String routeErrorSnapshot() {
+    try {
+      final notFoundText = find.textContaining('Page Not Found');
+      if (notFoundText.evaluate().isEmpty) {
+        return '<none>';
+      }
+      final selectableErrors = <String>[];
+      for (final element in find.byType(SelectableText).evaluate()) {
+        final widget = element.widget as SelectableText;
+        final value = widget.data ?? widget.textSpan?.toPlainText();
+        if (value != null && value.trim().isNotEmpty) {
+          selectableErrors.add(value.trim());
+        }
+      }
+      final context = tester.element(notFoundText.first);
+      final routeState = GoRouterState.of(context);
+      return 'matched=${routeState.matchedLocation}; '
+          'uri=${routeState.uri}; error=${routeState.error}; '
+          'selectable=${selectableErrors.join(' | ')}';
+    } on Object catch (error) {
+      return '<route error unavailable: $error>';
+    }
   }
 
   String visibleTextSnapshot() {
@@ -604,7 +759,33 @@ class KoridoFlowDriver {
         break;
       }
     }
+    for (final element in find.byType(SelectableText).evaluate()) {
+      final widget = element.widget as SelectableText;
+      final value = widget.data ?? widget.textSpan?.toPlainText();
+      if (value == null || value.trim().isEmpty) {
+        continue;
+      }
+      texts.add(value.trim());
+      if (texts.length >= 40) {
+        break;
+      }
+    }
     return texts.join(' | ');
+  }
+
+  String widgetTypeSnapshot() {
+    final types = <String>[];
+    for (final widget in tester.allWidgets) {
+      final type = widget.runtimeType.toString();
+      if (type.startsWith('_') || types.contains(type)) {
+        continue;
+      }
+      types.add(type);
+      if (types.length >= 40) {
+        break;
+      }
+    }
+    return types.join(' | ');
   }
 
   Future<void> dismissKeyboard() async {

@@ -34,6 +34,17 @@ class MockAppFsmNotifier extends AppFsmNotifier {
     required String userId,
     required String accessToken,
     String? refreshToken,
+    String phone = '',
+  }) {
+    // No-op: prevent wallet/KYC fetch microtasks in tests
+  }
+
+  @override
+  void completeAuthenticatedSession({
+    required String userId,
+    required String accessToken,
+    String? refreshToken,
+    String phone = '',
   }) {
     // No-op: prevent wallet/KYC fetch microtasks in tests
   }

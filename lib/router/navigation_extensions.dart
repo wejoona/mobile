@@ -29,15 +29,6 @@ extension SafeNavigation on BuildContext {
   /// behind by OTP/PIN/biometric flows, so iOS edge-swipe cannot reveal login.
   void enterAuthenticatedApp({String route = '/home'}) {
     final router = GoRouter.of(this);
-    final navigator = Navigator.maybeOf(this);
-
-    if (navigator != null && navigator.mounted) {
-      var popBudget = 8;
-      while (navigator.canPop() && popBudget > 0) {
-        navigator.pop();
-        popBudget--;
-      }
-    }
 
     router.go(route);
     WidgetsBinding.instance.addPostFrameCallback((_) {
