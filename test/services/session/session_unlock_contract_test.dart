@@ -593,6 +593,9 @@ void main() {
       contains('onManualReviewAcknowledged: _openManualReviewStepFromLiveness'),
     );
     expect(resetSource, contains('useRecoveryToken: true'));
+    expect(resetSource, contains('_createRecoveryAuthorizationFromOtp'));
+    expect(resetSource, contains('verifyRecoveryOtp'));
+    expect(resetSource, contains('StorageKeys.recoveryAccessToken'));
     expect(resetSource, contains('ApiRequestExtra.useRecoveryToken'));
     expect(resetSource, contains('LivenessDecision.autoApprove'));
     expect(resetSource, contains("'liveness_manual_review_confidence'"));
@@ -602,6 +605,12 @@ void main() {
       lessThan(resetSource.indexOf('if (decision.stepUpRequired)')),
       reason:
           'PIN recovery must branch high-risk liveness before generic step-up handling',
+    );
+    expect(
+      resetSource.indexOf('await _createRecoveryAuthorizationFromOtp()'),
+      lessThan(resetSource.indexOf('evaluateOperation')),
+      reason:
+          'PIN recovery must exchange OTP for a scoped recovery token before risk/liveness endpoints are called',
     );
     expect(
       resetSource.indexOf('if (_stepUpChallengeToken == null)'),

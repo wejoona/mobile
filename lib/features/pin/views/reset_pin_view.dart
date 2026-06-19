@@ -549,8 +549,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     _phoneController.text = phone.displayInternational;
   }
 
-  /// Verify OTP entered by user
-  /// OTP is validated server-side during PIN reset call
+  /// Verify OTP entered by user and create a scoped recovery session.
   Future<void> _verifyOtp() async {
     final l10n = AppLocalizations.of(context)!;
 
@@ -567,7 +566,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     });
 
     try {
-      await _ensureRecoveryAuthorization();
+      await _createRecoveryAuthorizationFromOtp();
       final riskService = ref.read(riskBasedSecurityServiceProvider);
       final decision = await riskService.evaluateOperation(
         operation: 'account_recovery',
@@ -650,6 +649,32 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         await _routePinResetToManualReview('risk_or_provider_unavailable');
       }
     }
+  }
+
+  Future<void> _createRecoveryAuthorizationFromOtp() async {
+    final phone = await _resolveRecoveryPhone();
+    if (phone == null) {
+      throw StateError('Phone number is required');
+    }
+
+    if (mounted) {
+      setState(() => _setRecoveryPhone(phone));
+    }
+
+    final recovery = await ref
+        .read(authServiceProvider)
+        .verifyRecoveryOtp(
+          phone: phone.apiPhone,
+          countryCode: phone.apiCountryCode,
+          otp: _otpController.text,
+        );
+
+    await ref
+        .read(secureStorageProvider)
+        .write(
+          key: StorageKeys.recoveryAccessToken,
+          value: recovery.recoveryAccessToken,
+        );
   }
 
   bool _requiresManualReview(StepUpDecision decision) {

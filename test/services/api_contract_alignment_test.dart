@@ -1959,6 +1959,8 @@ void main() {
       expect(authServiceSource, contains("'/auth/login'"));
       expect(authServiceSource, contains("'/auth/register'"));
       expect(authServiceSource, contains("'/auth/verify-otp'"));
+      expect(authServiceSource, contains("'/auth/recovery/verify-otp'"));
+      expect(authServiceSource, contains('RecoveryOtpResponse'));
       expect(apiProviderSource, isNot(contains('AuthApi')));
       expect(apiProviderSource, isNot(contains('auth =')));
     });

@@ -92,6 +92,33 @@ class AuthService {
     }
   }
 
+  /// POST /auth/recovery/verify-otp
+  Future<RecoveryOtpResponse> verifyRecoveryOtp({
+    required String phone,
+    required String otp,
+    String? countryCode,
+    String scope = 'pin_reset',
+  }) async {
+    try {
+      final phoneValue = PhoneNumberValue.fromAny(
+        phoneNumber: phone,
+        countryCode: countryCode,
+      );
+      final response = await _dio.post(
+        '/auth/recovery/verify-otp',
+        data: {
+          'phone': phoneValue.apiPhone,
+          'countryCode': phoneValue.apiCountryCode,
+          'otp': otp,
+          'scope': scope,
+        },
+      );
+      return RecoveryOtpResponse.fromJson(response.data);
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
   /// POST /auth/logout - Invalidate session on backend
   Future<void> logout({String? accessToken, String? refreshToken}) async {
     final logger = const AppLogger('Auth');
@@ -233,6 +260,26 @@ class AuthResponse {
       walletCreated: json['walletCreated'] as bool? ?? false,
       kycStatus: json['kycStatus'] as String?,
       expiresIn: json['expiresIn'] as int? ?? 900, // Default 15 minutes
+    );
+  }
+}
+
+class RecoveryOtpResponse {
+  final String recoveryAccessToken;
+  final int expiresIn;
+  final String scope;
+
+  const RecoveryOtpResponse({
+    required this.recoveryAccessToken,
+    required this.expiresIn,
+    required this.scope,
+  });
+
+  factory RecoveryOtpResponse.fromJson(Map<String, dynamic> json) {
+    return RecoveryOtpResponse(
+      recoveryAccessToken: json['recoveryAccessToken'] as String,
+      expiresIn: json['expiresIn'] as int? ?? 600,
+      scope: json['scope'] as String? ?? 'pin_reset',
     );
   }
 }
