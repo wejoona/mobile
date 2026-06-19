@@ -52,6 +52,7 @@ class InitiateDepositRequest {
       'amount': amount,
       'sourceCurrency': currency,
       'channelId': normalizeDepositChannelId(provider),
+      if (normalizedCountryCode != null) 'countryCode': normalizedCountryCode,
       if (normalizedPhoneNumber != null) 'phoneNumber': normalizedPhoneNumber,
     };
   }
