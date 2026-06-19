@@ -1,12 +1,12 @@
 # Mobile Current Status
 
-Last updated: 2026-06-19 01:44 GMT
+Last updated: 2026-06-19 01:55 GMT
 
 ## Standing
 
 - Active branch: `develop`, tracking `origin/develop`.
-- Latest pushed mobile code commit: `e588024c fix: derive send recipient country input`.
-- Latest pushed API commit: `b2728ec5 fix: canonicalize auth country inputs`.
+- Latest pushed mobile code commit: `29007190 fix: carry deposit country through mobile flow`.
+- Latest pushed API commit: `954f7ffc fix: carry deposit country into initiation`.
 - Latest pushed dashboard commit: `0ba72f1 fix: stabilize dashboard support gates`.
 - Repo status should be clean unless a new slice is in progress.
 - Do not promote to `staging` until Codemagic-equivalent local gates pass.
@@ -63,13 +63,14 @@ Last updated: 2026-06-19 01:44 GMT
 - Send-recipient identity safety is verified: transfer requests keep exactly one stable recipient identifier, malformed phone input is normalized before submit, username-only/masked recipients remain supported, lookup-selected users send by stable `recipientId`, and self-send is guarded by current user id/phone/username checks before money movement. Focused send recipient contract tests passed 11 tests.
 - Cash-out/withdraw phone handling is now country-aware on current `develop`: withdraw state carries explicit country context, the routed withdraw screen passes the selected country, local cash-out numbers are rejected without a country context, and duplicated/international numbers still normalize to clean E.164. Focused API alignment tests passed 97 tests on 2026-06-19.
 - Send-recipient phone entry is now metadata-driven on current `develop`: the dial-code selector derives from `countriesProvider`/`SupportedCountries`, initializes from user/selected country, derives local length from `CountryConfig`, and no longer keeps a hardcoded `+225` default/list in the screen. Focused API alignment tests passed 98 tests on 2026-06-19.
+- Deposit initiation is now country-aware on current `develop`: routed amount selection stores the effective country with source currency, mobile sends `countryCode` to `/wallet/deposit`, backend resolves shared-currency channels using explicit country before legacy currency fallback, and compatibility helpers no longer invent missing channel/currency values. Focused mobile deposit contract tests, mobile API alignment tests, backend initiate-deposit tests, backend build, analyzer warning gate, and diff checks passed on 2026-06-19.
 - Backoffice device blacklist/deactivation is verified at the dashboard service boundary: Filament user device actions create reasoned blacklist records, sync through Korido API registered-device endpoints when available, deactivate registered devices, disable push tokens, revoke sessions, and record API sync metadata. Focused dashboard Pest tests passed 2 tests / 12 assertions.
 - App-version compatibility is verified for the staging-candidate path: mobile checks `/config/mobile-version` on startup, redirects to `/force-update` when `forceUpgrade=true`, and now has focused coverage that HTTP 426 responses trigger a version-policy refresh. Focused API client and force-update tests passed 34 tests.
 - Codemagic-equivalent analyzer warning gate passed locally on 2026-06-18: `dart analyze --format machine` returned exit code 0 with no `ERROR` or `WARNING` records.
 - Codemagic-style non-golden Flutter test batches passed locally on 2026-06-18: 469 tests passed, with only the existing skipped tests.
 - Android release bundle is now owned by Gradle instead of a Codemagic-only shell patch: the release build strips the generated `integration_test` plugin registration before Java compilation, `codemagic.yaml` no longer carries the perl registrant edit, the release-config test passed 5 tests, and the Codemagic-equivalent `:app:bundleRelease` command passed locally.
 - Live staging API smoke passed on 2026-06-18 for the mobile candidate account `+2250748805663` with dev OTP `123456`: login, OTP verification, profile, email status, limits, wallet, transactions, sessions, devices, notifications, contacts, cards capability, deposit providers/channels, and feature subscriptions all returned HTTP 200 with parseable JSON. Wallet remains intentionally degraded/local-mirror with zero balance until ledger availability is restored.
-- Memory refresh completed on 2026-06-19 01:44 GMT: mobile and API repos were clean on `develop`; dashboard only had its known generated `.phpunit.cache/test-results` dirt.
+- Memory refresh completed on 2026-06-19 01:55 GMT: mobile and API repos were clean on `develop` after deposit country commits; dashboard only had its known generated `.phpunit.cache/test-results` dirt.
 
 ## Known Watch Items
 
@@ -86,7 +87,7 @@ Last updated: 2026-06-19 01:44 GMT
 
 Immediate next development slice:
 
-- Finish country/rail canonicalization for deposits: inspect the routed deposit flow and backend DTO/use case, remove live hardcoded Côte d'Ivoire/mobile-money assumptions, and keep source country/currency/provider ownership explicit.
+- Prune or quarantine non-routed legacy deposit surfaces (`MobileMoneyForm`, `DepositScreenWired`, old deposit method lists) so static CI/mobile-money assumptions cannot leak back into production paths.
 
 Before promoting to `staging`, finish release-build checks locally without consuming a TestFlight build:
 
