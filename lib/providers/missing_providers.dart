@@ -334,18 +334,6 @@ final notificationsNotifierProvider = FutureProvider.autoDispose<List<dynamic>>(
   },
 );
 
-/// Profile notifier provider — wired to GET /user/profile.
-final profileNotifierProvider =
-    FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
-      final dio = ref.watch(dioProvider);
-      try {
-        final response = await dio.get('/user/profile');
-        return response.data as Map<String, dynamic>;
-      } catch (_) {
-        return {};
-      }
-    });
-
 /// Deposit providers list — wired to GET /wallet/deposit/channels.
 final depositProvidersAvailabilityProvider =
     FutureProvider<DepositProvidersAvailability>((ref) async {
