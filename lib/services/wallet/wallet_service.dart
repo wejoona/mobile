@@ -419,6 +419,8 @@ class WalletBalanceResponse {
         payload['wallet_address'] as String? ??
         payload['circleWalletAddress'] as String? ??
         payload['circle_wallet_address'] as String? ??
+        payload['stellarAddress'] as String? ??
+        payload['stellar_address'] as String? ??
         payload['address'] as String? ??
         payload['publicAddress'] as String? ??
         payload['public_address'] as String? ??

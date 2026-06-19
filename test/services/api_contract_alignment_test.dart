@@ -260,6 +260,30 @@ void main() {
       expect(response.balances.single.total, 17.5);
     });
 
+    test('wallet balance parser accepts receive address aliases', () {
+      final circle = WalletBalanceResponse.fromJson({
+        'walletId': 'wallet_circle',
+        'walletAddress': '0xcanonical',
+        'circleWalletAddress': '0xcircle',
+        'stellarAddress': 'G_STELLAR',
+        'currency': 'USDC',
+        'balances': [
+          {'currency': 'USDC', 'available': 1, 'pending': 0, 'total': 1},
+        ],
+      });
+      final stellarOnly = WalletBalanceResponse.fromJson({
+        'walletId': 'wallet_stellar',
+        'stellarAddress': 'G_STELLAR_ONLY',
+        'currency': 'USDC',
+        'balances': [
+          {'currency': 'USDC', 'available': 2, 'pending': 0, 'total': 2},
+        ],
+      });
+
+      expect(circle.walletAddress, '0xcanonical');
+      expect(stellarOnly.walletAddress, 'G_STELLAR_ONLY');
+    });
+
     test(
       'wallet balance parser keeps balances beside nested wallet object',
       () {
