@@ -18,6 +18,8 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/auth/auth_service.dart';
 import 'package:usdc_wallet/services/liveness/liveness_service.dart';
+import 'package:usdc_wallet/services/security/client_risk_score_service.dart';
+import 'package:usdc_wallet/services/security/device_fingerprint_service.dart';
 import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
@@ -570,10 +572,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       final riskService = ref.read(riskBasedSecurityServiceProvider);
       final decision = await riskService.evaluateOperation(
         operation: 'account_recovery',
-        metadata: {
-          'flow': 'pin_reset',
-          'otpLength': _otpController.text.length,
-        },
+        metadata: await _accountRecoveryRiskMetadata(),
         useRecoveryToken: true,
       );
 
@@ -675,6 +674,39 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           key: StorageKeys.recoveryAccessToken,
           value: recovery.recoveryAccessToken,
         );
+  }
+
+  Future<Map<String, dynamic>> _accountRecoveryRiskMetadata() async {
+    final metadata = <String, dynamic>{
+      'flow': 'pin_reset',
+      'otpLength': _otpController.text.length,
+    };
+
+    try {
+      final fingerprint = await ref
+          .read(deviceFingerprintServiceProvider)
+          .collect();
+      metadata.addAll({
+        'deviceId': fingerprint.deviceId,
+        'fingerprintHash': fingerprint.fingerprintHash,
+        'platform': fingerprint.platform,
+        'isPhysicalDevice': fingerprint.isPhysicalDevice,
+        'biometricsAvailable': fingerprint.biometricsAvailable,
+        'deviceCompromised': fingerprint.isCompromised,
+      });
+    } on Object {
+      metadata['deviceSignalsUnavailable'] = true;
+    }
+
+    try {
+      metadata['serverObservedClientRiskScore'] = await ref
+          .read(clientRiskScoreServiceProvider)
+          .calculateRiskScore(action: RiskAction.accountRecovery);
+    } on Object {
+      metadata['clientRiskScoreUnavailable'] = true;
+    }
+
+    return metadata;
   }
 
   bool _requiresManualReview(StepUpDecision decision) {

@@ -611,6 +611,21 @@ void main() {
     );
     expect(resetSource, contains('useRecoveryToken: true'));
     expect(resetSource, contains('_createRecoveryAuthorizationFromOtp'));
+    expect(resetSource, contains('_accountRecoveryRiskMetadata'));
+    final recoveryRiskBody = _methodBody(
+      resetSource,
+      '_accountRecoveryRiskMetadata',
+    );
+    expect(recoveryRiskBody, contains('deviceFingerprintServiceProvider'));
+    expect(recoveryRiskBody, contains('clientRiskScoreServiceProvider'));
+    expect(recoveryRiskBody, contains('RiskAction.accountRecovery'));
+    expect(recoveryRiskBody, contains("'deviceId': fingerprint.deviceId"));
+    expect(
+      recoveryRiskBody,
+      contains("'serverObservedClientRiskScore'"),
+      reason:
+          'account recovery risk must send client/device signals so low-risk trusted devices can stay OTP-only and high-risk devices can require liveness',
+    );
     expect(resetSource, contains('verifyRecoveryOtp'));
     expect(resetSource, contains('StorageKeys.recoveryAccessToken'));
     expect(resetSource, contains('ApiRequestExtra.useRecoveryToken'));
@@ -723,7 +738,7 @@ void main() {
 String _methodBody(String source, String methodName) {
   final signatureIndex = source.indexOf(
     RegExp(
-      r'(?:void|bool|String|Widget|Future<[^>]+>)\s+' +
+      r'(?:void|bool|String|Widget|Future(?:<[^\n]+>)?)\s+' +
           RegExp.escape(methodName) +
           r'\s*\(',
     ),
