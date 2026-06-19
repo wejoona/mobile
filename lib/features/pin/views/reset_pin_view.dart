@@ -265,7 +265,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         const SizedBox(height: AppSpacing.xxxl),
         AppButton(
           label: 'Return to sign in',
-          onPressed: () => context.fsmGo('/login'),
+          onPressed: _returnToSignInFromManualReview,
           isFullWidth: true,
         ),
       ],
@@ -841,6 +841,15 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         'Expected first response: within 30 minutes for locked account recovery.';
     _manualReviewResolutionDueAt ??= null;
     _manualReviewReason = reason;
+  }
+
+  Future<void> _returnToSignInFromManualReview() async {
+    await _clearRecoveryAuthorization();
+    try {
+      await ref.read(authProvider.notifier).clearLocalSession();
+    } catch (_) {}
+    if (!mounted) return;
+    context.fsmGo('/login');
   }
 
   String? _formatReviewDueAt(String? raw) {

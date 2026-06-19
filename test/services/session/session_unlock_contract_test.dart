@@ -614,6 +614,13 @@ void main() {
     expect(reviewBody, contains("'priority': 'high'"));
     expect(reviewBody, contains('_applyManualReviewFallback(reason)'));
     expect(resetSource, contains('_applyManualReviewFallback'));
+    expect(resetSource, contains('_returnToSignInFromManualReview'));
+    expect(
+      resetSource,
+      contains('await ref.read(authProvider.notifier).clearLocalSession()'),
+      reason:
+          'manual-review exit must clear the locked local session before navigating to login',
+    );
     expect(resetSource, contains("'step_up_challenge_unavailable'"));
     expect(resetSource, contains('_buildManualReviewStep'));
     expect(riskSource, contains("'account_recovery': StepUpType.manualReview"));
