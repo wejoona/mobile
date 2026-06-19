@@ -8,9 +8,9 @@ library;
 
 import 'dart:convert';
 import 'dart:io';
-import 'package:http_parser/http_parser.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/io_client.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:test/test.dart';
 
 /// Live E2E tests are opt-in because they call real backend services.
@@ -125,9 +125,11 @@ class E2EClient {
   // ── HTTP verbs ──
 
   Future<E2EResponse> get(String path, [Map<String, String>? headers]) async {
-    final res = await _client.get(
-      Uri.parse('$baseUrl$path'),
-      headers: {..._headers, ...?headers},
+    final res = await _sendWithRateLimitRetry(
+      () => _client.get(
+        Uri.parse('$baseUrl$path'),
+        headers: {..._headers, ...?headers},
+      ),
     );
     return E2EResponse(res);
   }
@@ -137,10 +139,12 @@ class E2EClient {
     Map<String, dynamic>? body,
     Map<String, String>? headers,
   ]) async {
-    final res = await _client.post(
-      Uri.parse('$baseUrl$path'),
-      headers: {..._headers, ...?headers},
-      body: body != null ? jsonEncode(body) : null,
+    final res = await _sendWithRateLimitRetry(
+      () => _client.post(
+        Uri.parse('$baseUrl$path'),
+        headers: {..._headers, ...?headers},
+        body: body != null ? jsonEncode(body) : null,
+      ),
     );
     return E2EResponse(res);
   }
@@ -150,10 +154,12 @@ class E2EClient {
     Map<String, dynamic>? body,
     Map<String, String>? headers,
   ]) async {
-    final res = await _client.put(
-      Uri.parse('$baseUrl$path'),
-      headers: {..._headers, ...?headers},
-      body: body != null ? jsonEncode(body) : null,
+    final res = await _sendWithRateLimitRetry(
+      () => _client.put(
+        Uri.parse('$baseUrl$path'),
+        headers: {..._headers, ...?headers},
+        body: body != null ? jsonEncode(body) : null,
+      ),
     );
     return E2EResponse(res);
   }
@@ -163,10 +169,12 @@ class E2EClient {
     Map<String, String>? headers,
     Map<String, dynamic>? body,
   ]) async {
-    final res = await _client.delete(
-      Uri.parse('$baseUrl$path'),
-      headers: {..._headers, ...?headers},
-      body: body != null ? jsonEncode(body) : null,
+    final res = await _sendWithRateLimitRetry(
+      () => _client.delete(
+        Uri.parse('$baseUrl$path'),
+        headers: {..._headers, ...?headers},
+        body: body != null ? jsonEncode(body) : null,
+      ),
     );
     return E2EResponse(res);
   }
@@ -176,10 +184,12 @@ class E2EClient {
     Map<String, dynamic>? body,
     Map<String, String>? headers,
   ]) async {
-    final res = await _client.patch(
-      Uri.parse('$baseUrl$path'),
-      headers: {..._headers, ...?headers},
-      body: body != null ? jsonEncode(body) : null,
+    final res = await _sendWithRateLimitRetry(
+      () => _client.patch(
+        Uri.parse('$baseUrl$path'),
+        headers: {..._headers, ...?headers},
+        body: body != null ? jsonEncode(body) : null,
+      ),
     );
     return E2EResponse(res);
   }
@@ -192,24 +202,27 @@ class E2EClient {
     Map<String, String>? fields,
     Map<String, String>? headers,
   }) async {
-    final request = http.MultipartRequest('POST', Uri.parse('$baseUrl$path'));
-    request.headers.addAll({
-      'X-Test-Bypass': _testBypassSecret,
-      if (_accessToken != null) 'Authorization': 'Bearer $_accessToken',
-      ...?headers,
-    });
-    if (fields != null) request.fields.addAll(fields);
-    request.files.add(
-      await http.MultipartFile.fromPath(
-        fieldName,
-        file.path,
-        filename: filename ?? file.uri.pathSegments.last,
-        contentType: _contentTypeForPath(filename ?? file.path),
-      ),
-    );
+    final res = await _sendWithRateLimitRetry(() async {
+      final request = http.MultipartRequest('POST', Uri.parse('$baseUrl$path'));
+      request.headers.addAll({
+        'X-Test-Bypass': _testBypassSecret,
+        if (_accessToken != null) 'Authorization': 'Bearer $_accessToken',
+        ...?headers,
+      });
+      if (fields != null) request.fields.addAll(fields);
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          fieldName,
+          file.path,
+          filename: filename ?? file.uri.pathSegments.last,
+          contentType: _contentTypeForPath(filename ?? file.path),
+        ),
+      );
 
-    final streamed = await request.send();
-    return E2EResponse(await http.Response.fromStream(streamed));
+      final streamed = await request.send();
+      return http.Response.fromStream(streamed);
+    });
+    return E2EResponse(res);
   }
 
   MediaType _contentTypeForPath(String path) {
@@ -220,6 +233,34 @@ class E2EClient {
       'jpg' || 'jpeg' => MediaType('image', 'jpeg'),
       _ => MediaType('application', 'octet-stream'),
     };
+  }
+
+  Future<http.Response> _sendWithRateLimitRetry(
+    Future<http.Response> Function() send,
+  ) async {
+    var response = await send();
+    if (!runLiveE2E || response.statusCode != 429) return response;
+
+    for (final fallbackDelay in const [
+      Duration(seconds: 15),
+      Duration(seconds: 45),
+    ]) {
+      await Future.delayed(_rateLimitDelay(response) ?? fallbackDelay);
+      response = await send();
+      if (response.statusCode != 429) return response;
+    }
+
+    return response;
+  }
+
+  Duration? _rateLimitDelay(http.Response response) {
+    final retryAfter = response.headers['retry-after'];
+    if (retryAfter == null) return null;
+
+    final seconds = int.tryParse(retryAfter);
+    if (seconds == null || seconds <= 0) return null;
+
+    return Duration(seconds: seconds.clamp(1, 60));
   }
 
   // ── Auth helpers ──

@@ -106,7 +106,7 @@ run_live_e2e() {
   RUN_LIVE_E2E=true \
   API_URL="${KORIDO_API_URL}" \
   DEFAULT_OTP="${KORIDO_DEFAULT_OTP}" \
-    flutter test "$@"
+    flutter test -j 1 "$@"
 }
 
 has_e2e_test_arg() {
