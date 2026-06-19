@@ -160,9 +160,9 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         const SizedBox(height: AppSpacing.lg),
         AuthScreenHeader(
           appName: 'Korido',
-          title: 'Confirm it is you',
+          title: 'Extra verification required',
           subtitle:
-              'This PIN reset needs a face and liveness check before you create a new PIN.',
+              'The risk check for this PIN reset requires a face and liveness check before you create a new PIN.',
           markSize: 44,
           titleVariant: AppTextVariant.titleLarge,
         ),
@@ -183,13 +183,6 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
               onManualReviewRequired: _routePinResetToManualReview,
               onManualReviewAcknowledged: _openManualReviewStepFromLiveness,
               useRecoveryToken: true,
-              onCancel: () {
-                setState(() {
-                  _step = 2;
-                  _errorMessage = null;
-                  _isLoading = false;
-                });
-              },
             ),
           ),
         ),

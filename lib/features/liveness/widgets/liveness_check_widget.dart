@@ -564,7 +564,8 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
             variant: AppTextVariant.titleMedium,
             color: colors.textPrimary,
           ),
-          if (_state != _LivenessState.completed &&
+          if (widget.onCancel != null &&
+              _state != _LivenessState.completed &&
               _state != _LivenessState.manualReview)
             IconButton(
               icon: const Icon(Icons.close),

@@ -560,12 +560,18 @@ void main() {
     final livenessSource = File(
       'lib/features/liveness/widgets/liveness_check_widget.dart',
     ).readAsStringSync();
+    final infoPlist = File('ios/Runner/Info.plist').readAsStringSync();
+    final androidManifest = File(
+      'android/app/src/main/AndroidManifest.xml',
+    ).readAsStringSync();
 
     final reviewBody = _methodBody(resetSource, '_routePinResetToManualReview');
+    final riskStepBody = _methodBody(resetSource, '_buildRiskStep');
     final livenessStartBody = _methodBody(livenessSource, '_start');
 
     expect(livenessSource, contains('onManualReviewRequired'));
     expect(livenessSource, contains('onManualReviewAcknowledged'));
+    expect(livenessSource, contains('widget.onCancel != null'));
     expect(livenessSource, contains('ph.Permission.camera.request()'));
     expect(livenessSource, contains('_LivenessState.cameraPermissionRequired'));
     expect(livenessSource, contains('Continue with manual review'));
@@ -608,6 +614,12 @@ void main() {
     expect(
       resetSource,
       contains('onManualReviewAcknowledged: _openManualReviewStepFromLiveness'),
+    );
+    expect(
+      riskStepBody,
+      isNot(contains('onCancel:')),
+      reason:
+          'high-risk PIN recovery liveness must not expose a close action that returns to OTP and hides manual-review state',
     );
     expect(resetSource, contains('useRecoveryToken: true'));
     expect(resetSource, contains('_createRecoveryAuthorizationFromOtp'));
@@ -688,6 +700,17 @@ void main() {
       contains('Expected first response: within 30 minutes'),
       reason:
           'manual recovery must tell the user what happens next instead of dead-ending at provider failure',
+    );
+    expect(
+      infoPlist,
+      contains('identity or liveness checks'),
+      reason:
+          'iOS camera permission copy must match the recovery/KYC liveness use case',
+    );
+    expect(
+      androidManifest,
+      contains('android.permission.CAMERA'),
+      reason: 'Android liveness and QR flows require explicit camera access',
     );
   });
 
