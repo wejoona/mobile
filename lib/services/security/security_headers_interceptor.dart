@@ -98,6 +98,11 @@ class SecurityHeadersInterceptor extends Interceptor {
           'Korido/${device.appVersion} '
           '(${device.os}; ${device.model ?? device.platform}; '
           '${device.osVersion ?? 'unknown'})';
+      headers['X-Device-Platform'] = device.platform;
+      headers['X-Device-Physical'] = device.isPhysicalDevice.toString();
+      headers['X-Device-Compromised'] = device.isCompromised.toString();
+      headers['X-Biometrics-Available'] = device.biometricsAvailable
+          .toString();
     }
     if (sessionRiskToken != null) {
       headers['X-Risk-Session'] = sessionRiskToken!;

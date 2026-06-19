@@ -955,7 +955,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           _isLoading = false;
           _showError = true;
           _errorMessage =
-              'Complete the security check before creating a new PIN.';
+              'We could not confirm this recovery decision. Please request a new code.';
         });
         _resetConfirmPin();
         return;
