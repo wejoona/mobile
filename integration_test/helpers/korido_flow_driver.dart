@@ -133,9 +133,22 @@ class KoridoFlowDriver {
     await tester.enterText(find.byType(TextFormField).first, phone);
     await tester.pump();
     await dismissKeyboard();
-    await tester.tap(find.byType(Checkbox).first);
-    await tester.pump();
     await tapText(['Continue', 'Continuer']);
+
+    await pumpUntil(
+      () =>
+          hasAnyText(['Accords juridiques', 'Legal Agreements']) ||
+          find
+              .byKey(const ValueKey('security_code_input'))
+              .evaluate()
+              .isNotEmpty ||
+          hasAnyText(['Verify your number', 'Vérifiez votre numéro']),
+      reason: 'legal consent or OTP input screen',
+    );
+
+    if (hasAnyText(['Accords juridiques', 'Legal Agreements'])) {
+      await acceptSignupLegalConsent();
+    }
 
     await pumpUntil(
       () =>
@@ -146,6 +159,25 @@ class KoridoFlowDriver {
           hasAnyText(['Verify your number', 'Vérifiez votre numéro']),
       reason: 'OTP input screen',
     );
+  }
+
+  Future<void> acceptSignupLegalConsent() async {
+    await reviewLegalDocument(["Conditions d'utilisation", 'Terms of Service']);
+    await reviewLegalDocument([
+      'Politique de confidentialité',
+      'Privacy Policy',
+    ]);
+    await tapText(['Accepter et continuer', 'Accept & Continue']);
+  }
+
+  Future<void> reviewLegalDocument(List<String> titleCandidates) async {
+    await tapText(titleCandidates);
+    await pumpUntil(
+      () => find.byIcon(Icons.close_rounded).evaluate().isNotEmpty,
+      reason: 'legal document viewer',
+    );
+    await tester.tap(find.byIcon(Icons.close_rounded).first);
+    await tester.pump(const Duration(milliseconds: 350));
   }
 
   Future<void> enterOtp(String otp) async {

@@ -86,44 +86,57 @@ class PushNotificationService {
       return;
     }
 
-    // Set background message handler
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    if (!_isFirebaseAvailable) {
+      _logger.warn(
+        'Firebase is not initialized; push notifications disabled for this run',
+      );
+      return;
+    }
 
-    final settings = requestPermission
-        ? await _requestPermissions()
-        : await _messaging.getNotificationSettings();
-
-    if (settings.authorizationStatus == AuthorizationStatus.authorized ||
-        settings.authorizationStatus == AuthorizationStatus.provisional) {
-      // Get initial token
-      _currentToken = await _messaging.getToken();
-      _logger.debug('FCM Token obtained', _currentToken);
-
-      // Listen for token refresh
-      _tokenRefreshSubscription = _messaging.onTokenRefresh.listen(
-        _handleTokenRefresh,
+    try {
+      // Set background message handler
+      FirebaseMessaging.onBackgroundMessage(
+        _firebaseMessagingBackgroundHandler,
       );
 
-      // Handle foreground messages
-      _foregroundSubscription = FirebaseMessaging.onMessage.listen(
-        _handleForegroundMessage,
-      );
+      final settings = requestPermission
+          ? await _requestPermissions()
+          : await _messaging.getNotificationSettings();
 
-      // Handle notification tap when app was in background
-      FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
+      if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+          settings.authorizationStatus == AuthorizationStatus.provisional) {
+        // Get initial token
+        _currentToken = await _messaging.getToken();
+        _logger.debug('FCM Token obtained', _currentToken);
 
-      // Check if app was opened from terminated state via notification
-      final initialMessage = await _messaging.getInitialMessage();
-      if (initialMessage != null) {
-        _handleMessageOpenedApp(initialMessage);
+        // Listen for token refresh
+        _tokenRefreshSubscription = _messaging.onTokenRefresh.listen(
+          _handleTokenRefresh,
+        );
+
+        // Handle foreground messages
+        _foregroundSubscription = FirebaseMessaging.onMessage.listen(
+          _handleForegroundMessage,
+        );
+
+        // Handle notification tap when app was in background
+        FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
+
+        // Check if app was opened from terminated state via notification
+        final initialMessage = await _messaging.getInitialMessage();
+        if (initialMessage != null) {
+          _handleMessageOpenedApp(initialMessage);
+        }
+
+        _isInitialized = true;
+      } else {
+        _logger.warn('Push notifications not authorized for initialization', {
+          'authorizationStatus': settings.authorizationStatus.name,
+          'requestPermission': requestPermission,
+        });
       }
-
-      _isInitialized = true;
-    } else {
-      _logger.warn('Push notifications not authorized for initialization', {
-        'authorizationStatus': settings.authorizationStatus.name,
-        'requestPermission': requestPermission,
-      });
+    } on FirebaseException catch (error) {
+      _logger.warn('Firebase messaging unavailable; push disabled', error);
     }
   }
 
@@ -136,6 +149,10 @@ class PushNotificationService {
 
   /// Check if push notifications are enabled
   Future<bool> get isEnabled async {
+    if (!_isFirebaseAvailable) {
+      return false;
+    }
+
     final settings = await _messaging.getNotificationSettings();
     return settings.authorizationStatus == AuthorizationStatus.authorized ||
         settings.authorizationStatus == AuthorizationStatus.provisional;
@@ -260,15 +277,27 @@ class PushNotificationService {
 
   /// Subscribe to a topic
   Future<void> subscribeToTopic(String topic) async {
+    if (!_isFirebaseAvailable) {
+      _logger.warn('Firebase unavailable; topic subscribe skipped', topic);
+      return;
+    }
+
     await _messaging.subscribeToTopic(topic);
     _logger.info('Subscribed to topic', topic);
   }
 
   /// Unsubscribe from a topic
   Future<void> unsubscribeFromTopic(String topic) async {
+    if (!_isFirebaseAvailable) {
+      _logger.warn('Firebase unavailable; topic unsubscribe skipped', topic);
+      return;
+    }
+
     await _messaging.unsubscribeFromTopic(topic);
     _logger.info('Unsubscribed from topic', topic);
   }
+
+  bool get _isFirebaseAvailable => Firebase.apps.isNotEmpty;
 
   Future<DeviceFingerprint?> _safeFingerprint() async {
     try {

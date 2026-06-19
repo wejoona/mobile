@@ -188,7 +188,11 @@ class _SignupLegalConsentViewState
       final service = ref.read(legalDocumentsServiceProvider);
       final terms = await ref.read(termsOfServiceProvider.future);
       final privacy = await ref.read(privacyPolicyProvider.future);
-      await service.recordAllConsents(terms: terms, privacy: privacy);
+      await service.recordAllConsents(
+        terms: terms,
+        privacy: privacy,
+        syncWithApi: false,
+      );
       await ref
           .read(signupFlowProvider.notifier)
           .submitPhoneNumber(acceptedTerms: true);
