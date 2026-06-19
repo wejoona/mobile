@@ -282,8 +282,21 @@ class ConfirmScreen extends ConsumerWidget {
                       if (!passed) return;
                     }
                   } catch (e) {
-                    // If risk evaluation fails, still allow proceeding to PIN
-                    // (PIN verification is the minimum required security)
+                    if (!context.mounted) return;
+                    HapticFeedback.heavyImpact();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          localizedSendCopy(
+                            context,
+                            en: 'Security check unavailable. Please try again before sending money.',
+                            fr: 'La vérification de sécurité est indisponible. Réessayez avant d’envoyer de l’argent.',
+                          ),
+                        ),
+                        backgroundColor: context.colors.error,
+                      ),
+                    );
+                    return;
                   }
 
                   if (!context.mounted) return;

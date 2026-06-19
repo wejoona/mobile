@@ -40,6 +40,34 @@ void main() {
       expect(source, contains('TransactionLimitOperation.send'));
     });
 
+    test('send confirmation fails closed when risk check is unavailable', () {
+      final source = File(
+        'lib/features/send/views/confirm_screen.dart',
+      ).readAsStringSync();
+
+      expect(source, contains('evaluateTransaction('));
+      expect(source, contains("context.fsmPush('/send/pin')"));
+      expect(source, contains('Security check unavailable'));
+      expect(
+        source,
+        isNot(contains('still allow proceeding to PIN')),
+        reason:
+            'PIN is a final authorization step, not a fallback when adaptive risk screening is unavailable.',
+      );
+
+      final riskFailureIndex = source.indexOf('} catch (e) {');
+      final pinRouteIndex = source.indexOf("context.fsmPush('/send/pin')");
+      expect(riskFailureIndex, isNonNegative);
+      expect(pinRouteIndex, isNonNegative);
+      expect(riskFailureIndex, lessThan(pinRouteIndex));
+      expect(
+        source.substring(riskFailureIndex, pinRouteIndex),
+        contains('return;'),
+        reason:
+            'send flow must not enter PIN verification after risk evaluation throws.',
+      );
+    });
+
     test('deposit submission verifies live limits before deposit API call', () {
       final source = File(
         'lib/features/deposit/providers/deposit_provider.dart',
