@@ -82,10 +82,9 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           child: Column(
             children: [
               AuthTopBar(
-                onBack: () {
-                  unawaited(_clearRecoveryAuthorization());
-                  context.fsmSafePop(fallbackRoute: '/login');
-                },
+                onBack: _canNavigateBackDuringRecovery
+                    ? _handleRecoveryBack
+                    : null,
               ),
               Expanded(child: _buildStepContent(l10n)),
             ],
@@ -112,6 +111,14 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       default:
         return const SizedBox.shrink();
     }
+  }
+
+  bool get _canNavigateBackDuringRecovery =>
+      !_isLoading && _step != 5 && _step != 6;
+
+  void _handleRecoveryBack() {
+    unawaited(_clearRecoveryAuthorization());
+    context.fsmSafePop(fallbackRoute: '/login');
   }
 
   Widget _buildRequestOtpStep(AppLocalizations l10n) {
