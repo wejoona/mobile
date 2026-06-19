@@ -5,7 +5,7 @@ Last updated: 2026-06-19 01:06 GMT
 ## Standing
 
 - Active branch: `develop`, tracking `origin/develop`.
-- Latest pushed mobile code commit: `4d83a660 fix: capture startup crashes earlier`.
+- Latest pushed mobile code commit: use `git log -1 --oneline develop` as the source of truth.
 - Latest pushed API commit: `b2728ec5 fix: canonicalize auth country inputs`.
 - Latest pushed dashboard commit: `0ba72f1 fix: stabilize dashboard support gates`.
 - Repo status should be clean unless a new slice is in progress.
@@ -21,6 +21,7 @@ Last updated: 2026-06-19 01:06 GMT
 - Contacts permission/Korido lookup: closed. Contact screens request permission only from explicit actions, sync hashed phone batches, and display Korido account badges from backend lookup/sync responses. Focused contacts mobile tests and backend contacts e2e passed.
 - Send-money recipient safety: closed. Mobile rejects self-send by id/phone/username before submit, sends one canonical recipient identifier, and backend rejects self-transfer again before ledger movement. Focused send mobile tests and backend transfer tests passed.
 - Home balance refresh/display: closed on current `develop`. `GET /wallet` is the canonical balance source, zero-balance wallets are loaded states, degraded/local-mirror balances show warnings instead of endless loading, and pull-to-refresh has bounded recovery. Focused wallet state/balance tests, mobile API alignment tests, backend get-balance tests, and wallet controller e2e passed on 2026-06-19.
+- Transaction history fake/stale data concern: closed on current `develop`. Full History and home transaction refresh use `/wallet/transactions`; the duplicate feature-local transaction parser was removed so the domain `Transaction`/`TransactionPage` models are the only mobile transaction parser. Focused transaction state/API alignment tests and backend transaction controller e2e passed on 2026-06-19.
 
 ## Verified Recently
 

@@ -1872,7 +1872,7 @@ void main() {
       expect(withdrawal.isDebit, isTrue);
     });
 
-    test('transaction parsers prefer backend decimal money fields', () {
+    test('transaction parser prefers backend decimal money fields', () {
       final transaction = wallet_tx.Transaction.fromJson({
         'id': 'tx_decimal',
         'walletId': 'wallet_1',
@@ -1885,19 +1885,8 @@ void main() {
         'currency': 'USDC',
         'createdAt': '2026-06-04T12:00:00.000Z',
       });
-      final item = TransactionItem.fromJson({
-        'id': 'tx_item_decimal',
-        'type': 'deposit',
-        'status': 'completed',
-        'amount': 42500000,
-        'amountDecimal': '42.500000',
-        'currency': 'USDC',
-        'createdAt': '2026-06-04T12:00:00.000Z',
-      });
-
       expect(transaction.amount, 42.5);
       expect(transaction.fee, 1);
-      expect(item.amount, 42.5);
     });
 
     test(
@@ -1998,9 +1987,10 @@ void main() {
       expect(page.transactions.single.isCredit, isTrue);
     });
 
-    test('transaction list item honors backend direction aliases', () {
-      final sent = TransactionItem.fromJson({
+    test('transaction parser honors backend direction aliases', () {
+      final sent = wallet_tx.Transaction.fromJson({
         'id': 'tx_sent',
+        'walletId': 'wallet_1',
         'type': 'internal_transfer_sent',
         'amount': 25,
         'currency': 'USDC',
@@ -2008,8 +1998,9 @@ void main() {
         'direction': 'debit',
         'createdAt': '2026-06-04T12:00:00.000Z',
       });
-      final received = TransactionItem.fromJson({
+      final received = wallet_tx.Transaction.fromJson({
         'id': 'tx_received',
+        'walletId': 'wallet_1',
         'type': 'internal_transfer_received',
         'amount': 25,
         'currency': 'USDC',
@@ -2024,30 +2015,28 @@ void main() {
       expect(received.isDebit, isFalse);
     });
 
-    test(
-      'transaction list item normalizes status and counterparty aliases',
-      () {
-        final item = TransactionItem.fromJson({
-          'transactionId': 'tx_1',
-          'type': 'transfer_in',
-          'amount': 25,
-          'currency': 'USDC',
-          'status': 'SUCCESS',
-          'note': 'Dinner',
-          'recipientPhone': '+2250748805663',
-          'recipientName': 'Awa Korido',
-          'createdAt': '2026-06-04T12:00:00.000Z',
-        });
+    test('transaction parser normalizes status and counterparty aliases', () {
+      final transaction = wallet_tx.Transaction.fromJson({
+        'transactionId': 'tx_1',
+        'walletId': 'wallet_1',
+        'type': 'transfer_in',
+        'amount': 25,
+        'currency': 'USDC',
+        'status': 'SUCCESS',
+        'note': 'Dinner',
+        'recipientPhone': '+2250748805663',
+        'recipientName': 'Awa Korido',
+        'createdAt': '2026-06-04T12:00:00.000Z',
+      });
 
-        expect(item.id, 'tx_1');
-        expect(item.type, 'transfer_in');
-        expect(item.status, 'completed');
-        expect(item.description, 'Dinner');
-        expect(item.counterpartyName, 'Awa Korido');
-        expect(item.counterpartyPhone, '+2250748805663');
-        expect(item.isCredit, isTrue);
-      },
-    );
+      expect(transaction.id, 'tx_1');
+      expect(transaction.type, TransactionType.transferInternal);
+      expect(transaction.status, TransactionStatus.completed);
+      expect(transaction.description, 'Dinner');
+      expect(transaction.counterpartyName, 'Awa Korido');
+      expect(transaction.counterpartyPhone, '+2250748805663');
+      expect(transaction.isCredit, isTrue);
+    });
 
     test(
       'devices repository accepts backend device fields used by screen',

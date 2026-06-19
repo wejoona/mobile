@@ -17,8 +17,7 @@ import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
 import 'package:usdc_wallet/features/deposit/models/provider_data.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
-import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart'
-    hide TransactionItem, TransactionPage;
+import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 import 'package:usdc_wallet/services/sdk/usdc_wallet_sdk.dart';
 import 'package:usdc_wallet/services/notifications/notifications_service.dart';
 import 'package:usdc_wallet/services/transactions/transactions_service.dart';
