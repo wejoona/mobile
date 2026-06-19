@@ -56,9 +56,14 @@ class UserApi {
   Future<Response> changePin({
     required String oldPinHash,
     required String newPinHash,
+    required String stepUpChallengeToken,
   }) => _dio.post(
     ApiEndpoints.userPinChange,
-    data: {'oldPinHash': oldPinHash, 'newPinHash': newPinHash},
+    data: {
+      'oldPinHash': oldPinHash,
+      'newPinHash': newPinHash,
+      'stepUpChallengeToken': stepUpChallengeToken,
+    },
   );
 
   /// POST /user/pin/reset

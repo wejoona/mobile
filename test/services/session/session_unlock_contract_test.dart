@@ -786,6 +786,7 @@ void main() {
     ).readAsStringSync();
     final riskBody = _methodBody(source, '_evaluateChangePinRisk');
     final livenessBody = _methodBody(source, '_handleLivenessComplete');
+    final saveBody = _methodBody(source, '_saveNewPin');
 
     expect(source, contains('ChangePinPhase.riskCheck'));
     expect(
@@ -803,6 +804,12 @@ void main() {
       contains('validateStepUp'),
       reason:
           'liveness must validate the backend step-up token before the PIN form opens',
+    );
+    expect(
+      saveBody,
+      contains('stepUpChallengeToken: challengeToken'),
+      reason:
+          'the final PIN mutation must send the backend-owned step-up token, not rely on UI validation only',
     );
     expect(
       source,

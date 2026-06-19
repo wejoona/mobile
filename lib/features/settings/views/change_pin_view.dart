@@ -710,7 +710,19 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
 
     try {
       final pinService = ref.read(pinServiceProvider);
-      final success = await pinService.changePin(_currentPin, _newPin);
+      final challengeToken = _riskDecision?.challengeToken;
+      if (challengeToken == null || challengeToken.isEmpty) {
+        setState(() {
+          _isLoading = false;
+          _error = 'Security verification is required before changing PIN.';
+        });
+        return;
+      }
+      final success = await pinService.changePin(
+        _currentPin,
+        _newPin,
+        stepUpChallengeToken: challengeToken,
+      );
 
       setState(() => _isLoading = false);
 

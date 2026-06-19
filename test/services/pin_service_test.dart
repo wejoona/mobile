@@ -411,7 +411,11 @@ void main() {
       mockDio.queueResponse({'success': true, 'message': 'PIN changed'});
 
       // Act
-      final result = await pinService.changePin('739251', '901275');
+      final result = await pinService.changePin(
+        '739251',
+        '901275',
+        stepUpChallengeToken: 'change-pin-token-1',
+      );
 
       // Assert
       expect(result, isTrue);
@@ -422,10 +426,14 @@ void main() {
       expect(request.method, 'POST');
       expect(request.data, isA<Map<String, dynamic>>());
       final data = request.data as Map<String, dynamic>;
-      expect(data.keys, containsAll(['oldPinHash', 'newPinHash']));
+      expect(
+        data.keys,
+        containsAll(['oldPinHash', 'newPinHash', 'stepUpChallengeToken']),
+      );
       expect(data['oldPinHash'], isNot(data['newPinHash']));
       expect(data['oldPinHash'], matches(RegExp(r'^[a-f0-9]{64}$')));
       expect(data['newPinHash'], matches(RegExp(r'^[a-f0-9]{64}$')));
+      expect(data['stepUpChallengeToken'], 'change-pin-token-1');
 
       expect((await pinService.verifyPinLocally('901275')).success, isTrue);
       expect((await pinService.verifyPinLocally('739251')).success, isFalse);
@@ -439,7 +447,11 @@ void main() {
       mockDio.queueErrorResponse(statusCode: 400, message: 'Invalid old PIN');
 
       // Act
-      final result = await pinService.changePin('739251', '901275');
+      final result = await pinService.changePin(
+        '739251',
+        '901275',
+        stepUpChallengeToken: 'change-pin-token-1',
+      );
 
       // Assert
       expect(result, isFalse);
@@ -455,7 +467,11 @@ void main() {
       mockDio.reset();
 
       // Act
-      final result = await pinService.changePin('wrong', '901275');
+      final result = await pinService.changePin(
+        'wrong',
+        '901275',
+        stepUpChallengeToken: 'change-pin-token-1',
+      );
 
       // Assert
       expect(result, isFalse);
@@ -471,6 +487,7 @@ void main() {
       final result = await pinService.changePin(
         '739251',
         '123456',
+        stepUpChallengeToken: 'change-pin-token-1',
       ); // Sequential
 
       // Assert

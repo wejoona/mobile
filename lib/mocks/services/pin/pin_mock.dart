@@ -55,10 +55,14 @@ class PinMock {
     final data = options.data as Map<String, dynamic>? ?? {};
     final oldPinHash = data['oldPinHash'] as String?;
     final newPinHash = data['newPinHash'] as String?;
+    final stepUpChallengeToken = data['stepUpChallengeToken'] as String?;
 
-    if (!_isSha256(oldPinHash) || !_isSha256(newPinHash)) {
+    if (!_isSha256(oldPinHash) ||
+        !_isSha256(newPinHash) ||
+        stepUpChallengeToken == null ||
+        stepUpChallengeToken.isEmpty) {
       return MockResponse.badRequest(
-        'Both old and new PIN hashes are required',
+        'Old PIN hash, new PIN hash, and step-up verification are required',
       );
     }
 

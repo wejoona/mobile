@@ -200,7 +200,11 @@ class PinService {
   }
 
   /// Change PIN (requires current PIN verification)
-  Future<bool> changePin(String currentPin, String newPin) async {
+  Future<bool> changePin(
+    String currentPin,
+    String newPin, {
+    required String stepUpChallengeToken,
+  }) async {
     if (!_isValidPin(newPin) || _isWeakPin(newPin)) {
       return false;
     }
@@ -220,6 +224,7 @@ class PinService {
         data: {
           'oldPinHash': _hashPinForTransmission(currentPin),
           'newPinHash': _hashPinForTransmission(newPin),
+          'stepUpChallengeToken': stepUpChallengeToken,
         },
       );
     } on DioException {

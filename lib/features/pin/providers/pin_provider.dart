@@ -58,12 +58,20 @@ class PinNotifier extends Notifier<PinState> {
   }
 
   /// Change PIN
-  Future<bool> changePin(String oldPin, String newPin) async {
+  Future<bool> changePin(
+    String oldPin,
+    String newPin, {
+    required String stepUpChallengeToken,
+  }) async {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
       final service = ref.read(pinServiceProvider);
-      final success = await service.changePin(oldPin, newPin);
+      final success = await service.changePin(
+        oldPin,
+        newPin,
+        stepUpChallengeToken: stepUpChallengeToken,
+      );
 
       if (success) {
         state = state.copyWith(
