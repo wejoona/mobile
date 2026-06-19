@@ -1,6 +1,6 @@
 # Mobile Current Status
 
-Last updated: 2026-06-19 01:29 GMT
+Last updated: 2026-06-19 01:35 GMT
 
 ## Standing
 
@@ -61,6 +61,7 @@ Last updated: 2026-06-19 01:29 GMT
 - Email verification is verified end to end at the contract/usecase level: mobile checks `/user/email-status`, auto-requests a code when an email has no pending verification, resends through `/user/resend-email-verification`, verifies through `/user/verify-email`, and backend stores hashed 6-digit codes with non-production default `123456`. Mobile profile contract tests passed 29 tests; backend email verification usecase tests passed 6 tests.
 - Transaction limits and money-flow permissions are technically implemented across mobile and API: mobile gates send, deposit, and withdrawal with live `/user/limits` before submission; backend exposes `/user/limits`, `/user/limits/usage`, `/wallet/limits`, enforces per-transaction/daily/monthly limits before ledger movement, blocks manual-review states, and supports admin overrides. Mobile limits/deposit tests passed 16 tests; backend limit/enforcement tests passed 25 tests. Numeric tiers still need compliance sign-off before being called UEMOA-calibrated policy.
 - Send-recipient identity safety is verified: transfer requests keep exactly one stable recipient identifier, malformed phone input is normalized before submit, username-only/masked recipients remain supported, lookup-selected users send by stable `recipientId`, and self-send is guarded by current user id/phone/username checks before money movement. Focused send recipient contract tests passed 11 tests.
+- Cash-out/withdraw phone handling is now country-aware on current `develop`: withdraw state carries explicit country context, the routed withdraw screen passes the selected country, local cash-out numbers are rejected without a country context, and duplicated/international numbers still normalize to clean E.164. Focused API alignment tests passed 97 tests on 2026-06-19.
 - Backoffice device blacklist/deactivation is verified at the dashboard service boundary: Filament user device actions create reasoned blacklist records, sync through Korido API registered-device endpoints when available, deactivate registered devices, disable push tokens, revoke sessions, and record API sync metadata. Focused dashboard Pest tests passed 2 tests / 12 assertions.
 - App-version compatibility is verified for the staging-candidate path: mobile checks `/config/mobile-version` on startup, redirects to `/force-update` when `forceUpgrade=true`, and now has focused coverage that HTTP 426 responses trigger a version-policy refresh. Focused API client and force-update tests passed 34 tests.
 - Codemagic-equivalent analyzer warning gate passed locally on 2026-06-18: `dart analyze --format machine` returned exit code 0 with no `ERROR` or `WARNING` records.
@@ -71,7 +72,6 @@ Last updated: 2026-06-19 01:29 GMT
 
 ## Known Watch Items
 
-- Next implementation slice: cash-out/withdraw mobile-money phone handling still needs a focused pass to remove remaining provider-level `+225` assumptions. Use selected country/dial-code plus local number through the canonical phone value/normalizer, then extend API alignment coverage for non-CI numbers and duplicated-prefix repair.
 - `staging-korido-api.joonapay.com` resolves publicly through system DNS, Cloudflare DNS, and Google DNS.
 - Staging candidate is not ready until the local replay of remaining Codemagic gates passes: iOS release build without signing and simulator/device boot once full Xcode is visible.
 - Non-golden Flutter tests now pass locally using Codemagic's 40-file batch pattern.

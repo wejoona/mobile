@@ -488,7 +488,12 @@ void main() {
 
       final fee = await container
           .read(walletActionsProvider)
-          .estimateFee(amount: 250, type: 'withdrawal', providerCode: 'MTNCI');
+          .estimateFee(
+            amount: 250,
+            type: 'withdrawal',
+            providerCode: 'MTNCI',
+            countryCode: 'CI',
+          );
 
       final request = dio.requestHistory.single;
       expect(request.method, 'GET');
@@ -578,6 +583,7 @@ void main() {
             amount: 25,
             provider: 'orangeMoney',
             phoneNumber: '+225+2250748805663',
+            countryCode: 'CI',
             pinToken: 'pin_token_123',
             idempotencyKey: 'idem-withdraw-123',
           );
@@ -589,6 +595,78 @@ void main() {
       expect(withdrawalRequestData['phoneNumber'], '+2250748805663');
       expect(dio.requestHistory[1].headers['X-Pin-Token'], 'pin_token_123');
     });
+
+    test(
+      'withdraw notifier normalizes local phones with explicit country',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'amount': 2500,
+            'fee': 125,
+            'totalAmount': 2625,
+            'currency': 'XOF',
+            'providerCode': 'OMCI',
+          })
+          ..queueResponse({
+            'currency': 'USDC',
+            'daily': {
+              'withdraw': {'limit': 5000, 'used': 100},
+            },
+            'monthly': {
+              'total': {'limit': 50000, 'used': 500},
+            },
+            'perTransaction': {'withdraw': 2500},
+          })
+          ..queueResponse({'id': 'withdraw_123', 'status': 'pending'});
+        final container = ProviderContainer(
+          overrides: [dioProvider.overrideWithValue(dio)],
+        );
+        addTearDown(container.dispose);
+
+        final notifier = container.read(withdrawProvider.notifier)
+          ..selectMethod(WithdrawMethod.orangeMoney)
+          ..setPhoneNumber('(415) 555-0101', countryCode: 'US');
+        await notifier.setAmount(25);
+        await notifier.submit(
+          pinToken: 'pin_token_123',
+          idempotencyKey: 'idem-withdraw-123',
+        );
+
+        final cashOutRequestData =
+            dio.requestHistory[2].data as Map<String, dynamic>;
+        expect(cashOutRequestData['phoneNumber'], '+14155550101');
+      },
+    );
+
+    test(
+      'withdraw notifier rejects local phones without country context',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'amount': 2500,
+            'fee': 125,
+            'totalAmount': 2625,
+            'currency': 'XOF',
+            'providerCode': 'OMCI',
+          });
+        final container = ProviderContainer(
+          overrides: [dioProvider.overrideWithValue(dio)],
+        );
+        addTearDown(container.dispose);
+
+        final notifier = container.read(withdrawProvider.notifier)
+          ..selectMethod(WithdrawMethod.orangeMoney)
+          ..setPhoneNumber('0748805663');
+        await notifier.setAmount(25);
+        await notifier.submit(pinToken: 'pin_token_123');
+
+        expect(dio.requestHistory, hasLength(1));
+        expect(
+          container.read(withdrawProvider).error,
+          'Enter a valid mobile money phone number.',
+        );
+      },
+    );
 
     test(
       'withdrawal options provider parses backend-owned mobile rails',

@@ -7,9 +7,9 @@ import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
 import 'package:usdc_wallet/features/limits/utils/money_flow_limit_errors.dart';
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
+import 'package:usdc_wallet/features/wallet/utils/cash_out_phone_normalizer.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/limits/limits_service.dart';
-import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Withdrawal methods matching Korido's mobile money providers.
 enum WithdrawMethod {
@@ -97,6 +97,7 @@ class WithdrawState {
   final String? error;
   final WithdrawMethod? method;
   final String? phoneNumber;
+  final String? countryCode;
   final double? amount;
   final double fee;
   final WithdrawResult? result;
@@ -106,6 +107,7 @@ class WithdrawState {
     this.error,
     this.method,
     this.phoneNumber,
+    this.countryCode,
     this.amount,
     this.fee = 0,
     this.result,
@@ -118,6 +120,7 @@ class WithdrawState {
     String? error,
     WithdrawMethod? method,
     String? phoneNumber,
+    String? countryCode,
     double? amount,
     double? fee,
     WithdrawResult? result,
@@ -126,6 +129,7 @@ class WithdrawState {
     error: error,
     method: method ?? this.method,
     phoneNumber: phoneNumber ?? this.phoneNumber,
+    countryCode: countryCode ?? this.countryCode,
     amount: amount ?? this.amount,
     fee: fee ?? this.fee,
     result: result ?? this.result,
@@ -178,8 +182,8 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
 
   void selectMethod(WithdrawMethod method) =>
       state = state.copyWith(method: method);
-  void setPhoneNumber(String phone) =>
-      state = state.copyWith(phoneNumber: phone);
+  void setPhoneNumber(String phone, {String? countryCode}) =>
+      state = state.copyWith(phoneNumber: phone, countryCode: countryCode);
 
   /// Quote fees from the same backend commercial terms path used for submission.
   Future<void> setAmount(double amount) async {
@@ -229,10 +233,10 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
       state = state.copyWith(error: 'Phone number is required.');
       return;
     }
-    final normalizedPhoneNumber = PhoneNumberValue.tryFromAny(
+    final normalizedPhoneNumber = normalizeCashOutPhone(
       phoneNumber: phoneNumber,
-      countryCode: '+225',
-    )?.e164;
+      countryCode: state.countryCode,
+    );
     if (normalizedPhoneNumber == null) {
       state = state.copyWith(error: 'Enter a valid mobile money phone number.');
       return;

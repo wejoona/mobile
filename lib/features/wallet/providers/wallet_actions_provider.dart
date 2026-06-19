@@ -6,9 +6,9 @@ import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
 import 'package:usdc_wallet/features/limits/utils/money_flow_limit_errors.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
+import 'package:usdc_wallet/features/wallet/utils/cash_out_phone_normalizer.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/limits/limits_service.dart';
-import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Wallet-level actions (mobile money cash-out, request money).
 class WalletActions {
@@ -22,14 +22,15 @@ class WalletActions {
     required double amount,
     required String provider, // orangeMoney, mtnMomo, wave, moovMoney
     required String phoneNumber,
+    required String countryCode,
     String? pinToken,
     String? idempotencyKey,
   }) async {
     await _verifyWithdrawalLimits(amount);
-    final normalizedPhoneNumber = PhoneNumberValue.tryFromAny(
+    final normalizedPhoneNumber = normalizeCashOutPhone(
       phoneNumber: phoneNumber,
-      countryCode: '+225',
-    )?.e164;
+      countryCode: countryCode,
+    );
     if (normalizedPhoneNumber == null) {
       throw const FormatException('Enter a valid mobile money phone number.');
     }
@@ -69,6 +70,7 @@ class WalletActions {
     required double amount,
     required String type, // internal, external, withdrawal
     String? providerCode,
+    String? countryCode,
   }) async {
     if (type == 'external') {
       // ignore: avoid_dynamic_calls
@@ -80,10 +82,11 @@ class WalletActions {
       return (response.data['estimatedFee'] as num?)?.toDouble() ?? 0.0;
     }
     if (type == 'withdrawal') {
+      final optionsCountry = _requireCountryCode(countryCode);
       // ignore: avoid_dynamic_calls
       final response = await _dio.get(
         ApiEndpoints.mobileMoneyCashOutOptions,
-        queryParameters: {'country': 'CI'},
+        queryParameters: {'country': optionsCountry},
       );
       // ignore: avoid_dynamic_calls
       final options = response.data['options'] as List<dynamic>? ?? const [];
@@ -107,6 +110,14 @@ class WalletActions {
       return maxFee != null && clampedMin > maxFee ? maxFee : clampedMin;
     }
     return 0.0;
+  }
+
+  String _requireCountryCode(String? countryCode) {
+    final normalized = countryCode?.trim().toUpperCase();
+    if (normalized == null || normalized.isEmpty) {
+      throw ArgumentError('countryCode is required for withdrawal fees.');
+    }
+    return normalized;
   }
 
   String _providerToCode(String provider) {

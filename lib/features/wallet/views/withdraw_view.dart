@@ -259,6 +259,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
           : await _submitMobileMoneyWithdrawal(
               amount: amount,
               destination: destination,
+              countryCode: selectedCountry.code,
               method: mobileMoneyMethod!,
               pinToken: pinToken!,
             );
@@ -308,12 +309,13 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
   Future<bool> _submitMobileMoneyWithdrawal({
     required double amount,
     required String destination,
+    required String countryCode,
     required withdraw_api.WithdrawMethod method,
     required String pinToken,
   }) async {
     final notifier = ref.read(withdraw_api.withdrawProvider.notifier)
       ..selectMethod(method)
-      ..setPhoneNumber(destination);
+      ..setPhoneNumber(destination, countryCode: countryCode);
     await notifier.setAmount(amount);
     await notifier.submit(
       pinToken: pinToken,
