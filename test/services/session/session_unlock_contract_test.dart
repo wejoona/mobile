@@ -289,6 +289,9 @@ void main() {
     final fsmSource = File(
       'lib/state/fsm/fsm_provider.dart',
     ).readAsStringSync();
+    final livenessSource = File(
+      'lib/features/liveness/widgets/liveness_check_widget.dart',
+    ).readAsStringSync();
 
     expect(routesSource, contains('state.extra is PinResetRouteContext'));
     expect(
@@ -320,6 +323,18 @@ void main() {
     expect(
       fsmSource,
       contains('openPinReset<T>(BuildContext context, {Object? extra})'),
+    );
+    expect(
+      _methodBody(fsmSource, 'openPinReset'),
+      contains("goToRoute(\n      context,\n      '/pin/reset',"),
+      reason:
+          'PIN reset is a recovery transition and must not keep failed auth/PIN routes underneath it',
+    );
+    expect(
+      _methodBody(livenessSource, '_fail'),
+      contains('widget.onManualReviewRequired?.call(manualReviewReason);'),
+      reason:
+          'Account recovery owns manual review state; the liveness widget should hand off instead of showing a dismissible nested review',
     );
   });
 
@@ -831,12 +846,24 @@ String _methodBody(String source, String methodName) {
     RegExp(
       r'(?:void|bool|String|Widget|Future(?:<[^\n]+>)?)\s+' +
           RegExp.escape(methodName) +
-          r'\s*\(',
+          r'(?:<[^>\n]+>)?\s*\(',
     ),
   );
   expect(signatureIndex, isNonNegative, reason: '$methodName should exist');
 
-  final bodyStart = source.indexOf('{', signatureIndex);
+  var parameterDepth = 0;
+  var bodyStart = -1;
+  for (var i = signatureIndex; i < source.length; i++) {
+    final char = source[i];
+    if (char == '(') {
+      parameterDepth++;
+    } else if (char == ')') {
+      parameterDepth--;
+    } else if (char == '{' && parameterDepth == 0) {
+      bodyStart = i;
+      break;
+    }
+  }
   expect(bodyStart, isNonNegative, reason: '$methodName should have a body');
 
   var depth = 0;

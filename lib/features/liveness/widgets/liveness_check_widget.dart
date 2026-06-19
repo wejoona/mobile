@@ -440,6 +440,10 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
   }) {
     if (mounted) {
       unawaited(_releaseCamera());
+      if (manualReviewReason != null && widget.onManualReviewRequired != null) {
+        widget.onManualReviewRequired?.call(manualReviewReason);
+        return;
+      }
       setState(() {
         _state = manualReviewReason == null
             ? _LivenessState.failed
@@ -452,9 +456,6 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
         _manualReviewTitle = manualReviewTitle;
         _manualReviewSlaLabel = manualReviewSlaLabel;
       });
-      if (manualReviewReason != null) {
-        widget.onManualReviewRequired?.call(manualReviewReason);
-      }
     }
   }
 

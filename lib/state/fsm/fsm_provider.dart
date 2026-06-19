@@ -460,12 +460,13 @@ class AppFsmNotifier extends FsmNotifier<AppState, AppEvent> {
   }
 
   Future<T?> openPinReset<T>(BuildContext context, {Object? extra}) {
-    return pushRoute<T>(
+    goToRoute(
       context,
       '/pin/reset',
       extra: extra,
       event: AppNavigationEvent.forgotPinSelected,
     );
+    return Future<T?>.value();
   }
 
   void openPinLocked(BuildContext context) {
