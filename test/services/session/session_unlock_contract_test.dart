@@ -584,6 +584,12 @@ void main() {
     expect(livenessSource, contains("'liveness_result_unavailable'"));
     expect(livenessSource, contains('supportReviewRequired'));
     expect(livenessSource, contains('_manualReviewSlaLabel'));
+    expect(livenessSource, contains('String? tempPhotoPath'));
+    expect(livenessSource, contains('await _deleteTempPhoto(tempPhotoPath)'));
+    expect(
+      livenessSource,
+      contains('final review = _manualReviewFromError(e)'),
+    );
     expect(
       livenessStartBody.indexOf('await _createSession()'),
       lessThan(livenessStartBody.indexOf('await _initializeCamera()')),

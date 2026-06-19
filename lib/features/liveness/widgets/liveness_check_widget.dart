@@ -285,8 +285,10 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
       _statusMessage = 'Capturing photo...';
     });
 
+    String? tempPhotoPath;
     try {
       final photo = await _cameraController!.takePicture();
+      tempPhotoPath = photo.path;
 
       setState(() {
         _state = _LivenessState.uploading;
@@ -391,9 +393,15 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
         });
       }
     } catch (e) {
+      if (tempPhotoPath != null) {
+        await _deleteTempPhoto(tempPhotoPath);
+      }
+      final review = _manualReviewFromError(e);
       _fail(
-        'Challenge submission failed: $e',
-        manualReviewReason: 'liveness_challenge_unavailable',
+        review.message,
+        manualReviewReason: review.reason,
+        manualReviewTitle: review.title,
+        manualReviewSlaLabel: review.slaLabel,
       );
     }
   }
