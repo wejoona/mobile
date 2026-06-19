@@ -26,6 +26,34 @@ void main() {
       );
     });
 
+    test('iOS bootstrap keeps the iOS 27 Flutter VSync launch guard', () {
+      final workaround = File(
+        'ios/Runner/FlutterViewController+KoridoIOS27VSyncWorkaround.m',
+      ).readAsStringSync();
+      final project = File(
+        'ios/Runner.xcodeproj/project.pbxproj',
+      ).readAsStringSync();
+
+      expect(
+        workaround,
+        contains('KoridoShouldDisableIOS27FlutterTouchRateCorrection'),
+      );
+      expect(
+        workaround,
+        contains('createTouchRateCorrectionVSyncClientIfNeeded'),
+        reason:
+            'Flutter 3.44.2 crashes before Dart starts on iOS 27 beta when this touch-rate VSync hook runs.',
+      );
+      expect(workaround, contains('korido_disableIOS27TouchRateCorrection'));
+      expect(workaround, contains('method_exchangeImplementations'));
+      expect(
+        project,
+        contains(
+          'FlutterViewController+KoridoIOS27VSyncWorkaround.m in Sources',
+        ),
+      );
+    });
+
     test('builds staging iOS and Android with staging dart defines', () {
       const stagingDefine =
           r'--dart-define-from-file="$CM_BUILD_DIR/env.staging.json"';
