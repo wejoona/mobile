@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
@@ -6,12 +8,20 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/index.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/liveness/liveness_service.dart';
+import 'package:usdc_wallet/services/biometric/biometric_provider.dart';
 import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
 import 'package:usdc_wallet/features/kyc/widgets/kyc_instruction_screen.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
-enum ChangePinPhase { livenessExplanation, livenessCheck, pinEntry }
+enum ChangePinPhase {
+  riskCheck,
+  manualReview,
+  livenessExplanation,
+  livenessCheck,
+  pinEntry,
+}
 
 enum PinStep { current, newPin, confirm }
 
@@ -23,44 +33,57 @@ class ChangePinView extends ConsumerStatefulWidget {
 }
 
 class _ChangePinViewState extends ConsumerState<ChangePinView> {
-  ChangePinPhase _phase = ChangePinPhase.livenessExplanation;
+  ChangePinPhase _phase = ChangePinPhase.riskCheck;
   PinStep _currentStep = PinStep.current;
   String _currentPin = '';
   String _newPin = '';
   String _confirmPin = '';
   String? _error;
   bool _isLoading = false;
+  StepUpDecision? _riskDecision;
+  bool _biometricVerifiedForStepUp = false;
 
   static const int _pinLength = 6;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_evaluateChangePinRisk());
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
     switch (_phase) {
+      case ChangePinPhase.riskCheck:
+        return _buildRiskCheckScreen();
+
+      case ChangePinPhase.manualReview:
+        return _buildManualReviewScreen();
+
       case ChangePinPhase.livenessExplanation:
         return KycInstructionScreen(
-          title: 'Vérification d\'identité',
+          title: 'Extra verification required',
           description:
-              'Pour changer votre PIN, nous devons d\'abord vérifier votre identité par reconnaissance faciale.',
+              _riskDecision?.reason ??
+              'The risk check for this PIN change requires a face and liveness check.',
           icon: Icons.face,
           instructions: const [
             KycInstruction(
               icon: Icons.videocam_outlined,
-              title: 'Vérification vidéo',
-              subtitle:
-                  'Nous vous demanderons d\'effectuer des actions simples',
+              title: 'Liveness check',
+              subtitle: 'Follow the secure face check before changing your PIN',
             ),
             KycInstruction(
               icon: Icons.security,
-              title: 'Sécurité renforcée',
-              subtitle:
-                  'Cela protège votre compte contre les changements non autorisés',
+              title: 'Risk-based security',
+              subtitle: 'Only high-risk PIN changes require this extra step',
             ),
             KycInstruction(
               icon: Icons.timer_outlined,
-              title: 'Environ 30 secondes',
-              subtitle: 'Restez dans le cadre pendant toute la durée',
+              title: 'About 30 seconds',
+              subtitle: 'Keep your face in frame and follow the prompt',
             ),
           ],
           buttonLabel: l10n.common_continue,
@@ -81,12 +104,271 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
     }
   }
 
+  Widget _buildRiskCheckScreen() {
+    return Scaffold(
+      backgroundColor: context.colors.canvas,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: context.colors.gold),
+          onPressed: () =>
+              context.fsmSafePop(fallbackRoute: '/settings/security'),
+        ),
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: context.colors.gold),
+              const SizedBox(height: AppSpacing.lg),
+              AppText(
+                'Checking security requirements...',
+                variant: AppTextVariant.titleMedium,
+                color: context.colors.textPrimary,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              AppText(
+                'Korido is deciding whether this PIN change needs extra verification.',
+                variant: AppTextVariant.bodyMedium,
+                color: context.colors.textSecondary,
+                textAlign: TextAlign.center,
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: AppSpacing.lg),
+                InfoCallout(
+                  icon: Icons.error_outline,
+                  title: _error!,
+                  tone: InfoCalloutTone.danger,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                AppButton(
+                  label: 'Try again',
+                  onPressed: _evaluateChangePinRisk,
+                  isFullWidth: true,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildManualReviewScreen() {
+    return Scaffold(
+      backgroundColor: context.colors.canvas,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: context.colors.gold),
+          onPressed: () =>
+              context.fsmSafePop(fallbackRoute: '/settings/security'),
+        ),
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 76,
+                height: 76,
+                decoration: BoxDecoration(
+                  color: context.colors.goldSubtle,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: context.colors.borderGold),
+                ),
+                child: Icon(
+                  Icons.manage_accounts_rounded,
+                  color: context.colors.gold,
+                  size: 36,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              AppText(
+                'Manual review required',
+                variant: AppTextVariant.titleLarge,
+                color: context.colors.textPrimary,
+                textAlign: TextAlign.center,
+                fontWeight: FontWeight.w700,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              AppText(
+                _riskDecision?.reason ??
+                    'This PIN change needs review before it can continue.',
+                variant: AppTextVariant.bodyMedium,
+                color: context.colors.textSecondary,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              AppButton(
+                label: 'Return to security settings',
+                onPressed: () =>
+                    context.fsmSafePop(fallbackRoute: '/settings/security'),
+                isFullWidth: true,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _evaluateChangePinRisk() async {
+    setState(() {
+      _phase = ChangePinPhase.riskCheck;
+      _isLoading = true;
+      _error = null;
+      _biometricVerifiedForStepUp = false;
+    });
+
+    try {
+      final riskService = ref.read(riskBasedSecurityServiceProvider);
+      final decision = await riskService.evaluateOperation(
+        operation: 'pin_change',
+        metadata: const {'flow': 'change_pin'},
+      );
+      if (!mounted) return;
+
+      _riskDecision = decision;
+      if (!decision.stepUpRequired || decision.stepUpType == StepUpType.none) {
+        setState(() {
+          _phase = ChangePinPhase.pinEntry;
+          _isLoading = false;
+        });
+        return;
+      }
+
+      switch (decision.stepUpType) {
+        case StepUpType.biometric:
+          await _completeBiometricStepUp(decision);
+          return;
+        case StepUpType.liveness:
+          setState(() {
+            _phase = ChangePinPhase.livenessExplanation;
+            _isLoading = false;
+          });
+          return;
+        case StepUpType.biometricAndLiveness:
+          final biometricOk = await _authenticateBiometricForChangePin();
+          if (!mounted) return;
+          if (!biometricOk) {
+            setState(() {
+              _phase = ChangePinPhase.riskCheck;
+              _isLoading = false;
+              _error = 'Biometric verification was not completed.';
+            });
+            return;
+          }
+          setState(() {
+            _biometricVerifiedForStepUp = true;
+            _phase = ChangePinPhase.livenessExplanation;
+            _isLoading = false;
+          });
+          return;
+        case StepUpType.manualReview:
+        case StepUpType.otp:
+          setState(() {
+            _phase = ChangePinPhase.manualReview;
+            _isLoading = false;
+          });
+          return;
+        case StepUpType.none:
+          setState(() {
+            _phase = ChangePinPhase.pinEntry;
+            _isLoading = false;
+          });
+          return;
+      }
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _phase = ChangePinPhase.manualReview;
+        _isLoading = false;
+        _error = null;
+      });
+    }
+  }
+
+  Future<void> _completeBiometricStepUp(StepUpDecision decision) async {
+    final challengeToken = decision.challengeToken;
+    if (challengeToken == null || challengeToken.isEmpty) {
+      setState(() {
+        _phase = ChangePinPhase.manualReview;
+        _isLoading = false;
+      });
+      return;
+    }
+
+    final biometricOk = await _authenticateBiometricForChangePin();
+    if (!mounted) return;
+    if (!biometricOk) {
+      setState(() {
+        _phase = ChangePinPhase.riskCheck;
+        _isLoading = false;
+        _error = 'Biometric verification was not completed.';
+      });
+      return;
+    }
+
+    final validated = await ref
+        .read(riskBasedSecurityServiceProvider)
+        .validateStepUp(
+          challengeToken: challengeToken,
+          biometricVerified: true,
+        );
+    if (!mounted) return;
+    setState(() {
+      _phase = validated
+          ? ChangePinPhase.pinEntry
+          : ChangePinPhase.manualReview;
+      _isLoading = false;
+    });
+  }
+
+  Future<bool> _authenticateBiometricForChangePin() async {
+    final result = await ref
+        .read(biometricServiceProvider)
+        .authenticate(localizedReason: 'Confirm your identity to change PIN');
+    return result.success;
+  }
+
   void _onLivenessComplete(LivenessResult result) {
+    unawaited(_handleLivenessComplete(result));
+  }
+
+  Future<void> _handleLivenessComplete(LivenessResult result) async {
+    if (!mounted) return;
     final faceScore = result.faceMatchScore ?? 1.0;
     if (result.isLive &&
         result.decision == LivenessDecision.autoApprove &&
         faceScore >= 0.85) {
-      setState(() => _phase = ChangePinPhase.pinEntry);
+      final challengeToken = _riskDecision?.challengeToken;
+      if (challengeToken == null || challengeToken.isEmpty) {
+        setState(() => _phase = ChangePinPhase.manualReview);
+        return;
+      }
+
+      final validated = await ref
+          .read(riskBasedSecurityServiceProvider)
+          .validateStepUp(
+            challengeToken: challengeToken,
+            livenessSessionId: result.stepUpProofId,
+            biometricVerified:
+                _riskDecision?.stepUpType == StepUpType.biometricAndLiveness
+                ? _biometricVerifiedForStepUp
+                : null,
+          );
+      if (!mounted) return;
+      setState(() {
+        _phase = validated
+            ? ChangePinPhase.pinEntry
+            : ChangePinPhase.manualReview;
+      });
     } else {
       // Liveness failed — go back to explanation
       ScaffoldMessenger.of(context).showSnackBar(

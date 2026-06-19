@@ -779,6 +779,38 @@ void main() {
           'manual KYC review must preserve the same evidence graph as automated face matching',
     );
   });
+
+  test('change PIN uses risk before liveness', () {
+    final source = File(
+      'lib/features/settings/views/change_pin_view.dart',
+    ).readAsStringSync();
+    final riskBody = _methodBody(source, '_evaluateChangePinRisk');
+    final livenessBody = _methodBody(source, '_handleLivenessComplete');
+
+    expect(source, contains('ChangePinPhase.riskCheck'));
+    expect(
+      source,
+      contains('ChangePinPhase _phase = ChangePinPhase.riskCheck'),
+      reason: 'Change PIN must not open directly into liveness.',
+    );
+    expect(riskBody, contains("operation: 'pin_change'"));
+    expect(riskBody, contains('StepUpType.biometric'));
+    expect(riskBody, contains('StepUpType.liveness'));
+    expect(riskBody, contains('StepUpType.biometricAndLiveness'));
+    expect(riskBody, contains('ChangePinPhase.pinEntry'));
+    expect(
+      livenessBody,
+      contains('validateStepUp'),
+      reason:
+          'liveness must validate the backend step-up token before the PIN form opens',
+    );
+    expect(
+      source,
+      isNot(contains('reconnaissance faciale')),
+      reason:
+          'Change PIN copy must not claim every PIN change requires facial verification.',
+    );
+  });
 }
 
 String _methodBody(String source, String methodName) {
