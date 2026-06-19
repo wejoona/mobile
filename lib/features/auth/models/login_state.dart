@@ -93,16 +93,3 @@ class LoginState {
 
 /// Login flow steps
 enum LoginStep { phone, otp, pin, biometric, success }
-
-/// Login request model
-class LoginRequest {
-  final String phoneNumber;
-  final String dialCode;
-
-  const LoginRequest({required this.phoneNumber, this.dialCode = '+225'});
-
-  Map<String, dynamic> toJson() => {
-    'phoneNumber': phoneNumber,
-    'dialCode': dialCode,
-  };
-}

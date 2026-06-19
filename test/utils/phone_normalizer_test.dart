@@ -126,10 +126,12 @@ void main() {
 
     test('keeps login form state explicit about dial codes', () {
       const state = LoginState(phoneNumber: '4155550101', dialCode: '+1');
-      const request = LoginRequest(phoneNumber: '4155550101', dialCode: '+1');
+      final phoneValue = state.phoneValue!;
 
       expect(state.dialCode, '+1');
-      expect(request.toJson(), {'phoneNumber': '4155550101', 'dialCode': '+1'});
+      expect(phoneValue.localNumber, '4155550101');
+      expect(phoneValue.e164, '+14155550101');
+      expect(phoneValue.apiCountryCode, 'US');
     });
   });
 }
