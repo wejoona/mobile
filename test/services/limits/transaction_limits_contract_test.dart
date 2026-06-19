@@ -79,6 +79,33 @@ void main() {
       );
     });
 
+    test('internal transfer submission does not own step-up UI checks', () {
+      final providerSource = File(
+        'lib/features/send/providers/send_provider.dart',
+      ).readAsStringSync();
+      final serviceSource = File(
+        'lib/services/transfers/transfers_service.dart',
+      ).readAsStringSync();
+      final internalTransferBody = serviceSource.substring(
+        serviceSource.indexOf('Future<TransferResult> createInternalTransfer'),
+        serviceSource.indexOf('String? _normalizeUsername'),
+      );
+
+      expect(
+        providerSource,
+        isNot(contains('riskRecipientId')),
+        reason:
+            'ConfirmScreen owns the internal-transfer step-up check before PIN; submission must not trigger a second hidden risk flow.',
+      );
+      expect(
+        internalTransferBody,
+        isNot(contains('evaluateTransaction(')),
+        reason:
+            'TransfersService should submit an already-authorized internal transfer, not present or execute mobile step-up UI.',
+      );
+      expect(internalTransferBody, isNot(contains('executeStepUp(')));
+    });
+
     test('deposit submission verifies live limits before deposit API call', () {
       final source = File(
         'lib/features/deposit/providers/deposit_provider.dart',

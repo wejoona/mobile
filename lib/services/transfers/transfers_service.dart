@@ -27,7 +27,6 @@ class TransfersService {
     String? recipientUsername,
     required double amount,
     String? note,
-    String? riskRecipientId,
     required String pinToken,
     required String idempotencyKey,
   }) async {
@@ -40,45 +39,6 @@ class TransfersService {
         (normalizedPhone == null || normalizedPhone.isEmpty) &&
         (normalizedUsername == null || normalizedUsername.isEmpty)) {
       throw ArgumentError('Recipient ID, phone, or username is required');
-    }
-
-    // Internal transfers usually get green flow (no verification)
-    // But still check for anomalies
-    if (_riskSecurity != null) {
-      final decision = await _riskSecurity.evaluateTransaction(
-        type: 'transfer',
-        amount: amount,
-        currency: 'USDC',
-        recipientId:
-            riskRecipientId ??
-            normalizedRecipientId ??
-            normalizedUsername ??
-            normalizedPhone ??
-            'internal-recipient',
-        recipientType: 'internal',
-      );
-
-      AppLogger('Debug').debug(
-        '${decision.flowEmoji} Internal transfer \$$amount: ${decision.stepUpType.name}',
-      );
-
-      if (decision.stepUpRequired) {
-        final verified = await _riskSecurity.executeStepUp(decision);
-        if (!verified && decision.stepUpType != StepUpType.liveness) {
-          throw SecurityVerificationFailedException(
-            'Security verification required for this transfer',
-            decision: decision,
-          );
-        }
-        // Liveness requires UI - throw to let caller handle
-        if (decision.stepUpType == StepUpType.liveness ||
-            decision.stepUpType == StepUpType.biometricAndLiveness) {
-          throw LivenessRequiredException(
-            'Liveness verification required',
-            decision: decision,
-          );
-        }
-      }
     }
 
     try {

@@ -391,10 +391,6 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
     state = state.copyWith(isLoading: true, isSubmitting: true, error: null);
     try {
       final transfersService = ref.read(transfersServiceProvider);
-      final riskRecipientId =
-          state.recipient!.userId ??
-          state.recipient!.username ??
-          state.recipient!.phoneNumber;
       final result = await transfersService.createInternalTransfer(
         recipientId: state.recipient!.userId,
         recipientPhone: state.recipient!.phoneNumber.isNotEmpty
@@ -403,7 +399,6 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
         recipientUsername: state.recipient!.username,
         amount: state.amount!,
         note: state.note,
-        riskRecipientId: riskRecipientId,
         pinToken: state.pinToken!,
         idempotencyKey: state.idempotencyKey!,
       );
