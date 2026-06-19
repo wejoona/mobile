@@ -782,9 +782,11 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     _lastManualReviewReason = reason;
 
     setState(() {
-      _isLoading = true;
+      _applyManualReviewFallback(reason);
+      _isLoading = false;
       _showError = false;
       _errorMessage = null;
+      _step = 6;
     });
 
     try {
@@ -823,7 +825,6 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       setState(() {
         _applyManualReviewFallback(reason);
         _isLoading = false;
-        _step = 6;
         _errorMessage = null;
       });
     } catch (_) {
@@ -831,7 +832,6 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       setState(() {
         _applyManualReviewFallback(reason);
         _isLoading = false;
-        _step = 6;
         _errorMessage = null;
       });
     }

@@ -654,6 +654,18 @@ void main() {
     expect(reviewBody, contains("'category': 'account_recovery'"));
     expect(reviewBody, contains("'priority': 'high'"));
     expect(reviewBody, contains('_applyManualReviewFallback(reason)'));
+    expect(
+      reviewBody.indexOf('_applyManualReviewFallback(reason)'),
+      lessThan(reviewBody.indexOf('await _ensureRecoveryAuthorization()')),
+      reason:
+          'manual-review state must appear immediately and must not wait for the support ticket network call',
+    );
+    expect(
+      reviewBody.indexOf('_step = 6'),
+      lessThan(reviewBody.indexOf('await _ensureRecoveryAuthorization()')),
+      reason:
+          'liveness provider failures should not strand the user inside the liveness widget while a ticket is created',
+    );
     expect(resetSource, contains('_applyManualReviewFallback'));
     expect(resetSource, contains('_returnToSignInFromManualReview'));
     expect(
