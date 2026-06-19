@@ -12,6 +12,7 @@ void main() {
 
   late E2EClient client;
   late String authPhone;
+  late String wrongOtpPhone;
 
   if (!runLiveE2E) {
     test('Live E2E disabled', () {}, skip: liveE2ESkipReason);
@@ -21,6 +22,7 @@ void main() {
   setUpAll(() {
     client = E2EClient();
     authPhone = uniqueE2EPhone();
+    wrongOtpPhone = uniqueE2EPhone();
   });
 
   e2eGroup('Auth E2E', () {
@@ -83,17 +85,18 @@ void main() {
     });
 
     test('POST /auth/verify-otp — wrong OTP returns 400/401', () async {
+      final consentPayload = await client.registrationConsentPayload();
+      final registerRes = await client.post('/auth/register', {
+        'phone': wrongOtpPhone,
+        'countryCode': 'CI',
+        ...consentPayload,
+      });
+      expect(registerRes.statusCode, anyOf(200, 201, 409));
+
       final res = await client.post('/auth/verify-otp', {
-        'phone': authPhone,
+        'phone': wrongOtpPhone,
         'otp': '000000',
       });
-      if (res.isOk) {
-        markTestSkipped(
-          'Live staging accepted the wrong OTP under the E2E provider/bypass '
-          'configuration; strict OTP rejection is covered by non-bypass tests.',
-        );
-        return;
-      }
       expect(res.statusCode, anyOf(400, 401));
     });
 
