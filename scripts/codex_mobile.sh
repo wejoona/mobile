@@ -58,6 +58,9 @@ Defaults:
 
 Override with env vars when needed. Keep this wrapper as the stable approval
 surface for Codex simulator installs and verification commands.
+
+When `test` receives files under `test/e2e/`, it automatically enables the
+live E2E defaults above so commands do not need inline environment prefixes.
 USAGE
 }
 
@@ -104,6 +107,17 @@ run_live_e2e() {
   API_URL="${KORIDO_API_URL}" \
   DEFAULT_OTP="${KORIDO_DEFAULT_OTP}" \
     flutter test "$@"
+}
+
+has_e2e_test_arg() {
+  for arg in "$@"; do
+    case "${arg}" in
+      test/e2e/*|*/test/e2e/*)
+        return 0
+        ;;
+    esac
+  done
+  return 1
 }
 
 command="${1:-help}"
@@ -252,7 +266,11 @@ case "${command}" in
     run_flutter build apk --debug "$@"
     ;;
   test)
-    flutter test "$@"
+    if has_e2e_test_arg "$@"; then
+      run_live_e2e "$@"
+    else
+      flutter test "$@"
+    fi
     ;;
   *)
     echo "Unknown command: ${command}" >&2
