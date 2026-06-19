@@ -86,16 +86,6 @@ post_install do |installer|
       definitions = config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
       definitions << 'PERMISSION_CONTACTS=1' unless definitions.include?('PERMISSION_CONTACTS=1')
 
-      if target.name == 'Sentry'
-        swift_flags = config.build_settings['OTHER_SWIFT_FLAGS']
-        unless swift_flags.include?('CheckImplementationOnly')
-          swift_flags.concat([
-            '-enable-experimental-feature',
-            'CheckImplementationOnly',
-          ])
-        end
-        config.build_settings['OTHER_SWIFT_FLAGS'] = swift_flags
-      end
     end
   end
 
