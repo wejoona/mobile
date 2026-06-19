@@ -1,14 +1,26 @@
 # Mobile Current Status
 
-Last updated: 2026-06-18 11:04 GMT
+Last updated: 2026-06-19 01:06 GMT
 
 ## Standing
 
 - Active branch: `develop`, tracking `origin/develop`.
-- Latest pushed mobile code commit: use `git log -1 --oneline develop` as the source of truth.
+- Latest pushed mobile code commit: `4d83a660 fix: capture startup crashes earlier`.
 - Latest pushed API commit: `b2728ec5 fix: canonicalize auth country inputs`.
+- Latest pushed dashboard commit: `0ba72f1 fix: stabilize dashboard support gates`.
 - Repo status should be clean unless a new slice is in progress.
 - Do not promote to `staging` until Codemagic-equivalent local gates pass.
+- Close confirmed user reports here after focused verification; do not re-audit closed items unless new evidence or related code changes appear.
+
+## Closed User Reports
+
+- Active sessions 401 handling: closed. Mobile refreshes once, then locks instead of clearing local state; backend session routes return mobile-safe envelopes. Focused settings/session mobile tests and backend session e2e passed.
+- Login/signup/onboarding confusion: closed. `/login` is the default auth entry, `/signup` is explicit account creation, product introduction remains `/onboarding`, and signup no longer owns tutorial progress markers or login Terms checkbox. Focused auth route/UI tests passed.
+- Startup crash capture: closed for current code. Sentry now wraps app bootstrap before Firebase/Hive/shared-pref cleanup, and platform errors report to both Crashlytics and Sentry. Focused crash-reporting contract tests passed.
+- Profile photo update: closed. Mobile requires one-face device evidence before avatar upload; backend rejects missing/stale/unbound proof and updates profile/avatar caches. Focused profile/avatar mobile tests and backend profile e2e passed.
+- Contacts permission/Korido lookup: closed. Contact screens request permission only from explicit actions, sync hashed phone batches, and display Korido account badges from backend lookup/sync responses. Focused contacts mobile tests and backend contacts e2e passed.
+- Send-money recipient safety: closed. Mobile rejects self-send by id/phone/username before submit, sends one canonical recipient identifier, and backend rejects self-transfer again before ledger movement. Focused send mobile tests and backend transfer tests passed.
+- Home balance refresh/display: closed on current `develop`. `GET /wallet` is the canonical balance source, zero-balance wallets are loaded states, degraded/local-mirror balances show warnings instead of endless loading, and pull-to-refresh has bounded recovery. Focused wallet state/balance tests, mobile API alignment tests, backend get-balance tests, and wallet controller e2e passed on 2026-06-19.
 
 ## Verified Recently
 

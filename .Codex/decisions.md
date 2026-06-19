@@ -19,6 +19,7 @@ Do not reopen these unless new evidence changes them.
 ## Product
 
 - MVP goal is internal team dogfooding before pilot/release.
+- Once a reported issue is verified solved on current `develop`, treat it as closed and do not re-audit it every session. Reopen only with fresh user evidence, a failing focused check, or a related code change that could regress it.
 - Initial users are in Abidjan and the USA.
 - Region-specific rails and labels should be data-driven.
 - Contact features should identify Korido users clearly, but similar small high-leverage improvements should be found across the product, not only contacts.
