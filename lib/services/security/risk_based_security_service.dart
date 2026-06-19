@@ -171,17 +171,20 @@ class RiskBasedSecurityService {
       throw Exception('Failed to evaluate transaction risk');
     } catch (e) {
       AppLogger(
-        'Risk evaluation failed, defaulting to biometric',
-      ).error('Risk evaluation failed, defaulting to biometric', e);
-      // Fallback to yellow flow on error
+        'Transaction risk evaluation failed, routing to manual review',
+      ).error(
+        'Transaction risk evaluation failed, routing to manual review',
+        e,
+      );
       return StepUpDecision(
-        flow: RiskFlow.yellow,
-        riskScore: 50,
-        riskLevel: 'medium',
+        flow: RiskFlow.red,
+        riskScore: 100,
+        riskLevel: 'critical',
         stepUpRequired: true,
-        stepUpType: StepUpType.biometric,
-        localizedReason: 'Unable to assess risk, verification required',
-        factors: ['risk_service_unavailable'],
+        stepUpType: StepUpType.manualReview,
+        reason:
+            'Security risk service is unavailable. This money movement needs manual review before it can continue.',
+        factors: ['risk_service_unavailable', 'transaction_risk_unavailable'],
         expiresAt: DateTime.now().add(const Duration(minutes: 5)),
       );
     }

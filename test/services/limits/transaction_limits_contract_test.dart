@@ -44,15 +44,26 @@ void main() {
       final source = File(
         'lib/features/send/views/confirm_screen.dart',
       ).readAsStringSync();
+      final riskSource = File(
+        'lib/services/security/risk_based_security_service.dart',
+      ).readAsStringSync();
 
       expect(source, contains('evaluateTransaction('));
       expect(source, contains("context.fsmPush('/send/pin')"));
       expect(source, contains('Security check unavailable'));
+      expect(riskSource, contains('transaction_risk_unavailable'));
+      expect(riskSource, contains('StepUpType.manualReview'));
       expect(
         source,
         isNot(contains('still allow proceeding to PIN')),
         reason:
             'PIN is a final authorization step, not a fallback when adaptive risk screening is unavailable.',
+      );
+      expect(
+        riskSource,
+        isNot(contains('defaulting to biometric')),
+        reason:
+            'mobile must not invent a biometric-only money-flow decision when backend risk is unavailable.',
       );
 
       final riskFailureIndex = source.indexOf('} catch (e) {');
