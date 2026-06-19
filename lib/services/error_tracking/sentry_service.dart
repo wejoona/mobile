@@ -41,27 +41,47 @@ class SentryService {
       return;
     }
 
-    final packageInfo = await AppInfo.instance;
+    var appRunnerStarted = false;
 
-    await SentryFlutter.init((options) {
-      options
-        ..dsn = sentryDsn
-        ..tracesSampleRate = 0.2
-        ..environment = environment
-        ..release = 'korido@${packageInfo.version}+${packageInfo.buildNumber}'
-        ..dist = packageInfo.buildNumber
-        ..debug = kDebugMode
-        ..sendDefaultPii = false
-        ..enableLogs = true
-        ..attachStacktrace = true
-        ..replay.sessionSampleRate = kDebugMode ? 1.0 : 0.1
-        ..replay.onErrorSampleRate = 1.0;
+    try {
+      final packageInfo = await AppInfo.instance;
 
-      // Navigation breadcrumbs are added via SentryNavigatorObserver in the app's navigatorObservers
-    }, appRunner: appRunner);
+      await SentryFlutter.init(
+        (options) {
+          options
+            ..dsn = sentryDsn
+            ..tracesSampleRate = 0.2
+            ..environment = environment
+            ..release =
+                'korido@${packageInfo.version}+${packageInfo.buildNumber}'
+            ..dist = packageInfo.buildNumber
+            ..debug = kDebugMode
+            ..sendDefaultPii = false
+            ..enableLogs = true
+            ..attachStacktrace = true
+            ..replay.sessionSampleRate = kDebugMode ? 1.0 : 0.1
+            ..replay.onErrorSampleRate = 1.0;
 
-    _initialized = true;
-    _logger.debug('Sentry initialized (env: $environment)');
+          // Navigation breadcrumbs are added via SentryNavigatorObserver in the app's navigatorObservers
+        },
+        appRunner: () async {
+          _initialized = true;
+          appRunnerStarted = true;
+          await appRunner();
+        },
+      );
+
+      _initialized = true;
+      _logger.debug('Sentry initialized (env: $environment)');
+    } on Object catch (error) {
+      if (appRunnerStarted) {
+        rethrow;
+      }
+
+      _initialized = false;
+      _logger.warn('Sentry initialization failed; running without it', error);
+      await appRunner();
+    }
   }
 
   /// Returns a [NavigatorObserver] that records navigation breadcrumbs.

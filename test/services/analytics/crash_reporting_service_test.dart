@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/services/analytics/crash_reporting_service.dart';
@@ -15,10 +17,7 @@ void main() {
     });
 
     test('should handle initialize gracefully without Firebase', () async {
-      await expectLater(
-        crashReportingService.initialize(),
-        completes,
-      );
+      await expectLater(crashReportingService.initialize(), completes);
     });
 
     test('should handle recordError gracefully without Firebase', () async {
@@ -69,21 +68,24 @@ void main() {
       );
     });
 
-    test('should handle recordPaymentError gracefully without Firebase', () async {
-      final exception = Exception('Payment failed');
+    test(
+      'should handle recordPaymentError gracefully without Firebase',
+      () async {
+        final exception = Exception('Payment failed');
 
-      await expectLater(
-        crashReportingService.recordPaymentError(
-          exception,
-          paymentType: 'deposit',
-          amount: '1000.0',
-          currency: 'XOF',
-          transactionId: 'txn_123',
-          userId: 'test_user',
-        ),
-        completes,
-      );
-    });
+        await expectLater(
+          crashReportingService.recordPaymentError(
+            exception,
+            paymentType: 'deposit',
+            amount: '1000.0',
+            currency: 'XOF',
+            transactionId: 'txn_123',
+            userId: 'test_user',
+          ),
+          completes,
+        );
+      },
+    );
 
     test('should handle recordKycError gracefully without Firebase', () async {
       final exception = Exception('KYC verification failed');
@@ -107,10 +109,7 @@ void main() {
     });
 
     test('should handle setUserId gracefully without Firebase', () async {
-      await expectLater(
-        crashReportingService.setUserId('user_123'),
-        completes,
-      );
+      await expectLater(crashReportingService.setUserId('user_123'), completes);
     });
 
     test('should handle setCustomKey gracefully without Firebase', () async {
@@ -147,14 +146,34 @@ void main() {
     });
 
     test('should handle clearUserData gracefully without Firebase', () async {
-      await expectLater(
-        crashReportingService.clearUserData(),
-        completes,
-      );
+      await expectLater(crashReportingService.clearUserData(), completes);
     });
 
     test('should report isEnabled status', () {
       expect(crashReportingService.isEnabled, isA<bool>());
+    });
+
+    test('startup crash telemetry wraps service bootstrap', () {
+      final source = File('lib/main.dart').readAsStringSync();
+      final sentryInit = source.indexOf('initializeAndRunApp(');
+      final firebaseInit = source.indexOf('await _initializeFirebase();');
+
+      expect(sentryInit, isNonNegative);
+      expect(firebaseInit, isNonNegative);
+      expect(
+        sentryInit,
+        lessThan(firebaseInit),
+        reason: 'Sentry must wrap Firebase/storage startup failures.',
+      );
+      expect(source, contains('PlatformDispatcher.instance.onError'));
+      expect(
+        source,
+        contains('crashReporting.recordError(error, stack, fatal: true)'),
+      );
+      expect(
+        source,
+        contains('sentryService.captureException(error, stackTrace: stack)'),
+      );
     });
   });
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show PlatformDispatcher;
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -34,11 +35,22 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MockConfig.configureFromEnvironment();
 
+  // Initialize Sentry first so startup failures before runApp are still
+  // reported for TestFlight and internal dogfood builds.
+  final sentryService = SentryService();
+  await sentryService.initializeAndRunApp(
+    environment: EnvironmentConfig.environment,
+    appRunner: () => _bootstrapAndRunApp(sentryService),
+  );
+}
+
+Future<void> _bootstrapAndRunApp(SentryService sentryService) async {
   await _initializeFirebase();
 
   // Initialize Crashlytics for error reporting
   final crashReporting = CrashReportingService();
   await crashReporting.initialize();
+  _configureGlobalErrorHandlers(crashReporting, sentryService);
 
   // Initialize Hive for local persistence (before anything else)
   final localCache = LocalCacheService();
@@ -58,65 +70,68 @@ Future<void> main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Initialize Sentry and run the app inside its error zone
-  final sentryService = SentryService();
-  await sentryService.initializeAndRunApp(
-    environment: EnvironmentConfig.environment,
-    appRunner: () async {
-      // Global error handling — forward to both Crashlytics and Sentry
-      FlutterError.onError = (details) {
-        FlutterError.presentError(details);
-        unawaited(crashReporting.recordError(details.exception, details.stack));
-        unawaited(sentryService.captureFlutterError(details));
-      };
-
-      // Custom error widget for release mode
-      ErrorWidget.builder = (FlutterErrorDetails details) => MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.xxl),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.error_outline,
-                    size: 48,
-                    color: AppColors.errorBase,
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  const Text(
-                    'Oops! Something went wrong.',
-                    style: AppTypography.titleMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    'Please restart the app.',
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+  // Custom error widget for release mode
+  ErrorWidget.builder = (FlutterErrorDetails details) => MaterialApp(
+    home: Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xxl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.error_outline,
+                size: 48,
+                color: AppColors.errorBase,
               ),
-            ),
+              const SizedBox(height: AppSpacing.lg),
+              const Text(
+                'Oops! Something went wrong.',
+                style: AppTypography.titleMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'Please restart the app.',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
         ),
-      );
-
-      // SECURITY: Wrap app with SecurityGate to block compromised devices
-      runApp(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(sharedPreferences),
-            localCacheServiceProvider.overrideWithValue(localCache),
-          ],
-          child: const SecurityGate(child: KoridoApp()),
-        ),
-      );
-    },
+      ),
+    ),
   );
+
+  // SECURITY: Wrap app with SecurityGate to block compromised devices
+  runApp(
+    ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+        localCacheServiceProvider.overrideWithValue(localCache),
+      ],
+      child: const SecurityGate(child: KoridoApp()),
+    ),
+  );
+}
+
+void _configureGlobalErrorHandlers(
+  CrashReportingService crashReporting,
+  SentryService sentryService,
+) {
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    unawaited(crashReporting.recordError(details.exception, details.stack));
+    unawaited(sentryService.captureFlutterError(details));
+  };
+
+  PlatformDispatcher.instance.onError = (error, stack) {
+    unawaited(crashReporting.recordError(error, stack, fatal: true));
+    unawaited(sentryService.captureException(error, stackTrace: stack));
+    return true;
+  };
 }
 
 Future<void> _clearSecureStorageAfterFreshInstall(
