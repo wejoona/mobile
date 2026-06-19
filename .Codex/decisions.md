@@ -7,6 +7,7 @@ Do not reopen these unless new evidence changes them.
 - The mobile app should prefer real in-stack APIs for dogfooding.
 - Mocks are acceptable for outside dependencies and future features, but they must match backend contract shape.
 - Auth OTP should use Korido API -> VerifyHQ locally, not a mobile-only fake.
+- Cross-service credentials are bootstrap-only when wired directly through Vault or env values. The platform service / service access enrollment layer is the canonical owner for multi-service credential issuance, rotation, and trust between Korido, VerifyHQ, PaySwitch, and other JoonaPay services.
 
 ## Design
 
