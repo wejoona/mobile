@@ -760,6 +760,10 @@ void main() {
           'PIN recovery must exchange OTP for a scoped recovery token before risk/liveness endpoints are called',
     );
     expect(reviewBody, contains('ApiEndpoints.userPinResetManualReview'));
+    expect(resetSource, contains('enum _PinRecoveryStep'));
+    expect(resetSource, isNot(contains('int _step')));
+    expect(resetSource, contains('_transitionTo(_PinRecoveryStep.newPin)'));
+    expect(resetSource, contains('_transitionTo(_PinRecoveryStep.liveness)'));
     expect(reviewBody, contains("'newPinHash': pendingPinHash"));
     expect(reviewBody, contains("'reason': reason"));
     expect(
@@ -778,7 +782,7 @@ void main() {
     );
     expect(reviewBody, contains('_markManualReviewCreationFailed(reason)'));
     expect(
-      reviewBody.indexOf('_step = 6'),
+      reviewBody.indexOf('_transitionTo(_PinRecoveryStep.manualReview)'),
       lessThan(reviewBody.indexOf('await _ensureRecoveryAuthorization()')),
       reason:
           'liveness provider failures should not strand the user inside the liveness widget while a ticket is created',
@@ -798,7 +802,7 @@ void main() {
     );
     expect(
       handleLivenessBody,
-      contains('_step = 4'),
+      contains('_transitionTo(_PinRecoveryStep.confirmPin)'),
       reason:
           'successful liveness should return to the PIN confirmation loading state while backend reset applies',
     );

@@ -37,9 +37,17 @@ class ResetPinView extends ConsumerStatefulWidget {
   ConsumerState<ResetPinView> createState() => _ResetPinViewState();
 }
 
+enum _PinRecoveryStep {
+  requestOtp,
+  enterOtp,
+  newPin,
+  confirmPin,
+  liveness,
+  manualReview,
+}
+
 class _ResetPinViewState extends ConsumerState<ResetPinView> {
-  int _step =
-      1; // 1: request OTP, 2: enter OTP, 3/4: PIN, 5: liveness, 6: review
+  _PinRecoveryStep _recoveryStep = _PinRecoveryStep.requestOtp;
   final _otpController = TextEditingController();
   final _phoneController = TextEditingController();
   PhoneNumberValue? _recoveryPhone;
@@ -100,26 +108,30 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   }
 
   Widget _buildStepContent(AppLocalizations l10n) {
-    switch (_step) {
-      case 1:
+    switch (_recoveryStep) {
+      case _PinRecoveryStep.requestOtp:
         return _buildRequestOtpStep(l10n);
-      case 2:
+      case _PinRecoveryStep.enterOtp:
         return _buildEnterOtpStep(l10n);
-      case 5:
-        return _buildRiskStep(l10n);
-      case 3:
+      case _PinRecoveryStep.newPin:
         return _buildNewPinStep(l10n);
-      case 4:
+      case _PinRecoveryStep.confirmPin:
         return _buildConfirmPinStep(l10n);
-      case 6:
+      case _PinRecoveryStep.liveness:
+        return _buildRiskStep(l10n);
+      case _PinRecoveryStep.manualReview:
         return _buildManualReviewStep(l10n);
-      default:
-        return const SizedBox.shrink();
     }
   }
 
   bool get _canNavigateBackDuringRecovery =>
-      !_isLoading && _step != 5 && _step != 6;
+      !_isLoading &&
+      _recoveryStep != _PinRecoveryStep.liveness &&
+      _recoveryStep != _PinRecoveryStep.manualReview;
+
+  void _transitionTo(_PinRecoveryStep nextStep) {
+    _recoveryStep = nextStep;
+  }
 
   void _handleRecoveryBack() {
     unawaited(_clearRecoveryAuthorization());
@@ -492,7 +504,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           if (mounted) {
             setState(() {
               _isLoading = false;
-              _step = 6;
+              _transitionTo(_PinRecoveryStep.manualReview);
             });
           }
           return;
@@ -506,7 +518,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _step = 2;
+          _transitionTo(_PinRecoveryStep.enterOtp);
         });
       }
     } on DioException catch (e) {
@@ -694,7 +706,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _step = 3;
+          _transitionTo(_PinRecoveryStep.newPin);
         });
       }
     } catch (_) {
@@ -816,7 +828,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         setState(() {
           _pendingNewPinHash = newPinHash;
           _isLoading = false;
-          _step = 5;
+          _transitionTo(_PinRecoveryStep.liveness);
         });
         return false;
       }
@@ -883,7 +895,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     final pendingPinHash = _pendingNewPinHash;
     if (pendingPinHash == null) {
       setState(() {
-        _step = 3;
+        _transitionTo(_PinRecoveryStep.newPin);
         _showError = true;
         _errorMessage =
             'Please choose the new PIN again before identity verification.';
@@ -944,7 +956,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     _stepUpChallengeToken = challengeToken;
     setState(() {
       _isLoading = true;
-      _step = 4;
+      _transitionTo(_PinRecoveryStep.confirmPin);
       _showError = false;
       _errorMessage = null;
     });
@@ -967,7 +979,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     if (pendingPinHash == null) {
       setState(() {
         _isLoading = false;
-        _step = 3;
+        _transitionTo(_PinRecoveryStep.newPin);
         _showError = true;
         _errorMessage =
             'Choose and confirm your new PIN before manual review can start.';
@@ -982,7 +994,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       _isLoading = false;
       _showError = false;
       _errorMessage = null;
-      _step = 6;
+      _transitionTo(_PinRecoveryStep.manualReview);
     });
 
     try {
@@ -1011,7 +1023,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         _applyManualReviewTicket(data);
         _manualReviewReason = reason;
         _isLoading = false;
-        _step = 6;
+        _transitionTo(_PinRecoveryStep.manualReview);
       });
     } on DioException {
       if (!mounted) return;
@@ -1031,7 +1043,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     final pendingPinHash = _pendingNewPinHash;
     if (pendingPinHash == null) {
       setState(() {
-        _step = 3;
+        _transitionTo(_PinRecoveryStep.newPin);
         _showError = true;
         _errorMessage =
             'Choose and confirm your new PIN before manual review can start.';
@@ -1120,14 +1132,14 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     _isLoading = false;
     _showError = false;
     _errorMessage = null;
-    _step = 6;
+    _transitionTo(_PinRecoveryStep.manualReview);
   }
 
   void _retryManualReview() {
     final pendingPinHash = _pendingNewPinHash;
     if (pendingPinHash == null) {
       setState(() {
-        _step = 3;
+        _transitionTo(_PinRecoveryStep.newPin);
         _showError = true;
         _errorMessage =
             'Choose and confirm your new PIN before manual review can start.';
@@ -1219,7 +1231,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       return;
     }
 
-    setState(() => _step = 4);
+    setState(() => _transitionTo(_PinRecoveryStep.confirmPin));
   }
 
   void _handleConfirmPinNumber(int digit) {
@@ -1415,7 +1427,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       _isLoading = false;
       _showError = false;
       _errorMessage = null;
-      _step = 6;
+      _transitionTo(_PinRecoveryStep.manualReview);
     });
     return true;
   }
