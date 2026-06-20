@@ -1276,15 +1276,43 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
   }
 
   Future<void> _refreshHomeData() async {
-    final walletRefreshCompleted = await _refreshWalletForHome();
-
-    unawaited(_refreshTransactionsForHome());
+    final results = await Future.wait<bool>([
+      _refreshWalletForHome(),
+      _refreshTransactionsForHome(),
+    ]);
+    final walletRefreshCompleted = results.first;
+    final transactionsRefreshCompleted = results.last;
 
     if (!mounted) {
       return;
     }
 
     final wallet = ref.read(walletStateMachineProvider);
+    final transactions = ref.read(transactionStateMachineProvider);
+    final balanceNeedsAttention =
+        !walletRefreshCompleted ||
+        wallet.status == WalletStatus.refreshing ||
+        wallet.isDegraded ||
+        wallet.isStale ||
+        wallet.isCached;
+    final historyNeedsAttention =
+        !transactionsRefreshCompleted ||
+        transactions.status == TransactionListStatus.refreshing ||
+        transactions.status == TransactionListStatus.error ||
+        transactions.isCached;
+
+    if (balanceNeedsAttention && historyNeedsAttention) {
+      context.showSnack(
+        _localizedText(
+          en: 'Sync is still catching up. Showing the last known wallet activity.',
+          fr: "La synchronisation continue. Dernière activité connue affichée.",
+        ),
+        tone: AppSnackTone.warning,
+        duration: const Duration(seconds: 4),
+      );
+      return;
+    }
+
     if (!walletRefreshCompleted ||
         wallet.status == WalletStatus.refreshing ||
         wallet.isDegraded ||
@@ -1294,6 +1322,18 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         _localizedText(
           en: 'Balance sync is still catching up. Showing the last known value.',
           fr: 'La synchronisation du solde continue. Dernier solde connu affiché.',
+        ),
+        tone: AppSnackTone.warning,
+        duration: const Duration(seconds: 4),
+      );
+      return;
+    }
+
+    if (historyNeedsAttention) {
+      context.showSnack(
+        _localizedText(
+          en: 'Balance updated. Recent activity will catch up shortly.',
+          fr: "Solde mis à jour. L'activité récente va se synchroniser.",
         ),
         tone: AppSnackTone.warning,
         duration: const Duration(seconds: 4),
@@ -1347,18 +1387,23 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     return completedCleanly && current.status != WalletStatus.refreshing;
   }
 
-  Future<void> _refreshTransactionsForHome() async {
+  Future<bool> _refreshTransactionsForHome() async {
     try {
       await ref
           .read(transactionStateMachineProvider.notifier)
           .refresh(refreshWallet: false)
           .timeout(const Duration(seconds: 11));
+      final transactions = ref.read(transactionStateMachineProvider);
+      return transactions.status != TransactionListStatus.refreshing &&
+          transactions.status != TransactionListStatus.error &&
+          !transactions.isCached;
     } on Object catch (error, stackTrace) {
       _logger.error(
         'Home transaction refresh did not complete cleanly',
         error,
         stackTrace,
       );
+      return false;
     }
   }
 
