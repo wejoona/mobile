@@ -146,6 +146,18 @@ void main() {
       expect(source, isNot(contains("recipient: 'Unknown'")));
     });
 
+    test('merchant payment receipt uses backend payment status', () {
+      final source = File(
+        'lib/features/merchant_pay/views/payment_receipt_view.dart',
+      ).readAsStringSync();
+
+      expect(source, contains('widget.payment.status'));
+      expect(source, contains('_paymentStatus(widget.payment.status)'));
+      expect(source, contains('_statusTitle(paymentStatus)'));
+      expect(source, isNot(contains('status: TransactionStatus.completed')));
+      expect(source, isNot(contains("'Payment Successful!'")));
+    });
+
     test(
       'production navigation literals resolve through the assembled router',
       () {
