@@ -403,7 +403,6 @@ class AuthInterceptor extends Interceptor {
     const recoveryEndpoints = [
       '/step-up/operation',
       '/step-up/validate',
-      '/support/tickets',
       '/user/pin/reset',
       '/kyc/liveness',
     ];

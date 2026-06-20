@@ -146,6 +146,10 @@ void main() {
         key: StorageKeys.recoveryAccessToken,
         value: 'recovery.access',
       );
+      await mockStorage.write(
+        key: StorageKeys.recoveryAccessTokenScope,
+        value: 'pin_reset',
+      );
 
       final adapter = _RecordingStatusAdapter();
       final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
@@ -201,6 +205,10 @@ void main() {
           key: StorageKeys.recoveryAccessToken,
           value: 'recovery.access',
         );
+        await mockStorage.write(
+          key: StorageKeys.recoveryAccessTokenScope,
+          value: 'pin_reset',
+        );
 
         final adapter = _RecordingStatusAdapter();
         final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
@@ -235,6 +243,10 @@ void main() {
           key: StorageKeys.recoveryAccessToken,
           value: 'recovery.access',
         );
+        await mockStorage.write(
+          key: StorageKeys.recoveryAccessTokenScope,
+          value: 'pin_reset',
+        );
 
         final adapter = _RecordingStatusAdapter();
         final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
@@ -262,6 +274,10 @@ void main() {
           key: StorageKeys.recoveryAccessToken,
           value: 'recovery.access',
         );
+        await mockStorage.write(
+          key: StorageKeys.recoveryAccessTokenScope,
+          value: 'pin_reset',
+        );
 
         final adapter = _RecordingStatusAdapter();
         final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
@@ -269,6 +285,34 @@ void main() {
           ..interceptors.add(container.read(_authInterceptorTestProvider));
 
         await dio.get('/wallet');
+
+        expect(adapter.requests.single.headers['Authorization'], isNull);
+      },
+    );
+
+    test(
+      'does not use recovery token for generic support ticket routes',
+      () async {
+        final container = ProviderContainer(
+          overrides: [secureStorageProvider.overrideWithValue(mockStorage)],
+        );
+        addTearDown(container.dispose);
+
+        await mockStorage.write(
+          key: StorageKeys.recoveryAccessToken,
+          value: 'recovery.access',
+        );
+        await mockStorage.write(
+          key: StorageKeys.recoveryAccessTokenScope,
+          value: 'pin_reset',
+        );
+
+        final adapter = _RecordingStatusAdapter();
+        final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
+          ..httpClientAdapter = adapter
+          ..interceptors.add(container.read(_authInterceptorTestProvider));
+
+        await dio.get('/support/tickets/active');
 
         expect(adapter.requests.single.headers['Authorization'], isNull);
       },
