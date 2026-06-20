@@ -265,9 +265,14 @@ void main() {
       expect(routeSource, contains('status.isSubmitted || status.isVerified'));
       expect(routeSource, contains("return currentPath == '/kyc/submitted'"));
       expect(routeSource, contains("return '/kyc/review';"));
+      expect(providerSource, contains('_refreshBackendStatusAfterSubmission'));
+      expect(providerSource, contains('service.getKycStatus()'));
+      expect(providerSource, contains('updateFromAuthResponse'));
       expect(
         providerSource,
-        contains('verificationStatus: KycStatus.submitted'),
+        isNot(contains('verificationStatus: KycStatus.submitted')),
+        reason:
+            'KYC submit paths must consume backend status so manual_review and in_review are preserved.',
       );
     });
 

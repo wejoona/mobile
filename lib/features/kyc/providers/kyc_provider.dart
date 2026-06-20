@@ -5,9 +5,11 @@ import 'package:usdc_wallet/features/kyc/models/document_type.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_document.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_tier.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
+import 'package:usdc_wallet/services/kyc/kyc_service.dart';
 import 'package:usdc_wallet/services/limits/limits_service.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
+import 'package:usdc_wallet/state/kyc_state_machine.dart' as kyc_machine;
 
 /// KYC profile provider — wired to KycService.
 final kycProfileProvider = FutureProvider<KycProfile>((ref) async {
@@ -226,10 +228,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
         idNumber: state.personalInfo['documentNumber'],
       );
       if (!ref.mounted) return;
-      state = state.copyWith(
-        isLoading: false,
-        verificationStatus: KycStatus.submitted,
-      );
+      await _refreshBackendStatusAfterSubmission(service);
       analytics.trackKycCompleted(success: true);
     } catch (e) {
       if (!ref.mounted) return;
@@ -253,10 +252,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
         documentPath: address['documentPath'] ?? '',
       );
       if (!ref.mounted) return;
-      state = state.copyWith(
-        isLoading: false,
-        verificationStatus: KycStatus.submitted,
-      );
+      await _refreshBackendStatusAfterSubmission(service);
     } catch (e) {
       if (!ref.mounted) return;
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -276,10 +272,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
         supportingDocuments: paths,
       );
       if (!ref.mounted) return;
-      state = state.copyWith(
-        isLoading: false,
-        verificationStatus: KycStatus.submitted,
-      );
+      await _refreshBackendStatusAfterSubmission(service);
     } catch (e) {
       if (!ref.mounted) return;
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -311,6 +304,20 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
     if (profile.status == KycStatus.documentsPending)
       return KycStatus.documentsPending;
     return profile.status;
+  }
+
+  Future<void> _refreshBackendStatusAfterSubmission(KycService service) async {
+    final data = await service.getKycStatus();
+    if (!ref.mounted) return;
+
+    state = state.copyWith(
+      isLoading: false,
+      verificationStatus: data.status,
+      rejectionReason: data.rejectionReason,
+    );
+    ref
+        .read(kyc_machine.kycStateMachineProvider.notifier)
+        .updateFromAuthResponse(data.status.toApiString());
   }
 }
 
