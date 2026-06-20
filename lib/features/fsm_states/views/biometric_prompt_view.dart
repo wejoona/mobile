@@ -5,7 +5,6 @@ import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
-import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/fsm/session_fsm.dart';
@@ -102,13 +101,20 @@ class _BiometricPromptViewState extends ConsumerState<BiometricPromptView> {
   }
 
   void _completeUnlock() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) {
         return;
       }
-      ref.read(authProvider.notifier).unlock();
-      ref.read(sessionServiceProvider.notifier).unlockSession();
-      ref.read(appFsmProvider.notifier).unlockSession();
+      final unlocked = await ref
+          .read(authProvider.notifier)
+          .unlockWithServerValidation();
+      if (!mounted) {
+        return;
+      }
+      if (!unlocked) {
+        context.fsmGo('/session-locked');
+        return;
+      }
       context.fsmEnterAuthenticatedApp();
     });
   }

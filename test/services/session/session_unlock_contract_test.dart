@@ -80,10 +80,11 @@ void main() {
       biometricUnlockBody,
       sessionLockedUnlockBody,
     ]) {
-      expect(body, contains('authProvider.notifier).unlock()'));
       expect(
         body,
-        contains('sessionServiceProvider.notifier).unlockSession()'),
+        contains('unlockWithServerValidation()'),
+        reason:
+            'session unlock must validate refresh/session/device state before entering the app',
       );
     }
 
@@ -119,9 +120,9 @@ void main() {
     );
     expect(
       biometricUnlockBody,
-      contains('appFsmProvider.notifier).unlockSession()'),
+      contains('unlockWithServerValidation()'),
       reason:
-          'biometric unlock must clear the FSM lock state before routing home',
+          'biometric unlock must wait for backend validation before routing home',
     );
     expect(biometricPromptSource, contains('biometricServiceProvider'));
     expect(
@@ -138,9 +139,9 @@ void main() {
     expect(biometricUnlockBody, contains('context.fsmEnterAuthenticatedApp()'));
     expect(
       sessionLockedUnlockBody,
-      contains('appFsmProvider.notifier).unlockSession()'),
+      contains('unlockWithServerValidation()'),
       reason:
-          'session lock unlock must clear the FSM lock state before routing home',
+          'session lock unlock must wait for backend validation before routing home',
     );
     expect(
       sessionLockedUnlockBody,

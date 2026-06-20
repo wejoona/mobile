@@ -11,7 +11,6 @@ import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/pin/models/pin_reset_route_context.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
-import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
@@ -87,7 +86,7 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView>
       _restoreUnlockControls();
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) {
         if (!completion.isCompleted) {
           completion.complete();
@@ -96,9 +95,16 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView>
       }
 
       try {
-        ref.read(authProvider.notifier).unlock();
-        ref.read(sessionServiceProvider.notifier).unlockSession();
-        ref.read(appFsmProvider.notifier).unlockSession();
+        final unlocked = await ref
+            .read(authProvider.notifier)
+            .unlockWithServerValidation();
+        if (!mounted) {
+          return;
+        }
+        if (!unlocked) {
+          _restoreUnlockControls();
+          return;
+        }
         context.fsmEnterAuthenticatedApp();
       } on Object {
         if (mounted) {

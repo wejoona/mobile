@@ -168,7 +168,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
         // Show brief transition, then unlock + navigate together.
         if (mounted) {
           _transitionThen(() async {
-            final unlocked = _applySessionUnlock();
+            final unlocked = await _applySessionUnlock();
             if (!unlocked) {
               _showUnlockFailure();
               return;
@@ -225,17 +225,12 @@ class _PinScreenState extends ConsumerState<PinScreen>
     return _applySessionUnlock();
   }
 
-  bool _applySessionUnlock() {
+  Future<bool> _applySessionUnlock() async {
     try {
-      ref.read(authProvider.notifier).unlock();
-    } catch (_) {}
-    try {
-      ref.read(sessionServiceProvider.notifier).unlockSession();
-    } catch (_) {}
-    try {
-      ref.read(appFsmProvider.notifier).unlockSession();
-    } catch (_) {}
-    return true;
+      return ref.read(authProvider.notifier).unlockWithServerValidation();
+    } catch (_) {
+      return false;
+    }
   }
 
   /// Brief unlock animation before navigating away

@@ -11,8 +11,6 @@ import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/state/fsm/index.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
-import 'package:usdc_wallet/services/realtime/realtime_service.dart';
-import 'package:usdc_wallet/services/analytics/analytics_service.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
@@ -273,7 +271,7 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   /// Unlock the session after PIN/biometric verification
-  void unlock() {
+  void unlock({bool refreshAfterUnlock = true}) {
     if (state.status != AuthStatus.locked &&
         state.status != AuthStatus.authenticated) {
       return;
@@ -289,7 +287,9 @@ class AuthNotifier extends Notifier<AuthState> {
     } catch (_) {}
 
     // Proactively refresh token after unlock — session may have expired while locked.
-    unawaited(_refreshTokenOnUnlock());
+    if (refreshAfterUnlock) {
+      unawaited(_refreshTokenOnUnlock());
+    }
     ref.read(appFsmProvider.notifier).hydrateAuthenticatedSession();
     unawaited(
       ref
@@ -297,7 +297,28 @@ class AuthNotifier extends Notifier<AuthState> {
           .hydrateAuthenticatedSession(fetchRelated: false),
     );
     // Start real-time sync (WebSocket + polling fallback)
-    ref.read(realtimeServiceProvider).start();
+    unawaited(ref.read(realtimeServiceProvider).start());
+  }
+
+  /// Unlock only after the backend confirms the refresh/session/device state.
+  ///
+  /// Financial apps must not route from a local PIN/biometric success into the
+  /// authenticated shell until the server has accepted the current refresh
+  /// token. The refresh path also enforces revoked session and blacklisted
+  /// device checks.
+  Future<bool> unlockWithServerValidation() async {
+    if (state.status != AuthStatus.locked &&
+        state.status != AuthStatus.authenticated) {
+      return false;
+    }
+
+    final refreshed = await _refreshTokenOnUnlock();
+    if (!refreshed) {
+      return false;
+    }
+
+    unlock(refreshAfterUnlock: false);
+    return true;
   }
 
   /// Force the local auth/session state back to active after a trusted account
@@ -351,7 +372,7 @@ class AuthNotifier extends Notifier<AuthState> {
           .read(userStateMachineProvider.notifier)
           .hydrateAuthenticatedSession(fetchRelated: false),
     );
-    ref.read(realtimeServiceProvider).start();
+    unawaited(ref.read(realtimeServiceProvider).start());
 
     return true;
   }
@@ -715,7 +736,7 @@ class AuthNotifier extends Notifier<AuthState> {
             .read(userStateMachineProvider.notifier)
             .hydrateAuthenticatedSession(fetchRelated: false),
       );
-      ref.read(realtimeServiceProvider).start();
+      unawaited(ref.read(realtimeServiceProvider).start());
 
       _analytics.trackLogin(method: 'otp_pin');
       if (user != null) {
