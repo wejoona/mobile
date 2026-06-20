@@ -770,6 +770,13 @@ void main() {
     expect(livenessSource, contains("'liveness_result_unavailable'"));
     expect(livenessSource, contains('supportReviewRequired'));
     expect(livenessSource, contains('_manualReviewSlaLabel'));
+    expect(livenessSource, contains('reviewAlreadyCreated'));
+    expect(
+      livenessSource,
+      contains('title: reviewAlreadyCreated'),
+      reason:
+          'liveness errors must not say manual review has started until the backend returns a durable review id/status',
+    );
     expect(livenessSource, contains('String? tempPhotoPath'));
     expect(livenessSource, contains('await _deleteTempPhoto(tempPhotoPath)'));
     expect(livenessSource, contains('_unsupportedCaptureMessage'));

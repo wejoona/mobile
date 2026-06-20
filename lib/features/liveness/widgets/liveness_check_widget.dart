@@ -546,9 +546,11 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
       final slaLabel = reviewSla is Map ? reviewSla['label']?.toString() : null;
       final backendReviewId = data['kycReviewId']?.toString();
       final backendReviewStatus = data['kycStatus']?.toString();
+      final reviewAlreadyCreated =
+          backendReviewId != null || backendReviewStatus == 'manual_review';
 
       return (
-        title: supportReviewRequired
+        title: reviewAlreadyCreated
             ? 'Manual review started'
             : 'Manual review needed',
         message: supportReviewRequired
