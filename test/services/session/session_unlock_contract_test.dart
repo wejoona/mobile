@@ -362,6 +362,12 @@ void main() {
     expect(routesSource, contains('_pinResetRouteContext'));
     expect(resetContextSource, contains('final String? returnTo'));
     expect(resetContextSource, contains('safeReturnTo'));
+    expect(resetContextSource, contains('appRouteContractFor'));
+    expect(
+      resetContextSource,
+      isNot(contains("path.startsWith('/signup')")),
+      reason: 'PIN recovery return filtering should use route contracts.',
+    );
     expect(pinScreenSource, contains('returnTo: widget.successRoute'));
     expect(resetSource, contains('String get _resetSuccessRoute'));
     expect(resetSource, contains('String get _loginRouteAfterRecoveryExit'));

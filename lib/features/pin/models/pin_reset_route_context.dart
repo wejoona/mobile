@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/state/fsm/app_route_contract.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Route context carried into the PIN recovery flow.
@@ -115,12 +116,13 @@ class PinResetRouteContext {
       return null;
     }
 
-    final path = uri.path;
-    if (path == '/pin/reset' ||
-        path.startsWith('/login') ||
-        path.startsWith('/signup') ||
-        path.startsWith('/onboarding') ||
-        path.startsWith('/session-locked')) {
+    final contract = appRouteContractFor(uri.path);
+    if (contract.isSecurityRecovery ||
+        contract.isAuthDeadEnd ||
+        contract.isSignupRoute ||
+        contract.isLegacySignupRoute ||
+        contract.isFsmRoute ||
+        contract.role == AppRouteRole.securityStep) {
       return null;
     }
 
