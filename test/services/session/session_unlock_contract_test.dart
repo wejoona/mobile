@@ -583,6 +583,12 @@ void main() {
     final resetSource = File(
       'lib/features/pin/views/reset_pin_view.dart',
     ).readAsStringSync();
+    final userApiSource = File(
+      'lib/services/api/providers/user_api.dart',
+    ).readAsStringSync();
+    final transactionsSource = File(
+      'lib/features/transactions/views/transactions_view.dart',
+    ).readAsStringSync();
     final riskSource = File(
       'lib/services/security/risk_based_security_service.dart',
     ).readAsStringSync();
@@ -598,6 +604,25 @@ void main() {
     final riskStepBody = _methodBody(resetSource, '_buildRiskStep');
     final livenessStartBody = _methodBody(livenessSource, '_start');
 
+    expect(userApiSource, contains('String? otp'));
+    expect(
+      userApiSource,
+      contains("if (otp != null && otp.isNotEmpty) 'otp': otp"),
+      reason:
+          'the shared PIN reset API helper must match the recovery-token contract where OTP is optional',
+    );
+    expect(
+      transactionsSource,
+      contains("context.fsmGo('/create-wallet')"),
+      reason:
+          'authenticated wallet setup must not send users back to the public introduction/onboarding route',
+    );
+    expect(
+      transactionsSource,
+      isNot(contains("context.fsmGo('/onboarding')")),
+      reason:
+          'onboarding is product education; wallet creation is an authenticated setup route',
+    );
     expect(livenessSource, contains('onManualReviewRequired'));
     expect(livenessSource, contains('onManualReviewAcknowledged'));
     expect(livenessSource, contains('widget.onCancel != null'));

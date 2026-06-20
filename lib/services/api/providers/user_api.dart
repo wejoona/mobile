@@ -68,13 +68,13 @@ class UserApi {
 
   /// POST /user/pin/reset
   Future<Response> resetPin({
-    required String otp,
+    String? otp,
     required String newPinHash,
     required String stepUpChallengeToken,
   }) => _dio.post(
     ApiEndpoints.userPinReset,
     data: {
-      'otp': otp,
+      if (otp != null && otp.isNotEmpty) 'otp': otp,
       'newPinHash': newPinHash,
       'stepUpChallengeToken': stepUpChallengeToken,
     },

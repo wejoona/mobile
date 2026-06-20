@@ -541,7 +541,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
       title = l10n.transactions_noAccountTitle;
       message = l10n.transactions_noAccountMessage;
       buttonLabel = l10n.wallet_createWallet;
-      buttonAction = () => context.fsmGo('/onboarding');
+      buttonAction = () => context.fsmGo('/create-wallet');
     } else if (isConnectionError) {
       icon = Icons.wifi_off_rounded;
       iconColor = colors.warningText;

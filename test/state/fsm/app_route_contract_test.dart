@@ -51,6 +51,34 @@ void main() {
       expect(reset.events, contains(AppNavigationEvent.forgotPinSelected));
     });
 
+    test('declared PIN and security routes are explicitly contracted', () {
+      const routes = {
+        '/settings/pin': AppRouteRole.settingsStep,
+        '/pin/setup': AppRouteRole.setupStep,
+        '/pin/confirm': AppRouteRole.setupStep,
+        '/pin/enter': AppRouteRole.securityStep,
+        '/pin/locked': AppRouteRole.securityStep,
+      };
+
+      for (final entry in routes.entries) {
+        final contract = appRouteContractFor(entry.key);
+
+        expect(contract.role, entry.value, reason: entry.key);
+        expect(contract.role, isNot(AppRouteRole.unknown), reason: entry.key);
+        expect(
+          contract.events,
+          contains(AppNavigationEvent.pinRequired),
+          reason: entry.key,
+        );
+      }
+
+      expect(appRouteContractFor('/pin/enter').isAllowedWhenLocked, isTrue);
+      expect(
+        appRouteContractFor('/pin/locked').events,
+        contains(AppNavigationEvent.routeBlocked),
+      );
+    });
+
     test('money movement routes carry wallet and compliance requirements', () {
       final sendExternal = appRouteContractFor('/send-external/address');
       final deposit = appRouteContractFor('/deposit/amount');

@@ -464,6 +464,27 @@ const appRouteContracts = <AppRouteContract>[
     },
   ),
   AppRouteContract(
+    pattern: '/settings/pin',
+    role: AppRouteRole.settingsStep,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.allowWhenLocked,
+    },
+    events: {
+      AppNavigationEvent.pinRequired,
+      AppNavigationEvent.forgotPinSelected,
+    },
+  ),
+  AppRouteContract(
+    pattern: '/pin/setup',
+    role: AppRouteRole.setupStep,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.setupFlow,
+    },
+    events: {AppNavigationEvent.pinRequired, AppNavigationEvent.pinAccepted},
+  ),
+  AppRouteContract(
     pattern: '/kyc',
     role: AppRouteRole.setupStep,
     capabilities: {
@@ -491,6 +512,41 @@ const appRouteContracts = <AppRouteContract>[
       AppRouteCapability.setupFlow,
     },
     events: {AppNavigationEvent.kycStarted},
+  ),
+  AppRouteContract(
+    pattern: '/pin/confirm',
+    role: AppRouteRole.setupStep,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.setupFlow,
+    },
+    events: {AppNavigationEvent.pinRequired, AppNavigationEvent.pinAccepted},
+  ),
+  AppRouteContract(
+    pattern: '/pin/enter',
+    role: AppRouteRole.securityStep,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.allowWhenLocked,
+    },
+    events: {
+      AppNavigationEvent.pinRequired,
+      AppNavigationEvent.pinAccepted,
+      AppNavigationEvent.forgotPinSelected,
+    },
+  ),
+  AppRouteContract(
+    pattern: '/pin/locked',
+    role: AppRouteRole.securityStep,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.allowWhenLocked,
+    },
+    events: {
+      AppNavigationEvent.pinRequired,
+      AppNavigationEvent.routeBlocked,
+      AppNavigationEvent.forgotPinSelected,
+    },
   ),
   AppRouteContract(
     pattern: '/home',
