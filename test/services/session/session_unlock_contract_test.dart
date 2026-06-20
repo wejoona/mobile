@@ -319,7 +319,9 @@ void main() {
       'lib/features/liveness/widgets/liveness_check_widget.dart',
     ).readAsStringSync();
 
-    expect(routesSource, contains('state.extra is PinResetRouteContext'));
+    expect(routesSource, contains('final extra = state.extra;'));
+    expect(routesSource, contains('extra is PinResetRouteContext'));
+    expect(routesSource, contains('_pinResetRouteContext('));
     expect(
       routesSource,
       contains('ResetPinView(initialContext: resetContext)'),
@@ -369,7 +371,7 @@ void main() {
       resetSource,
       isNot(contains("?? '+225'")),
       reason:
-          'PIN reset must not silently default no-context recovery to Cote d\'Ivoire',
+          "PIN reset must not silently default no-context recovery to Cote d'Ivoire",
     );
     expect(
       resetSource,
@@ -640,7 +642,7 @@ void main() {
     expect(otpSource, contains("queryParameters['returnTo']"));
     expect(otpSource, contains('/login/pin?returnTo='));
     expect(routesSource, contains('successRoute: _authReturnTo(state)'));
-    expect(deepLinkSource, contains("context.fsmPush('/pay/\$linkCode')"));
+    expect(deepLinkSource, contains(r"context.fsmPush('/pay/$linkCode')"));
     expect(
       _methodBody(deepLinkSource, '_routeToDestination'),
       isNot(
