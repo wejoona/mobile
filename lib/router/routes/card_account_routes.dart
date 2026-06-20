@@ -8,11 +8,9 @@ import 'package:usdc_wallet/features/deposit/views/payment_instructions_screen.d
 import 'package:usdc_wallet/features/kyc/views/kyc_status_view.dart';
 import 'package:usdc_wallet/features/notifications/views/notifications_view.dart';
 import 'package:usdc_wallet/features/pin/models/pin_reset_route_context.dart';
-import 'package:usdc_wallet/features/pin/views/confirm_pin_view.dart';
 import 'package:usdc_wallet/features/pin/views/enter_pin_view.dart';
 import 'package:usdc_wallet/features/pin/views/pin_locked_view.dart';
 import 'package:usdc_wallet/features/pin/views/reset_pin_view.dart';
-import 'package:usdc_wallet/features/pin/views/set_pin_view.dart';
 import 'package:usdc_wallet/features/qr_payment/views/receive_qr_screen.dart';
 import 'package:usdc_wallet/features/qr_payment/views/scan_qr_screen.dart';
 import 'package:usdc_wallet/features/settings/views/change_pin_view.dart';
@@ -112,14 +110,6 @@ List<RouteBase> cardAccountRoutes() => [
     pageBuilder: (context, state) =>
         AppPageTransitions.fade(state: state, child: const ChangePinView()),
   ),
-  // PIN Setup (post-registration)
-  GoRoute(
-    path: '/pin/setup',
-    pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
-      state: state,
-      child: const SetPinView(),
-    ),
-  ),
   GoRoute(
     path: '/pin/reset',
     pageBuilder: (context, state) {
@@ -132,16 +122,6 @@ List<RouteBase> cardAccountRoutes() => [
       return AppPageTransitions.verticalSlide(
         state: state,
         child: ResetPinView(initialContext: resetContext),
-      );
-    },
-  ),
-  GoRoute(
-    path: '/pin/confirm',
-    pageBuilder: (context, state) {
-      final originalPin = state.extra as String? ?? '';
-      return AppPageTransitions.horizontalSlide(
-        state: state,
-        child: ConfirmPinView(originalPin: originalPin),
       );
     },
   ),

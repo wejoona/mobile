@@ -7,7 +7,7 @@ class RouteNames {
   static const login = '/login';
   static const register = '/register';
   static const otpVerification = '/otp';
-  static const pinSetup = '/pin/setup';
+  static const pinSetup = '/signup/set-pin';
 
   // Main tabs
   static const home = '/home';

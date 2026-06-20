@@ -448,14 +448,9 @@ class AppFsmNotifier extends FsmNotifier<AppState, AppEvent> {
   }
 
   void openPinSetup(BuildContext context) {
-    goToRoute(context, '/pin/setup', event: AppNavigationEvent.pinRequired);
-  }
-
-  Future<T?> openPinConfirm<T>(BuildContext context, String pin) {
-    return pushRoute<T>(
+    goToRoute(
       context,
-      '/pin/confirm',
-      extra: pin,
+      '/signup/set-pin',
       event: AppNavigationEvent.pinRequired,
     );
   }

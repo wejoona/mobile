@@ -133,6 +133,8 @@ const _signupEvents = {
   AppNavigationEvent.legalDocumentOpened,
   AppNavigationEvent.otpSubmitted,
   AppNavigationEvent.profileRequired,
+  AppNavigationEvent.pinRequired,
+  AppNavigationEvent.pinAccepted,
   AppNavigationEvent.kycStarted,
 };
 
@@ -488,15 +490,6 @@ const appRouteContracts = <AppRouteContract>[
     },
   ),
   AppRouteContract(
-    pattern: '/pin/setup',
-    role: AppRouteRole.setupStep,
-    capabilities: {
-      AppRouteCapability.requiresAuth,
-      AppRouteCapability.setupFlow,
-    },
-    events: {AppNavigationEvent.pinRequired, AppNavigationEvent.pinAccepted},
-  ),
-  AppRouteContract(
     pattern: '/kyc',
     role: AppRouteRole.setupStep,
     capabilities: {
@@ -557,15 +550,6 @@ const appRouteContracts = <AppRouteContract>[
     prefix: true,
     capabilities: {AppRouteCapability.requiresAuth},
     events: {AppNavigationEvent.kycStarted},
-  ),
-  AppRouteContract(
-    pattern: '/pin/confirm',
-    role: AppRouteRole.setupStep,
-    capabilities: {
-      AppRouteCapability.requiresAuth,
-      AppRouteCapability.setupFlow,
-    },
-    events: {AppNavigationEvent.pinRequired, AppNavigationEvent.pinAccepted},
   ),
   AppRouteContract(
     pattern: '/pin/enter',

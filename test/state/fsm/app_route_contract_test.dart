@@ -80,8 +80,7 @@ void main() {
     test('declared PIN and security routes are explicitly contracted', () {
       const routes = {
         '/settings/pin': AppRouteRole.settingsStep,
-        '/pin/setup': AppRouteRole.setupStep,
-        '/pin/confirm': AppRouteRole.setupStep,
+        '/signup/set-pin': AppRouteRole.setupStep,
         '/pin/enter': AppRouteRole.securityStep,
         '/pin/locked': AppRouteRole.securityStep,
       };
@@ -161,6 +160,9 @@ void main() {
           contains(AppRouteCapability.moneyMovement),
         );
       }
+
+      expect(appRouteContractFor('/pin/setup').role, AppRouteRole.unknown);
+      expect(appRouteContractFor('/pin/confirm').role, AppRouteRole.unknown);
     });
 
     test(

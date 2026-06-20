@@ -398,12 +398,10 @@ String? _nextRequiredSetupRoute({
   final hasPin =
       (authState.user?.hasPin ?? false) || _hasNonBlank(signupState.pin);
   if (!hasPin) {
-    if (location == '/signup/set-pin' ||
-        location == '/pin/setup' ||
-        location == '/pin/confirm') {
+    if (location == '/signup/set-pin') {
       return null;
     }
-    return inSignupFlow ? '/signup/set-pin' : '/pin/setup';
+    return '/signup/set-pin';
   }
 
   if (inSignupFlow &&

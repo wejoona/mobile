@@ -388,7 +388,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
     final user = authState.user;
     final hasPin = user?.hasPin ?? false;
     if (!hasPin) {
-      context.fsmGo('/pin/setup');
+      context.fsmGo('/signup/set-pin');
     } else {
       context.fsmEnterAuthenticatedApp();
     }

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
 import 'package:usdc_wallet/router/app_router.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/state/app_state.dart' hide AuthStatus;
@@ -26,6 +27,11 @@ class _TestAppFsmNotifier extends AppFsmNotifier {
 
   @override
   void handleEffects(List<FsmEffect> effects) {}
+}
+
+class _FixedSignupFlowNotifier extends SignupFlowNotifier {
+  @override
+  SignupFlowState build() => const SignupFlowState(isLoading: false);
 }
 
 class _TestKycStateMachine extends KycStateMachine {
@@ -53,6 +59,7 @@ void main() {
       kycStateMachineProvider.overrideWith(_TestKycStateMachine.new),
       userStateMachineProvider.overrideWith(_TestUserStateMachine.new),
       walletStateMachineProvider.overrideWith(_TestWalletStateMachine.new),
+      signupFlowProvider.overrideWith(_FixedSignupFlowNotifier.new),
       secureStorageProvider.overrideWithValue(MockSecureStorage()),
     ],
   );
@@ -128,7 +135,9 @@ void main() {
       final routePaths = _declaredRoutePaths();
 
       expect(routePaths, contains('/settings/pin'));
-      expect(routePaths, contains('/pin/setup'));
+      expect(routePaths, contains('/signup/set-pin'));
+      expect(routePaths, isNot(contains('/pin/setup')));
+      expect(routePaths, isNot(contains('/pin/confirm')));
       expect(routePaths, isNot(contains('/pin/change')));
       expect(routePaths, isNot(contains('/pin/set')));
     });
