@@ -1515,15 +1515,6 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       final unlocked = await _unlockAfterReset();
       if (!mounted) return;
 
-      if (!unlocked) {
-        setState(() {
-          _isLoading = false;
-          _showError = true;
-          _errorMessage = l10n.pin_error_resetFailed;
-        });
-        return;
-      }
-
       setState(() => _isLoading = false);
       await _clearRecoveryAuthorization();
       if (!mounted) return;
@@ -1534,7 +1525,11 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           backgroundColor: context.colors.success,
         ),
       );
-      context.fsmEnterAuthenticatedApp(route: _resetSuccessRoute);
+      if (unlocked) {
+        context.fsmEnterAuthenticatedApp(route: _resetSuccessRoute);
+      } else {
+        context.fsmGo(_loginRouteAfterRecoveryExit);
+      }
     } on DioException catch (e) {
       if (mounted) {
         final apiError = ApiException.fromDioError(e);

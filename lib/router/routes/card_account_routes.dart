@@ -127,7 +127,7 @@ List<RouteBase> cardAccountRoutes() => [
       final extraContext = extra is PinResetRouteContext ? extra : null;
       final resetContext = _pinResetRouteContext(
         extraContext,
-        state.uri.queryParameters['returnTo'],
+        state.uri.queryParameters,
       );
       return AppPageTransitions.verticalSlide(
         state: state,
@@ -173,22 +173,11 @@ List<RouteBase> cardAccountRoutes() => [
 
 PinResetRouteContext? _pinResetRouteContext(
   PinResetRouteContext? extraContext,
-  String? queryReturnTo,
+  Map<String, String> query,
 ) {
-  final returnTo =
-      extraContext?.returnTo ??
-      PinResetRouteContext.safeReturnTo(queryReturnTo);
-
-  if (extraContext == null) {
-    return returnTo == null ? null : PinResetRouteContext(returnTo: returnTo);
-  }
-
-  return PinResetRouteContext(
-    localPhoneNumber: extraContext.localPhoneNumber,
-    dialCode: extraContext.dialCode,
-    e164Phone: extraContext.e164Phone,
-    countryCode: extraContext.countryCode,
-    recoveryAccessToken: extraContext.recoveryAccessToken,
-    returnTo: returnTo,
+  final context = PinResetRouteContext.fromRouteQuery(
+    query,
+    extraContext: extraContext,
   );
+  return context.hasData ? context : null;
 }

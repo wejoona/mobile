@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/pin/models/pin_reset_route_context.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 void main() {
   test('PIN reset return targets stay inside safe app routes', () {
@@ -24,6 +25,32 @@ void main() {
       PinResetRouteContext.safeReturnTo('/session-locked?returnTo=/pay/abc'),
       isNull,
     );
+  });
+
+  test('PIN reset route context preserves phone through query params', () {
+    final phone = PhoneNumberValue.tryFromAny(
+      phoneNumber: '0748805663',
+      countryCode: '+225',
+    );
+    expect(phone, isNotNull);
+
+    final context = PinResetRouteContext.fromPhoneValue(
+      phone!,
+      recoveryAccessToken: 'token-must-not-enter-url',
+      returnTo: '/settings/security',
+    );
+
+    final route = context.routePath;
+    expect(route, startsWith('/pin/reset?'));
+    expect(route, isNot(contains('token-must-not-enter-url')));
+
+    final restored = PinResetRouteContext.fromRouteQuery(
+      Uri.parse(route).queryParameters,
+    );
+    expect(restored.phoneValue?.e164, phone.e164);
+    expect(restored.phoneValue?.localNumber, phone.localNumber);
+    expect(restored.returnTo, '/settings/security');
+    expect(restored.recoveryAccessToken, isNull);
   });
 
   test('PIN and biometric unlock clear session lock and route home', () {
@@ -327,7 +354,10 @@ void main() {
       contains('ResetPinView(initialContext: resetContext)'),
       reason: 'PIN reset route must forward recovery context to the screen',
     );
-    expect(routesSource, contains("state.uri.queryParameters['returnTo']"));
+    expect(routesSource, contains('state.uri.queryParameters'));
+    expect(resetContextSource, contains('fromRouteQuery'));
+    expect(resetContextSource, contains('String get routePath'));
+    expect(fsmSource, contains('extra.routePath'));
     expect(routesSource, contains('_pinResetRouteContext'));
     expect(resetContextSource, contains('final String? returnTo'));
     expect(resetContextSource, contains('safeReturnTo'));
@@ -399,7 +429,7 @@ void main() {
     );
     expect(
       _methodBody(fsmSource, 'openPinReset'),
-      contains("goToRoute(\n      context,\n      '/pin/reset',"),
+      contains('goToRoute(\n      context,\n      route,'),
       reason:
           'PIN reset is a recovery transition and must not keep failed auth/PIN routes underneath it',
     );

@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/utils/logger.dart';
-import 'package:usdc_wallet/state/wallet_state_machine.dart';
-import 'package:usdc_wallet/state/kyc_state_machine.dart';
-import 'package:usdc_wallet/state/fsm/fsm_base.dart';
-import 'package:usdc_wallet/state/fsm/auth_fsm.dart';
-import 'package:usdc_wallet/state/fsm/wallet_fsm.dart';
-import 'package:usdc_wallet/state/fsm/kyc_fsm.dart';
+import 'package:usdc_wallet/features/pin/models/pin_reset_route_context.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/app_route_contract.dart';
+import 'package:usdc_wallet/state/fsm/auth_fsm.dart';
+import 'package:usdc_wallet/state/fsm/fsm_base.dart';
+import 'package:usdc_wallet/state/fsm/kyc_fsm.dart';
 import 'package:usdc_wallet/state/fsm/session_fsm.dart';
+import 'package:usdc_wallet/state/fsm/wallet_fsm.dart';
+import 'package:usdc_wallet/state/kyc_state_machine.dart';
+import 'package:usdc_wallet/state/wallet_state_machine.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// ┌─────────────────────────────────────────────────────────────────┐
 /// │               FSM + RIVERPOD INTEGRATION                         │
@@ -460,9 +461,12 @@ class AppFsmNotifier extends FsmNotifier<AppState, AppEvent> {
   }
 
   Future<T?> openPinReset<T>(BuildContext context, {Object? extra}) {
+    final route = extra is PinResetRouteContext
+        ? extra.routePath
+        : '/pin/reset';
     goToRoute(
       context,
-      '/pin/reset',
+      route,
       extra: extra,
       event: AppNavigationEvent.forgotPinSelected,
     );

@@ -48,12 +48,57 @@ class PinResetRouteContext {
     );
   }
 
+  factory PinResetRouteContext.fromRouteQuery(
+    Map<String, String> query, {
+    PinResetRouteContext? extraContext,
+  }) {
+    final queryContext = PinResetRouteContext(
+      localPhoneNumber: _clean(query['phone'] ?? query['localPhoneNumber']),
+      dialCode: _clean(query['dialCode']),
+      e164Phone: _clean(query['e164'] ?? query['e164Phone']),
+      countryCode: _clean(query['countryCode']),
+      returnTo: safeReturnTo(query['returnTo']),
+    );
+
+    if (extraContext == null) {
+      return queryContext;
+    }
+
+    return PinResetRouteContext(
+      localPhoneNumber:
+          extraContext.localPhoneNumber ?? queryContext.localPhoneNumber,
+      dialCode: extraContext.dialCode ?? queryContext.dialCode,
+      e164Phone: extraContext.e164Phone ?? queryContext.e164Phone,
+      countryCode: extraContext.countryCode ?? queryContext.countryCode,
+      recoveryAccessToken: extraContext.recoveryAccessToken,
+      returnTo: extraContext.returnTo ?? queryContext.returnTo,
+    );
+  }
+
   final String? localPhoneNumber;
   final String? dialCode;
   final String? e164Phone;
   final String? countryCode;
   final String? recoveryAccessToken;
   final String? returnTo;
+
+  String get routePath {
+    final query = <String, String>{
+      if (e164Phone != null && e164Phone!.isNotEmpty) 'e164': e164Phone!,
+      if (localPhoneNumber != null && localPhoneNumber!.isNotEmpty)
+        'phone': localPhoneNumber!,
+      if (countryCode != null && countryCode!.isNotEmpty)
+        'countryCode': countryCode!,
+      if (dialCode != null && dialCode!.isNotEmpty) 'dialCode': dialCode!,
+      if (returnTo != null && returnTo!.isNotEmpty) 'returnTo': returnTo!,
+    };
+
+    if (query.isEmpty) {
+      return '/pin/reset';
+    }
+
+    return Uri(path: '/pin/reset', queryParameters: query).toString();
+  }
 
   static String? safeReturnTo(String? raw) {
     final returnTo = raw?.trim();
@@ -89,5 +134,13 @@ class PinResetRouteContext {
       phoneNumber: preferredPhone,
       countryCode: preferredCountry,
     );
+  }
+
+  bool get hasData =>
+      phoneValue != null || recoveryAccessToken != null || returnTo != null;
+
+  static String? _clean(String? value) {
+    final normalized = value?.trim();
+    return normalized == null || normalized.isEmpty ? null : normalized;
   }
 }
