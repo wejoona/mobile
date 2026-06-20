@@ -225,6 +225,14 @@ class SignupFlowNotifier extends Notifier<SignupFlowState> {
       final success = await ref
           .read(pinServiceProvider)
           .setPin(pin, requireBackendSync: true);
+      if (success) {
+        final currentUser = ref.read(auth.authProvider).user;
+        if (currentUser != null) {
+          ref
+              .read(auth.authProvider.notifier)
+              .updateUser(currentUser.copyWith(hasPin: true));
+        }
+      }
       state = state.copyWith(
         pin: success ? pin : state.pin,
         isLoading: false,
@@ -277,6 +285,21 @@ class SignupFlowNotifier extends Notifier<SignupFlowState> {
             avatarUrl: profile.avatarUrl,
             avatarThumb: profile.avatarThumb,
           );
+
+      final currentUser = ref.read(auth.authProvider).user;
+      if (currentUser != null) {
+        ref
+            .read(auth.authProvider.notifier)
+            .updateUser(
+              currentUser.copyWith(
+                firstName: profile.firstName,
+                lastName: profile.lastName,
+                email: profile.email,
+                avatarUrl: profile.avatarUrl,
+                avatarBase64: profile.avatarThumb,
+              ),
+            );
+      }
 
       state = state.copyWith(
         firstName: profile.firstName,

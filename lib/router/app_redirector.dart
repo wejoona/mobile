@@ -10,6 +10,7 @@ import 'package:usdc_wallet/services/app_version/mobile_version_policy_service.d
 import 'package:usdc_wallet/services/feature_flags/feature_flags_extensions.dart';
 import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
+import 'package:usdc_wallet/state/app_state.dart';
 import 'package:usdc_wallet/state/fsm/index.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart' as kyc_machine;
 import 'package:usdc_wallet/state/user_state_machine.dart';
@@ -34,6 +35,9 @@ class RouterRefreshNotifier extends ChangeNotifier {
           notifyListeners();
         }
       })
+      // Listen to signup/account setup state so redirects cannot miss profile,
+      // PIN, or local completion changes after OTP verification.
+      ..listen(signupFlowProvider, (_, _) => notifyListeners())
       // Listen to FSM state changes for navigation.
       ..listen(appFsmProvider, (previous, next) {
         if (previous?.currentScreen != next.currentScreen) {
@@ -127,6 +131,18 @@ String? appRedirect(BuildContext context, GoRouterState state) {
   );
   if (otpContextRedirect != null) {
     return otpContextRedirect;
+  }
+
+  final setupRedirect = _authenticatedSetupRedirect(
+    location: location,
+    isAuthenticated: isAuthenticated,
+    isLockedState: isLockedState,
+    authState: authState,
+    userState: userState,
+    signupState: signupState,
+  );
+  if (setupRedirect != null) {
+    return setupRedirect;
   }
 
   if (isAuthenticated &&
@@ -328,6 +344,87 @@ String? _profileRedirect({
 
   return null;
 }
+
+String? _authenticatedSetupRedirect({
+  required String location,
+  required bool isAuthenticated,
+  required bool isLockedState,
+  required auth.AuthState authState,
+  required UserState userState,
+  required SignupFlowState signupState,
+}) {
+  if (!isAuthenticated ||
+      isLockedState ||
+      _isSecurityRecoveryRoute(location) ||
+      location == '/force-update') {
+    return null;
+  }
+
+  final nextRoute = _nextRequiredSetupRoute(
+    location: location,
+    authState: authState,
+    userState: userState,
+    signupState: signupState,
+  );
+  if (nextRoute == null || nextRoute == location) {
+    return null;
+  }
+
+  return nextRoute;
+}
+
+String? _nextRequiredSetupRoute({
+  required String location,
+  required auth.AuthState authState,
+  required UserState userState,
+  required SignupFlowState signupState,
+}) {
+  final inSignupFlow =
+      _isSignupRoute(location) ||
+      _isLegacySignupRoute(location) ||
+      _hasActiveSignupContext(signupState);
+
+  final hasProfileName =
+      _hasNonBlank(authState.user?.firstName) ||
+      _hasNonBlank(userState.firstName) ||
+      _hasNonBlank(signupState.firstName);
+  if (!hasProfileName) {
+    if (location == '/signup/profile' || location == '/profile-complete') {
+      return null;
+    }
+    return inSignupFlow ? '/signup/profile' : '/profile-complete';
+  }
+
+  final hasPin =
+      (authState.user?.hasPin ?? false) || _hasNonBlank(signupState.pin);
+  if (!hasPin) {
+    if (location == '/signup/set-pin' ||
+        location == '/pin/setup' ||
+        location == '/pin/confirm') {
+      return null;
+    }
+    return inSignupFlow ? '/signup/set-pin' : '/pin/setup';
+  }
+
+  if (inSignupFlow &&
+      !signupState.isComplete &&
+      location != '/signup/kyc-prompt' &&
+      location != '/signup/success' &&
+      !location.startsWith('/kyc')) {
+    return '/signup/kyc-prompt';
+  }
+
+  return null;
+}
+
+bool _hasActiveSignupContext(SignupFlowState state) =>
+    _hasNonBlank(state.phoneNumber) ||
+    _hasNonBlank(state.otp) ||
+    _hasNonBlank(state.firstName) ||
+    _hasNonBlank(state.lastName) ||
+    _hasNonBlank(state.pin);
+
+bool _hasNonBlank(String? value) => value != null && value.trim().isNotEmpty;
 
 String? _featureFlagRedirect(String location, Map<String, bool> flags) {
   if (flags.isEmpty) {

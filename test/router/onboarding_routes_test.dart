@@ -6,8 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:usdc_wallet/domain/entities/index.dart';
+import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart';
+import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/router/app_router.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
@@ -33,12 +36,30 @@ class _LockedAuthNotifier extends AuthNotifier {
   AuthState build() => const AuthState(status: AuthStatus.locked);
 }
 
+class _AuthenticatedAuthNotifier extends AuthNotifier {
+  _AuthenticatedAuthNotifier(this.user);
+
+  final User user;
+
+  @override
+  AuthState build() => AuthState(status: AuthStatus.authenticated, user: user);
+}
+
 class _TestAppFsmNotifier extends AppFsmNotifier {
   @override
   app_fsm.AppState build() => const app_fsm.AppState.initial();
 
   @override
   void handleEffects(List<FsmEffect> effects) {}
+}
+
+class _FixedSignupFlowNotifier extends SignupFlowNotifier {
+  _FixedSignupFlowNotifier(this.initialState);
+
+  final SignupFlowState initialState;
+
+  @override
+  SignupFlowState build() => initialState;
 }
 
 class _TestKycStateMachine extends KycStateMachine {
@@ -62,20 +83,48 @@ void main() {
   ProviderContainer buildContainer({
     SharedPreferences? sharedPreferences,
     bool locked = false,
+    User? authenticatedUser,
+    SignupFlowState? signupState,
   }) => ProviderContainer(
     overrides: [
       authProvider.overrideWith(
-        locked ? _LockedAuthNotifier.new : _TestAuthNotifier.new,
+        locked
+            ? _LockedAuthNotifier.new
+            : authenticatedUser != null
+            ? () => _AuthenticatedAuthNotifier(authenticatedUser)
+            : _TestAuthNotifier.new,
       ),
       appFsmProvider.overrideWith(_TestAppFsmNotifier.new),
       kycStateMachineProvider.overrideWith(_TestKycStateMachine.new),
       userStateMachineProvider.overrideWith(_TestUserStateMachine.new),
       walletStateMachineProvider.overrideWith(_TestWalletStateMachine.new),
+      signupFlowProvider.overrideWith(
+        () => _FixedSignupFlowNotifier(
+          signupState ?? const SignupFlowState(isLoading: false),
+        ),
+      ),
       secureStorageProvider.overrideWithValue(MockSecureStorage()),
       if (sharedPreferences != null)
         sharedPreferencesProvider.overrideWithValue(sharedPreferences),
     ],
   );
+
+  User testUser({String? firstName, String? lastName, bool hasPin = false}) {
+    final now = DateTime.parse('2026-06-20T08:00:00.000Z');
+    return User(
+      id: 'usr_signup_contract',
+      phone: '+2250748805663',
+      firstName: firstName,
+      lastName: lastName,
+      countryCode: 'CI',
+      isPhoneVerified: true,
+      role: UserRole.user,
+      status: UserStatus.active,
+      hasPin: hasPin,
+      createdAt: now,
+      updatedAt: now,
+    );
+  }
 
   group('Onboarding routes', () {
     test('registers every explicit signup step path used by the flow', () {
@@ -247,6 +296,112 @@ void main() {
         isNot(contains("context.fsmPush('/kyc/document-type')")),
         reason:
             'KYC is a setup handoff after signup completion, not a nested signup page.',
+      );
+    });
+
+    testWidgets(
+      'authenticated signup context cannot bypass required setup to home',
+      (tester) async {
+        await tester.binding.setSurfaceSize(const Size(430, 932));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+
+        Future<String> initialRouteFor({
+          required User user,
+          required SignupFlowState signupState,
+        }) async {
+          SharedPreferences.setMockInitialValues({});
+          final sharedPreferences = await SharedPreferences.getInstance();
+          final container = buildContainer(
+            sharedPreferences: sharedPreferences,
+            authenticatedUser: user,
+            signupState: signupState,
+          );
+          addTearDown(container.dispose);
+          final router = container.read(routerProvider);
+
+          await tester.pumpWidget(
+            UncontrolledProviderScope(
+              container: container,
+              child: MaterialApp.router(
+                routerConfig: router,
+                localizationsDelegates: const [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                supportedLocales: AppLocalizations.supportedLocales,
+                theme: TestTheme.darkTheme,
+              ),
+            ),
+          );
+
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 300));
+          final path = router.routeInformationProvider.value.uri.path;
+          await tester.pumpWidget(const SizedBox.shrink());
+          await tester.pump();
+          return path;
+        }
+
+        expect(
+          await initialRouteFor(
+            user: testUser(),
+            signupState: const SignupFlowState(
+              isLoading: false,
+              phoneNumber: '0748805663',
+            ),
+          ),
+          '/signup/profile',
+        );
+
+        expect(
+          await initialRouteFor(
+            user: testUser(firstName: 'Ben', lastName: 'Ouattara'),
+            signupState: const SignupFlowState(
+              isLoading: false,
+              phoneNumber: '0748805663',
+              firstName: 'Ben',
+              lastName: 'Ouattara',
+            ),
+          ),
+          '/signup/set-pin',
+        );
+
+        expect(
+          await initialRouteFor(
+            user: testUser(
+              firstName: 'Ben',
+              lastName: 'Ouattara',
+              hasPin: true,
+            ),
+            signupState: const SignupFlowState(
+              isLoading: false,
+              phoneNumber: '0748805663',
+              firstName: 'Ben',
+              lastName: 'Ouattara',
+              pin: '123456',
+            ),
+          ),
+          '/signup/kyc-prompt',
+        );
+      },
+    );
+
+    test('signup setup redirect runs before auth dead-end cleanup', () {
+      final source = File('lib/router/app_redirector.dart').readAsStringSync();
+      final setupIndex = source.indexOf(
+        'final setupRedirect = _authenticatedSetupRedirect',
+      );
+      final deadEndIndex = source.indexOf('_isAuthenticatedDeadEndRoute');
+
+      expect(setupIndex, greaterThanOrEqualTo(0));
+      expect(deadEndIndex, greaterThanOrEqualTo(0));
+      expect(
+        setupIndex,
+        lessThan(deadEndIndex),
+        reason:
+            'Signup OTP is an auth dead-end after tokens are issued, but setup/profile/PIN routing must win before generic home cleanup.',
       );
     });
 

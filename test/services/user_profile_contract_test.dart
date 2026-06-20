@@ -130,6 +130,22 @@ void main() {
       expect(user.displayName, 'Ben Ouattara');
     });
 
+    test('core user entity accepts backend PIN aliases', () {
+      final user = User.fromJson({
+        'id': 'usr_pin_alias',
+        'phone': '+2250748805663',
+        'countryCode': 'CI',
+        'phoneVerified': true,
+        'role': 'user',
+        'status': 'active',
+        'has_pin': 'true',
+        'createdAt': '2026-06-04T10:00:00.000Z',
+        'updatedAt': '2026-06-04T10:00:00.000Z',
+      });
+
+      expect(user.hasPin, isTrue);
+    });
+
     test(
       'core user entity can clear stale avatar thumbnail after replacement',
       () {
@@ -553,10 +569,7 @@ void main() {
       expect(profileEditSource, contains('detectFaces(compressed)'));
       expect(profileEditSource, contains('var uploadImage = compressed'));
       expect(profileEditSource, contains('uploadImage = faceCheckImage'));
-      expect(
-        profileEditSource,
-        contains('bool _shouldRetryProfileFaceCheck'),
-      );
+      expect(profileEditSource, contains('bool _shouldRetryProfileFaceCheck'));
       expect(profileEditSource, contains('result.faceCount == 0'));
       expect(
         profileEditSource,

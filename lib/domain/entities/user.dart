@@ -112,7 +112,7 @@ class User {
         (e) => e.name == json['status'],
         orElse: () => UserStatus.active,
       ),
-      hasPin: json['hasPin'] as bool? ?? false,
+      hasPin: _readBool(json, const ['hasPin', 'has_pin']) ?? false,
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)
           : DateTime.now(),
@@ -185,4 +185,29 @@ class User {
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
+}
+
+bool? _readBool(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    if (!json.containsKey(key)) {
+      continue;
+    }
+    final value = json[key];
+    if (value is bool) {
+      return value;
+    }
+    if (value is num) {
+      return value != 0;
+    }
+    if (value is String) {
+      final normalized = value.trim().toLowerCase();
+      if (normalized == 'true' || normalized == '1' || normalized == 'yes') {
+        return true;
+      }
+      if (normalized == 'false' || normalized == '0' || normalized == 'no') {
+        return false;
+      }
+    }
+  }
+  return null;
 }
