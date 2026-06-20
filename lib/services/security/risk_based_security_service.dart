@@ -302,6 +302,7 @@ class RiskBasedSecurityService {
         '/step-up/validate',
         data: {
           'challengeToken': challengeToken,
+          'livenessProofId': livenessSessionId,
           'livenessSessionId': livenessSessionId,
           'biometricVerified': biometricVerified,
         },

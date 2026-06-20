@@ -934,6 +934,9 @@ void main() {
     final riskStepUpSource = File(
       'lib/features/wallet/widgets/risk_step_up_dialog.dart',
     ).readAsStringSync();
+    final riskSecurityServiceSource = File(
+      'lib/services/security/risk_based_security_service.dart',
+    ).readAsStringSync();
 
     final manualReviewBody = _methodBody(
       kycLivenessSource,
@@ -969,6 +972,12 @@ void main() {
       contains('result.stepUpProofId'),
       reason:
           'money-flow step-up must prefer backend livenessProofId and only fall back through LivenessResult.stepUpProofId',
+    );
+    expect(
+      riskSecurityServiceSource,
+      contains("'livenessProofId': livenessSessionId"),
+      reason:
+          'step-up validation should send the canonical proof field while preserving the legacy alias',
     );
     expect(
       riskStepUpLivenessBody,
