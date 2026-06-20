@@ -121,5 +121,19 @@ void main() {
         expect(codemagic, contains('--package-name "$applicationId"'));
       },
     );
+
+    test('Android build uses the Flutter app version name from pubspec', () {
+      final pubspec = File('pubspec.yaml').readAsStringSync();
+      final version = RegExp(
+        r'^version:\s*([0-9]+\.[0-9]+\.[0-9]+)\+\d+',
+        multiLine: true,
+      ).firstMatch(pubspec)?.group(1);
+
+      expect(version, isNotNull);
+      expect(version!.startsWith('1.'), isFalse);
+      expect(codemagic, contains('APP_VERSION_NAME='));
+      expect(codemagic, contains('flutter.versionName=%s'));
+      expect(codemagic, isNot(contains('flutter.versionName=1.0.0')));
+    });
   });
 }

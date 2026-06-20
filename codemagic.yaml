@@ -98,9 +98,11 @@ workflows:
           if [ -z "$LATEST" ]; then LATEST=0; fi
           BUILD_NUMBER=$(($LATEST + 1))
           echo "Building Android with number: $BUILD_NUMBER"
+          APP_VERSION_NAME=$(grep '^version:' "$CM_BUILD_DIR/pubspec.yaml" | awk '{print $2}' | cut -d+ -f1)
+          echo "Android version name: $APP_VERSION_NAME"
 
-          printf '\nflutter.buildMode=release\nflutter.versionName=1.0.0\nflutter.versionCode=%s\n' \
-            "$BUILD_NUMBER" >> "$CM_BUILD_DIR/android/local.properties"
+          printf '\nflutter.buildMode=release\nflutter.versionName=%s\nflutter.versionCode=%s\n' \
+            "$APP_VERSION_NAME" "$BUILD_NUMBER" >> "$CM_BUILD_DIR/android/local.properties"
 
           ENV_DEFINE=$(printf 'ENV=staging' | base64 | tr -d '\n')
           API_DEFINE=$(printf 'API_URL=https://staging-korido-api.joonapay.com/api/v1' | base64 | tr -d '\n')
