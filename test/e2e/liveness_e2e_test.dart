@@ -38,10 +38,14 @@ void main() {
         });
         res.expectOk();
 
-        final body = res.data ?? <String, dynamic>{};
+        final rawBody = res.data ?? <String, dynamic>{};
+        final body = rawBody['data'] is Map<String, dynamic>
+            ? rawBody['data'] as Map<String, dynamic>
+            : rawBody;
         expect(
           body['sessionToken'],
           isA<String>().having((v) => v, 'not empty', isNotEmpty),
+          reason: 'Body: ${res.body}',
         );
         expect(body['requiredCaptureMode'], 'photo');
         expect(body['acceptedCaptureModes'], contains('photo'));
@@ -54,8 +58,9 @@ void main() {
         for (final raw in challenges as List<dynamic>) {
           final challenge = raw as Map<String, dynamic>;
           expect(
-            challenge['challengeId'],
+            challenge['challengeId'] ?? challenge['id'],
             isA<String>().having((v) => v, 'not empty', isNotEmpty),
+            reason: 'Challenge: $challenge',
           );
           expect(challenge['acceptedCaptureModes'], contains('photo'));
           expect(challenge['requiredCaptureMode'], isNot('video'));

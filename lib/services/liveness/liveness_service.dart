@@ -546,7 +546,7 @@ class LivenessService {
             ? Options(extra: {ApiRequestExtra.useRecoveryToken: true})
             : null,
       );
-      return LivenessSession.fromJson(response.data as Map<String, dynamic>);
+      return LivenessSession.fromJson(apiResponsePayload(response.data));
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -583,9 +583,7 @@ class LivenessService {
             ? Options(extra: {ApiRequestExtra.useRecoveryToken: true})
             : null,
       );
-      return ChallengeSubmitResult.fromJson(
-        response.data as Map<String, dynamic>,
-      );
+      return ChallengeSubmitResult.fromJson(apiResponsePayload(response.data));
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -595,7 +593,7 @@ class LivenessService {
   Future<LivenessResult?> getLivenessStatus() async {
     try {
       final response = await _dio.get('/kyc/liveness/status');
-      final data = response.data as Map<String, dynamic>;
+      final data = apiResponsePayload(response.data);
 
       if (data['status'] == 'NOT_STARTED') return null;
 

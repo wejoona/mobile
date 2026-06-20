@@ -1,8 +1,10 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'dart:io';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/kyc/image_quality_checker.dart';
 
 class KycService {
@@ -266,9 +268,7 @@ class KycService {
         },
       },
     );
-    return LivenessSessionResponse.fromJson(
-      response.data as Map<String, dynamic>,
-    );
+    return LivenessSessionResponse.fromJson(apiResponsePayload(response.data));
   }
 
   /// Submit liveness check with video + selfie S3 keys

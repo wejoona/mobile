@@ -535,7 +535,7 @@ class AuthInterceptor extends Interceptor {
   }
 }
 
-Map<String, dynamic> _responsePayload(Object? raw) {
+Map<String, dynamic> apiResponsePayload(Object? raw) {
   if (raw is Map<String, dynamic>) {
     final data = raw['data'];
     if (data is Map<String, dynamic>) return data;
@@ -549,6 +549,8 @@ Map<String, dynamic> _responsePayload(Object? raw) {
   }
   return const <String, dynamic>{};
 }
+
+Map<String, dynamic> _responsePayload(Object? raw) => apiResponsePayload(raw);
 
 /// API Exception
 class ApiException implements Exception {
