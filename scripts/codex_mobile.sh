@@ -3,6 +3,80 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+raise_file_limit() {
+  ulimit -n 65536 2>/dev/null \
+    || ulimit -n 32768 2>/dev/null \
+    || ulimit -n 8192 2>/dev/null \
+    || true
+}
+
+LOCK_DIR="${TMPDIR:-/tmp}/korido-codex-mobile.lock"
+LOCK_ACQUIRED=false
+
+release_stale_lock() {
+  if [ ! -f "${LOCK_DIR}/pid" ]; then
+    return
+  fi
+
+  local pid
+  pid="$(cat "${LOCK_DIR}/pid" 2>/dev/null || true)"
+
+  if [ -n "${pid}" ] && ! kill -0 "${pid}" 2>/dev/null; then
+    rm -rf "${LOCK_DIR}"
+  fi
+}
+
+acquire_mobile_lock() {
+  local attempts=0
+
+  while ! mkdir "${LOCK_DIR}" 2>/dev/null; do
+    release_stale_lock
+    attempts=$((attempts + 1))
+
+    if [ "${attempts}" -gt 600 ]; then
+      echo "Timed out waiting for Korido mobile command lock: ${LOCK_DIR}" >&2
+      exit 75
+    fi
+
+    if [ "$((attempts % 10))" -eq 0 ]; then
+      echo "Waiting for another Korido mobile command to finish..." >&2
+    fi
+
+    sleep 1
+  done
+
+  LOCK_ACQUIRED=true
+  printf '%s\n' "$$" > "${LOCK_DIR}/pid"
+}
+
+cleanup_mobile_lock() {
+  if [ "${LOCK_ACQUIRED}" = true ]; then
+    rm -rf "${LOCK_DIR}"
+  fi
+}
+
+use_android_java_home() {
+  if [ -n "${JAVA_HOME:-}" ] && "${JAVA_HOME}/bin/java" -version 2>&1 | grep -q 'version "17\.'; then
+    return
+  fi
+
+  if command -v /usr/libexec/java_home >/dev/null 2>&1; then
+    local java17_home
+    java17_home="$(/usr/libexec/java_home -v 17 2>/dev/null || true)"
+
+    if [ -n "${java17_home}" ]; then
+      export JAVA_HOME="${java17_home}"
+      export PATH="${JAVA_HOME}/bin:${PATH}"
+    fi
+  fi
+}
+
+raise_file_limit
+acquire_mobile_lock
+trap cleanup_mobile_lock EXIT
+trap 'cleanup_mobile_lock; exit 130' INT
+trap 'cleanup_mobile_lock; exit 143' TERM
+
 export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode-beta.app/Contents/Developer}"
 
 KORIDO_SIM_UDID="${KORIDO_SIM_UDID:-AE43EA55-17BE-4E86-9B7E-A0E564FEA4F8}"
@@ -267,6 +341,7 @@ case "${command}" in
     run_flutter build ios --simulator "$@"
     ;;
   build-android-debug)
+    use_android_java_home
     run_flutter build apk --debug "$@"
     ;;
   test)
