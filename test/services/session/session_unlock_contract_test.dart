@@ -929,12 +929,31 @@ void main() {
       reason:
           'liveness provider failures should not strand the user inside the liveness widget while a ticket is created',
     );
-    expect(loadActiveReviewBody, contains("ticket['hasPendingPinReset']"));
+    expect(
+      loadActiveReviewBody,
+      contains('ApiEndpoints.userPinResetReviewCurrent'),
+      reason:
+          'PIN recovery resume must use the canonical PIN reset review status endpoint, not generic support tickets',
+    );
+    expect(
+      loadActiveReviewBody,
+      isNot(contains('/support/tickets/active')),
+      reason:
+          'manual-review resume must not couple a PIN replacement flow to generic support-ticket list semantics',
+    );
     expect(
       applyReviewTicketBody,
-      contains("_manualReviewPinQueued = data['hasPendingPinReset'] == true"),
+      contains(
+        "data['hasPendingPinReset'] == true && !_manualReviewPinApplied",
+      ),
       reason:
           'manual-review UI can only say the PIN is queued after the API confirms pending PIN material exists',
+    );
+    expect(
+      applyReviewTicketBody,
+      contains("data['pinResetApplied'] == true"),
+      reason:
+          'manual-review resume must distinguish approved/applied PIN reset state from a failed staging request',
     );
     expect(
       applyBackendManualReviewBody,

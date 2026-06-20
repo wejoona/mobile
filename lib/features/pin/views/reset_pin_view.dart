@@ -71,6 +71,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   String? _lastManualReviewReason;
   bool _manualReviewCreating = false;
   bool _manualReviewPinQueued = false;
+  bool _manualReviewPinApplied = false;
   bool _manualReviewCreationFailed = false;
 
   @override
@@ -370,11 +371,23 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         ? 'Starting manual review'
         : _manualReviewCreationFailed
         ? 'Manual review not sent'
+        : _manualReviewPinApplied
+        ? 'PIN reset approved'
+        : _manualReviewStatus == 'expired'
+        ? 'Manual review expired'
+        : _manualReviewStatus == 'rejected'
+        ? 'Manual review not approved'
         : 'Manual review started';
     final body = _manualReviewCreating
         ? 'We are securely staging your new PIN for review.'
         : _manualReviewCreationFailed
         ? 'We could not securely send this recovery request. Retry from here so your new PIN can be staged for review.'
+        : _manualReviewPinApplied
+        ? 'Your new PIN is now active. Return to sign in and unlock Korido with the PIN you created.'
+        : _manualReviewStatus == 'expired'
+        ? 'This recovery review expired before the new PIN could be applied. Start PIN recovery again if you still need access.'
+        : _manualReviewStatus == 'rejected'
+        ? 'This recovery review could not be approved. Start PIN recovery again or contact support if this looks wrong.'
         : 'We could not safely complete the automated identity check. A Korido reviewer will verify this PIN reset request.';
 
     return Column(
@@ -1217,30 +1230,21 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       final response = await ref
           .read(dioProvider)
           .get(
-            '/support/tickets/active',
-            queryParameters: {'category': 'account_recovery'},
+            ApiEndpoints.userPinResetReviewCurrent,
             options: _recoveryOptions(),
           );
-      final body = response.data;
-      final tickets = body is List
-          ? body
-          : body is Map && body['data'] is List
-          ? body['data'] as List
-          : const [];
-      if (tickets.isEmpty) {
+      final body = response.data is Map
+          ? Map<String, dynamic>.from(response.data as Map)
+          : const <String, dynamic>{};
+      final data = body['data'] is Map
+          ? Map<String, dynamic>.from(body['data'] as Map)
+          : body;
+      final status = data['status']?.toString();
+      if (status == null || status == 'none') {
         return false;
       }
 
-      final first = tickets.first;
-      if (first is Map) {
-        final ticket = Map<String, dynamic>.from(first);
-        if (ticket['hasPendingPinReset'] != true) {
-          return false;
-        }
-        _applyManualReviewTicket(ticket);
-      } else {
-        return false;
-      }
+      _applyManualReviewTicket(data);
       return true;
     } on Object {
       return false;
@@ -1248,11 +1252,19 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   }
 
   void _applyManualReviewTicket(Map<String, dynamic> data) {
-    _manualReviewTicketId = data['id']?.toString();
+    _manualReviewTicketId = (data['ticketId'] ?? data['id'])?.toString();
     _manualReviewStatus = data['status']?.toString();
-    _manualReviewPinQueued = data['hasPendingPinReset'] == true;
+    _manualReviewPinApplied =
+        data['pinResetApplied'] == true || _manualReviewStatus == 'approved';
+    _manualReviewPinQueued =
+        data['hasPendingPinReset'] == true && !_manualReviewPinApplied;
     _manualReviewCreating = false;
-    _manualReviewCreationFailed = !_manualReviewPinQueued;
+    _manualReviewCreationFailed =
+        !_manualReviewPinQueued &&
+        !_manualReviewPinApplied &&
+        _manualReviewStatus != 'rejected' &&
+        _manualReviewStatus != 'expired' &&
+        _manualReviewStatus != 'closed';
 
     final reviewSla = data['reviewSla'];
     if (reviewSla is Map) {
@@ -1268,6 +1280,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     _manualReviewCreating = true;
     _manualReviewCreationFailed = false;
     _manualReviewPinQueued = false;
+    _manualReviewPinApplied = false;
     _manualReviewSlaLabel = reviewSla?.label;
     _manualReviewResolutionDueAt = null;
     _manualReviewReason = reason;
@@ -1278,6 +1291,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     _manualReviewCreating = false;
     _manualReviewCreationFailed = true;
     _manualReviewPinQueued = false;
+    _manualReviewPinApplied = false;
     _manualReviewSlaLabel ??=
         'Expected first response: within 30 minutes for locked account recovery.';
     _manualReviewResolutionDueAt = null;
