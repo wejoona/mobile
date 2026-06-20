@@ -26,6 +26,7 @@ class WalletActions {
     required String countryCode,
     String? pinToken,
     String? idempotencyKey,
+    String? stepUpToken,
   }) async {
     await _verifyWithdrawalLimits(amount);
     final normalizedPhoneNumber = normalizeCashOutPhone(
@@ -52,6 +53,7 @@ class WalletActions {
                 headers: transactionHeaders(
                   pinToken: pinToken,
                   idempotencyKey: idempotencyKey,
+                  stepUpToken: stepUpToken,
                 ),
               ),
       );

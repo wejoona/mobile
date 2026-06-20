@@ -210,6 +210,7 @@ class WalletService {
     String? method,
     String? pinToken,
     String? idempotencyKey,
+    String? stepUpToken,
   }) async {
     try {
       final response = await _dio.post(
@@ -225,6 +226,7 @@ class WalletService {
           headers: _transactionHeaders(
             pinToken: pinToken,
             idempotencyKey: idempotencyKey,
+            stepUpToken: stepUpToken,
           ),
         ),
       );
@@ -927,10 +929,13 @@ final walletServiceProvider = Provider<WalletService>((ref) {
 Map<String, String> _transactionHeaders({
   String? pinToken,
   String? idempotencyKey,
+  String? stepUpToken,
 }) {
   return {
     if (pinToken != null) 'X-Pin-Token': pinToken,
     'X-Idempotency-Key': idempotencyKey ?? generateIdempotencyKey(),
+    if (stepUpToken != null && stepUpToken.isNotEmpty)
+      'X-Step-Up-Token': stepUpToken,
   };
 }
 

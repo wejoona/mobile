@@ -86,12 +86,14 @@ class WalletApi {
     Map<String, dynamic> data, {
     String? pinToken,
     String? idempotencyKey,
+    String? stepUpToken,
   }) => _dio.post(
     ApiEndpoints.transfersExternal,
     data: _externalTransferPayload(data),
     options: _moneyMovementOptions(
       pinToken: pinToken,
       idempotencyKey: idempotencyKey,
+      stepUpToken: stepUpToken,
     ),
   );
 
@@ -140,11 +142,17 @@ class WalletApi {
   /// GET /wallet/limits
   Future<Response> getLimits() => _dio.get(ApiEndpoints.walletLimits);
 
-  Options _moneyMovementOptions({String? pinToken, String? idempotencyKey}) {
+  Options _moneyMovementOptions({
+    String? pinToken,
+    String? idempotencyKey,
+    String? stepUpToken,
+  }) {
     if (pinToken == null || pinToken.isEmpty) {
       return Options(
         headers: {
           'X-Idempotency-Key': idempotencyKey ?? generateIdempotencyKey(),
+          if (stepUpToken != null && stepUpToken.isNotEmpty)
+            'X-Step-Up-Token': stepUpToken,
         },
       );
     }
@@ -153,6 +161,7 @@ class WalletApi {
       headers: transactionHeaders(
         pinToken: pinToken,
         idempotencyKey: idempotencyKey,
+        stepUpToken: stepUpToken,
       ),
     );
   }

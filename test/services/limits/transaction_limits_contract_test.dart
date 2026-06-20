@@ -202,26 +202,44 @@ void main() {
 
     test('withdraw confirmation fails closed when risk check is unavailable', () {
       final viewSource = File(
-        'lib/features/wallet/views/withdraw_screen_wired.dart',
+        'lib/features/wallet/views/withdraw_view.dart',
+      ).readAsStringSync();
+      final routeSource = File(
+        'lib/router/routes/money_movement_routes.dart',
       ).readAsStringSync();
       final providerSource = File(
         'lib/features/wallet/providers/withdraw_provider.dart',
       ).readAsStringSync();
+      final walletServiceSource = File(
+        'lib/services/wallet/wallet_service.dart',
+      ).readAsStringSync();
+
+      expect(routeSource, contains('child: const WithdrawView()'));
 
       expect(viewSource, contains('evaluateTransaction('));
+      expect(viewSource, contains('RiskStepUpDialog.show'));
+      expect(viewSource, contains('StepUpType.manualReview'));
       expect(viewSource, contains('setSecurityCheckUnavailable()'));
       expect(providerSource, contains('setSecurityCheckUnavailable()'));
       expect(providerSource, contains('Security check unavailable'));
+      expect(providerSource, contains('stepUpToken: stepUpToken'));
+      expect(walletServiceSource, contains('stepUpToken: stepUpToken'));
 
-      final riskFailureIndex = viewSource.indexOf('} catch (_) {');
-      final pinTokenIndex = viewSource.indexOf('getPinToken()');
+      final riskAuthorizationIndex = viewSource.indexOf(
+        'final stepUp = await _authorizeWithdrawalRisk',
+      );
+      final pinSheetIndex = viewSource.indexOf('PinConfirmationSheet.show');
       final submitIndex = viewSource.indexOf('await notifier.submit(');
-      expect(riskFailureIndex, isNonNegative);
-      expect(pinTokenIndex, isNonNegative);
+      final cryptoSubmitIndex = viewSource.indexOf(
+        'stepUpToken: stepUp.stepUpToken',
+      );
+      expect(riskAuthorizationIndex, isNonNegative);
+      expect(pinSheetIndex, isNonNegative);
       expect(submitIndex, isNonNegative);
-      expect(riskFailureIndex, lessThan(pinTokenIndex));
+      expect(cryptoSubmitIndex, isNonNegative);
+      expect(riskAuthorizationIndex, lessThan(pinSheetIndex));
       expect(
-        viewSource.substring(riskFailureIndex, pinTokenIndex),
+        viewSource.substring(riskAuthorizationIndex, pinSheetIndex),
         contains('return;'),
         reason:
             'withdrawal must not request PIN or submit cash-out when adaptive risk screening is unavailable.',

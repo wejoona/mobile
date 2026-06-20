@@ -605,6 +605,7 @@ void main() {
         await notifier.submit(
           pinToken: 'pin_token_123',
           idempotencyKey: 'idem-withdraw-123',
+          stepUpToken: 'step-up-withdraw-123',
         );
 
         expect(
@@ -616,6 +617,10 @@ void main() {
         final cashOutRequestData =
             dio.requestHistory[2].data as Map<String, dynamic>;
         expect(cashOutRequestData['phoneNumber'], '+2250748805663');
+        expect(
+          dio.requestHistory[2].headers['X-Step-Up-Token'],
+          'step-up-withdraw-123',
+        );
         expect(container.read(withdrawProvider).result?.id, 'withdraw_123');
       },
     );
@@ -649,6 +654,7 @@ void main() {
             countryCode: 'CI',
             pinToken: 'pin_token_123',
             idempotencyKey: 'idem-withdraw-123',
+            stepUpToken: 'step-up-actions-123',
           );
 
       expect(dio.requestHistory[0].path, '/user/limits');
@@ -657,6 +663,10 @@ void main() {
           dio.requestHistory[1].data as Map<String, dynamic>;
       expect(withdrawalRequestData['phoneNumber'], '+2250748805663');
       expect(dio.requestHistory[1].headers['X-Pin-Token'], 'pin_token_123');
+      expect(
+        dio.requestHistory[1].headers['X-Step-Up-Token'],
+        'step-up-actions-123',
+      );
     });
 
     test(
@@ -863,6 +873,7 @@ void main() {
         network: 'polygon',
         pinToken: 'pin_token_123',
         idempotencyKey: 'idem-withdraw-123',
+        stepUpToken: 'step-up-crypto-123',
       );
 
       final request = dio.requestHistory.single;
@@ -876,6 +887,7 @@ void main() {
       });
       expect(request.headers['X-Pin-Token'], 'pin_token_123');
       expect(request.headers['X-Idempotency-Key'], 'idem-withdraw-123');
+      expect(request.headers['X-Step-Up-Token'], 'step-up-crypto-123');
       expect(response.transactionId, 'txn_withdraw_1');
     });
 

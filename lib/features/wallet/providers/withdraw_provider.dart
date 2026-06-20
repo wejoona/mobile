@@ -226,6 +226,7 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
   Future<void> submit({
     required String pinToken,
     String? idempotencyKey,
+    String? stepUpToken,
   }) async {
     if (state.method == null || state.amount == null) return;
     final providerCode = state.method!.providerCode;
@@ -262,6 +263,7 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
       final headers = transactionHeaders(
         pinToken: pinToken,
         idempotencyKey: idempotencyKey,
+        stepUpToken: stepUpToken,
       );
 
       final response = await dio.post(

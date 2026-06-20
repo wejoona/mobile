@@ -210,6 +210,7 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
     String? method,
     String? pinToken,
     String? idempotencyKey,
+    String? stepUpToken,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
 
@@ -221,6 +222,7 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
         method: method,
         pinToken: pinToken,
         idempotencyKey: idempotencyKey,
+        stepUpToken: stepUpToken,
       );
 
       state = state.copyWith(isLoading: false, response: response);

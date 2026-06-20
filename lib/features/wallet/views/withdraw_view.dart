@@ -13,9 +13,11 @@ import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/withdraw_provider.dart'
     as withdraw_api;
+import 'package:usdc_wallet/features/wallet/widgets/risk_step_up_dialog.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
 import 'package:usdc_wallet/services/index.dart';
+import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/utils/context_extensions.dart';
@@ -216,6 +218,14 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
         break;
     }
 
+    final stepUp = await _authorizeWithdrawalRisk(
+      amount: amount,
+      destination: destination,
+    );
+    if (!stepUp.canProceed) {
+      return;
+    }
+
     String? pinToken;
 
     // Show PIN confirmation
@@ -256,6 +266,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
               amount: amount,
               destinationAddress: destination,
               pinToken: pinToken!,
+              stepUpToken: stepUp.stepUpToken,
             )
           : await _submitMobileMoneyWithdrawal(
               amount: amount,
@@ -263,6 +274,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
               countryCode: selectedCountry.code,
               method: mobileMoneyMethod!,
               pinToken: pinToken!,
+              stepUpToken: stepUp.stepUpToken,
             );
 
       if (!mounted) return;
@@ -307,12 +319,88 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     }
   }
 
+  Future<({bool canProceed, String? stepUpToken})> _authorizeWithdrawalRisk({
+    required double amount,
+    required String destination,
+  }) async {
+    try {
+      final securityService = ref.read(riskBasedSecurityServiceProvider);
+      final decision = await securityService.evaluateTransaction(
+        type: 'withdrawal',
+        amount: amount,
+        currency: 'USDC',
+        recipientId: destination,
+        recipientType: 'external',
+      );
+
+      if (!decision.stepUpRequired) {
+        return (canProceed: true, stepUpToken: null);
+      }
+
+      if (decision.stepUpType == StepUpType.manualReview) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text(
+                'This withdrawal needs manual review before it can continue.',
+              ),
+              backgroundColor: context.colors.error,
+            ),
+          );
+        }
+        return (canProceed: false, stepUpToken: null);
+      }
+
+      if (!mounted) {
+        return (canProceed: false, stepUpToken: null);
+      }
+      final passed = await RiskStepUpDialog.show(context, decision: decision);
+      if (!passed) {
+        return (canProceed: false, stepUpToken: null);
+      }
+
+      final token = decision.challengeToken?.trim();
+      if (token == null || token.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text(
+                'Security challenge is incomplete. Please try again before withdrawing.',
+              ),
+              backgroundColor: context.colors.error,
+            ),
+          );
+        }
+        return (canProceed: false, stepUpToken: null);
+      }
+
+      return (canProceed: true, stepUpToken: token);
+    } catch (_) {
+      ref
+          .read(withdraw_api.withdrawProvider.notifier)
+          .setSecurityCheckUnavailable();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              ref.read(withdraw_api.withdrawProvider).error ??
+                  AppLocalizations.of(context)!.withdraw_failed,
+            ),
+            backgroundColor: context.colors.error,
+          ),
+        );
+      }
+      return (canProceed: false, stepUpToken: null);
+    }
+  }
+
   Future<bool> _submitMobileMoneyWithdrawal({
     required double amount,
     required String destination,
     required String countryCode,
     required withdraw_api.WithdrawMethod method,
     required String pinToken,
+    String? stepUpToken,
   }) async {
     final notifier = ref.read(withdraw_api.withdrawProvider.notifier)
       ..selectMethod(method)
@@ -321,6 +409,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     await notifier.submit(
       pinToken: pinToken,
       idempotencyKey: generateIdempotencyKey(),
+      stepUpToken: stepUpToken,
     );
 
     return ref.read(withdraw_api.withdrawProvider).result != null;
@@ -330,6 +419,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     required double amount,
     required String destinationAddress,
     required String pinToken,
+    String? stepUpToken,
   }) async {
     try {
       final response = await ref
@@ -340,6 +430,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
             network: 'polygon',
             pinToken: pinToken,
             idempotencyKey: generateIdempotencyKey(),
+            stepUpToken: stepUpToken,
           );
       return response.transactionId.isNotEmpty;
     } catch (e) {
