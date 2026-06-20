@@ -217,6 +217,25 @@ class KycService {
     ).copyWith(rejectionReason: rejectionReason);
   }
 
+  Future<KycManualReviewResponse> routeToManualReview({
+    required String reason,
+    required String featureReason,
+    String? provider,
+    Map<String, dynamic>? metadata,
+  }) async {
+    final response = await _dio.post(
+      '/kyc/manual-review',
+      data: {
+        'reason': reason,
+        'featureReason': featureReason,
+        if (provider != null) 'provider': provider,
+        if (metadata != null) 'metadata': metadata,
+      },
+    );
+
+    return KycManualReviewResponse.fromJson(apiResponsePayload(response.data));
+  }
+
   Future<void> submitAddressVerification({
     required String addressLine1,
     required String addressLine2,
@@ -466,6 +485,33 @@ class KycService {
       idNumber: idNumber,
     );
     return getKycStatus();
+  }
+}
+
+class KycManualReviewResponse {
+  final String id;
+  final KycStatus status;
+  final String message;
+  final String? slaLabel;
+
+  const KycManualReviewResponse({
+    required this.id,
+    required this.status,
+    required this.message,
+    this.slaLabel,
+  });
+
+  factory KycManualReviewResponse.fromJson(Map<String, dynamic> json) {
+    final rawStatus = json['status'] as String? ?? 'manual_review';
+    final reviewSla = json['reviewSla'];
+    return KycManualReviewResponse(
+      id: json['id']?.toString() ?? '',
+      status: KycStatus.fromString(rawStatus),
+      message:
+          json['message'] as String? ??
+          'KYC submitted. Additional review required.',
+      slaLabel: reviewSla is Map ? reviewSla['label']?.toString() : null,
+    );
   }
 }
 

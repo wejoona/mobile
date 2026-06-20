@@ -914,6 +914,9 @@ void main() {
     final kycLivenessSource = File(
       'lib/features/kyc/views/kyc_liveness_view.dart',
     ).readAsStringSync();
+    final kycServiceSource = File(
+      'lib/services/kyc/kyc_service.dart',
+    ).readAsStringSync();
     final riskStepUpSource = File(
       'lib/features/wallet/widgets/risk_step_up_dialog.dart',
     ).readAsStringSync();
@@ -959,14 +962,14 @@ void main() {
       reason:
           'money-flow liveness must fail closed instead of crashing when a backend challenge token is missing',
     );
-    expect(manualReviewBody, contains("'/support/tickets'"));
-    expect(manualReviewBody, contains("'category': 'kyc'"));
-    expect(manualReviewBody, contains("'priority': 'high'"));
+    expect(kycServiceSource, contains("'/kyc/manual-review'"));
+    expect(manualReviewBody, contains('routeToManualReview'));
     expect(manualReviewBody, contains('request.backendReviewAlreadyCreated'));
+    expect(manualReviewBody, contains('_refreshKycManualReviewState()'));
     expect(manualReviewBody, contains('_scheduleManualReviewNavigation()'));
     expect(
       manualReviewBody,
-      contains('identity document, profile photo, reference selfie'),
+      contains("'identity_document'"),
       reason:
           'manual KYC review must preserve the same evidence graph as automated face matching',
     );
