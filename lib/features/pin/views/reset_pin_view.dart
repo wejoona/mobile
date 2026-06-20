@@ -39,7 +39,7 @@ class ResetPinView extends ConsumerStatefulWidget {
 
 class _ResetPinViewState extends ConsumerState<ResetPinView> {
   int _step =
-      1; // 1: request OTP, 2: enter OTP, 5: liveness, 3/4: PIN, 6: review
+      1; // 1: request OTP, 2: enter OTP, 3/4: PIN, 5: liveness, 6: review
   final _otpController = TextEditingController();
   final _phoneController = TextEditingController();
   PhoneNumberValue? _recoveryPhone;
@@ -50,12 +50,16 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   bool _isLoading = false;
   StepUpDecision? _riskDecision;
   String? _stepUpChallengeToken;
+  String? _pendingNewPinHash;
   String? _manualReviewTicketId;
   String? _manualReviewStatus;
   String? _manualReviewSlaLabel;
   String? _manualReviewResolutionDueAt;
   String? _manualReviewReason;
   String? _lastManualReviewReason;
+  bool _manualReviewCreating = false;
+  bool _manualReviewPinQueued = false;
+  bool _manualReviewCreationFailed = false;
 
   @override
   void initState() {
@@ -179,7 +183,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           appName: 'Korido',
           title: 'Extra verification required',
           subtitle:
-              'The risk check for this PIN reset requires a face and liveness check before you create a new PIN.',
+              'The risk check for this PIN reset requires a face and liveness check before your new PIN can be applied.',
           markSize: 44,
           titleVariant: AppTextVariant.titleLarge,
         ),
@@ -208,6 +212,17 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   }
 
   Widget _buildManualReviewStep(AppLocalizations l10n) {
+    final title = _manualReviewCreating
+        ? 'Starting manual review'
+        : _manualReviewCreationFailed
+        ? 'Manual review not sent'
+        : 'Manual review started';
+    final body = _manualReviewCreating
+        ? 'We are securely staging your new PIN for review.'
+        : _manualReviewCreationFailed
+        ? 'We could not securely send this recovery request. Retry from here so your new PIN can be staged for review.'
+        : 'We could not safely complete the automated identity check. A Korido reviewer will verify this PIN reset request.';
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -219,15 +234,29 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
             shape: BoxShape.circle,
             border: Border.all(color: context.colors.borderGold),
           ),
-          child: Icon(
-            Icons.manage_accounts_rounded,
-            color: context.colors.gold,
-            size: 36,
-          ),
+          child: _manualReviewCreating
+              ? Padding(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      context.colors.gold,
+                    ),
+                  ),
+                )
+              : Icon(
+                  _manualReviewCreationFailed
+                      ? Icons.error_outline_rounded
+                      : Icons.manage_accounts_rounded,
+                  color: _manualReviewCreationFailed
+                      ? context.colors.danger
+                      : context.colors.gold,
+                  size: 36,
+                ),
         ),
         const SizedBox(height: AppSpacing.xl),
         AppText(
-          'Manual review started',
+          title,
           variant: AppTextVariant.titleLarge,
           color: context.colors.textPrimary,
           textAlign: TextAlign.center,
@@ -235,18 +264,34 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         ),
         const SizedBox(height: AppSpacing.md),
         AppText(
-          'We could not safely complete the automated identity check. A Korido reviewer will verify this PIN reset request.',
+          body,
           variant: AppTextVariant.bodyMedium,
           color: context.colors.textSecondary,
           textAlign: TextAlign.center,
         ),
+        if (_manualReviewPinQueued) ...[
+          const SizedBox(height: AppSpacing.md),
+          AppText(
+            'Your new PIN is securely queued and will become active after approval. We will notify you by app notification and SMS.',
+            variant: AppTextVariant.bodySmall,
+            color: context.colors.textTertiary,
+            textAlign: TextAlign.center,
+          ),
+        ],
         const SizedBox(height: AppSpacing.lg),
         InfoCallout(
-          icon: Icons.schedule_rounded,
-          title:
-              _manualReviewSlaLabel ??
-              'Expected first response: within 30 minutes for locked account recovery.',
-          tone: InfoCalloutTone.info,
+          icon: _manualReviewCreationFailed
+              ? Icons.wifi_off_rounded
+              : Icons.schedule_rounded,
+          title: _manualReviewCreationFailed
+              ? 'This request is not queued yet. Please retry when your connection is available.'
+              : _manualReviewCreating
+              ? 'Sending secure recovery request...'
+              : _manualReviewSlaLabel ??
+                    'Expected first response: within 30 minutes for locked account recovery.',
+          tone: _manualReviewCreationFailed
+              ? InfoCalloutTone.danger
+              : InfoCalloutTone.info,
         ),
         if (_manualReviewResolutionDueAt != null) ...[
           const SizedBox(height: AppSpacing.sm),
@@ -276,10 +321,28 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         ],
         const SizedBox(height: AppSpacing.xxxl),
         AppButton(
-          label: 'Return to sign in',
-          onPressed: _returnToSignInFromManualReview,
+          label: _manualReviewCreationFailed
+              ? 'Retry manual review'
+              : _manualReviewCreating
+              ? 'Starting review...'
+              : 'Return to sign in',
+          onPressed: _manualReviewCreationFailed
+              ? _retryManualReview
+              : _manualReviewCreating
+              ? null
+              : _returnToSignInFromManualReview,
+          isLoading: _manualReviewCreating,
           isFullWidth: true,
         ),
+        if (_manualReviewCreationFailed) ...[
+          const SizedBox(height: AppSpacing.md),
+          AppButton(
+            label: 'Return to sign in',
+            onPressed: _returnToSignInFromManualReview,
+            variant: AppButtonVariant.secondary,
+            isFullWidth: true,
+          ),
+        ],
       ],
     );
   }
@@ -627,73 +690,6 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
 
     try {
       await _createRecoveryAuthorizationFromOtp();
-      final riskService = ref.read(riskBasedSecurityServiceProvider);
-      final decision = await riskService.evaluateOperation(
-        operation: 'account_recovery',
-        metadata: await _accountRecoveryRiskMetadata(),
-        useRecoveryToken: true,
-      );
-
-      if (!mounted) return;
-
-      _riskDecision = decision;
-      _stepUpChallengeToken = decision.challengeToken;
-
-      if (_requiresManualReview(decision)) {
-        await _routePinResetToManualReview('risk_manual_review');
-        return;
-      }
-
-      if (_requiresFaceAndLiveness(decision)) {
-        if (decision.challengeToken == null) {
-          await _routePinResetToManualReview('step_up_challenge_unavailable');
-          return;
-        }
-
-        setState(() {
-          _isLoading = false;
-          _step = 5;
-        });
-        return;
-      }
-
-      if (decision.stepUpRequired) {
-        if (decision.challengeToken == null) {
-          await _routePinResetToManualReview('step_up_challenge_unavailable');
-          return;
-        }
-
-        final verified = await riskService.executeStepUp(decision);
-        if (!mounted) return;
-        if (!verified) {
-          setState(() {
-            _isLoading = false;
-            _errorMessage = 'We could not verify this PIN reset.';
-          });
-          return;
-        }
-
-        final validated = await riskService.validateStepUp(
-          challengeToken: decision.challengeToken!,
-          biometricVerified:
-              decision.stepUpType == StepUpType.biometric ||
-              decision.stepUpType == StepUpType.biometricAndLiveness,
-        );
-        if (!mounted) return;
-        if (!validated) {
-          setState(() {
-            _isLoading = false;
-            _errorMessage = 'We could not validate this security check.';
-          });
-          return;
-        }
-        _stepUpChallengeToken = decision.challengeToken;
-      }
-
-      if (_stepUpChallengeToken == null) {
-        await _routePinResetToManualReview('step_up_challenge_unavailable');
-        return;
-      }
 
       if (mounted) {
         setState(() {
@@ -703,7 +699,11 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       }
     } catch (_) {
       if (mounted) {
-        await _routePinResetToManualReview('risk_or_provider_unavailable');
+        setState(() {
+          _isLoading = false;
+          _errorMessage =
+              'We could not verify this recovery code. Please try again.';
+        });
       }
     }
   }
@@ -780,26 +780,139 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         decision.stepUpType == StepUpType.biometricAndLiveness;
   }
 
+  Future<bool> _prepareRecoveryDecisionForConfirmedPin(
+    String newPinHash,
+  ) async {
+    try {
+      final riskService = ref.read(riskBasedSecurityServiceProvider);
+      final decision = await riskService.evaluateOperation(
+        operation: 'account_recovery',
+        metadata: await _accountRecoveryRiskMetadata(),
+        useRecoveryToken: true,
+      );
+
+      if (!mounted) return false;
+
+      _riskDecision = decision;
+      _stepUpChallengeToken = decision.challengeToken;
+
+      if (_requiresManualReview(decision)) {
+        await _routePinResetToManualReview(
+          'risk_manual_review',
+          newPinHash: newPinHash,
+        );
+        return false;
+      }
+
+      if (_requiresFaceAndLiveness(decision)) {
+        if (decision.challengeToken == null) {
+          await _routePinResetToManualReview(
+            'step_up_challenge_unavailable',
+            newPinHash: newPinHash,
+          );
+          return false;
+        }
+
+        setState(() {
+          _pendingNewPinHash = newPinHash;
+          _isLoading = false;
+          _step = 5;
+        });
+        return false;
+      }
+
+      if (decision.stepUpRequired) {
+        if (decision.challengeToken == null) {
+          await _routePinResetToManualReview(
+            'step_up_challenge_unavailable',
+            newPinHash: newPinHash,
+          );
+          return false;
+        }
+
+        final verified = await riskService.executeStepUp(decision);
+        if (!mounted) return false;
+        if (!verified) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = 'We could not verify this PIN reset.';
+          });
+          return false;
+        }
+
+        final validated = await riskService.validateStepUp(
+          challengeToken: decision.challengeToken!,
+          biometricVerified:
+              decision.stepUpType == StepUpType.biometric ||
+              decision.stepUpType == StepUpType.biometricAndLiveness,
+        );
+        if (!mounted) return false;
+        if (!validated) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = 'We could not validate this security check.';
+          });
+          return false;
+        }
+        _stepUpChallengeToken = decision.challengeToken;
+      }
+
+      if (_stepUpChallengeToken == null) {
+        await _routePinResetToManualReview(
+          'step_up_challenge_unavailable',
+          newPinHash: newPinHash,
+        );
+        return false;
+      }
+
+      return true;
+    } catch (_) {
+      if (mounted) {
+        await _routePinResetToManualReview(
+          'risk_or_provider_unavailable',
+          newPinHash: newPinHash,
+        );
+      }
+      return false;
+    }
+  }
+
   Future<void> _handleLivenessComplete(LivenessResult result) async {
     if (!mounted) return;
 
+    final pendingPinHash = _pendingNewPinHash;
+    if (pendingPinHash == null) {
+      setState(() {
+        _step = 3;
+        _showError = true;
+        _errorMessage =
+            'Please choose the new PIN again before identity verification.';
+      });
+      return;
+    }
+
     final faceScore = result.faceMatchScore ?? 1.0;
     if (!result.isLive || result.confidence < 0.50 || faceScore < 0.50) {
-      await _routePinResetToManualReview('liveness_low_confidence');
+      await _routePinResetToManualReview(
+        'liveness_low_confidence',
+        newPinHash: pendingPinHash,
+      );
       return;
     }
     if (result.decision != LivenessDecision.autoApprove || faceScore < 0.85) {
-      await _routePinResetToManualReview('liveness_manual_review_confidence');
+      await _routePinResetToManualReview(
+        'liveness_manual_review_confidence',
+        newPinHash: pendingPinHash,
+      );
       return;
     }
 
     final challengeToken = _riskDecision?.challengeToken;
     if (challengeToken == null) {
-      setState(() {
-        _showError = true;
-        _errorMessage =
-            'We could not validate this security check. Please try again.';
-      });
+      await _routePinResetToManualReview(
+        'liveness_challenge_unavailable',
+        newPinHash: pendingPinHash,
+      );
       return;
     }
 
@@ -815,32 +928,57 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     } on ManualReviewRequiredException {
       await _routePinResetToManualReview(
         'liveness_step_up_provider_unavailable',
+        newPinHash: pendingPinHash,
       );
       return;
     }
     if (!mounted) return;
     if (!valid) {
+      await _routePinResetToManualReview(
+        'liveness_step_up_validation_failed',
+        newPinHash: pendingPinHash,
+      );
+      return;
+    }
+
+    _stepUpChallengeToken = challengeToken;
+    setState(() {
+      _isLoading = true;
+      _step = 4;
+      _showError = false;
+      _errorMessage = null;
+    });
+    await _finalizeConfirmedPinReset(pendingPinHash);
+  }
+
+  Future<void> _routePinResetToManualReview(
+    String reason, {
+    String? newPinHash,
+  }) async {
+    if (!mounted) return;
+    _lastManualReviewReason = reason;
+    final pendingPinHash =
+        newPinHash ??
+        _pendingNewPinHash ??
+        (_newPin.length == 6 && _confirmPin == _newPin
+            ? _hashPinForBackend(_newPin)
+            : null);
+
+    if (pendingPinHash == null) {
       setState(() {
+        _isLoading = false;
+        _step = 3;
         _showError = true;
-        _errorMessage = 'We could not validate this security check.';
+        _errorMessage =
+            'Choose and confirm your new PIN before manual review can start.';
       });
       return;
     }
 
-    setState(() {
-      _step = 3;
-      _stepUpChallengeToken = challengeToken;
-      _showError = false;
-      _errorMessage = null;
-    });
-  }
-
-  Future<void> _routePinResetToManualReview(String reason) async {
-    if (!mounted) return;
-    _lastManualReviewReason = reason;
+    _pendingNewPinHash = pendingPinHash;
 
     setState(() {
-      _applyManualReviewFallback(reason);
+      _markManualReviewCreating(reason);
       _isLoading = false;
       _showError = false;
       _errorMessage = null;
@@ -852,15 +990,12 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       final response = await ref
           .read(dioProvider)
           .post(
-            '/support/tickets',
+            ApiEndpoints.userPinResetManualReview,
             data: {
-              'subject': 'Manual review required for PIN reset',
-              'category': 'account_recovery',
-              'priority': 'high',
-              'message':
-                  'A PIN reset could not complete automated verification. '
-                  'Reason: $reason. Flow: pin_reset. '
-                  'Please review identity evidence and approve or reject recovery.',
+              'newPinHash': pendingPinHash,
+              'reason': reason,
+              if (_stepUpChallengeToken != null)
+                'stepUpChallengeToken': _stepUpChallengeToken,
             },
             options: _recoveryOptions(),
           );
@@ -881,31 +1016,35 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     } on DioException {
       if (!mounted) return;
       setState(() {
-        _applyManualReviewFallback(reason);
-        _isLoading = false;
-        _errorMessage = null;
+        _markManualReviewCreationFailed(reason);
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _applyManualReviewFallback(reason);
-        _isLoading = false;
-        _errorMessage = null;
+        _markManualReviewCreationFailed(reason);
       });
     }
   }
 
   void _openManualReviewStepFromLiveness() {
     if (!mounted) return;
-    setState(() {
-      _applyManualReviewFallback(
+    final pendingPinHash = _pendingNewPinHash;
+    if (pendingPinHash == null) {
+      setState(() {
+        _step = 3;
+        _showError = true;
+        _errorMessage =
+            'Choose and confirm your new PIN before manual review can start.';
+      });
+      return;
+    }
+
+    unawaited(
+      _routePinResetToManualReview(
         _lastManualReviewReason ?? 'liveness_manual_review_required',
-      );
-      _isLoading = false;
-      _showError = false;
-      _errorMessage = null;
-      _step = 6;
-    });
+        newPinHash: pendingPinHash,
+      ),
+    );
   }
 
   Future<bool> _loadActiveAccountRecoveryReview() async {
@@ -929,7 +1068,13 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
 
       final first = tickets.first;
       if (first is Map) {
-        _applyManualReviewTicket(Map<String, dynamic>.from(first));
+        final ticket = Map<String, dynamic>.from(first);
+        if (ticket['hasPendingPinReset'] != true) {
+          return false;
+        }
+        _applyManualReviewTicket(ticket);
+      } else {
+        return false;
       }
       return true;
     } on Object {
@@ -940,6 +1085,9 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   void _applyManualReviewTicket(Map<String, dynamic> data) {
     _manualReviewTicketId = data['id']?.toString();
     _manualReviewStatus = data['status']?.toString();
+    _manualReviewPinQueued = data['hasPendingPinReset'] == true;
+    _manualReviewCreating = false;
+    _manualReviewCreationFailed = !_manualReviewPinQueued;
 
     final reviewSla = data['reviewSla'];
     if (reviewSla is Map) {
@@ -950,12 +1098,51 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     }
   }
 
-  void _applyManualReviewFallback(String reason) {
-    _manualReviewStatus ??= 'pending_manual_review';
+  void _markManualReviewCreating(String reason) {
+    _manualReviewStatus = 'creating_manual_review';
+    _manualReviewCreating = true;
+    _manualReviewCreationFailed = false;
+    _manualReviewPinQueued = false;
+    _manualReviewSlaLabel = null;
+    _manualReviewResolutionDueAt = null;
+    _manualReviewReason = reason;
+  }
+
+  void _markManualReviewCreationFailed(String reason) {
+    _manualReviewStatus = 'not_sent';
+    _manualReviewCreating = false;
+    _manualReviewCreationFailed = true;
+    _manualReviewPinQueued = false;
     _manualReviewSlaLabel ??=
         'Expected first response: within 30 minutes for locked account recovery.';
-    _manualReviewResolutionDueAt ??= null;
+    _manualReviewResolutionDueAt = null;
     _manualReviewReason = reason;
+    _isLoading = false;
+    _showError = false;
+    _errorMessage = null;
+    _step = 6;
+  }
+
+  void _retryManualReview() {
+    final pendingPinHash = _pendingNewPinHash;
+    if (pendingPinHash == null) {
+      setState(() {
+        _step = 3;
+        _showError = true;
+        _errorMessage =
+            'Choose and confirm your new PIN before manual review can start.';
+      });
+      return;
+    }
+
+    unawaited(
+      _routePinResetToManualReview(
+        _lastManualReviewReason ??
+            _manualReviewReason ??
+            'manual_review_required',
+        newPinHash: pendingPinHash,
+      ),
+    );
   }
 
   Future<void> _returnToSignInFromManualReview() async {
@@ -985,6 +1172,9 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     if (_newPin.length < 6) {
       setState(() {
         _newPin += digit.toString();
+        _pendingNewPinHash = null;
+        _riskDecision = null;
+        _stepUpChallengeToken = null;
         _showError = false;
         _errorMessage = null;
       });
@@ -999,6 +1189,9 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     if (_newPin.isNotEmpty) {
       setState(() {
         _newPin = _newPin.substring(0, _newPin.length - 1);
+        _pendingNewPinHash = null;
+        _riskDecision = null;
+        _stepUpChallengeToken = null;
         _showError = false;
         _errorMessage = null;
       });
@@ -1053,8 +1246,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     }
   }
 
-  /// Submit PIN reset to backend
-  /// Calls POST /user/pin/reset { otp, newPinHash, stepUpChallengeToken }
+  /// Submit confirmed PIN reset through the recovery decision flow.
   Future<void> _submitReset() async {
     final l10n = AppLocalizations.of(context)!;
 
@@ -1067,7 +1259,22 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       return;
     }
 
+    final newPinHash = _hashPinForBackend(_newPin);
+    _pendingNewPinHash = newPinHash;
+
     setState(() => _isLoading = true);
+
+    final canApply = await _prepareRecoveryDecisionForConfirmedPin(newPinHash);
+    if (!canApply) {
+      return;
+    }
+
+    await _finalizeConfirmedPinReset(newPinHash);
+  }
+
+  /// Calls POST /user/pin/reset { otp, newPinHash, stepUpChallengeToken }
+  Future<void> _finalizeConfirmedPinReset(String newPinHash) async {
+    final l10n = AppLocalizations.of(context)!;
 
     try {
       await _ensureRecoveryAuthorization();
@@ -1075,23 +1282,18 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       final stepUpChallengeToken = _stepUpChallengeToken;
 
       if (stepUpChallengeToken == null) {
-        setState(() {
-          _isLoading = false;
-          _showError = true;
-          _errorMessage =
-              'We could not confirm this recovery decision. Please request a new code.';
-        });
-        _resetConfirmPin();
+        await _routePinResetToManualReview(
+          'step_up_challenge_unavailable',
+          newPinHash: newPinHash,
+        );
         return;
       }
 
-      // Hash the new PIN for transmission (same method as PinService)
-      // We need to call the backend reset endpoint with OTP + hashed PIN
       await dio.post(
         ApiEndpoints.userPinReset,
         data: {
           'otp': _otpController.text,
-          'newPinHash': _hashPinForBackend(_newPin),
+          'newPinHash': newPinHash,
           'stepUpChallengeToken': stepUpChallengeToken,
         },
         options: _recoveryOptions(),
@@ -1138,6 +1340,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         if (_isVerificationProviderUnavailable(e, message)) {
           await _routePinResetToManualReview(
             'otp_verification_provider_unavailable',
+            newPinHash: newPinHash,
           );
           return;
         }

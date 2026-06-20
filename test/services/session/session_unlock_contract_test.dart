@@ -267,9 +267,9 @@ void main() {
           'trusted PIN reset should start an active local session instead of only clearing a lock flag',
     );
 
-    final submitBody = _methodBody(source, '_submitReset');
+    final finalizeResetBody = _methodBody(source, '_finalizeConfirmedPinReset');
     expect(
-      submitBody,
+      finalizeResetBody,
       contains('pinStateProvider.notifier'),
       reason:
           'trusted PIN reset should update in-memory PIN state, not only storage',
@@ -707,6 +707,45 @@ void main() {
     expect(resetSource, contains('ApiRequestExtra.useRecoveryToken'));
     expect(resetSource, contains('LivenessDecision.autoApprove'));
     expect(resetSource, contains("'liveness_manual_review_confidence'"));
+    expect(resetSource, contains("'liveness_challenge_unavailable'"));
+    expect(resetSource, contains("'liveness_step_up_validation_failed'"));
+    final verifyOtpBody = _methodBody(resetSource, '_verifyOtp');
+    final submitResetBody = _methodBody(resetSource, '_submitReset');
+    final handleLivenessBody = _methodBody(
+      resetSource,
+      '_handleLivenessComplete',
+    );
+    final loadActiveReviewBody = _methodBody(
+      resetSource,
+      '_loadActiveAccountRecoveryReview',
+    );
+    final applyReviewTicketBody = _methodBody(
+      resetSource,
+      '_applyManualReviewTicket',
+    );
+    expect(
+      verifyOtpBody,
+      isNot(contains('evaluateOperation')),
+      reason:
+          'OTP should only authorize recovery; risk/manual review must wait until the desired new PIN is confirmed',
+    );
+    expect(
+      verifyOtpBody,
+      isNot(contains('_routePinResetToManualReview')),
+      reason:
+          'manual review cannot be created before mobile has the replacement PIN hash',
+    );
+    expect(
+      submitResetBody,
+      contains('final newPinHash = _hashPinForBackend(_newPin)'),
+      reason: 'confirmed PIN must be converted to the pending reset payload',
+    );
+    expect(
+      submitResetBody.indexOf('_prepareRecoveryDecisionForConfirmedPin'),
+      lessThan(submitResetBody.indexOf('_finalizeConfirmedPinReset')),
+      reason:
+          'risk/liveness/manual-review routing should happen after PIN confirmation and before mutation',
+    );
     expect(resetSource, contains('if (decision.stepUpRequired)'));
     expect(
       resetSource.indexOf('if (_requiresFaceAndLiveness(decision))'),
@@ -720,29 +759,50 @@ void main() {
       reason:
           'PIN recovery must exchange OTP for a scoped recovery token before risk/liveness endpoints are called',
     );
+    expect(reviewBody, contains('ApiEndpoints.userPinResetManualReview'));
+    expect(reviewBody, contains("'newPinHash': pendingPinHash"));
+    expect(reviewBody, contains("'reason': reason"));
     expect(
-      resetSource.indexOf('if (_stepUpChallengeToken == null)'),
-      lessThan(resetSource.indexOf('_step = 3')),
-      reason:
-          'low-risk account recovery should continue to new PIN setup once the backend decision token exists',
+      reviewBody,
+      contains(
+        'Choose and confirm your new PIN before manual review can start.',
+      ),
+      reason: 'manual review must fail closed if no replacement PIN exists',
     );
-    expect(reviewBody, contains("'/support/tickets'"));
-    expect(reviewBody, contains("'category': 'account_recovery'"));
-    expect(reviewBody, contains("'priority': 'high'"));
-    expect(reviewBody, contains('_applyManualReviewFallback(reason)'));
+    expect(reviewBody, contains('_markManualReviewCreating(reason)'));
     expect(
-      reviewBody.indexOf('_applyManualReviewFallback(reason)'),
+      reviewBody.indexOf('_markManualReviewCreating(reason)'),
       lessThan(reviewBody.indexOf('await _ensureRecoveryAuthorization()')),
       reason:
-          'manual-review state must appear immediately and must not wait for the support ticket network call',
+          'manual-review creation state must appear immediately and must not wait for the support ticket network call',
     );
+    expect(reviewBody, contains('_markManualReviewCreationFailed(reason)'));
     expect(
       reviewBody.indexOf('_step = 6'),
       lessThan(reviewBody.indexOf('await _ensureRecoveryAuthorization()')),
       reason:
           'liveness provider failures should not strand the user inside the liveness widget while a ticket is created',
     );
-    expect(resetSource, contains('_applyManualReviewFallback'));
+    expect(loadActiveReviewBody, contains("ticket['hasPendingPinReset']"));
+    expect(
+      applyReviewTicketBody,
+      contains("_manualReviewPinQueued = data['hasPendingPinReset'] == true"),
+      reason:
+          'manual-review UI can only say the PIN is queued after the API confirms pending PIN material exists',
+    );
+    expect(
+      resetSource,
+      contains('This request is not queued yet. Please retry'),
+      reason:
+          'manual-review staging failures must be honest and retryable, not a false queued state',
+    );
+    expect(
+      handleLivenessBody,
+      contains('_step = 4'),
+      reason:
+          'successful liveness should return to the PIN confirmation loading state while backend reset applies',
+    );
+    expect(resetSource, contains('_retryManualReview'));
     expect(resetSource, contains('_returnToSignInFromManualReview'));
     expect(
       resetSource,

@@ -24,6 +24,7 @@ abstract final class ApiEndpoints {
   static const userPinVerify = '${userPinPrefix}verify';
   static const userPinChange = '${userPinPrefix}change';
   static const userPinReset = '${userPinPrefix}reset';
+  static const userPinResetManualReview = '${userPinReset}/manual-review';
 
   // Wallet
   static const walletBalance = '/wallet';
