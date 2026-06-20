@@ -654,6 +654,21 @@ class ApiException implements Exception {
 
   bool get isDeviceBlacklisted => code == 'DEVICE_BLACKLISTED';
 
+  int? get retryAfterSeconds => _positiveSecondsFrom(data, const [
+    'retryAfterSeconds',
+    'retryAfter',
+    'retry_after_seconds',
+    'retry_after',
+  ]);
+
+  int? get resendAvailableIn => _positiveSecondsFrom(data, const [
+    'resendAvailableIn',
+    'retryAfterSeconds',
+    'retryAfter',
+    'retry_after_seconds',
+    'retry_after',
+  ]);
+
   static String? errorCode(Object? data) {
     if (data is Map) {
       final error = data['error'];
@@ -667,6 +682,52 @@ class ApiException implements Exception {
       return value?.toString();
     }
     return null;
+  }
+
+  static int? _positiveSecondsFrom(Object? data, List<String> keys) {
+    if (data is! Map) return null;
+
+    for (final key in keys) {
+      final parsed = _parsePositiveSeconds(data[key]);
+      if (parsed != null) return parsed;
+    }
+
+    final error = data['error'];
+    if (error is Map) {
+      for (final key in keys) {
+        final parsed = _parsePositiveSeconds(error[key]);
+        if (parsed != null) return parsed;
+      }
+
+      final context = error['context'];
+      if (context is Map) {
+        for (final key in keys) {
+          final parsed = _parsePositiveSeconds(context[key]);
+          if (parsed != null) return parsed;
+        }
+      }
+    }
+
+    final context = data['context'];
+    if (context is Map) {
+      for (final key in keys) {
+        final parsed = _parsePositiveSeconds(context[key]);
+        if (parsed != null) return parsed;
+      }
+    }
+
+    return null;
+  }
+
+  static int? _parsePositiveSeconds(Object? value) {
+    final number = switch (value) {
+      int() => value,
+      double() => value.ceil(),
+      String() => int.tryParse(value),
+      _ => null,
+    };
+    if (number == null || number <= 0) return null;
+    return number;
   }
 
   static String _getMessageFromStatusCode(int? code) {

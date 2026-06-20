@@ -59,9 +59,11 @@ void main() {
         'success': true,
         'message': 'Recovery code sent',
         'expiresIn': 300,
+        'reused': true,
+        'resendAvailableIn': 60,
       });
 
-      await authService.requestRecoveryOtp(
+      final response = await authService.requestRecoveryOtp(
         phone: '0748805663',
         countryCode: '+225',
       );
@@ -73,6 +75,8 @@ void main() {
         'countryCode': 'CI',
         'scope': 'pin_reset',
       });
+      expect(response.reused, isTrue);
+      expect(response.resendAvailableIn, 60);
     });
 
     test('register sends E.164 phone and ISO country code to API', () async {

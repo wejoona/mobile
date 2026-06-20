@@ -829,6 +829,31 @@ void main() {
       expect(exception.data, isNotNull);
     });
 
+    test('should expose retry metadata from rate-limit envelopes', () {
+      final dioError = DioException(
+        requestOptions: RequestOptions(path: '/auth/recovery/request-otp'),
+        response: Response(
+          statusCode: 429,
+          data: {
+            'success': false,
+            'error': {
+              'code': 'E9001',
+              'message': 'Too many verification requests',
+              'context': {'retryAfterSeconds': 120, 'resendAvailableIn': 120},
+            },
+          },
+          requestOptions: RequestOptions(path: '/auth/recovery/request-otp'),
+        ),
+        type: DioExceptionType.badResponse,
+      );
+
+      final exception = ApiException.fromDioError(dioError);
+
+      expect(exception.statusCode, 429);
+      expect(exception.retryAfterSeconds, 120);
+      expect(exception.resendAvailableIn, 120);
+    });
+
     test('should create exception with message only', () {
       // Arrange & Act
       final exception = ApiException(message: 'Simple error');

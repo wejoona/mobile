@@ -239,12 +239,16 @@ class OtpResponse {
   final String message;
   final int expiresIn;
   final String? verificationId;
+  final bool reused;
+  final int resendAvailableIn;
 
   const OtpResponse({
     required this.success,
     required this.message,
     required this.expiresIn,
     this.verificationId,
+    this.reused = false,
+    this.resendAvailableIn = 0,
   });
 
   factory OtpResponse.fromJson(Map<String, dynamic> json) {
@@ -253,6 +257,8 @@ class OtpResponse {
       message: json['message'] as String? ?? 'OTP sent',
       expiresIn: json['expiresIn'] as int? ?? 300,
       verificationId: json['verificationId'] as String?,
+      reused: json['reused'] as bool? ?? false,
+      resendAvailableIn: json['resendAvailableIn'] as int? ?? 0,
     );
   }
 }

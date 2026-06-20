@@ -61,6 +61,9 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   String _confirmPin = '';
   bool _showError = false;
   String? _errorMessage;
+  String? _otpNoticeMessage;
+  int _otpResendCountdown = 0;
+  Timer? _otpResendTimer;
   bool _isLoading = false;
   StepUpDecision? _riskDecision;
   String? _stepUpChallengeToken;
@@ -86,6 +89,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
 
   @override
   void dispose() {
+    _otpResendTimer?.cancel();
     _otpController.dispose();
     _phoneController.dispose();
     super.dispose();
@@ -158,7 +162,13 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     context.fsmSafePop(fallbackRoute: _loginRouteAfterRecoveryExit);
   }
 
+  bool get _isOtpResendCoolingDown => _otpResendCountdown > 0;
+
   Widget _buildRequestOtpStep(AppLocalizations l10n) {
+    final sendOtpLabel = _isOtpResendCoolingDown
+        ? l10n.login_resendIn(_otpResendCountdown)
+        : l10n.pin_reset_sendOtp;
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -179,10 +189,18 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
             tone: InfoCalloutTone.danger,
           ),
         ],
+        if (_otpNoticeMessage != null) ...[
+          const SizedBox(height: AppSpacing.md),
+          InfoCallout(
+            icon: Icons.schedule_rounded,
+            title: _otpNoticeMessage!,
+            tone: InfoCalloutTone.info,
+          ),
+        ],
         const SizedBox(height: AppSpacing.xxl),
         AppButton(
-          label: l10n.pin_reset_sendOtp,
-          onPressed: _requestOtp,
+          label: sendOtpLabel,
+          onPressed: _isOtpResendCoolingDown || _isLoading ? null : _requestOtp,
           isLoading: _isLoading,
           isFullWidth: true,
         ),
@@ -231,8 +249,11 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           ],
           readOnly: _recoveryPhone != null,
           onChanged: (_) {
-            if (_errorMessage != null) {
-              setState(() => _errorMessage = null);
+            if (_errorMessage != null || _otpNoticeMessage != null) {
+              setState(() {
+                _errorMessage = null;
+                _otpNoticeMessage = null;
+              });
             } else {
               setState(() {});
             }
@@ -517,6 +538,10 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   }
 
   Widget _buildEnterOtpStep(AppLocalizations l10n) {
+    final resendLabel = _isOtpResendCoolingDown
+        ? l10n.login_resendIn(_otpResendCountdown)
+        : l10n.auth_resendOtp;
+
     return Column(
       children: [
         const SizedBox(height: AppSpacing.xl),
@@ -542,6 +567,14 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
             tone: InfoCalloutTone.danger,
           ),
         ],
+        if (_otpNoticeMessage != null) ...[
+          const SizedBox(height: AppSpacing.md),
+          InfoCallout(
+            icon: Icons.schedule_rounded,
+            title: _otpNoticeMessage!,
+            tone: InfoCalloutTone.info,
+          ),
+        ],
         const Spacer(),
         AppButton(
           label: l10n.common_continue,
@@ -551,11 +584,13 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         ),
         const SizedBox(height: AppSpacing.md),
         TextButton(
-          onPressed: _requestOtp,
+          onPressed: _isOtpResendCoolingDown || _isLoading ? null : _requestOtp,
           child: AppText(
-            l10n.auth_resendOtp,
+            resendLabel,
             variant: AppTextVariant.labelLarge,
-            color: context.colors.gold,
+            color: _isOtpResendCoolingDown
+                ? context.colors.textTertiary
+                : context.colors.gold,
           ),
         ),
       ],
@@ -633,9 +668,18 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   Future<void> _requestOtp() async {
     final l10n = AppLocalizations.of(context)!;
 
+    if (_isOtpResendCoolingDown) {
+      setState(() {
+        _errorMessage = null;
+        _otpNoticeMessage = _cooldownMessage(l10n, _otpResendCountdown);
+      });
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _otpNoticeMessage = null;
     });
 
     try {
@@ -671,34 +715,98 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         }
       }
 
-      await ref
+      final response = await ref
           .read(authServiceProvider)
           .requestRecoveryOtp(
             phone: phone.apiPhone,
             countryCode: phone.apiCountryCode,
           );
 
+      _startOtpResendCooldown(response.resendAvailableIn);
+
       if (mounted) {
         setState(() {
           _isLoading = false;
+          _otpNoticeMessage = response.reused
+              ? _cooldownMessage(
+                  l10n,
+                  response.resendAvailableIn > 0
+                      ? response.resendAvailableIn
+                      : _otpResendCountdown,
+                )
+              : null;
           _transitionTo(_PinRecoveryStep.enterOtp);
         });
       }
     } on DioException catch (e) {
+      final apiError = ApiException.fromDioError(e);
+      final retryAfterSeconds =
+          apiError.resendAvailableIn ?? apiError.retryAfterSeconds;
+      if (retryAfterSeconds != null) {
+        _startOtpResendCooldown(retryAfterSeconds);
+      }
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = ApiException.fromDioError(e).message;
+          if (retryAfterSeconds != null) {
+            _errorMessage = null;
+            _otpNoticeMessage = _cooldownMessage(l10n, retryAfterSeconds);
+          } else {
+            _otpNoticeMessage = null;
+            _errorMessage = apiError.message;
+          }
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _isLoading = false;
+          _otpNoticeMessage = null;
           _errorMessage = e.toString();
         });
       }
     }
+  }
+
+  void _startOtpResendCooldown(int seconds) {
+    _otpResendTimer?.cancel();
+    final normalizedSeconds = seconds <= 0
+        ? 0
+        : seconds > 3600
+        ? 3600
+        : seconds;
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() => _otpResendCountdown = normalizedSeconds);
+    if (normalizedSeconds == 0) {
+      return;
+    }
+
+    _otpResendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
+      if (_otpResendCountdown <= 1) {
+        timer.cancel();
+        setState(() {
+          _otpResendCountdown = 0;
+          _otpNoticeMessage = null;
+        });
+        return;
+      }
+
+      setState(() => _otpResendCountdown -= 1);
+    });
+  }
+
+  String _cooldownMessage(AppLocalizations l10n, int seconds) {
+    final waitSeconds = seconds > 0 ? seconds : _otpResendCountdown;
+    return 'Use the verification code already sent. ${l10n.login_resendIn(waitSeconds)}.';
   }
 
   Future<bool> _hasRecoveryAuthorizationCandidate(
