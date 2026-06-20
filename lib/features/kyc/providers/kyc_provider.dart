@@ -182,6 +182,9 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
         'status': data.status.name,
         'rejectionReason': data.rejectionReason,
       });
+      ref
+          .read(kyc_machine.kycStateMachineProvider.notifier)
+          .updateFromAuthResponse(data.status.toApiString());
       state = state.copyWith(
         isLoading: false,
         verificationStatus: _mapStatus(profile),

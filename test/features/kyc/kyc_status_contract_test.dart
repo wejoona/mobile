@@ -42,21 +42,35 @@ void main() {
       }
     });
 
-    test(
-      'status loader preserves backend rejection reason for user display',
-      () {
-        final source = File(
-          'lib/features/kyc/providers/kyc_provider.dart',
-        ).readAsStringSync();
-        final loadStatusBody = RegExp(
-          r'Future<void> loadVerificationStatus\(\) async \{([\s\S]*?)\n  \}',
-        ).firstMatch(source)!.group(1)!;
+    test('status loader preserves backend rejection reason for user display', () {
+      final source = File(
+        'lib/features/kyc/providers/kyc_provider.dart',
+      ).readAsStringSync();
+      final loadStatusBody = RegExp(
+        r'Future<void> loadVerificationStatus\(\) async \{([\s\S]*?)\n  \}',
+      ).firstMatch(source)!.group(1)!;
 
-        expect(
-          loadStatusBody,
-          contains('rejectionReason: data.rejectionReason'),
-        );
-      },
-    );
+      expect(loadStatusBody, contains('rejectionReason: data.rejectionReason'));
+      expect(
+        loadStatusBody,
+        contains('kycStateMachineProvider.notifier'),
+        reason:
+            'KYC status refresh must update the durable FSM source used by redirects.',
+      );
+      expect(
+        loadStatusBody,
+        contains('updateFromAuthResponse(data.status.toApiString())'),
+      );
+      expect(
+        loadStatusBody.indexOf('updateFromAuthResponse'),
+        lessThan(
+          loadStatusBody.indexOf(
+            'state = state.copyWith(\n        isLoading: false',
+          ),
+        ),
+        reason:
+            'Durable KYC FSM should be synchronized before local flow state drives UI decisions.',
+      );
+    });
   });
 }
