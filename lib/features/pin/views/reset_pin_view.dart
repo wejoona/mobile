@@ -1556,10 +1556,13 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       return false;
     }
 
+    final supportTicketId = payload['supportTicketId'] ?? payload['ticketId'];
     setState(() {
       _applyManualReviewTicket({
-        'id': payload['supportTicketId'] ?? payload['ticketId'],
+        'id': supportTicketId,
         'status': payload['status'] ?? 'open',
+        'hasPendingPinReset': payload['hasPendingPinReset'] ?? true,
+        'pendingPinExpiresAt': payload['pendingPinExpiresAt'],
         'reviewSla': payload['reviewSla'],
       });
       _isLoading = false;

@@ -799,6 +799,10 @@ void main() {
       resetSource,
       '_applyManualReviewTicket',
     );
+    final applyBackendManualReviewBody = _methodBody(
+      resetSource,
+      '_applyBackendManualReview',
+    );
     expect(
       verifyOtpBody,
       isNot(contains('evaluateOperation')),
@@ -869,6 +873,12 @@ void main() {
       contains("_manualReviewPinQueued = data['hasPendingPinReset'] == true"),
       reason:
           'manual-review UI can only say the PIN is queued after the API confirms pending PIN material exists',
+    );
+    expect(
+      applyBackendManualReviewBody,
+      contains("'hasPendingPinReset': payload['hasPendingPinReset'] ?? true"),
+      reason:
+          'backend PIN recovery manual-review fallback happens after the replacement PIN was submitted, so the queued state must not render as not sent',
     );
     expect(
       resetSource,
