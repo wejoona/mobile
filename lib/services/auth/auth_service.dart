@@ -65,6 +65,31 @@ class AuthService {
     }
   }
 
+  /// POST /auth/recovery/request-otp
+  Future<OtpResponse> requestRecoveryOtp({
+    required String phone,
+    String? countryCode,
+    String scope = 'pin_reset',
+  }) async {
+    try {
+      final phoneValue = PhoneNumberValue.fromAny(
+        phoneNumber: phone,
+        countryCode: countryCode,
+      );
+      final response = await _dio.post(
+        '/auth/recovery/request-otp',
+        data: {
+          'phone': phoneValue.apiPhone,
+          'countryCode': phoneValue.apiCountryCode,
+          'scope': scope,
+        },
+      );
+      return OtpResponse.fromJson(response.data);
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
   /// POST /auth/verify-otp
   Future<AuthResponse> verifyOtp({
     required String phone,

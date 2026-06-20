@@ -627,8 +627,9 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     );
   }
 
-  /// Request OTP for PIN reset
-  /// Calls POST /auth/login to send OTP to user's phone
+  /// Request OTP for PIN reset.
+  /// Calls POST /auth/recovery/request-otp so VerifyHQ receives a PIN reset
+  /// purpose instead of a normal login purpose.
   Future<void> _requestOtp() async {
     final l10n = AppLocalizations.of(context)!;
 
@@ -672,7 +673,10 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
 
       await ref
           .read(authServiceProvider)
-          .login(phone: phone.apiPhone, countryCode: phone.apiCountryCode);
+          .requestRecoveryOtp(
+            phone: phone.apiPhone,
+            countryCode: phone.apiCountryCode,
+          );
 
       if (mounted) {
         setState(() {
@@ -710,11 +714,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       return true;
     }
 
-    final pendingToken = ref.read(loginProvider).sessionToken;
-    final pendingPhone = ref.read(loginProvider).phoneValue;
-    return pendingToken != null &&
-        pendingToken.isNotEmpty &&
-        pendingPhone?.e164 == phone.e164;
+    return false;
   }
 
   Future<PhoneNumberValue?> _resolveRecoveryPhone() async {
@@ -1575,13 +1575,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       return;
     }
 
-    final pendingToken = ref.read(loginProvider).sessionToken;
-    final pendingPhone = ref.read(loginProvider).phoneValue;
-    if (pendingToken != null &&
-        pendingToken.isNotEmpty &&
-        pendingPhone?.e164 == phone.e164) {
-      await _storeRecoveryAuthorization(pendingToken, phone);
-    }
+    await _clearRecoveryAuthorization();
   }
 
   Future<void> _clearRecoveryAuthorization() async {
@@ -1640,12 +1634,37 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       return null;
     }
 
+    if (!_isScopedPinResetRecoveryToken(routeToken)) {
+      return null;
+    }
+
     final routePhone = widget.initialContext?.phoneValue;
     if (routePhone != null && routePhone.e164 != phone.e164) {
       return null;
     }
 
     return routeToken;
+  }
+
+  bool _isScopedPinResetRecoveryToken(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length < 2) {
+        return false;
+      }
+
+      final payload = jsonDecode(
+        utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+      );
+      if (payload is! Map<String, dynamic>) {
+        return false;
+      }
+
+      return payload['type'] == 'account_recovery' &&
+          payload['scope'] == _pinResetRecoveryScope;
+    } catch (_) {
+      return false;
+    }
   }
 
   bool _applyBackendManualReview(ApiException error) {

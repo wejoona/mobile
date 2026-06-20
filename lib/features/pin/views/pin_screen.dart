@@ -444,7 +444,6 @@ class _PinScreenState extends ConsumerState<PinScreen>
     context.fsmOpenPinReset(
       extra: PinResetRouteContext.fromOptionalPhoneValue(
         phone: loginState.phoneValue ?? authPhone,
-        recoveryAccessToken: loginState.sessionToken,
         returnTo: widget.successRoute,
       ),
     );

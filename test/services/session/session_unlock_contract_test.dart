@@ -411,18 +411,21 @@ void main() {
           'Forgot-PIN must prefill from the same remembered phone store as login when provider hydration has not finished',
     );
     expect(resetSource, contains('PhoneNumberValue.tryFromStorageValue'));
-    expect(resetSource, contains('login(phone: phone.apiPhone'));
+    expect(resetSource, contains('requestRecoveryOtp('));
     expect(
       resetSource,
       contains('widget.initialContext?.recoveryAccessToken'),
       reason:
-          'OTP-before-PIN recovery must keep the pending auth session token',
+          'PIN recovery may accept an in-memory token only after scoped recovery-token validation',
     );
+    expect(resetSource, contains('_isScopedPinResetRecoveryToken'));
     expect(pinScreenSource, contains('context.fsmOpenPinReset('));
     expect(pinScreenSource, contains('phone: loginState.phoneValue'));
     expect(
       pinScreenSource,
-      contains('recoveryAccessToken: loginState.sessionToken'),
+      isNot(contains('recoveryAccessToken: loginState.sessionToken')),
+      reason:
+          'A normal login OTP access token must never be forwarded as account recovery authorization',
     );
     expect(
       fsmSource,
@@ -850,6 +853,8 @@ void main() {
     expect(resetSource, contains('useRecoveryToken: true'));
     final requestOtpBody = _methodBody(resetSource, '_requestOtp');
     expect(requestOtpBody, contains('authServiceProvider'));
+    expect(requestOtpBody, contains('requestRecoveryOtp('));
+    expect(requestOtpBody, isNot(contains('.login(')));
     expect(requestOtpBody, contains('_hasRecoveryAuthorizationCandidate'));
     expect(
       requestOtpBody.indexOf('_ensureRecoveryAuthorization(phone)'),

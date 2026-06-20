@@ -164,7 +164,7 @@ void main() {
       );
     });
 
-    test('keeps recovery OTP verification public', () async {
+    test('keeps recovery OTP request and verification public', () async {
       final container = ProviderContainer(
         overrides: [secureStorageProvider.overrideWithValue(mockStorage)],
       );
@@ -184,9 +184,13 @@ void main() {
         ..httpClientAdapter = adapter
         ..interceptors.add(container.read(_authInterceptorTestProvider));
 
+      await dio.post('/auth/recovery/request-otp');
       await dio.post('/auth/recovery/verify-otp');
 
-      expect(adapter.requests.single.headers['Authorization'], isNull);
+      expect(adapter.requests, hasLength(2));
+      for (final request in adapter.requests) {
+        expect(request.headers['Authorization'], isNull);
+      }
     });
 
     test(
