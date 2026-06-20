@@ -63,8 +63,16 @@ class JweInterceptor extends Interceptor {
 
       _log.debug('Encrypted request body for ${options.path}');
     } catch (e) {
-      _log.error('JWE encryption failed, sending plaintext', e);
-      // Graceful degradation: send unencrypted rather than fail
+      _log.error('JWE encryption failed, blocking sensitive request', e);
+      return handler.reject(
+        DioException(
+          requestOptions: options,
+          type: DioExceptionType.unknown,
+          error: e,
+          message:
+              'Sensitive request encryption failed; plaintext transmission blocked.',
+        ),
+      );
     }
 
     handler.next(options);
