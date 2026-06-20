@@ -389,6 +389,20 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
 
       expect(router.routeInformationProvider.value.uri.path, '/session-locked');
+      expect(
+        router.routeInformationProvider.value.uri.queryParameters['returnTo'],
+        '/home',
+      );
+
+      router.go('/pay/test-code?source=qr');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(router.routeInformationProvider.value.uri.path, '/session-locked');
+      expect(
+        router.routeInformationProvider.value.uri.queryParameters['returnTo'],
+        '/pay/test-code?source=qr',
+      );
     });
   });
 }

@@ -50,7 +50,11 @@ List<RouteBase> moneyMovementRoutes() => [
       var initialName = query['name'];
 
       if (extra is Map) {
-        final extraPhone = extra['phone'] ?? extra['recipientPhone'];
+        final extraPhone =
+            extra['phone'] ??
+            extra['recipientPhone'] ??
+            extra['recipient'] ??
+            extra['to'];
         final extraUsername = extra['username'] ?? extra['recipientUsername'];
         final extraRecipientId = extra['recipientId'];
         final extraName = extra['name'] ?? extra['recipientName'];

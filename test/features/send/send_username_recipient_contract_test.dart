@@ -298,6 +298,18 @@ void main() {
     expect(contactsScreen, contains("'recipientUsername': contact.username"));
     expect(picker, contains('contact.canSendInKorido'));
     expect(route, contains("extra['username'] ?? extra['recipientUsername']"));
+    expect(
+      route,
+      contains("extra['recipient']"),
+      reason:
+          'send route must accept the legacy deep-link recipient key as a phone intent',
+    );
+    expect(
+      route,
+      contains("extra['to']"),
+      reason:
+          'send route must accept deep-link to aliases without dropping recipient intent',
+    );
     expect(recipient, contains('setKnownKoridoRecipient'));
     expect(recipient, contains('_hasUsernameRecipient'));
     expect(recipient, contains('_hasUserIdRecipient'));

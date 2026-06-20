@@ -100,7 +100,11 @@ String? appRedirect(BuildContext context, GoRouterState state) {
   final isLockedState =
       !EnvironmentConfig.debugSkipPin &&
       (authState.isLocked || sessionState.isLocked);
-  final lockRedirect = _lockRedirect(location, isLockedState);
+  final lockRedirect = _lockRedirect(
+    location: location,
+    routeIntent: state.uri.toString(),
+    isLockedState: isLockedState,
+  );
   if (lockRedirect != null) {
     return lockRedirect;
   }
@@ -203,9 +207,14 @@ bool _isWithinSameFlow(String location, String fsmTargetRoute) {
   return isWithinSameFlow;
 }
 
-String? _lockRedirect(String location, bool isLockedState) {
+String? _lockRedirect({
+  required String location,
+  required String routeIntent,
+  required bool isLockedState,
+}) {
   if (isLockedState && !_isAllowedWhenLockedRoute(location)) {
-    return '/session-locked';
+    final returnTo = Uri.encodeComponent(routeIntent);
+    return '/session-locked?returnTo=$returnTo';
   }
   return null;
 }
