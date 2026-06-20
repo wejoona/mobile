@@ -38,7 +38,16 @@ class EncryptedRequestInterceptor extends Interceptor {
         options.headers['X-Encrypted'] = '1';
       }
     } catch (e) {
-      _log.error('Request encryption failed', e);
+      _log.error('Request encryption failed, blocking sensitive request', e);
+      return handler.reject(
+        DioException(
+          requestOptions: options,
+          type: DioExceptionType.unknown,
+          error: e,
+          message:
+              'Sensitive request encryption failed; plaintext transmission blocked.',
+        ),
+      );
     }
     handler.next(options);
   }
