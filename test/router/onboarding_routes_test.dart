@@ -28,6 +28,11 @@ class _TestAuthNotifier extends AuthNotifier {
   AuthState build() => const AuthState(status: AuthStatus.unauthenticated);
 }
 
+class _LockedAuthNotifier extends AuthNotifier {
+  @override
+  AuthState build() => const AuthState(status: AuthStatus.locked);
+}
+
 class _TestAppFsmNotifier extends AppFsmNotifier {
   @override
   app_fsm.AppState build() => const app_fsm.AppState.initial();
@@ -54,19 +59,23 @@ class _TestWalletStateMachine extends WalletStateMachine {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  ProviderContainer buildContainer({SharedPreferences? sharedPreferences}) =>
-      ProviderContainer(
-        overrides: [
-          authProvider.overrideWith(_TestAuthNotifier.new),
-          appFsmProvider.overrideWith(_TestAppFsmNotifier.new),
-          kycStateMachineProvider.overrideWith(_TestKycStateMachine.new),
-          userStateMachineProvider.overrideWith(_TestUserStateMachine.new),
-          walletStateMachineProvider.overrideWith(_TestWalletStateMachine.new),
-          secureStorageProvider.overrideWithValue(MockSecureStorage()),
-          if (sharedPreferences != null)
-            sharedPreferencesProvider.overrideWithValue(sharedPreferences),
-        ],
-      );
+  ProviderContainer buildContainer({
+    SharedPreferences? sharedPreferences,
+    bool locked = false,
+  }) => ProviderContainer(
+    overrides: [
+      authProvider.overrideWith(
+        locked ? _LockedAuthNotifier.new : _TestAuthNotifier.new,
+      ),
+      appFsmProvider.overrideWith(_TestAppFsmNotifier.new),
+      kycStateMachineProvider.overrideWith(_TestKycStateMachine.new),
+      userStateMachineProvider.overrideWith(_TestUserStateMachine.new),
+      walletStateMachineProvider.overrideWith(_TestWalletStateMachine.new),
+      secureStorageProvider.overrideWithValue(MockSecureStorage()),
+      if (sharedPreferences != null)
+        sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+    ],
+  );
 
   group('Onboarding routes', () {
     test('registers every explicit signup step path used by the flow', () {
@@ -274,7 +283,7 @@ void main() {
     );
 
     testWidgets(
-      'public recovery and verification routes are not hijacked by login FSM',
+      'public recovery route is not hijacked while OTP routes need context',
       (tester) async {
         await tester.binding.setSurfaceSize(const Size(430, 932));
         addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -316,12 +325,70 @@ void main() {
 
         expect(router.routeInformationProvider.value.uri.path, '/login');
 
+        router.go('/login/otp');
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+
+        expect(router.routeInformationProvider.value.uri.path, '/login');
+
+        router.go('/signup/verify-phone');
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+
+        expect(router.routeInformationProvider.value.uri.path, '/signup');
+
         router.go('/otp');
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
 
-        expect(router.routeInformationProvider.value.uri.path, '/otp');
+        expect(router.routeInformationProvider.value.uri.path, '/login');
       },
     );
+
+    testWidgets('locked route guard follows route contract allowWhenLocked', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(430, 932));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      SharedPreferences.setMockInitialValues({});
+      final sharedPreferences = await SharedPreferences.getInstance();
+      final container = buildContainer(
+        sharedPreferences: sharedPreferences,
+        locked: true,
+      );
+      addTearDown(container.dispose);
+      final router = container.read(routerProvider);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(
+            routerConfig: router,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: AppLocalizations.supportedLocales,
+            theme: TestTheme.darkTheme,
+          ),
+        ),
+      );
+
+      await tester.pump();
+      router.go('/pin/enter');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(router.routeInformationProvider.value.uri.path, '/pin/enter');
+
+      router.go('/home');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(router.routeInformationProvider.value.uri.path, '/session-locked');
+    });
   });
 }

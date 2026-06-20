@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/environment_config.dart';
-import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/auth/models/login_state.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
 import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
+import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
 import 'package:usdc_wallet/services/app_version/mobile_version_policy_service.dart';
 import 'package:usdc_wallet/services/feature_flags/feature_flags_extensions.dart';
 import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
@@ -21,7 +23,7 @@ class RouterRefreshNotifier extends ChangeNotifier {
   RouterRefreshNotifier(Ref ref) {
     ref
       // Listen to auth state changes.
-      ..listen(authProvider, (_, _) => notifyListeners())
+      ..listen(auth.authProvider, (_, _) => notifyListeners())
       // Listen to session lock/unlock changes.
       ..listen(sessionServiceProvider, (_, _) => notifyListeners())
       // Listen to wallet state changes for onboarding redirect.
@@ -53,11 +55,12 @@ final routerRefreshProvider = Provider<RouterRefreshNotifier>(
 
 String? appRedirect(BuildContext context, GoRouterState state) {
   final container = ProviderScope.containerOf(context);
-  final authState = container.read(authProvider);
+  final authState = container.read(auth.authProvider);
   final userState = container.read(userStateMachineProvider);
   final flags = container.read(featureFlagsProvider);
   final sessionState = container.read(sessionServiceProvider);
   final loginState = container.read(loginProvider);
+  final signupState = container.read(signupFlowProvider);
   final appFsmState = container.read(appFsmProvider);
   final kycState = container.read(kyc_machine.kycStateMachineProvider);
   final versionPolicyState = container.read(mobileVersionPolicyProvider);
@@ -111,9 +114,19 @@ String? appRedirect(BuildContext context, GoRouterState state) {
     return unlockedLockScreenRedirect;
   }
 
+  final otpContextRedirect = _otpContextRedirect(
+    location: location,
+    isAuthenticated: isAuthenticated,
+    authState: authState,
+    loginState: loginState,
+    signupState: signupState,
+  );
+  if (otpContextRedirect != null) {
+    return otpContextRedirect;
+  }
+
   if (isAuthenticated &&
       !isLockedState &&
-      location != '/signup/verify-phone' &&
       _isAuthenticatedDeadEndRoute(location)) {
     return '/home';
   }
@@ -191,9 +204,7 @@ bool _isWithinSameFlow(String location, String fsmTargetRoute) {
 }
 
 String? _lockRedirect(String location, bool isLockedState) {
-  if (isLockedState &&
-      location != '/session-locked' &&
-      !_isSecurityRecoveryRoute(location)) {
+  if (isLockedState && !_isAllowedWhenLockedRoute(location)) {
     return '/session-locked';
   }
   return null;
@@ -208,6 +219,47 @@ String? _unlockedLockScreenRedirect({
     return null;
   }
   return isAuthenticated ? '/home' : '/login';
+}
+
+String? _otpContextRedirect({
+  required String location,
+  required bool isAuthenticated,
+  required auth.AuthState authState,
+  required LoginState loginState,
+  required SignupFlowState signupState,
+}) {
+  if (location == '/login/otp' && !_hasLoginOtpContext(loginState)) {
+    return '/login';
+  }
+
+  if (location == '/signup/verify-phone' &&
+      !_hasSignupOtpContext(signupState, authState)) {
+    return isAuthenticated ? '/home' : '/signup';
+  }
+
+  if (location == '/otp' && !_hasLegacyOtpContext(authState)) {
+    return '/login';
+  }
+
+  return null;
+}
+
+bool _hasLoginOtpContext(LoginState state) =>
+    state.currentStep == LoginStep.otp && state.phoneValue != null;
+
+bool _hasSignupOtpContext(SignupFlowState state, auth.AuthState authState) {
+  final hasPhone =
+      (state.phoneNumber?.trim().isNotEmpty ?? false) ||
+      (authState.phone?.trim().isNotEmpty ?? false);
+  return hasPhone && authState.status == auth.AuthStatus.otpSent;
+}
+
+bool _hasLegacyOtpContext(auth.AuthState state) {
+  final hasPhone = state.phone?.trim().isNotEmpty ?? false;
+  return hasPhone &&
+      (state.status == auth.AuthStatus.otpSent ||
+          state.status == auth.AuthStatus.loading ||
+          state.status == auth.AuthStatus.error);
 }
 
 String? _fsmRedirect({
@@ -351,6 +403,9 @@ bool _isPublicRoute(String location) =>
 
 bool _isSecurityRecoveryRoute(String location) =>
     isSecurityRecoveryAppRoute(location);
+
+bool _isAllowedWhenLockedRoute(String location) =>
+    appRouteContractFor(location).isAllowedWhenLocked;
 
 String? _invalidPinLoginRedirect({
   required String location,
