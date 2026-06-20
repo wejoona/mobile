@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
@@ -40,31 +39,28 @@ class NotificationContent {
 ///
 /// Sensitive transaction details are encrypted before being sent
 /// via push notifications to prevent exposure in notification previews.
+///
+/// This client-side boundary intentionally does not attempt to decrypt until the
+/// backend publishes a real notification JWE contract. Lock-screen content must
+/// stay generic rather than decode a reversible placeholder payload.
 class PushNotificationEncryptor {
   static const _tag = 'PushEncrypt';
   final AppLogger _log = AppLogger(_tag);
 
   /// Decrypt an encrypted push notification.
   NotificationContent decrypt(EncryptedNotification notification) {
-    try {
-      final json = jsonDecode(
-          utf8.decode(base64Decode(notification.encryptedBody)));
-      return NotificationContent(
-        // ignore: avoid_dynamic_calls
-        title: json['title'] as String? ?? '',
-        // ignore: avoid_dynamic_calls
-        body: json['body'] as String? ?? '',
-        // ignore: avoid_dynamic_calls
-        data: json['data'] as Map<String, dynamic>?,
-      );
-    } catch (e) {
-      _log.error('Failed to decrypt notification', e);
-      // Fallback: show generic message
-      return const NotificationContent(
-        title: 'Korido',
-        body: 'Vous avez une nouvelle notification',
-      );
-    }
+    _log.warn(
+      'Encrypted notification received before JWE decrypt contract is implemented',
+      {'keyId': notification.keyId, 'version': notification.version},
+    );
+    return genericPreview();
+  }
+
+  NotificationContent genericPreview() {
+    return const NotificationContent(
+      title: 'Korido',
+      body: 'You have a new secure notification',
+    );
   }
 
   /// Create a safe preview (no sensitive data) for lock screen.
@@ -76,7 +72,8 @@ class PushNotificationEncryptor {
   }
 }
 
-final pushNotificationEncryptorProvider =
-    Provider<PushNotificationEncryptor>((ref) {
+final pushNotificationEncryptorProvider = Provider<PushNotificationEncryptor>((
+  ref,
+) {
   return PushNotificationEncryptor();
 });

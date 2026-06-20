@@ -1,33 +1,27 @@
-import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Wraps API payloads with encryption envelope.
+///
+/// This service is intentionally fail-closed until it is backed by the same
+/// JWE/session-key contract used by the API interceptors. Base64 is transport
+/// encoding, not encryption.
 class SecurePayloadWrapper {
   static const _tag = 'PayloadWrapper';
   final AppLogger _log = AppLogger(_tag);
 
   /// Wrap a payload in an encrypted envelope.
   Map<String, dynamic> wrap(Map<String, dynamic> payload) {
-    final encoded = base64Encode(utf8.encode(jsonEncode(payload)));
-    return {
-      'version': 1,
-      'algorithm': 'AES-256-GCM',
-      'payload': encoded,
-      'timestamp': DateTime.now().toIso8601String(),
-    };
+    _log.error('Secure payload wrapping requested before implementation');
+    throw UnsupportedError(
+      'Secure payload wrapping is not implemented; plaintext envelope blocked.',
+    );
   }
 
   /// Unwrap an encrypted envelope.
   Map<String, dynamic>? unwrap(Map<String, dynamic> envelope) {
-    try {
-      final encoded = envelope['payload'] as String;
-      final decoded = utf8.decode(base64Decode(encoded));
-      return jsonDecode(decoded) as Map<String, dynamic>;
-    } catch (e) {
-      _log.error('Failed to unwrap payload', e);
-      return null;
-    }
+    _log.error('Secure payload unwrapping requested before implementation');
+    throw UnsupportedError('Secure payload unwrapping is not implemented.');
   }
 }
 
