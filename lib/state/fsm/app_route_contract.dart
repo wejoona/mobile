@@ -674,6 +674,47 @@ const appRouteContracts = <AppRouteContract>[
     },
     events: _moneyEvents,
   ),
+  AppRouteContract(
+    pattern: '/payment-links/created/',
+    role: AppRouteRole.moneyStep,
+    prefix: true,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.requiresWallet,
+      AppRouteCapability.requiresVerifiedKyc,
+      AppRouteCapability.moneyMovement,
+    },
+    events: _moneyEvents,
+  ),
+  AppRouteContract(
+    pattern: '/payment-links/detail/',
+    role: AppRouteRole.moneyStep,
+    prefix: true,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.requiresWallet,
+    },
+    events: _moneyEvents,
+  ),
+  AppRouteContract(
+    pattern: '/payment-links/',
+    role: AppRouteRole.moneyStep,
+    prefix: true,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.requiresWallet,
+    },
+    events: _moneyEvents,
+  ),
+  AppRouteContract(
+    pattern: '/payment-links',
+    role: AppRouteRole.moneyStep,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.requiresWallet,
+    },
+    events: _moneyEvents,
+  ),
 ];
 
 const unknownAppRouteContract = AppRouteContract(

@@ -99,6 +99,43 @@ void main() {
       expect(deposit.requiresVerifiedKyc, isFalse);
     });
 
+    test('payment-link routes have explicit public and wallet contracts', () {
+      final publicPay = appRouteContractFor('/pay/test-code');
+      final linksList = appRouteContractFor('/payment-links');
+      final linkDetail = appRouteContractFor('/payment-links/link_123');
+      final namedLinkDetail = appRouteContractFor(
+        '/payment-links/detail/link_123',
+      );
+      final createLink = appRouteContractFor('/payment-links/create');
+      final createdLink = appRouteContractFor(
+        '/payment-links/created/link_123',
+      );
+
+      expect(publicPay.role, AppRouteRole.publicDeepLink);
+      expect(publicPay.isPublic, isTrue);
+      expect(publicPay.isExplicitPublic, isTrue);
+      expect(publicPay.requiresAuth, isFalse);
+
+      for (final contract in [linksList, linkDetail, namedLinkDetail]) {
+        expect(contract.role, AppRouteRole.moneyStep);
+        expect(contract.role, isNot(AppRouteRole.unknown));
+        expect(contract.requiresAuth, isTrue);
+        expect(contract.requiresWallet, isTrue);
+        expect(contract.requiresVerifiedKyc, isFalse);
+      }
+
+      for (final contract in [createLink, createdLink]) {
+        expect(contract.role, AppRouteRole.moneyStep);
+        expect(contract.requiresAuth, isTrue);
+        expect(contract.requiresWallet, isTrue);
+        expect(contract.requiresVerifiedKyc, isTrue);
+        expect(
+          contract.capabilities,
+          contains(AppRouteCapability.moneyMovement),
+        );
+      }
+    });
+
     test(
       'KYC setup routes are explicit setup routes without swallowing FSM states',
       () {

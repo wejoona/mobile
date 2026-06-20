@@ -294,44 +294,17 @@ class DeepLinkHandler {
     // Handle payment links
     if (normalizedPath.startsWith('pay/') ||
         normalizedPath.startsWith('payment-link/')) {
-      if (!isAuthenticated) {
-        _saveForLater(context, path, params);
-        context.fsmGo('/login');
-        return;
-      }
-
       final parts = normalizedPath.split('/');
       if (parts.length < 2) {
         _showError(context, 'Invalid payment link');
-        context.fsmGo('/home');
+        context.fsmGo(isAuthenticated ? '/home' : '/login');
         return;
       }
 
       final linkCode = parts[1];
       if (linkCode.isEmpty) {
         _showError(context, 'Invalid payment link code');
-        context.fsmGo('/home');
-        return;
-      }
-
-      // Validate payment link exists and is active
-      try {
-        final dio = ref.read(dioProvider);
-        final response = await dio.get('/payment-links/$linkCode');
-        final data = response.data as Map<String, dynamic>?;
-        final status = data?['status'] as String?;
-        if (status == 'deactivated' || status == 'expired') {
-          if (context.mounted) {
-            _showError(context, 'This payment link is no longer active');
-            context.fsmGo('/home');
-          }
-          return;
-        }
-      } catch (e) {
-        if (context.mounted) {
-          _showError(context, 'Invalid payment link');
-          context.fsmGo('/home');
-        }
+        context.fsmGo(isAuthenticated ? '/home' : '/login');
         return;
       }
 

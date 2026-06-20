@@ -584,6 +584,9 @@ void main() {
     final routesSource = File(
       'lib/router/routes/auth_state_routes.dart',
     ).readAsStringSync();
+    final deepLinkSource = File(
+      'lib/core/deep_linking/deep_link_handler.dart',
+    ).readAsStringSync();
 
     expect(payLinkSource, contains("Uri.encodeComponent('/pay/"));
     expect(payLinkSource, contains("'/login?returnTo="));
@@ -592,6 +595,17 @@ void main() {
     expect(otpSource, contains("queryParameters['returnTo']"));
     expect(otpSource, contains('/login/pin?returnTo='));
     expect(routesSource, contains('successRoute: _authReturnTo(state)'));
+    expect(deepLinkSource, contains("context.fsmPush('/pay/\$linkCode')"));
+    expect(
+      _methodBody(deepLinkSource, '_routeToDestination'),
+      isNot(
+        contains(
+          "_saveForLater(context, path, params);\n        context.fsmGo('/login');",
+        ),
+      ),
+      reason:
+          'public payment links must land on /pay/:code; PayLinkView owns login returnTo',
+    );
   });
 
   test('local auth cleanup clears pending OTP and PIN login flow state', () {
