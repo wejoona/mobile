@@ -346,9 +346,9 @@ void main() {
     );
     expect(
       _methodBody(livenessSource, '_fail'),
-      contains('widget.onManualReviewRequired?.call(manualReviewReason);'),
+      contains('LivenessManualReviewRequest('),
       reason:
-          'Account recovery owns manual review state; the liveness widget should hand off instead of showing a dismissible nested review',
+          'Account recovery/KYC owners need typed manual-review metadata; the liveness widget should hand off instead of showing a dismissible nested review',
     );
   });
 
@@ -900,6 +900,8 @@ void main() {
     expect(manualReviewBody, contains("'/support/tickets'"));
     expect(manualReviewBody, contains("'category': 'kyc'"));
     expect(manualReviewBody, contains("'priority': 'high'"));
+    expect(manualReviewBody, contains('request.backendReviewAlreadyCreated'));
+    expect(manualReviewBody, contains('_scheduleManualReviewNavigation()'));
     expect(
       manualReviewBody,
       contains('identity document, profile photo, reference selfie'),

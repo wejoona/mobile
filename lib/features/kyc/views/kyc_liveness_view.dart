@@ -57,11 +57,17 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
         });
 
       case LivenessDecision.manualReview:
-        // Medium score — submit for manual review, show pending screen
-        setState(() => _isComplete = true);
-        _navigationTimer = Timer(const Duration(seconds: 2), () {
-          if (mounted) context.fsmGo('/kyc/submitted');
-        });
+        unawaited(
+          _routeKycToManualReview(
+            LivenessManualReviewRequest(
+              reason: 'liveness_manual_review_confidence',
+              message:
+                  'Automated liveness verification needs manual review. '
+                  'Confidence: ${result.confidence.toStringAsFixed(2)}. '
+                  'Flow: kyc_liveness.',
+            ),
+          ),
+        );
 
       case LivenessDecision.decline:
         // Low score — decline, allow retry
@@ -202,7 +208,9 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
     );
   }
 
-  Future<void> _routeKycToManualReview(String reason) async {
+  Future<void> _routeKycToManualReview(
+    LivenessManualReviewRequest request,
+  ) async {
     if (!mounted || _isCreatingManualReview) return;
 
     setState(() {
@@ -211,7 +219,15 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
       _hasFailed = false;
       _decision = LivenessDecision.manualReview;
       _errorMessage = null;
+      _manualReviewTicketId = request.backendReviewId;
     });
+
+    if (request.backendReviewAlreadyCreated) {
+      if (!mounted) return;
+      setState(() => _isCreatingManualReview = false);
+      _scheduleManualReviewNavigation();
+      return;
+    }
 
     try {
       final response = await ref
@@ -224,7 +240,7 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
               'priority': 'high',
               'message':
                   'Automated liveness verification could not complete. '
-                  'Reason: $reason. Flow: kyc_liveness. '
+                  'Reason: ${request.reason}. ${request.message} '
                   'Please review identity document, profile photo, reference selfie, '
                   'and any captured liveness evidence.',
             },
@@ -241,14 +257,32 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
         _manualReviewTicketId = data['id']?.toString();
         _isCreatingManualReview = false;
       });
-    } on DioException {
+      _scheduleManualReviewNavigation();
+    } on DioException catch (error) {
       if (!mounted) return;
-      setState(() => _isCreatingManualReview = false);
-    } catch (_) {
+      final apiError = ApiException.fromDioError(error);
+      setState(() {
+        _isCreatingManualReview = false;
+        _isComplete = false;
+        _hasFailed = true;
+        _decision = null;
+        _errorMessage =
+            'We could not securely create your manual review. ${apiError.message}';
+      });
+    } catch (error) {
       if (!mounted) return;
-      setState(() => _isCreatingManualReview = false);
+      setState(() {
+        _isCreatingManualReview = false;
+        _isComplete = false;
+        _hasFailed = true;
+        _decision = null;
+        _errorMessage =
+            'We could not securely create your manual review. Please try again.';
+      });
     }
+  }
 
+  void _scheduleManualReviewNavigation() {
     _navigationTimer?.cancel();
     _navigationTimer = Timer(const Duration(seconds: 3), () {
       if (mounted) context.fsmGo('/kyc/submitted');
@@ -261,8 +295,19 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
     setState(() {
       _isCreatingManualReview = false;
       _isComplete = true;
-      _hasFailed = false;
       _decision = LivenessDecision.manualReview;
+    });
+    if (_manualReviewTicketId == null) {
+      setState(() {
+        _isComplete = false;
+        _hasFailed = true;
+        _errorMessage =
+            'Manual review was not confirmed. Please retry so Korido can create a secure review record.';
+      });
+      return;
+    }
+    setState(() {
+      _hasFailed = false;
       _errorMessage = null;
     });
     _navigationTimer = Timer(const Duration(seconds: 1), () {

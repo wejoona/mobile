@@ -596,13 +596,13 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
     );
   }
 
-  void _onLivenessManualReviewRequired(String reason) {
+  void _onLivenessManualReviewRequired(LivenessManualReviewRequest request) {
     if (!mounted) return;
     setState(() {
       _showLiveness = false;
       _isProcessing = false;
       _error =
-          'This operation needs manual review before it can continue. Reason: ${reason.replaceAll('_', ' ')}.';
+          'This operation needs manual review before it can continue. Reason: ${request.reason.replaceAll('_', ' ')}.';
     });
   }
 

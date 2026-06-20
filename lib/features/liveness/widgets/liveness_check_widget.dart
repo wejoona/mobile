@@ -20,9 +20,33 @@ import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 /// 2. Show each challenge instruction + camera preview
 /// 3. User taps capture → photo taken → submitted to backend
 /// 4. After all challenges → backend verifies → result returned
+typedef LivenessManualReviewHandler =
+    void Function(LivenessManualReviewRequest request);
+
+class LivenessManualReviewRequest {
+  final String reason;
+  final String message;
+  final String? title;
+  final String? slaLabel;
+  final String? backendReviewId;
+  final String? backendReviewStatus;
+
+  const LivenessManualReviewRequest({
+    required this.reason,
+    required this.message,
+    this.title,
+    this.slaLabel,
+    this.backendReviewId,
+    this.backendReviewStatus,
+  });
+
+  bool get backendReviewAlreadyCreated =>
+      backendReviewId != null || backendReviewStatus == 'manual_review';
+}
+
 class LivenessCheckWidget extends ConsumerStatefulWidget {
   final void Function(LivenessResult result)? onComplete;
-  final void Function(String reason)? onManualReviewRequired;
+  final LivenessManualReviewHandler? onManualReviewRequired;
   final VoidCallback? onManualReviewAcknowledged;
   final VoidCallback? onCancel;
   final bool useRecoveryToken;
@@ -256,6 +280,8 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
         manualReviewReason: review.reason,
         manualReviewTitle: review.title,
         manualReviewSlaLabel: review.slaLabel,
+        backendReviewId: review.backendReviewId,
+        backendReviewStatus: review.backendReviewStatus,
       );
       return false;
     }
@@ -398,6 +424,8 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
         manualReviewReason: review.reason,
         manualReviewTitle: review.title,
         manualReviewSlaLabel: review.slaLabel,
+        backendReviewId: review.backendReviewId,
+        backendReviewStatus: review.backendReviewStatus,
       );
     }
   }
@@ -462,11 +490,22 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
     String? manualReviewReason,
     String? manualReviewTitle,
     String? manualReviewSlaLabel,
+    String? backendReviewId,
+    String? backendReviewStatus,
   }) {
     if (mounted) {
       unawaited(_releaseCamera());
       if (manualReviewReason != null && widget.onManualReviewRequired != null) {
-        widget.onManualReviewRequired?.call(manualReviewReason);
+        widget.onManualReviewRequired?.call(
+          LivenessManualReviewRequest(
+            reason: manualReviewReason,
+            message: message,
+            title: manualReviewTitle,
+            slaLabel: manualReviewSlaLabel,
+            backendReviewId: backendReviewId,
+            backendReviewStatus: backendReviewStatus,
+          ),
+        );
         return;
       }
       setState(() {
@@ -484,7 +523,14 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
     }
   }
 
-  ({String title, String message, String reason, String? slaLabel})
+  ({
+    String title,
+    String message,
+    String reason,
+    String? slaLabel,
+    String? backendReviewId,
+    String? backendReviewStatus,
+  })
   _manualReviewFromError(Object error) {
     if (error is ApiException) {
       final data = _apiErrorData(error.data);
@@ -496,6 +542,8 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
           'liveness_session_unavailable';
       final reviewSla = data['reviewSla'];
       final slaLabel = reviewSla is Map ? reviewSla['label']?.toString() : null;
+      final backendReviewId = data['kycReviewId']?.toString();
+      final backendReviewStatus = data['kycStatus']?.toString();
 
       return (
         title: supportReviewRequired
@@ -506,6 +554,8 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
             : 'We could not safely start the automated identity check. A Korido reviewer will continue this flow.',
         reason: reason,
         slaLabel: slaLabel,
+        backendReviewId: backendReviewId,
+        backendReviewStatus: backendReviewStatus,
       );
     }
 
@@ -515,6 +565,8 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
           'We could not safely start the automated identity check. A Korido reviewer will continue this flow.',
       reason: 'liveness_session_unavailable',
       slaLabel: null,
+      backendReviewId: null,
+      backendReviewStatus: null,
     );
   }
 

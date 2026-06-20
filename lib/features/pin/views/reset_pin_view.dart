@@ -213,7 +213,8 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
             borderRadius: BorderRadius.circular(AppRadius.lg),
             child: LivenessCheckWidget(
               onComplete: _handleLivenessComplete,
-              onManualReviewRequired: _routePinResetToManualReview,
+              onManualReviewRequired: (request) =>
+                  _routePinResetToManualReview(request.reason),
               onManualReviewAcknowledged: _openManualReviewStepFromLiveness,
               useRecoveryToken: true,
             ),
@@ -261,7 +262,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
                       ? Icons.error_outline_rounded
                       : Icons.manage_accounts_rounded,
                   color: _manualReviewCreationFailed
-                      ? context.colors.danger
+                      ? context.colors.error
                       : context.colors.gold,
                   size: 36,
                 ),
