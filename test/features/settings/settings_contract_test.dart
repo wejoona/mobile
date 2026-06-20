@@ -114,16 +114,21 @@ void main() {
       ).readAsStringSync();
 
       expect(source, isNot(contains('onTap: () {}')));
-      expect(source, contains("context.push('/settings/pin')"));
-      expect(source, contains("context.push('/settings/devices')"));
+      expect(source, isNot(contains('context.push(')));
+      expect(source, contains("context.fsmPush('/settings/pin')"));
+      expect(source, contains("context.fsmPush('/settings/devices')"));
       expect(source, contains('securitySettingsProvider'));
       expect(source, contains('notificationPreferencesProvider'));
       expect(source, contains('setPinOnAppOpen'));
       expect(source, contains('setScreenshotProtection'));
       expect(source, isNot(contains('setTransactionAlerts')));
-      expect(source, contains("context.push('/settings/notifications')"));
+      expect(source, contains("context.fsmPush('/settings/notifications')"));
       expect(source, contains('setAutoLock'));
-      expect(profileSecuritySource, contains("context.push('/settings/pin')"));
+      expect(profileSecuritySource, isNot(contains('context.push(')));
+      expect(
+        profileSecuritySource,
+        contains("context.fsmPush('/settings/pin')"),
+      );
       expect(
         profileSecuritySource,
         isNot(contains("pushNamed('/pin/change')")),
