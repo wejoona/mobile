@@ -5,7 +5,10 @@ import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
+import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/state/kyc_state_machine.dart';
 
 class SubmittedView extends ConsumerWidget {
   const SubmittedView({super.key});
@@ -14,6 +17,11 @@ class SubmittedView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
+    final durableStatus = ref.watch(kycStateMachineProvider).status;
+    final wizardStatus = ref.watch(kycProvider).verificationStatus;
+    final isManualReview =
+        durableStatus == KycStatus.manualReview ||
+        wizardStatus == KycStatus.manualReview;
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -24,10 +32,12 @@ class SubmittedView extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Spacer(),
-              _buildSuccessAnimation(context),
+              _buildStatusAnimation(context, isManualReview: isManualReview),
               SizedBox(height: AppSpacing.xxl),
               AppText(
-                l10n.kyc_submitted_title,
+                isManualReview
+                    ? l10n.kyc_status_manualReview_title
+                    : l10n.kyc_submitted_title,
                 variant: AppTextVariant.headlineMedium,
                 textAlign: TextAlign.center,
               ),
@@ -35,7 +45,9 @@ class SubmittedView extends ConsumerWidget {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 child: AppText(
-                  l10n.kyc_submitted_description,
+                  isManualReview
+                      ? l10n.kyc_status_manualReview_description
+                      : l10n.kyc_submitted_description,
                   variant: AppTextVariant.bodyLarge,
                   color: colors.textSecondary,
                   textAlign: TextAlign.center,
@@ -51,11 +63,19 @@ class SubmittedView extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.access_time, color: colors.infoText, size: 28),
+                    Icon(
+                      isManualReview
+                          ? Icons.manage_accounts_outlined
+                          : Icons.access_time,
+                      color: colors.infoText,
+                      size: 28,
+                    ),
                     SizedBox(width: AppSpacing.lg),
                     Expanded(
                       child: AppText(
-                        l10n.kyc_submitted_timeEstimate,
+                        isManualReview
+                            ? l10n.kyc_info_manualReview_description
+                            : l10n.kyc_submitted_timeEstimate,
                         variant: AppTextVariant.bodyLarge,
                         color: colors.infoText,
                       ),
@@ -76,8 +96,15 @@ class SubmittedView extends ConsumerWidget {
     );
   }
 
-  Widget _buildSuccessAnimation(BuildContext context) {
+  Widget _buildStatusAnimation(
+    BuildContext context, {
+    required bool isManualReview,
+  }) {
     final colors = context.colors;
+    final color = isManualReview ? colors.gold : colors.success;
+    final icon = isManualReview
+        ? Icons.manage_accounts_outlined
+        : Icons.check_circle;
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
       duration: const Duration(milliseconds: 600),
@@ -90,9 +117,9 @@ class SubmittedView extends ConsumerWidget {
             height: 120,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: colors.success.withValues(alpha: 0.1),
+              color: color.withValues(alpha: 0.1),
             ),
-            child: Icon(Icons.check_circle, size: 64, color: colors.success),
+            child: Icon(icon, size: 64, color: color),
           ),
         );
       },

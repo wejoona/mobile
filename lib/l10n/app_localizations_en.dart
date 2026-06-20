@@ -1051,6 +1051,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your documents are being reviewed. This usually takes 1-2 business days.';
 
   @override
+  String get kyc_status_manualReview_title => 'Manual Review Needed';
+
+  @override
+  String get kyc_status_manualReview_description =>
+      'A Korido reviewer is checking your identity evidence. You can keep using eligible features while we complete the review.';
+
+  @override
   String get kyc_status_approved_title => 'Verification Complete';
 
   @override
@@ -1093,6 +1100,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get kyc_info_time_description =>
       'Verification usually takes 1-2 business days';
+
+  @override
+  String get kyc_info_manualReview_title => 'Human Review';
+
+  @override
+  String get kyc_info_manualReview_description =>
+      'If automated checks cannot safely decide, a reviewer completes the decision instead of leaving you blocked.';
 
   @override
   String get kyc_info_documents_title => 'Documents Needed';

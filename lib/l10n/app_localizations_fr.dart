@@ -1076,6 +1076,13 @@ class AppLocalizationsFr extends AppLocalizations {
       'Vos documents sont en cours d\'examen. Cela prend généralement 1 à 2 jours ouvrables.';
 
   @override
+  String get kyc_status_manualReview_title => 'Revue manuelle requise';
+
+  @override
+  String get kyc_status_manualReview_description =>
+      'Un réviseur Korido vérifie vos justificatifs d\'identité. Vous pouvez continuer à utiliser les fonctionnalités éligibles pendant la revue.';
+
+  @override
   String get kyc_status_approved_title => 'Vérification terminée';
 
   @override
@@ -1119,6 +1126,13 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get kyc_info_time_description =>
       'La vérification prend généralement 1 à 2 jours ouvrables';
+
+  @override
+  String get kyc_info_manualReview_title => 'Revue humaine';
+
+  @override
+  String get kyc_info_manualReview_description =>
+      'Si les contrôles automatiques ne peuvent pas décider en toute sécurité, un réviseur termine la décision au lieu de vous laisser bloqué.';
 
   @override
   String get kyc_info_documents_title => 'Documents requis';

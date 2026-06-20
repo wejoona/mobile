@@ -101,7 +101,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
                   ],
                   // Verification details placeholder
                   SizedBox(height: AppSpacing.xxl),
-                  _buildInfoCards(l10n),
+                  _buildInfoCards(l10n, status),
                 ],
               ),
             ),
@@ -143,9 +143,12 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
         color = colors.gold;
         break;
       case KycStatus.submitted:
-      case KycStatus.manualReview:
         icon = Icons.hourglass_empty;
         color = colors.warning;
+        break;
+      case KycStatus.manualReview:
+        icon = Icons.manage_accounts_outlined;
+        color = colors.info;
         break;
       case KycStatus.verified:
         icon = Icons.check_circle;
@@ -175,8 +178,9 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
       case KycStatus.documentsPending:
         return l10n.kyc_status_pending_title;
       case KycStatus.submitted:
-      case KycStatus.manualReview:
         return l10n.kyc_status_submitted_title;
+      case KycStatus.manualReview:
+        return l10n.kyc_status_manualReview_title;
       case KycStatus.verified:
         return l10n.kyc_status_approved_title;
       case KycStatus.rejected:
@@ -193,8 +197,9 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
       case KycStatus.documentsPending:
         return l10n.kyc_status_pending_description;
       case KycStatus.submitted:
-      case KycStatus.manualReview:
         return l10n.kyc_status_submitted_description;
+      case KycStatus.manualReview:
+        return l10n.kyc_status_manualReview_description;
       case KycStatus.verified:
         return l10n.kyc_status_approved_description;
       case KycStatus.rejected:
@@ -204,7 +209,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
     }
   }
 
-  Widget _buildInfoCards(AppLocalizations l10n) {
+  Widget _buildInfoCards(AppLocalizations l10n, KycStatus status) {
     return Column(
       children: [
         _buildInfoCard(
@@ -213,6 +218,14 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
           l10n.kyc_info_security_description,
         ),
         SizedBox(height: AppSpacing.lg),
+        if (status.isManualReview) ...[
+          _buildInfoCard(
+            Icons.manage_accounts_outlined,
+            l10n.kyc_info_manualReview_title,
+            l10n.kyc_info_manualReview_description,
+          ),
+          SizedBox(height: AppSpacing.lg),
+        ],
         _buildInfoCard(
           Icons.timer,
           l10n.kyc_info_time_title,

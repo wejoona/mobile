@@ -2040,6 +2040,18 @@ abstract class AppLocalizations {
   /// **'Your documents are being reviewed. This usually takes 1-2 business days.'**
   String get kyc_status_submitted_description;
 
+  /// Manual review KYC status title
+  ///
+  /// In en, this message translates to:
+  /// **'Manual Review Needed'**
+  String get kyc_status_manualReview_title;
+
+  /// Manual review KYC status description
+  ///
+  /// In en, this message translates to:
+  /// **'A Korido reviewer is checking your identity evidence. You can keep using eligible features while we complete the review.'**
+  String get kyc_status_manualReview_description;
+
   /// Approved status title
   ///
   /// In en, this message translates to:
@@ -2117,6 +2129,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Verification usually takes 1-2 business days'**
   String get kyc_info_time_description;
+
+  /// Manual review info card title
+  ///
+  /// In en, this message translates to:
+  /// **'Human Review'**
+  String get kyc_info_manualReview_title;
+
+  /// Manual review info card description
+  ///
+  /// In en, this message translates to:
+  /// **'If automated checks cannot safely decide, a reviewer completes the decision instead of leaving you blocked.'**
+  String get kyc_info_manualReview_description;
 
   /// Documents info title
   ///

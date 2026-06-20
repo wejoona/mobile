@@ -1051,6 +1051,13 @@ class AppLocalizationsAr extends AppLocalizations {
       'يتم مراجعة مستنداتك. عادة ما يستغرق ذلك 1-2 يوم عمل.';
 
   @override
+  String get kyc_status_manualReview_title => 'مراجعة يدوية مطلوبة';
+
+  @override
+  String get kyc_status_manualReview_description =>
+      'يراجع فريق Korido أدلة هويتك. يمكنك الاستمرار في استخدام الميزات المؤهلة أثناء إكمال المراجعة.';
+
+  @override
   String get kyc_status_approved_title => 'اكتمل التحقق';
 
   @override
@@ -1092,6 +1099,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get kyc_info_time_description => 'عادةً ما يستغرق التحقق 1-2 يوم عمل';
+
+  @override
+  String get kyc_info_manualReview_title => 'مراجعة بشرية';
+
+  @override
+  String get kyc_info_manualReview_description =>
+      'إذا لم تتمكن الفحوصات الآلية من اتخاذ قرار آمن، يكمل المراجع القرار بدلاً من إبقائك عالقاً.';
 
   @override
   String get kyc_info_documents_title => 'المستندات المطلوبة';

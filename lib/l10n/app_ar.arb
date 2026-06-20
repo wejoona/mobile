@@ -1142,6 +1142,14 @@
   "@kyc_status_submitted_description": {
     "description": "Submitted status description"
   },
+  "kyc_status_manualReview_title": "مراجعة يدوية مطلوبة",
+  "@kyc_status_manualReview_title": {
+    "description": "Manual review KYC status title"
+  },
+  "kyc_status_manualReview_description": "يراجع فريق Korido أدلة هويتك. يمكنك الاستمرار في استخدام الميزات المؤهلة أثناء إكمال المراجعة.",
+  "@kyc_status_manualReview_description": {
+    "description": "Manual review KYC status description"
+  },
   "kyc_status_approved_title": "اكتمل التحقق",
   "@kyc_status_approved_title": {
     "description": "Approved status title"
@@ -1193,6 +1201,14 @@
   "kyc_info_time_description": "عادةً ما يستغرق التحقق 1-2 يوم عمل",
   "@kyc_info_time_description": {
     "description": "Time info description"
+  },
+  "kyc_info_manualReview_title": "مراجعة بشرية",
+  "@kyc_info_manualReview_title": {
+    "description": "Manual review info card title"
+  },
+  "kyc_info_manualReview_description": "إذا لم تتمكن الفحوصات الآلية من اتخاذ قرار آمن، يكمل المراجع القرار بدلاً من إبقائك عالقاً.",
+  "@kyc_info_manualReview_description": {
+    "description": "Manual review info card description"
   },
   "kyc_info_documents_title": "المستندات المطلوبة",
   "@kyc_info_documents_title": {

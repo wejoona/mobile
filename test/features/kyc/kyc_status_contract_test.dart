@@ -72,5 +72,27 @@ void main() {
             'Durable KYC FSM should be synchronized before local flow state drives UI decisions.',
       );
     });
+
+    test('manual review has its own user-facing copy contract', () {
+      final statusView = File(
+        'lib/features/kyc/views/kyc_status_view.dart',
+      ).readAsStringSync();
+      final submittedView = File(
+        'lib/features/kyc/views/submitted_view.dart',
+      ).readAsStringSync();
+
+      expect(statusView, contains('kyc_status_manualReview_title'));
+      expect(statusView, contains('kyc_status_manualReview_description'));
+      expect(statusView, contains('kyc_info_manualReview_title'));
+      expect(statusView, contains('KycStatus.manualReview'));
+
+      expect(submittedView, contains('kycStateMachineProvider'));
+      expect(
+        submittedView,
+        contains('durableStatus == KycStatus.manualReview'),
+      );
+      expect(submittedView, contains('kyc_status_manualReview_title'));
+      expect(submittedView, contains('kyc_info_manualReview_description'));
+    });
   });
 }
