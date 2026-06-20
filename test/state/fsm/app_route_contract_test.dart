@@ -6,6 +6,9 @@ void main() {
     test('login routes are explicit public auth entry points', () {
       final login = appRouteContractFor('/login');
       final loginOtp = appRouteContractFor('/login/otp');
+      final loginWithReturn = appRouteContractFor('/login?returnTo=/pay/abc');
+      final otpWithReturn = appRouteContractFor('/login/otp?returnTo=/pay/abc');
+      final pinWithReturn = appRouteContractFor('/login/pin?returnTo=/pay/abc');
 
       expect(login.role, AppRouteRole.authEntry);
       expect(login.isPublic, isTrue);
@@ -13,6 +16,13 @@ void main() {
       expect(login.isAuthDeadEnd, isTrue);
       expect(loginOtp.role, AppRouteRole.verificationStep);
       expect(loginOtp.isAuthDeadEnd, isTrue);
+      expect(loginWithReturn.role, AppRouteRole.authEntry);
+      expect(loginWithReturn.isExplicitPublic, isTrue);
+      expect(otpWithReturn.role, AppRouteRole.verificationStep);
+      expect(otpWithReturn.isExplicitPublic, isTrue);
+      expect(pinWithReturn.role, AppRouteRole.securityStep);
+      expect(pinWithReturn.isExplicitPublic, isTrue);
+      expect(appRoutePathForContract('/login?returnTo=/pay/abc'), '/login');
     });
 
     test('signup consent is separate from the phone entry screen', () {

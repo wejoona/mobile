@@ -760,12 +760,35 @@ const unknownAppRouteContract = AppRouteContract(
 );
 
 AppRouteContract appRouteContractFor(String route) {
+  final contractRoute = appRoutePathForContract(route);
   for (final contract in appRouteContracts) {
-    if (contract.matches(route)) {
+    if (contract.matches(contractRoute)) {
       return contract;
     }
   }
   return unknownAppRouteContract;
+}
+
+String appRoutePathForContract(String route) {
+  final trimmed = route.trim();
+  if (trimmed.isEmpty || trimmed == '*') {
+    return route;
+  }
+
+  final parsed = Uri.tryParse(trimmed);
+  if (parsed != null && parsed.path.isNotEmpty) {
+    return parsed.path;
+  }
+
+  final queryIndex = trimmed.indexOf('?');
+  if (queryIndex >= 0) {
+    return trimmed.substring(0, queryIndex);
+  }
+  final fragmentIndex = trimmed.indexOf('#');
+  if (fragmentIndex >= 0) {
+    return trimmed.substring(0, fragmentIndex);
+  }
+  return trimmed;
 }
 
 bool isPublicAppRoute(String route) => appRouteContractFor(route).isPublic;
