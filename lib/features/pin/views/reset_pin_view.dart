@@ -494,6 +494,16 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       return manuallyEnteredPhone;
     }
 
+    final rememberedPhone = await ref
+        .read(secureStorageProvider)
+        .read(key: StorageKeys.rememberedPhone);
+    final rememberedPhoneValue = PhoneNumberValue.tryFromStorageValue(
+      rememberedPhone,
+    );
+    if (rememberedPhoneValue != null) {
+      return rememberedPhoneValue;
+    }
+
     final storage = ref.read(secureStorageProvider);
     final storedDialCode = await storage.read(key: StorageKeys.userDialCode);
     final storedLocalPhone = await storage.read(

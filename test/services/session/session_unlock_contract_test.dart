@@ -314,6 +314,13 @@ void main() {
     expect(resetSource, contains('_manualRecoveryPhoneFromInput()'));
     expect(resetSource, contains('widget.initialContext?.phoneValue'));
     expect(resetSource, contains('ref.read(loginProvider).phoneValue'));
+    expect(
+      resetSource,
+      contains('StorageKeys.rememberedPhone'),
+      reason:
+          'Forgot-PIN must prefill from the same remembered phone store as login when provider hydration has not finished',
+    );
+    expect(resetSource, contains('PhoneNumberValue.tryFromStorageValue'));
     expect(resetSource, contains('login(phone: phone.apiPhone'));
     expect(
       resetSource,
