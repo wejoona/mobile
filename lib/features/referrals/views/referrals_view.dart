@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/referrals/providers/referrals_provider.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 
 class ReferralsView extends ConsumerWidget {
@@ -36,7 +37,7 @@ class ReferralsView extends ConsumerWidget {
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.textPrimary),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => context.fsmSafePop(fallbackRoute: '/home'),
         ),
         title: AppText(
           l10n.referrals_title,

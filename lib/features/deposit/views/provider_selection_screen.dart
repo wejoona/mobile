@@ -40,7 +40,7 @@ class ProviderSelectionScreen extends ConsumerWidget {
         title: AppText(l10n.deposit_title, variant: AppTextVariant.titleLarge),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => context.fsmSafePop(fallbackRoute: '/deposit/amount'),
         ),
       ),
       body: SafeArea(
