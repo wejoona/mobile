@@ -11,6 +11,8 @@ void main() {
     expect(paths, contains('/login'));
     expect(paths, contains('/signup'));
     expect(paths, contains('/signup/legal-consent'));
+    expect(paths, contains('/legal/terms'));
+    expect(paths, contains('/legal/privacy'));
     expect(paths, contains('/signup/verify-phone'));
     expect(paths, contains('/onboarding'));
     expect(paths, contains('/onboarding/phone'));
@@ -47,7 +49,9 @@ void main() {
       '/signup',
       '/signup/legal-consent',
     ]);
-    expect(topLevelPaths.skip(5).take(2), [
+    expect(topLevelPaths.skip(5).take(4), [
+      '/legal/terms',
+      '/legal/privacy',
       '/signup/verify-phone',
       '/signup/profile',
     ]);

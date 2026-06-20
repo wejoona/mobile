@@ -18,12 +18,20 @@ void main() {
     test('signup consent is separate from the phone entry screen', () {
       final signup = appRouteContractFor('/signup');
       final consent = appRouteContractFor('/signup/legal-consent');
+      final terms = appRouteContractFor('/legal/terms');
+      final privacy = appRouteContractFor('/legal/privacy');
 
       expect(signup.role, AppRouteRole.authEntry);
       expect(signup.isSignupRoute, isTrue);
       expect(consent.role, AppRouteRole.consentStep);
       expect(consent.isSignupRoute, isTrue);
       expect(consent.isAuthDeadEnd, isTrue);
+      expect(terms.role, AppRouteRole.consentStep);
+      expect(terms.isPublic, isTrue);
+      expect(terms.events, contains(AppNavigationEvent.legalDocumentOpened));
+      expect(privacy.role, AppRouteRole.consentStep);
+      expect(privacy.isPublic, isTrue);
+      expect(privacy.events, contains(AppNavigationEvent.legalDocumentOpened));
     });
 
     test('legacy onboarding routes remain classified but point to signup', () {

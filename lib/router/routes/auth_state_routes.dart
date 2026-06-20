@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:usdc_wallet/features/auth/views/legal_document_view.dart';
 import 'package:usdc_wallet/features/auth/views/login_otp_view.dart';
 import 'package:usdc_wallet/features/auth/views/login_view.dart';
 import 'package:usdc_wallet/features/auth/views/otp_view.dart';
@@ -16,6 +17,7 @@ import 'package:usdc_wallet/features/signup/views/signup_success_view.dart';
 import 'package:usdc_wallet/features/splash/views/splash_view.dart';
 import 'package:usdc_wallet/features/wallet/views/create_wallet_view.dart';
 import 'package:usdc_wallet/router/page_transitions.dart';
+import 'package:usdc_wallet/services/legal/legal_documents_service.dart';
 
 List<RouteBase> authStateRoutes() => [
   // Splash Screen (no transition)
@@ -55,6 +57,24 @@ List<RouteBase> authStateRoutes() => [
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const SignupLegalConsentView(),
+    ),
+  ),
+  GoRoute(
+    path: '/legal/terms',
+    pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+      state: state,
+      child: const LegalDocumentView(
+        documentType: LegalDocumentType.termsOfService,
+      ),
+    ),
+  ),
+  GoRoute(
+    path: '/legal/privacy',
+    pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+      state: state,
+      child: const LegalDocumentView(
+        documentType: LegalDocumentType.privacyPolicy,
+      ),
     ),
   ),
   GoRoute(

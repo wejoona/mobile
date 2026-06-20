@@ -70,6 +70,7 @@ enum AppNavigationEvent {
   moneySubmitted,
   moneyCompleted,
   routeBlocked,
+  legalDocumentOpened,
 }
 
 class AppRouteContract {
@@ -89,14 +90,17 @@ class AppRouteContract {
   final String? canonicalRoute;
   final Set<AppNavigationEvent> events;
 
-  bool matches(String route) => prefix ? route.startsWith(pattern) : route == pattern;
+  bool matches(String route) =>
+      prefix ? route.startsWith(pattern) : route == pattern;
 
   bool get isPublic => capabilities.contains(AppRouteCapability.publicEntry);
   bool get isExplicitPublic =>
       capabilities.contains(AppRouteCapability.explicitPublic);
   bool get isFsmRoute => capabilities.contains(AppRouteCapability.fsmOwned);
-  bool get isAuthDeadEnd => capabilities.contains(AppRouteCapability.authDeadEnd);
-  bool get isSignupRoute => capabilities.contains(AppRouteCapability.signupFlow);
+  bool get isAuthDeadEnd =>
+      capabilities.contains(AppRouteCapability.authDeadEnd);
+  bool get isSignupRoute =>
+      capabilities.contains(AppRouteCapability.signupFlow);
   bool get isLegacySignupRoute =>
       capabilities.contains(AppRouteCapability.legacySignupFlow);
   bool get isSetupRoute => capabilities.contains(AppRouteCapability.setupFlow);
@@ -104,7 +108,8 @@ class AppRouteContract {
       capabilities.contains(AppRouteCapability.securityRecovery);
   bool get isAllowedWhenLocked =>
       capabilities.contains(AppRouteCapability.allowWhenLocked);
-  bool get requiresAuth => capabilities.contains(AppRouteCapability.requiresAuth);
+  bool get requiresAuth =>
+      capabilities.contains(AppRouteCapability.requiresAuth);
   bool get requiresWallet =>
       capabilities.contains(AppRouteCapability.requiresWallet);
   bool get requiresKycTier1 =>
@@ -125,6 +130,7 @@ const _signupEvents = {
   AppNavigationEvent.signupSelected,
   AppNavigationEvent.phoneSubmitted,
   AppNavigationEvent.consentAccepted,
+  AppNavigationEvent.legalDocumentOpened,
   AppNavigationEvent.otpSubmitted,
   AppNavigationEvent.profileRequired,
   AppNavigationEvent.kycStarted,
@@ -243,6 +249,26 @@ const appRouteContracts = <AppRouteContract>[
     events: _signupEvents,
   ),
   AppRouteContract(
+    pattern: '/legal/terms',
+    role: AppRouteRole.consentStep,
+    capabilities: {
+      AppRouteCapability.publicEntry,
+      AppRouteCapability.explicitPublic,
+      AppRouteCapability.authDeadEnd,
+    },
+    events: {AppNavigationEvent.legalDocumentOpened},
+  ),
+  AppRouteContract(
+    pattern: '/legal/privacy',
+    role: AppRouteRole.consentStep,
+    capabilities: {
+      AppRouteCapability.publicEntry,
+      AppRouteCapability.explicitPublic,
+      AppRouteCapability.authDeadEnd,
+    },
+    events: {AppNavigationEvent.legalDocumentOpened},
+  ),
+  AppRouteContract(
     pattern: '/signup/verify-phone',
     role: AppRouteRole.verificationStep,
     capabilities: {
@@ -346,10 +372,7 @@ const appRouteContracts = <AppRouteContract>[
   AppRouteContract(
     pattern: '/force-update',
     role: AppRouteRole.fsmState,
-    capabilities: {
-      AppRouteCapability.publicEntry,
-      AppRouteCapability.fsmOwned,
-    },
+    capabilities: {AppRouteCapability.publicEntry, AppRouteCapability.fsmOwned},
     events: {AppNavigationEvent.routeBlocked},
   ),
   AppRouteContract(

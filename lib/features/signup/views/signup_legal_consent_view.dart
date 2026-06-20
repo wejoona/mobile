@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/features/auth/views/legal_document_view.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/legal/legal_documents_service.dart';
+import 'package:usdc_wallet/state/fsm/app_route_contract.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Explicit signup consent step.
@@ -153,11 +153,9 @@ class _SignupLegalConsentViewState
   }
 
   Future<void> _openDocument(LegalDocumentType type) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => LegalDocumentView(documentType: type),
-      ),
+    await context.fsmPush<void>(
+      _legalDocumentRoute(type),
+      event: AppNavigationEvent.legalDocumentOpened,
     );
     if (!mounted) {
       return;
@@ -171,6 +169,11 @@ class _SignupLegalConsentViewState
       _error = null;
     });
   }
+
+  String _legalDocumentRoute(LegalDocumentType type) =>
+      type == LegalDocumentType.termsOfService
+      ? '/legal/terms'
+      : '/legal/privacy';
 
   Future<void> _handleAcceptAndSubmit() async {
     final state = ref.read(signupFlowProvider);

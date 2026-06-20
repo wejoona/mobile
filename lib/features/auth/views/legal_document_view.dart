@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/services/legal/legal_documents_service.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/services/legal/legal_documents_service.dart';
+import 'package:usdc_wallet/state/fsm/app_route_contract.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Full-screen legal document viewer
 class LegalDocumentView extends ConsumerWidget {
-  const LegalDocumentView({
-    super.key,
-    required this.documentType,
-  });
+  const LegalDocumentView({super.key, required this.documentType});
 
   final LegalDocumentType documentType;
 
@@ -29,7 +28,10 @@ class LegalDocumentView extends ConsumerWidget {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.close_rounded, color: colors.textPrimary),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.fsmSafePop(
+            fallbackRoute: '/login',
+            event: AppNavigationEvent.legalDocumentOpened,
+          ),
         ),
         title: AppText(
           documentType == LegalDocumentType.termsOfService
@@ -42,20 +44,13 @@ class LegalDocumentView extends ConsumerWidget {
       ),
       body: documentAsync.when(
         data: (document) => _buildContent(context, document, colors),
-        loading: () => Center(
-          child: CircularProgressIndicator(
-            color: colors.gold,
-          ),
-        ),
+        loading: () =>
+            Center(child: CircularProgressIndicator(color: colors.gold)),
         error: (error, _) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.error_outline_rounded,
-                color: colors.error,
-                size: 48,
-              ),
+              Icon(Icons.error_outline_rounded, color: colors.error, size: 48),
               const SizedBox(height: AppSpacing.lg),
               AppText(
                 AppStrings.failedToLoadDocument,
@@ -75,7 +70,11 @@ class LegalDocumentView extends ConsumerWidget {
     );
   }
 
-  Widget _buildContent(BuildContext context, LegalDocument document, ThemeColors colors) {
+  Widget _buildContent(
+    BuildContext context,
+    LegalDocument document,
+    ThemeColors colors,
+  ) {
     return Column(
       children: [
         // Version info bar
@@ -211,10 +210,7 @@ class LegalDocumentView extends ConsumerWidget {
                     }
                     if (element.localName == 'strong' ||
                         element.localName == 'b') {
-                      return {
-                        'color': headingColor,
-                        'font-weight': '600',
-                      };
+                      return {'color': headingColor, 'font-weight': '600'};
                     }
                     return null;
                   },
@@ -231,8 +227,18 @@ class LegalDocumentView extends ConsumerWidget {
 
   String _formatDate(DateTime date) {
     final months = [
-      'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+      'janvier',
+      'février',
+      'mars',
+      'avril',
+      'mai',
+      'juin',
+      'juillet',
+      'août',
+      'septembre',
+      'octobre',
+      'novembre',
+      'décembre',
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
@@ -240,10 +246,7 @@ class LegalDocumentView extends ConsumerWidget {
 
 /// Bottom sheet for accepting terms during onboarding
 class LegalConsentSheet extends ConsumerStatefulWidget {
-  const LegalConsentSheet({
-    super.key,
-    required this.onAccept,
-  });
+  const LegalConsentSheet({super.key, required this.onAccept});
 
   final VoidCallback onAccept;
 
@@ -270,7 +273,9 @@ class _LegalConsentSheetState extends ConsumerState<LegalConsentSheet> {
       ),
       decoration: BoxDecoration(
         color: colors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadius.xxl),
+        ),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -431,7 +436,9 @@ class _LegalConsentSheetState extends ConsumerState<LegalConsentSheet> {
               ),
               child: Icon(
                 isRead ? Icons.check_rounded : Icons.article_outlined,
-                color: isRead ? context.colors.successText : colors.textSecondary,
+                color: isRead
+                    ? context.colors.successText
+                    : colors.textSecondary,
                 size: 20,
               ),
             ),
@@ -471,17 +478,18 @@ class _LegalConsentSheetState extends ConsumerState<LegalConsentSheet> {
     );
   }
 
-  void _openDocument(
+  Future<void> _openDocument(
     BuildContext context,
     LegalDocumentType type,
     VoidCallback onRead,
-  ) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => LegalDocumentView(documentType: type),
-      ),
-    ).then((_) => onRead());
+  ) async {
+    await context.fsmPush<void>(
+      type == LegalDocumentType.termsOfService
+          ? '/legal/terms'
+          : '/legal/privacy',
+      event: AppNavigationEvent.legalDocumentOpened,
+    );
+    onRead();
   }
 
   Future<void> _handleAccept() async {
@@ -492,10 +500,7 @@ class _LegalConsentSheetState extends ConsumerState<LegalConsentSheet> {
       final terms = await ref.read(termsOfServiceProvider.future);
       final privacy = await ref.read(privacyPolicyProvider.future);
 
-      await service.recordAllConsents(
-        terms: terms,
-        privacy: privacy,
-      );
+      await service.recordAllConsents(terms: terms, privacy: privacy);
 
       widget.onAccept();
     } catch (e) {

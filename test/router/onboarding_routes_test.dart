@@ -78,6 +78,8 @@ void main() {
       const expectedPaths = [
         '/signup',
         '/signup/legal-consent',
+        '/legal/terms',
+        '/legal/privacy',
         '/signup/verify-phone',
         '/signup/profile',
         '/signup/set-pin',
@@ -186,6 +188,31 @@ void main() {
           reason: '$path should use generic flow progress, not onboarding UI',
         );
       }
+    });
+
+    test('signup consent opens legal documents through route contracts', () {
+      final consentSource = File(
+        'lib/features/signup/views/signup_legal_consent_view.dart',
+      ).readAsStringSync();
+      final documentSource = File(
+        'lib/features/auth/views/legal_document_view.dart',
+      ).readAsStringSync();
+      final routeSource = File(
+        'lib/router/routes/auth_state_routes.dart',
+      ).readAsStringSync();
+
+      expect(routeSource, contains("path: '/legal/terms'"));
+      expect(routeSource, contains("path: '/legal/privacy'"));
+      expect(consentSource, contains("context.fsmPush<void>("));
+      expect(consentSource, contains("'/legal/terms'"));
+      expect(consentSource, contains("'/legal/privacy'"));
+      expect(
+        consentSource,
+        isNot(contains('Navigator.push')),
+        reason:
+            'Consent documents are screens; opening them must stay inside the FSM route contract.',
+      );
+      expect(documentSource, contains('context.fsmSafePop'));
     });
 
     test('starts anonymous users on login instead of registration', () {
