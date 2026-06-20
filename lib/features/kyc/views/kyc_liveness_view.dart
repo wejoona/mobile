@@ -29,9 +29,12 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
   bool _isComplete = false;
   bool _hasFailed = false;
   bool _isCreatingManualReview = false;
+  bool _manualReviewCreationFailed = false;
   String? _errorMessage;
   String? _manualReviewKycReviewId;
   String? _manualReviewSlaLabel;
+  String? _manualReviewFailureMessage;
+  LivenessManualReviewRequest? _pendingManualReviewRequest;
   Timer? _navigationTimer;
 
   LivenessDecision? _decision;
@@ -94,7 +97,9 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
     _navigationTimer?.cancel();
     setState(() {
       _hasFailed = false;
+      _manualReviewCreationFailed = false;
       _errorMessage = null;
+      _manualReviewFailureMessage = null;
     });
   }
 
@@ -174,19 +179,25 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                _isCreatingManualReview
+                _manualReviewCreationFailed
+                    ? Icons.error_outline_rounded
+                    : _isCreatingManualReview
                     ? Icons.support_agent
                     : isManualReview
                     ? Icons.hourglass_top
                     : Icons.check_circle,
                 size: 80,
-                color: isManualReview || _isCreatingManualReview
+                color: _manualReviewCreationFailed
+                    ? colors.error
+                    : isManualReview || _isCreatingManualReview
                     ? colors.warning
                     : colors.success,
               ),
               const SizedBox(height: AppSpacing.xxl),
               AppText(
-                isManualReview
+                _manualReviewCreationFailed
+                    ? 'Manual review not sent'
+                    : isManualReview
                     ? l10n.liveness_verificationInProgress
                     : l10n.liveness_identityVerified,
                 variant: AppTextVariant.headlineSmall,
@@ -194,7 +205,10 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
               ),
               const SizedBox(height: AppSpacing.md),
               AppText(
-                isManualReview
+                _manualReviewCreationFailed
+                    ? _manualReviewFailureMessage ??
+                          'We could not securely create your manual review. Retry from here so your identity evidence can be reviewed.'
+                    : isManualReview
                     ? _manualReviewKycReviewId == null
                           ? l10n.liveness_manualReviewMessage
                           : '${l10n.liveness_manualReviewMessage}\nReference $_manualReviewKycReviewId'
@@ -212,7 +226,21 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
                 ),
               ],
               const SizedBox(height: AppSpacing.xxl),
-              CircularProgressIndicator(color: colors.gold),
+              if (_manualReviewCreationFailed) ...[
+                AppButton(
+                  label: 'Retry manual review',
+                  onPressed: _retryManualReviewCreation,
+                  isFullWidth: true,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                AppButton(
+                  label: l10n.liveness_goBack,
+                  variant: AppButtonVariant.secondary,
+                  onPressed: _onCancel,
+                  isFullWidth: true,
+                ),
+              ] else
+                CircularProgressIndicator(color: colors.gold),
             ],
           ),
         ),
@@ -229,12 +257,15 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
 
     setState(() {
       _isCreatingManualReview = true;
+      _manualReviewCreationFailed = false;
       _isComplete = true;
       _hasFailed = false;
       _decision = LivenessDecision.manualReview;
       _errorMessage = null;
+      _manualReviewFailureMessage = null;
       _manualReviewKycReviewId = request.backendReviewId;
       _manualReviewSlaLabel = request.slaLabel;
+      _pendingManualReviewRequest = request;
     });
 
     if (request.backendReviewAlreadyCreated) {
@@ -285,27 +316,41 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
         return;
       }
       final apiError = ApiException.fromDioError(error);
-      setState(() {
-        _isCreatingManualReview = false;
-        _isComplete = false;
-        _hasFailed = true;
-        _decision = null;
-        _errorMessage =
-            'We could not securely create your manual review. ${apiError.message}';
-      });
+      _markManualReviewCreationFailed(
+        'We could not securely create your manual review. ${apiError.message}',
+      );
     } on Object catch (_) {
       if (!mounted) {
         return;
       }
-      setState(() {
-        _isCreatingManualReview = false;
-        _isComplete = false;
-        _hasFailed = true;
-        _decision = null;
-        _errorMessage =
-            'We could not securely create your manual review. Please try again.';
-      });
+      _markManualReviewCreationFailed(
+        'We could not securely create your manual review. Please try again.',
+      );
     }
+  }
+
+  void _markManualReviewCreationFailed(String message) {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _isCreatingManualReview = false;
+      _manualReviewCreationFailed = true;
+      _isComplete = true;
+      _hasFailed = false;
+      _decision = LivenessDecision.manualReview;
+      _manualReviewFailureMessage = message;
+      _errorMessage = null;
+    });
+  }
+
+  void _retryManualReviewCreation() {
+    final request = _pendingManualReviewRequest;
+    if (request == null) {
+      _retry();
+      return;
+    }
+    unawaited(_routeKycToManualReview(request));
   }
 
   Future<void> _submitKycEvidenceForManualReview() async {
@@ -341,6 +386,7 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
     _navigationTimer?.cancel();
     setState(() {
       _isCreatingManualReview = false;
+      _manualReviewCreationFailed = false;
       _isComplete = true;
       _decision = LivenessDecision.manualReview;
     });

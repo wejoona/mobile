@@ -1048,6 +1048,14 @@ void main() {
     expect(manualReviewBody, contains('request.backendReviewAlreadyCreated'));
     expect(manualReviewBody, contains('_refreshKycManualReviewState()'));
     expect(manualReviewBody, contains('_scheduleManualReviewNavigation()'));
+    expect(manualReviewBody, contains('_markManualReviewCreationFailed'));
+    expect(kycLivenessSource, contains('_retryManualReviewCreation'));
+    expect(
+      manualReviewBody,
+      isNot(contains('_isComplete = false')),
+      reason:
+          'manual-review creation failure must stay in the review retry state, not collapse into liveness retry',
+    );
     expect(
       manualReviewBody,
       contains("'identity_document'"),
