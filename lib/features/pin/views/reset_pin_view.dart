@@ -357,8 +357,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
             borderRadius: BorderRadius.circular(AppRadius.lg),
             child: LivenessCheckWidget(
               onComplete: _handleLivenessComplete,
-              onManualReviewRequired: (request) =>
-                  _routePinResetToManualReview(request.reason),
+              onManualReviewRequired: _routeLivenessManualReview,
               onManualReviewAcknowledged: _openManualReviewStepFromLiveness,
               useRecoveryToken: true,
               showHeader: false,
@@ -1132,6 +1131,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     String reason, {
     String? newPinHash,
     StepUpDecision? decision,
+    LivenessManualReviewRequest? livenessRequest,
   }) async {
     if (!mounted) return;
     _lastManualReviewReason = reason;
@@ -1156,7 +1156,11 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     _pendingNewPinHash = pendingPinHash;
 
     setState(() {
-      _markManualReviewCreating(reason, reviewSla: decision?.reviewSla);
+      _markManualReviewCreating(
+        reason,
+        reviewSla: decision?.reviewSla,
+        fallbackSlaLabel: livenessRequest?.slaLabel,
+      );
       _isLoading = false;
       _showError = false;
       _errorMessage = null;
@@ -1206,6 +1210,16 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         _markManualReviewCreationFailed(reason);
       });
     }
+  }
+
+  void _routeLivenessManualReview(LivenessManualReviewRequest request) {
+    unawaited(
+      _routePinResetToManualReview(
+        request.reason,
+        newPinHash: _pendingNewPinHash,
+        livenessRequest: request,
+      ),
+    );
   }
 
   void _openManualReviewStepFromLiveness() {
@@ -1279,13 +1293,17 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     }
   }
 
-  void _markManualReviewCreating(String reason, {StepUpReviewSla? reviewSla}) {
+  void _markManualReviewCreating(
+    String reason, {
+    StepUpReviewSla? reviewSla,
+    String? fallbackSlaLabel,
+  }) {
     _manualReviewStatus = 'creating_manual_review';
     _manualReviewCreating = true;
     _manualReviewCreationFailed = false;
     _manualReviewPinQueued = false;
     _manualReviewPinApplied = false;
-    _manualReviewSlaLabel = reviewSla?.label;
+    _manualReviewSlaLabel = reviewSla?.label ?? fallbackSlaLabel;
     _manualReviewResolutionDueAt = null;
     _manualReviewReason = reason;
   }

@@ -791,7 +791,24 @@ void main() {
     expect(resetSource, contains('onManualReviewRequired'));
     expect(
       resetSource,
+      contains('onManualReviewRequired: _routeLivenessManualReview'),
+    );
+    expect(
+      resetSource,
       contains('onManualReviewAcknowledged: _openManualReviewStepFromLiveness'),
+    );
+    expect(resetSource, contains('void _routeLivenessManualReview'));
+    expect(
+      _methodBody(resetSource, '_routeLivenessManualReview'),
+      contains('newPinHash: _pendingNewPinHash'),
+      reason:
+          'liveness provider/manual-review fallback must keep the user-chosen replacement PIN attached to account recovery',
+    );
+    expect(
+      _methodBody(resetSource, '_routeLivenessManualReview'),
+      contains('livenessRequest: request'),
+      reason:
+          'PIN recovery should preserve liveness fallback details such as SLA copy while staging manual review',
     );
     expect(
       riskStepBody,
@@ -934,7 +951,7 @@ void main() {
     expect(
       reviewBody,
       contains(
-        '_markManualReviewCreating(reason, reviewSla: decision?.reviewSla)',
+        '_markManualReviewCreating(\n        reason,\n        reviewSla: decision?.reviewSla',
       ),
     );
     expect(
