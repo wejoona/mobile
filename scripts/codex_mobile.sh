@@ -79,7 +79,7 @@ trap 'cleanup_mobile_lock; exit 143' TERM
 
 export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode-beta.app/Contents/Developer}"
 
-KORIDO_SIM_UDID="${KORIDO_SIM_UDID:-AE43EA55-17BE-4E86-9B7E-A0E564FEA4F8}"
+KORIDO_SIM_UDID="${KORIDO_SIM_UDID:-C796EC5E-0EBE-4E08-BF64-4DCDC84753D3}"
 KORIDO_ENV="${KORIDO_ENV:-staging}"
 KORIDO_API_URL="${KORIDO_API_URL:-https://staging-korido-api.joonapay.com/api/v1}"
 KORIDO_DEFAULT_OTP="${KORIDO_DEFAULT_OTP:-123456}"
@@ -126,7 +126,7 @@ Usage:
 
 Defaults:
   DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer
-  KORIDO_SIM_UDID=AE43EA55-17BE-4E86-9B7E-A0E564FEA4F8
+  KORIDO_SIM_UDID=C796EC5E-0EBE-4E08-BF64-4DCDC84753D3
   KORIDO_ENV=staging
   KORIDO_API_URL=https://staging-korido-api.joonapay.com/api/v1
   KORIDO_DEFAULT_OTP=123456

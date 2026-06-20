@@ -79,7 +79,8 @@ enum _LivenessState {
   failed,
 }
 
-class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
+class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
+    with WidgetsBindingObserver {
   CameraController? _cameraController;
   _LivenessState _state = _LivenessState.initializing;
   String _statusMessage = 'Initializing...';
@@ -94,20 +95,36 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
   String? _manualReviewTitle;
   String? _manualReviewSlaLabel;
   bool _cameraPermissionPermanentlyDenied = false;
+  bool _waitingForCameraSettings = false;
 
   @override
   void initState() {
     super.initState();
-    _start();
+    WidgetsBinding.instance.addObserver(this);
+    unawaited(_start());
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     unawaited(_releaseCamera());
     super.dispose();
   }
 
-  Future<void> _start() async {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed ||
+        !_waitingForCameraSettings ||
+        !mounted ||
+        _state != _LivenessState.cameraPermissionRequired) {
+      return;
+    }
+
+    _waitingForCameraSettings = false;
+    unawaited(_retryCameraAccess(trustSystemSettings: true));
+  }
+
+  Future<void> _start({bool trustSystemSettings = false}) async {
     final isSimulator = ref.read(isSimulatorProvider);
     final mockCamera = ref.read(mockCameraProvider);
 
@@ -121,7 +138,9 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
       return;
     }
 
-    final cameraReady = await _initializeCamera();
+    final cameraReady = await _initializeCamera(
+      trustSystemSettings: trustSystemSettings,
+    );
     if (mounted && cameraReady && _cameraController != null) {
       setState(() {
         _state = _LivenessState.ready;
@@ -130,12 +149,15 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
     }
   }
 
-  Future<bool> _initializeCamera() async {
-    setState(() => _statusMessage = 'Initializing camera...');
+  Future<bool> _initializeCamera({bool trustSystemSettings = false}) async {
+    setState(
+      () => _statusMessage = trustSystemSettings
+          ? 'Checking camera access...'
+          : 'Initializing camera...',
+    );
 
     try {
-      final hasPermission = await _ensureCameraPermission();
-      if (!hasPermission) {
+      if (!trustSystemSettings && !await _ensureCameraPermission()) {
         return false;
       }
 
@@ -168,6 +190,17 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
       if (mounted) setState(() {});
       return true;
     } catch (e) {
+      if (_isCameraPermissionException(e)) {
+        _showCameraPermissionRequired(
+          permanentlyDenied:
+              trustSystemSettings || _cameraExceptionNeedsSettings(e),
+          message: trustSystemSettings
+              ? 'Camera is still unavailable for this Korido build. Confirm camera access in Settings, then return to continue.'
+              : 'Korido needs camera access to complete this face and liveness check.',
+        );
+        return false;
+      }
+
       _fail(
         'Camera initialization failed.',
         manualReviewReason: 'camera_initialization_failed',
@@ -179,6 +212,12 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
   Future<bool> _ensureCameraPermission() async {
     final currentStatus = await ph.Permission.camera.status;
     if (currentStatus.isGranted || currentStatus.isLimited) {
+      if (mounted) {
+        setState(() {
+          _cameraPermissionPermanentlyDenied = false;
+          _errorMessage = null;
+        });
+      }
       return true;
     }
 
@@ -189,7 +228,11 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
     final requestedStatus = await ph.Permission.camera.request();
     if (requestedStatus.isGranted || requestedStatus.isLimited) {
       if (mounted) {
-        setState(() => _statusMessage = 'Camera access allowed...');
+        setState(() {
+          _statusMessage = 'Camera access allowed...';
+          _cameraPermissionPermanentlyDenied = false;
+          _errorMessage = null;
+        });
       }
       await Future<void>.delayed(const Duration(milliseconds: 250));
       return true;
@@ -199,15 +242,46 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
       return false;
     }
 
+    _showCameraPermissionRequired(
+      permanentlyDenied:
+          currentStatus.isPermanentlyDenied ||
+          currentStatus.isRestricted ||
+          requestedStatus.isPermanentlyDenied ||
+          requestedStatus.isRestricted ||
+          (Platform.isIOS && requestedStatus.isDenied),
+      message:
+          'Korido needs camera access to complete this face and liveness check.',
+    );
+    return false;
+  }
+
+  bool _isCameraPermissionException(Object error) {
+    if (error is! CameraException) return false;
+    final code = error.code.toLowerCase();
+    final description = error.description?.toLowerCase() ?? '';
+    return code.contains('accessdenied') ||
+        code.contains('accessrestricted') ||
+        description.contains('permission') ||
+        description.contains('access');
+  }
+
+  bool _cameraExceptionNeedsSettings(Object error) {
+    if (error is! CameraException) return false;
+    final code = error.code.toLowerCase();
+    return code.contains('withoutprompt') || code.contains('restricted');
+  }
+
+  void _showCameraPermissionRequired({
+    required bool permanentlyDenied,
+    required String message,
+  }) {
+    if (!mounted) return;
     setState(() {
       _state = _LivenessState.cameraPermissionRequired;
       _statusMessage = 'Camera permission needed';
-      _cameraPermissionPermanentlyDenied =
-          requestedStatus.isPermanentlyDenied || requestedStatus.isRestricted;
-      _errorMessage =
-          'Korido needs camera access to complete this face and liveness check.';
+      _cameraPermissionPermanentlyDenied = permanentlyDenied;
+      _errorMessage = message;
     });
-    return false;
   }
 
   Future<void> _completeMockLiveness() async {
@@ -599,6 +673,48 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
     await controller?.dispose();
   }
 
+  Future<void> _openCameraSettings() async {
+    _waitingForCameraSettings = true;
+    final opened = await ph.openAppSettings();
+    if (!opened) {
+      _waitingForCameraSettings = false;
+    }
+  }
+
+  Future<void> _retryCameraAccess({bool trustSystemSettings = false}) async {
+    if (!mounted) return;
+    if (trustSystemSettings) {
+      _waitingForCameraSettings = false;
+    }
+
+    setState(() {
+      _state = _LivenessState.initializing;
+      _statusMessage = trustSystemSettings
+          ? 'Checking camera access...'
+          : 'Requesting camera permission...';
+      _errorMessage = null;
+      _cameraPermissionPermanentlyDenied = false;
+    });
+
+    await _releaseCamera();
+    if (!mounted) return;
+
+    if (_sessionToken == null || _challenges.isEmpty) {
+      await _start(trustSystemSettings: trustSystemSettings);
+      return;
+    }
+
+    final cameraReady = await _initializeCamera(
+      trustSystemSettings: trustSystemSettings,
+    );
+    if (mounted && cameraReady && _cameraController != null) {
+      setState(() {
+        _state = _LivenessState.ready;
+        _statusMessage = 'Follow the liveness challenge';
+      });
+    }
+  }
+
   void _acknowledgeManualReview() {
     final acknowledge = widget.onManualReviewAcknowledged;
     if (acknowledge != null) {
@@ -623,7 +739,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
       _evidencePolicy = const LivenessEvidencePolicy();
       _currentChallengeIndex = 0;
     });
-    _start();
+    unawaited(_start());
   }
 
   @override
@@ -816,8 +932,8 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
                   ? 'Open Settings'
                   : 'Allow camera access',
               onPressed: _cameraPermissionPermanentlyDenied
-                  ? () => unawaited(ph.openAppSettings())
-                  : _retry,
+                  ? () => unawaited(_openCameraSettings())
+                  : () => unawaited(_retryCameraAccess()),
               isFullWidth: true,
             ),
             if (_cameraPermissionPermanentlyDenied) ...[
@@ -825,7 +941,8 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
               AppButton(
                 label: 'I allowed access',
                 variant: AppButtonVariant.secondary,
-                onPressed: _retry,
+                onPressed: () =>
+                    unawaited(_retryCameraAccess(trustSystemSettings: true)),
                 isFullWidth: true,
               ),
             ],

@@ -766,6 +766,12 @@ void main() {
     expect(livenessSource, contains('widget.onCancel != null'));
     expect(livenessSource, contains('ph.Permission.camera.request()'));
     expect(livenessSource, contains('_LivenessState.cameraPermissionRequired'));
+    expect(livenessSource, contains('WidgetsBindingObserver'));
+    expect(livenessSource, contains('didChangeAppLifecycleState'));
+    expect(livenessSource, contains('_openCameraSettings'));
+    expect(livenessSource, contains('_retryCameraAccess'));
+    expect(livenessSource, contains('trustSystemSettings: true'));
+    expect(livenessSource, contains('CameraException'));
     expect(livenessSource, contains('Continue with manual review'));
     expect(livenessSource, contains("'camera_permission_unavailable'"));
     expect(livenessSource, contains("'liveness_challenge_unavailable'"));
@@ -811,7 +817,7 @@ void main() {
     );
     expect(
       livenessStartBody.indexOf('await _createSession()'),
-      lessThan(livenessStartBody.indexOf('await _initializeCamera()')),
+      lessThan(livenessStartBody.indexOf('await _initializeCamera(')),
       reason:
           'do not request camera permission when the provider cannot create a usable liveness session',
     );
