@@ -677,6 +677,15 @@ void main() {
           'high-risk PIN recovery liveness must not expose a close action that returns to OTP and hides manual-review state',
     );
     expect(resetSource, contains('useRecoveryToken: true'));
+    final requestOtpBody = _methodBody(resetSource, '_requestOtp');
+    expect(requestOtpBody, contains('authServiceProvider'));
+    expect(requestOtpBody, contains('_hasRecoveryAuthorizationCandidate'));
+    expect(
+      requestOtpBody.indexOf('_ensureRecoveryAuthorization()'),
+      greaterThan(requestOtpBody.indexOf('_hasRecoveryAuthorizationCandidate')),
+      reason:
+          'Requesting a recovery OTP is a public recovery action; recovery authorization can only be required when an existing token is already available.',
+    );
     expect(resetSource, contains('_createRecoveryAuthorizationFromOtp'));
     expect(resetSource, contains('_accountRecoveryRiskMetadata'));
     final recoveryRiskBody = _methodBody(

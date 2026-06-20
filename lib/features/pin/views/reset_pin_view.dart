@@ -406,7 +406,6 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     });
 
     try {
-      await _ensureRecoveryAuthorization();
       final phone = await _resolveRecoveryPhone();
 
       if (phone == null) {
@@ -423,15 +422,18 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         setState(() => _setRecoveryPhone(phone));
       }
 
-      final hasActiveReview = await _loadActiveAccountRecoveryReview();
-      if (hasActiveReview) {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-            _step = 6;
-          });
+      if (await _hasRecoveryAuthorizationCandidate()) {
+        await _ensureRecoveryAuthorization();
+        final hasActiveReview = await _loadActiveAccountRecoveryReview();
+        if (hasActiveReview) {
+          if (mounted) {
+            setState(() {
+              _isLoading = false;
+              _step = 6;
+            });
+          }
+          return;
         }
-        return;
       }
 
       await ref
@@ -459,6 +461,24 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         });
       }
     }
+  }
+
+  Future<bool> _hasRecoveryAuthorizationCandidate() async {
+    final storage = ref.read(secureStorageProvider);
+    final existingRecoveryToken = await storage.read(
+      key: StorageKeys.recoveryAccessToken,
+    );
+    if (existingRecoveryToken != null && existingRecoveryToken.isNotEmpty) {
+      return true;
+    }
+
+    final routeToken = widget.initialContext?.recoveryAccessToken;
+    if (routeToken != null && routeToken.isNotEmpty) {
+      return true;
+    }
+
+    final pendingToken = ref.read(loginProvider).sessionToken;
+    return pendingToken != null && pendingToken.isNotEmpty;
   }
 
   Future<PhoneNumberValue?> _resolveRecoveryPhone() async {
