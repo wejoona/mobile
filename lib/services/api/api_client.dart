@@ -597,6 +597,10 @@ class ApiException implements Exception {
   factory ApiException.fromDioError(DioException error) {
     String message = 'An unexpected error occurred';
     int? statusCode = error.response?.statusCode;
+    final responseData = _withRetryMetadata(
+      error.response?.data,
+      error.response,
+    );
 
     if (isOfflineQueueableErrorMessage(error.message)) {
       return ApiException(
@@ -606,8 +610,8 @@ class ApiException implements Exception {
       );
     }
 
-    if (error.response?.data != null) {
-      final data = error.response?.data;
+    if (responseData != null) {
+      final data = responseData;
       final code = errorCode(data);
       if (code == 'DEVICE_BLACKLISTED') {
         return ApiException(
@@ -647,8 +651,8 @@ class ApiException implements Exception {
     return ApiException(
       message: message,
       statusCode: statusCode,
-      data: error.response?.data,
-      code: errorCode(error.response?.data),
+      data: responseData,
+      code: errorCode(responseData),
     );
   }
 
@@ -717,6 +721,53 @@ class ApiException implements Exception {
     }
 
     return null;
+  }
+
+  static Object? _withRetryMetadata(Object? data, Response? response) {
+    final retryAfterSeconds = _retryAfterSecondsFromHeaders(response?.headers);
+    if (retryAfterSeconds == null) return data;
+
+    if (data is Map<String, dynamic>) {
+      final copy = Map<String, dynamic>.from(data);
+      copy.putIfAbsent('retryAfterSeconds', () => retryAfterSeconds);
+      copy.putIfAbsent('resendAvailableIn', () => retryAfterSeconds);
+      return copy;
+    }
+
+    if (data is Map) {
+      final copy = Map<String, dynamic>.from(data);
+      copy.putIfAbsent('retryAfterSeconds', () => retryAfterSeconds);
+      copy.putIfAbsent('resendAvailableIn', () => retryAfterSeconds);
+      return copy;
+    }
+
+    return {
+      'retryAfterSeconds': retryAfterSeconds,
+      'resendAvailableIn': retryAfterSeconds,
+    };
+  }
+
+  static int? _retryAfterSecondsFromHeaders(Headers? headers) {
+    if (headers == null) return null;
+
+    final retryAfter = _parseRetryHeader(headers.value('retry-after'));
+    if (retryAfter != null) return retryAfter;
+
+    final rateLimitReset = _parsePositiveSeconds(
+      headers.value('x-ratelimit-reset'),
+    );
+    return rateLimitReset;
+  }
+
+  static int? _parseRetryHeader(String? value) {
+    final seconds = _parsePositiveSeconds(value);
+    if (seconds != null) return seconds;
+
+    if (value == null || value.trim().isEmpty) return null;
+    final parsedDate = DateTime.tryParse(value.trim());
+    if (parsedDate == null) return null;
+    final difference = parsedDate.difference(DateTime.now()).inSeconds;
+    return difference <= 0 ? 1 : difference;
   }
 
   static int? _parsePositiveSeconds(Object? value) {

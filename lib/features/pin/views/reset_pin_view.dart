@@ -984,6 +984,25 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           _transitionTo(_PinRecoveryStep.newPin);
         });
       }
+    } on ApiException catch (e) {
+      final retryAfterSeconds = e.resendAvailableIn ?? e.retryAfterSeconds;
+      if (retryAfterSeconds != null) {
+        _startOtpResendCooldown(retryAfterSeconds);
+      }
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          if (retryAfterSeconds != null) {
+            _errorMessage = null;
+            _otpNoticeMessage = _cooldownMessage(l10n, retryAfterSeconds);
+          } else {
+            _otpNoticeMessage = null;
+            _errorMessage =
+                'We could not verify this recovery code. Please try again.';
+          }
+        });
+      }
     } catch (_) {
       if (mounted) {
         setState(() {

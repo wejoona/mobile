@@ -166,12 +166,28 @@ class LoginNotifier extends Notifier<LoginState> {
       );
 
       _resendTimer?.cancel();
+    } on ApiException catch (e) {
+      final retryAfterSeconds = _otpRetryAfterSeconds(e);
+      if (retryAfterSeconds != null) {
+        _startResendCountdown(retryAfterSeconds);
+      }
+      state = state.copyWith(
+        isLoading: false,
+        error: retryAfterSeconds != null
+            ? _verificationCooldownMessage(retryAfterSeconds)
+            : 'Invalid code, try again',
+      );
+      if (retryAfterSeconds == null) {
+        // Clear OTP after wrong-code errors, but keep it visible during cooldown.
+        Future.delayed(const Duration(milliseconds: 500), () {
+          state = state.copyWith(otp: '');
+        });
+      }
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
         error: 'Invalid code, try again',
       );
-      // Clear OTP after error
       Future.delayed(const Duration(milliseconds: 500), () {
         state = state.copyWith(otp: '');
       });

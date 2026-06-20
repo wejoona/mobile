@@ -854,6 +854,27 @@ void main() {
       expect(exception.resendAvailableIn, 120);
     });
 
+    test('should expose retry metadata from rate-limit headers', () {
+      final dioError = DioException(
+        requestOptions: RequestOptions(path: '/auth/login'),
+        response: Response(
+          statusCode: 429,
+          data: {'message': 'Too many requests'},
+          headers: Headers.fromMap({
+            'retry-after': ['45'],
+          }),
+          requestOptions: RequestOptions(path: '/auth/login'),
+        ),
+        type: DioExceptionType.badResponse,
+      );
+
+      final exception = ApiException.fromDioError(dioError);
+
+      expect(exception.statusCode, 429);
+      expect(exception.retryAfterSeconds, 45);
+      expect(exception.resendAvailableIn, 45);
+    });
+
     test('should create exception with message only', () {
       // Arrange & Act
       final exception = ApiException(message: 'Simple error');
