@@ -615,6 +615,26 @@ void main() {
     expect(livenessSource, contains('_manualReviewSlaLabel'));
     expect(livenessSource, contains('String? tempPhotoPath'));
     expect(livenessSource, contains('await _deleteTempPhoto(tempPhotoPath)'));
+    expect(livenessSource, contains('_unsupportedCaptureMessage'));
+    expect(livenessSource, contains('_unsupportedCaptureReason'));
+    expect(
+      _methodBody(livenessSource, '_requiresUnsupportedCapture'),
+      contains('challenge.requiresMotionEvidence'),
+      reason:
+          'photo-only liveness must not try to satisfy nod/motion challenges with a still image',
+    );
+    expect(
+      _methodBody(livenessSource, '_requiresUnsupportedCapture'),
+      contains('challenge.manualReviewRecommended'),
+      reason:
+          'backend/provider manual-review recommendations must fail closed into review instead of capture',
+    );
+    expect(
+      _methodBody(livenessSource, '_unsupportedCaptureReason'),
+      contains("'motion_liveness_requires_video_evidence'"),
+      reason:
+          'manual review should preserve the reason that a photo-only client cannot provide motion proof',
+    );
     expect(
       livenessSource,
       contains('final review = _manualReviewFromError(e)'),

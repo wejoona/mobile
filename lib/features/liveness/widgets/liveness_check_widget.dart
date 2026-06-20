@@ -228,10 +228,8 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
         );
         if (unsupportedChallenge != null) {
           _fail(
-            'This liveness check requires ${unsupportedChallenge.recommendedCaptureMode.value} evidence for ${unsupportedChallenge.type.value}, but this device flow currently supports photo capture only.',
-            manualReviewReason:
-                unsupportedChallenge.manualReviewReason ??
-                'liveness_motion_capture_unsupported',
+            _unsupportedCaptureMessage(unsupportedChallenge),
+            manualReviewReason: _unsupportedCaptureReason(unsupportedChallenge),
           );
           return false;
         }
@@ -301,10 +299,8 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
       if (_requiresUnsupportedCapture(challenge)) {
         await _deleteTempPhoto(photo.path);
         _fail(
-          'This challenge requires ${challenge.recommendedCaptureMode.value} evidence, but this device flow currently supports photo capture only.',
-          manualReviewReason:
-              challenge.manualReviewReason ??
-              'liveness_motion_capture_unsupported',
+          _unsupportedCaptureMessage(challenge),
+          manualReviewReason: _unsupportedCaptureReason(challenge),
         );
         return;
       }
@@ -416,9 +412,38 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
     if (challenge.requiredCaptureMode == LivenessCaptureMode.video) {
       return true;
     }
-    return challenge.manualReviewRecommended &&
-        challenge.recommendedCaptureMode == LivenessCaptureMode.video &&
-        !challenge.acceptedCaptureModes.contains(LivenessCaptureMode.video);
+    if (challenge.recommendedCaptureMode == LivenessCaptureMode.video) {
+      return true;
+    }
+    if (challenge.requiresMotionEvidence) {
+      return true;
+    }
+    if (challenge.manualReviewRecommended) {
+      return true;
+    }
+    return !challenge.acceptedCaptureModes.contains(LivenessCaptureMode.photo);
+  }
+
+  String _unsupportedCaptureReason(LivenessChallenge challenge) {
+    if (challenge.manualReviewReason != null) {
+      return challenge.manualReviewReason!;
+    }
+    if (challenge.requiresMotionEvidence ||
+        challenge.recommendedCaptureMode == LivenessCaptureMode.video ||
+        challenge.requiredCaptureMode == LivenessCaptureMode.video) {
+      return 'motion_liveness_requires_video_evidence';
+    }
+    return 'liveness_capture_mode_unsupported';
+  }
+
+  String _unsupportedCaptureMessage(LivenessChallenge challenge) {
+    final challengeName = challenge.type.value
+        .replaceAll('_', ' ')
+        .toLowerCase();
+    if (challenge.requiresMotionEvidence) {
+      return 'This liveness challenge requires motion evidence for $challengeName, but this device flow currently supports photo capture only.';
+    }
+    return 'This liveness challenge requires ${challenge.recommendedCaptureMode.value} evidence for $challengeName, but this device flow currently supports photo capture only.';
   }
 
   LivenessChallenge? _firstUnsupportedChallenge(
