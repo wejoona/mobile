@@ -898,12 +898,23 @@ void main() {
       ),
       reason: 'manual review must fail closed if no replacement PIN exists',
     );
-    expect(reviewBody, contains('_markManualReviewCreating(reason)'));
     expect(
-      reviewBody.indexOf('_markManualReviewCreating(reason)'),
+      reviewBody,
+      contains(
+        '_markManualReviewCreating(reason, reviewSla: decision?.reviewSla)',
+      ),
+    );
+    expect(
+      reviewBody.indexOf('_markManualReviewCreating(reason'),
       lessThan(reviewBody.indexOf('await _ensureRecoveryAuthorization()')),
       reason:
           'manual-review creation state must appear immediately and must not wait for the support ticket network call',
+    );
+    expect(
+      resetSource,
+      contains("decision.nextAction ?? 'risk_manual_review'"),
+      reason:
+          'PIN recovery must honor the backend flow-contract nextAction instead of hardcoding every manual-review reason',
     );
     expect(reviewBody, contains('_markManualReviewCreationFailed(reason)'));
     expect(

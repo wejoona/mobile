@@ -960,8 +960,9 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
 
       if (_requiresManualReview(decision)) {
         await _routePinResetToManualReview(
-          'risk_manual_review',
+          decision.nextAction ?? 'risk_manual_review',
           newPinHash: newPinHash,
+          decision: decision,
         );
         return false;
       }
@@ -1116,6 +1117,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   Future<void> _routePinResetToManualReview(
     String reason, {
     String? newPinHash,
+    StepUpDecision? decision,
   }) async {
     if (!mounted) return;
     _lastManualReviewReason = reason;
@@ -1140,7 +1142,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     _pendingNewPinHash = pendingPinHash;
 
     setState(() {
-      _markManualReviewCreating(reason);
+      _markManualReviewCreating(reason, reviewSla: decision?.reviewSla);
       _isLoading = false;
       _showError = false;
       _errorMessage = null;
@@ -1260,12 +1262,12 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     }
   }
 
-  void _markManualReviewCreating(String reason) {
+  void _markManualReviewCreating(String reason, {StepUpReviewSla? reviewSla}) {
     _manualReviewStatus = 'creating_manual_review';
     _manualReviewCreating = true;
     _manualReviewCreationFailed = false;
     _manualReviewPinQueued = false;
-    _manualReviewSlaLabel = null;
+    _manualReviewSlaLabel = reviewSla?.label;
     _manualReviewResolutionDueAt = null;
     _manualReviewReason = reason;
   }

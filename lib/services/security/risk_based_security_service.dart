@@ -19,6 +19,39 @@ enum StepUpType {
 }
 
 /// Step-up decision from backend
+class StepUpReviewSla {
+  final String? label;
+  final int? firstResponseMinutes;
+  final int? resolutionMinutes;
+  final bool manualReview;
+
+  const StepUpReviewSla({
+    this.label,
+    this.firstResponseMinutes,
+    this.resolutionMinutes,
+    this.manualReview = false,
+  });
+
+  factory StepUpReviewSla.fromJson(Object? json) {
+    if (json is! Map) {
+      return const StepUpReviewSla();
+    }
+
+    return StepUpReviewSla(
+      label: json['label']?.toString(),
+      firstResponseMinutes: _parseInt(json['firstResponseMinutes']),
+      resolutionMinutes: _parseInt(json['resolutionMinutes']),
+      manualReview: json['manualReview'] == true,
+    );
+  }
+
+  static int? _parseInt(Object? value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '');
+  }
+}
+
 class StepUpDecision {
   final RiskFlow flow;
   final int riskScore;
@@ -29,6 +62,11 @@ class StepUpDecision {
   final List<String> factors;
   final String? challengeToken;
   final DateTime expiresAt;
+  final bool supportReviewRequired;
+  final String? nextAction;
+  final String? nextEndpoint;
+  final bool requiresPendingPinReset;
+  final StepUpReviewSla? reviewSla;
 
   StepUpDecision({
     required this.flow,
@@ -41,6 +79,11 @@ class StepUpDecision {
     required this.factors,
     this.challengeToken,
     required this.expiresAt,
+    this.supportReviewRequired = false,
+    this.nextAction,
+    this.nextEndpoint,
+    this.requiresPendingPinReset = false,
+    this.reviewSla,
   });
 
   factory StepUpDecision.fromJson(Map<String, dynamic> json) {
@@ -54,6 +97,13 @@ class StepUpDecision {
       factors: List<String>.from(json['factors'] ?? []),
       challengeToken: json['challengeToken'],
       expiresAt: DateTime.parse(json['expiresAt']),
+      supportReviewRequired: json['supportReviewRequired'] == true,
+      nextAction: json['nextAction']?.toString(),
+      nextEndpoint: json['nextEndpoint']?.toString(),
+      requiresPendingPinReset: json['requiresPendingPinReset'] == true,
+      reviewSla: json.containsKey('reviewSla')
+          ? StepUpReviewSla.fromJson(json['reviewSla'])
+          : null,
     );
   }
 
