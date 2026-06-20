@@ -8,11 +8,11 @@ import 'package:share_plus/share_plus.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/state/index.dart';
-import 'package:usdc_wallet/features/qr_payment/widgets/qr_display.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
+import 'package:usdc_wallet/features/qr_payment/widgets/qr_display.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/state/index.dart';
 
 class ReceiveView extends ConsumerStatefulWidget {
   const ReceiveView({super.key});
@@ -37,6 +37,9 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
   @override
   void initState() {
     super.initState();
+    unawaited(
+      Future.microtask(() => ref.read(limitsProvider.notifier).fetchLimits()),
+    );
     _refreshTimer = Timer.periodic(const Duration(seconds: 10), (_) {
       if (mounted) {
         setState(() {
@@ -72,6 +75,15 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
     final authState = ref.watch(authProvider);
     final userId = authState.user?.id ?? walletState.walletId;
     final phone = authState.phone ?? authState.user?.phone;
+    final limitsState = ref.watch(limitsProvider);
+    final receivePermissions = limitsState.limits?.permissions;
+    final canReceive = receivePermissions?.canReceive == true;
+    final receiveBlockReason =
+        receivePermissions?.blockReason?.trim().isNotEmpty == true
+        ? receivePermissions!.blockReason!.trim()
+        : receivePermissions?.reviewRequired == true
+        ? l10n.moneyFlow_reviewRequiredMessage
+        : l10n.moneyFlow_verificationRequiredMessage;
 
     return Scaffold(
       backgroundColor: context.colors.canvas,
@@ -94,7 +106,21 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
             const SizedBox(height: AppSpacing.xxl),
 
             // Dynamic QR Code
-            if (walletState.hasWalletAddress || userId.isNotEmpty)
+            if (receivePermissions == null && limitsState.isLoading)
+              Container(
+                width: 268,
+                height: 268,
+                decoration: BoxDecoration(
+                  color: context.colors.container,
+                  borderRadius: BorderRadius.circular(AppRadius.xxl),
+                ),
+                child: Center(
+                  child: CircularProgressIndicator(color: context.colors.gold),
+                ),
+              )
+            else if (!canReceive)
+              _buildReceiveBlockedState(context, receiveBlockReason)
+            else if (walletState.hasWalletAddress || userId.isNotEmpty)
               QrCodeDisplay(
                 data: _buildQrData(userId, phone),
                 size: 220,
@@ -238,6 +264,29 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
             const SizedBox(height: AppSpacing.xxl),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildReceiveBlockedState(BuildContext context, String message) {
+    return AppCard(
+      variant: AppCardVariant.elevated,
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      child: Column(
+        children: [
+          Icon(
+            Icons.verified_user_outlined,
+            color: context.colors.gold,
+            size: 48,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          AppText(
+            message,
+            variant: AppTextVariant.bodyMedium,
+            color: context.colors.textSecondary,
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }

@@ -587,6 +587,12 @@ void main() {
               'total': {'limit': 50000, 'used': 500},
             },
             'perTransaction': {'send': 2500, 'withdraw': 2500},
+            'permissions': {
+              'canSend': true,
+              'canDeposit': true,
+              'canWithdraw': true,
+              'canReceive': true,
+            },
           })
           ..queueResponse({
             'id': 'withdraw_123',
@@ -638,6 +644,12 @@ void main() {
             'total': {'limit': 50000, 'used': 500},
           },
           'perTransaction': {'send': 2500, 'withdraw': 2500},
+          'permissions': {
+            'canSend': true,
+            'canDeposit': true,
+            'canWithdraw': true,
+            'canReceive': true,
+          },
         })
         ..queueResponse({'id': 'withdraw_123', 'status': 'pending'});
       final container = ProviderContainer(
@@ -689,6 +701,12 @@ void main() {
               'total': {'limit': 50000, 'used': 500},
             },
             'perTransaction': {'withdraw': 2500},
+            'permissions': {
+              'canSend': true,
+              'canDeposit': true,
+              'canWithdraw': true,
+              'canReceive': true,
+            },
           })
           ..queueResponse({'id': 'withdraw_123', 'status': 'pending'});
         final container = ProviderContainer(
@@ -823,6 +841,12 @@ void main() {
               'total': {'limit': 50000, 'used': 500},
             },
             'perTransaction': {'withdraw': 2500},
+            'permissions': {
+              'canSend': true,
+              'canDeposit': true,
+              'canWithdraw': true,
+              'canReceive': true,
+            },
           })
           ..queueErrorResponse(
             statusCode: 404,

@@ -257,9 +257,13 @@ class DepositNotifier extends Notifier<DepositState> {
       // Start polling for status updates
       _startPolling(result.id);
     } catch (e) {
+      final moneyFlowError = moneyFlowLimitExceptionFromError(
+        e,
+        operation: TransactionLimitOperation.deposit,
+      );
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: moneyFlowError?.message ?? e.toString(),
         step: DepositFlowStep.failed,
       );
       ref

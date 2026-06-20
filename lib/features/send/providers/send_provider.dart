@@ -472,10 +472,14 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
 
       return true;
     } catch (e) {
+      final moneyFlowError = moneyFlowLimitExceptionFromError(
+        e,
+        operation: TransactionLimitOperation.send,
+      );
       state = state.copyWith(
         isLoading: false,
         isSubmitting: false,
-        error: e.toString(),
+        error: moneyFlowError?.message ?? e.toString(),
       );
       await hapticService.error();
       return false;

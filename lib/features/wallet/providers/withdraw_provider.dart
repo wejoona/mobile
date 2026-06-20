@@ -286,11 +286,15 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
       ref.invalidate(walletBalanceProvider);
       ref.invalidate(transactionsProvider);
     } catch (e) {
+      final moneyFlowError = moneyFlowLimitExceptionFromError(
+        e,
+        operation: TransactionLimitOperation.withdraw,
+      );
       state = state.copyWith(
         isLoading: false,
         error: isCashOutUnavailableError(e)
             ? cashOutUnavailableMessage
-            : e.toString(),
+            : moneyFlowError?.message ?? e.toString(),
       );
     }
   }

@@ -294,6 +294,14 @@ void main() {
           'total': {'limit': 50000, 'used': 1000, 'remaining': 49000},
         },
         'perTransaction': {'send': 2000, 'withdraw': 500},
+        'permissions': {
+          'canSend': true,
+          'canDeposit': true,
+          'canWithdraw': true,
+          'canReceive': true,
+          'blockReason': null,
+          'reviewRequired': false,
+        },
       });
 
       expect(limits.limitHitByFor(TransactionLimitOperation.send, 150), isNull);
@@ -307,6 +315,26 @@ void main() {
       );
       expect(limits.effectiveMaxFor(TransactionLimitOperation.deposit), 200);
       expect(limits.effectiveMaxFor(TransactionLimitOperation.withdraw), 100);
+    });
+
+    test('fails closed when permissions are missing', () {
+      final limits = TransactionLimits.fromJson({
+        'dailyLimit': 1000,
+        'dailyUsed': 0,
+        'monthlyLimit': 5000,
+        'monthlyUsed': 0,
+        'singleTransactionLimit': 250,
+        'withdrawalLimit': 250,
+      });
+
+      expect(limits.permissions.canSend, isFalse);
+      expect(limits.permissions.canDeposit, isFalse);
+      expect(limits.permissions.canWithdraw, isFalse);
+      expect(limits.permissions.canReceive, isFalse);
+      expect(
+        limits.limitHitByFor(TransactionLimitOperation.send, 10),
+        'kyc_required',
+      );
     });
 
     test('preserves backend money-flow blocks from alias payloads', () {

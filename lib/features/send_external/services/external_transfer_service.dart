@@ -113,12 +113,7 @@ class ExternalTransferService {
   }
 
   Exception _handleError(DioException e) {
-    if (e.response?.data != null && e.response!.data is Map) {
-      // ignore: avoid_dynamic_calls
-      final message = e.response!.data['message'] ?? 'Transfer failed';
-      return Exception(message);
-    }
-    return Exception('Network error. Please try again.');
+    return ApiException.fromDioError(e);
   }
 }
 

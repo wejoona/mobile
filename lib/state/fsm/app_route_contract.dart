@@ -669,7 +669,11 @@ const appRouteContracts = <AppRouteContract>[
     pattern: '/receive',
     role: AppRouteRole.moneyStep,
     prefix: true,
-    capabilities: _authenticatedWalletCapabilities,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.requiresWallet,
+      AppRouteCapability.moneyMovement,
+    },
     events: _moneyEvents,
   ),
   AppRouteContract(

@@ -1003,6 +1003,13 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
       icon: Icons.qr_code_2_rounded,
       label: l10n.home_quickAction_receive,
       route: '/receive',
+      onTap: () => _openMoneyFlow(
+        context,
+        ref,
+        l10n,
+        operation: TransactionLimitOperation.receive,
+        route: '/receive',
+      ),
     ),
     WalletQuickActionData(
       icon: Icons.add_circle_outline_rounded,
@@ -1033,25 +1040,25 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     final limits = ref.read(limitsProvider).limits;
     final permissions = limits?.permissions;
 
-    if (permissions == null || permissions.can(operation)) {
+    if (permissions != null && permissions.can(operation)) {
       unawaited(context.fsmPush(route));
       return;
     }
 
-    final reason = permissions.blockReason?.trim();
+    final reason = permissions?.blockReason?.trim();
     final message = reason != null && reason.isNotEmpty
         ? reason
-        : permissions.reviewRequired
+        : permissions?.reviewRequired == true
         ? l10n.moneyFlow_reviewRequiredMessage
         : l10n.moneyFlow_verificationRequiredMessage;
 
     context.showSnack(
       message,
-      tone: permissions.reviewRequired
+      tone: permissions?.reviewRequired == true
           ? AppSnackTone.info
           : AppSnackTone.warning,
       duration: const Duration(seconds: 4),
-      action: permissions.reviewRequired
+      action: permissions?.reviewRequired == true
           ? null
           : SnackBarAction(
               label: l10n.auth_verify,

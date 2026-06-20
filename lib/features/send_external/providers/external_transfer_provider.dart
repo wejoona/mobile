@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/domain/entities/wallet.dart';
+import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
+import 'package:usdc_wallet/features/limits/utils/money_flow_limit_errors.dart';
 import 'package:usdc_wallet/features/send_external/models/external_transfer_request.dart';
 import 'package:usdc_wallet/features/send_external/services/external_transfer_service.dart';
 import 'package:usdc_wallet/services/app_review/app_review_service.dart';
@@ -258,10 +260,14 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
 
       return true;
     } catch (e) {
+      final moneyFlowError = moneyFlowLimitExceptionFromError(
+        e,
+        operation: TransactionLimitOperation.send,
+      );
       state = state.copyWith(
         isLoading: false,
         isSubmitting: false,
-        error: e.toString(),
+        error: moneyFlowError?.message ?? e.toString(),
       );
       return false;
     }
