@@ -97,6 +97,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
   bool _cameraPermissionPermanentlyDenied = false;
   bool _systemCameraAccessGranted = false;
   bool _waitingForCameraSettings = false;
+  int _cameraStartAttemptsAfterPermission = 0;
 
   @override
   void initState() {
@@ -162,6 +163,10 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
       _systemCameraAccessGranted =
           permissionStatus.isGranted || permissionStatus.isLimited;
 
+      if (!_systemCameraAccessGranted && !await _ensureCameraPermission()) {
+        return false;
+      }
+
       if (!trustSystemSettings && !await _ensureCameraPermission()) {
         return false;
       }
@@ -196,6 +201,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
       await _cameraController!.initialize().timeout(
         const Duration(seconds: 12),
       );
+      _cameraStartAttemptsAfterPermission = 0;
       if (mounted) setState(() {});
       return true;
     } catch (e) {
@@ -206,6 +212,19 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
             latestPermissionStatus.isGranted ||
             latestPermissionStatus.isLimited;
         _systemCameraAccessGranted = systemAllowsCamera;
+        if (systemAllowsCamera) {
+          _cameraStartAttemptsAfterPermission += 1;
+          if (_cameraStartAttemptsAfterPermission >= 2 &&
+              widget.onManualReviewRequired != null) {
+            _fail(
+              'Camera access is allowed, but this device could not start the camera safely. A Korido reviewer can continue this flow.',
+              manualReviewReason:
+                  'camera_initialization_failed_after_permission',
+              manualReviewTitle: 'Manual review needed',
+            );
+            return false;
+          }
+        }
         _showCameraPermissionRequired(
           permanentlyDenied:
               !systemAllowsCamera &&
@@ -761,6 +780,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
       _manualReviewSlaLabel = null;
       _cameraPermissionPermanentlyDenied = false;
       _systemCameraAccessGranted = false;
+      _cameraStartAttemptsAfterPermission = 0;
       _sessionToken = null;
       _challenges = [];
       _submittedEvidence.clear();
@@ -965,7 +985,11 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
                   : 'Allow camera access',
               onPressed: needsSettings
                   ? () => unawaited(_openCameraSettings())
-                  : () => unawaited(_retryCameraAccess()),
+                  : () => unawaited(
+                      _retryCameraAccess(
+                        trustSystemSettings: _systemCameraAccessGranted,
+                      ),
+                    ),
               isFullWidth: true,
             ),
             if (needsSettings) ...[

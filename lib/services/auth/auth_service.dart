@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/utils/logger.dart';
@@ -27,7 +28,7 @@ class AuthService {
         countryCode: countryCode,
       );
       final response = await _dio.post(
-        '/auth/register',
+        ApiEndpoints.authRegister,
         data: {
           'phone': phoneValue.apiPhone,
           'countryCode': phoneValue.apiCountryCode,
@@ -53,7 +54,7 @@ class AuthService {
         countryCode: countryCode,
       );
       final response = await _dio.post(
-        '/auth/login',
+        ApiEndpoints.authLogin,
         data: {
           'phone': phoneValue.apiPhone,
           'countryCode': phoneValue.apiCountryCode,
@@ -77,7 +78,7 @@ class AuthService {
         countryCode: countryCode,
       );
       final response = await _dio.post(
-        '/auth/recovery/request-otp',
+        ApiEndpoints.authRecoveryRequestOtp,
         data: {
           'phone': phoneValue.apiPhone,
           'countryCode': phoneValue.apiCountryCode,
@@ -103,7 +104,7 @@ class AuthService {
         countryCode: countryCode,
       );
       final response = await _dio.post(
-        '/auth/verify-otp',
+        ApiEndpoints.authVerifyOtp,
         data: {
           'phone': phoneValue.apiPhone,
           'countryCode': phoneValue.apiCountryCode,
@@ -130,7 +131,7 @@ class AuthService {
         countryCode: countryCode,
       );
       final response = await _dio.post(
-        '/auth/recovery/verify-otp',
+        ApiEndpoints.authRecoveryVerifyOtp,
         data: {
           'phone': phoneValue.apiPhone,
           'countryCode': phoneValue.apiCountryCode,

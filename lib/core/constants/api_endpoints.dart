@@ -9,6 +9,8 @@ abstract final class ApiEndpoints {
   static const authRefresh = '/auth/refresh';
   static const authLogout = '/auth/logout';
   static const authRegister = '/auth/register';
+  static const authRecoveryRequestOtp = '/auth/recovery/request-otp';
+  static const authRecoveryVerifyOtp = '/auth/recovery/verify-otp';
 
   // App Config
   static const configCountries = '/config/countries';
@@ -152,5 +154,4 @@ abstract final class ApiEndpoints {
   // Contacts
   static const contacts = '/contacts';
   static const contactsSync = '/contacts/sync';
-
 }

@@ -2027,11 +2027,14 @@ void main() {
         reason:
             'AuthService should consume the canonical phone value object instead of rebuilding E.164 directly.',
       );
-      expect(authServiceSource, contains("'/auth/login'"));
-      expect(authServiceSource, contains("'/auth/register'"));
-      expect(authServiceSource, contains("'/auth/verify-otp'"));
-      expect(authServiceSource, contains("'/auth/recovery/request-otp'"));
-      expect(authServiceSource, contains("'/auth/recovery/verify-otp'"));
+      expect(authServiceSource, contains('ApiEndpoints.authLogin'));
+      expect(authServiceSource, contains('ApiEndpoints.authRegister'));
+      expect(authServiceSource, contains('ApiEndpoints.authVerifyOtp'));
+      expect(
+        authServiceSource,
+        contains('ApiEndpoints.authRecoveryRequestOtp'),
+      );
+      expect(authServiceSource, contains('ApiEndpoints.authRecoveryVerifyOtp'));
       expect(authServiceSource, contains('RecoveryOtpResponse'));
       expect(apiProviderSource, isNot(contains('AuthApi')));
       expect(apiProviderSource, isNot(contains('auth =')));

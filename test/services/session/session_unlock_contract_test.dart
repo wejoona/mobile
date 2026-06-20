@@ -771,7 +771,20 @@ void main() {
     expect(livenessSource, contains('_openCameraSettings'));
     expect(livenessSource, contains('_retryCameraAccess'));
     expect(livenessSource, contains('trustSystemSettings: true'));
+    expect(
+      livenessSource,
+      contains('trustSystemSettings: _systemCameraAccessGranted'),
+      reason:
+          'once the OS says camera access is granted, retry should trust Settings instead of re-entering the permission prompt loop',
+    );
     expect(livenessSource, contains('_systemCameraAccessGranted'));
+    expect(livenessSource, contains('_cameraStartAttemptsAfterPermission'));
+    expect(
+      livenessSource,
+      contains("'camera_initialization_failed_after_permission'"),
+      reason:
+          'a granted-but-unusable camera must route to manual review instead of looping on the permission card',
+    );
     expect(livenessSource, contains('Try camera again'));
     expect(livenessSource, contains('Camera access is allowed'));
     expect(livenessSource, contains('.timeout('));
