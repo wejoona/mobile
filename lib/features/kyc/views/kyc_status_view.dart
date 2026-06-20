@@ -9,7 +9,6 @@ import 'package:usdc_wallet/design/components/primitives/app_card.dart';
 import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
-import 'package:usdc_wallet/state/fsm/kyc_fsm.dart' as fsm;
 
 class KycStatusView extends ConsumerStatefulWidget {
   const KycStatusView({super.key});
@@ -273,11 +272,6 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
   }
 
   void _handleContinueToHome(BuildContext context) {
-    // Sync FSM state to allow navigation to home
-    // KYC is submitted (pending review), so user can proceed
-    ref
-        .read(appFsmProvider.notifier)
-        .onKycStatusLoaded(tier: fsm.KycTier.none, status: 'pending');
     context.fsmGo('/home');
   }
 }

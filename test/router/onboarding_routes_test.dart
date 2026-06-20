@@ -259,12 +259,31 @@ void main() {
       ).readAsStringSync();
 
       expect(routeSource, contains('redirect: _kycSubmittedRedirect'));
+      expect(routeSource, contains('redirect: _kycWizardRedirect'));
+      expect(routeSource, contains('_kycDurableStatusRedirect'));
+      expect(routeSource, contains('kycStateMachineProvider'));
       expect(routeSource, contains('status.isSubmitted || status.isVerified'));
+      expect(routeSource, contains("return currentPath == '/kyc/submitted'"));
       expect(routeSource, contains("return '/kyc/review';"));
       expect(
         providerSource,
         contains('verificationStatus: KycStatus.submitted'),
       );
+    });
+
+    test('KYC status view does not mutate backend-owned FSM status', () {
+      final source = File(
+        'lib/features/kyc/views/kyc_status_view.dart',
+      ).readAsStringSync();
+      final continueBody = _methodBody(source, 'void _handleContinueToHome');
+
+      expect(
+        continueBody,
+        isNot(contains('onKycStatusLoaded')),
+        reason:
+            'KYC status is backend-owned; view buttons may navigate but must not downgrade manual_review or verified state.',
+      );
+      expect(continueBody, contains("context.fsmGo('/home')"));
     });
 
     test('starts anonymous users on login instead of registration', () {
@@ -458,4 +477,26 @@ void main() {
       );
     });
   });
+}
+
+String _methodBody(String source, String methodName) {
+  final signatureIndex = source.indexOf(methodName);
+  expect(signatureIndex, greaterThanOrEqualTo(0));
+
+  final bodyStart = source.indexOf('{', signatureIndex);
+  expect(bodyStart, greaterThanOrEqualTo(0));
+
+  var depth = 0;
+  for (var index = bodyStart; index < source.length; index += 1) {
+    if (source[index] == '{') {
+      depth += 1;
+    } else if (source[index] == '}') {
+      depth -= 1;
+      if (depth == 0) {
+        return source.substring(bodyStart, index + 1);
+      }
+    }
+  }
+
+  throw StateError('Could not read body for $methodName');
 }

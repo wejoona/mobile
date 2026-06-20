@@ -37,6 +37,7 @@ import 'package:usdc_wallet/features/settings/views/security_view.dart';
 import 'package:usdc_wallet/features/settings/views/sessions_screen.dart';
 import 'package:usdc_wallet/features/settings/views/theme_settings_view.dart';
 import 'package:usdc_wallet/router/page_transitions.dart';
+import 'package:usdc_wallet/state/kyc_state_machine.dart';
 
 List<RouteBase> kycSettingsRoutes() => [
   // KYC Flow Routes
@@ -45,9 +46,10 @@ List<RouteBase> kycSettingsRoutes() => [
     pageBuilder: (context, state) =>
         AppPageTransitions.fade(state: state, child: const KycStatusView()),
   ),
-  GoRoute(path: '/kyc/start', redirect: (_, _) => '/kyc/document-type'),
+  GoRoute(path: '/kyc/start', redirect: _kycStartRedirect),
   GoRoute(
     path: '/kyc/document-type',
+    redirect: _kycWizardRedirect,
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const DocumentTypeView(),
@@ -55,6 +57,7 @@ List<RouteBase> kycSettingsRoutes() => [
   ),
   GoRoute(
     path: '/kyc/personal-info',
+    redirect: _kycWizardRedirect,
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const KycPersonalInfoView(),
@@ -62,6 +65,7 @@ List<RouteBase> kycSettingsRoutes() => [
   ),
   GoRoute(
     path: '/kyc/document-capture',
+    redirect: _kycWizardRedirect,
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const DocumentCaptureView(),
@@ -69,6 +73,7 @@ List<RouteBase> kycSettingsRoutes() => [
   ),
   GoRoute(
     path: '/kyc/selfie',
+    redirect: _kycWizardRedirect,
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const SelfieView(),
@@ -92,6 +97,7 @@ List<RouteBase> kycSettingsRoutes() => [
   ),
   GoRoute(
     path: '/kyc/review',
+    redirect: _kycWizardRedirect,
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const ReviewView(),
@@ -270,7 +276,22 @@ List<RouteBase> kycSettingsRoutes() => [
   ),
 ];
 
+String? _kycStartRedirect(BuildContext context, GoRouterState state) =>
+    _kycDurableStatusRedirect(context, currentPath: state.uri.path) ??
+    '/kyc/document-type';
+
+String? _kycWizardRedirect(BuildContext context, GoRouterState state) =>
+    _kycDurableStatusRedirect(context, currentPath: state.uri.path);
+
 String? _kycEvidenceRedirect(BuildContext context, GoRouterState state) {
+  final durableRedirect = _kycDurableStatusRedirect(
+    context,
+    currentPath: state.uri.path,
+  );
+  if (durableRedirect != null) {
+    return durableRedirect;
+  }
+
   final flow = ProviderScope.containerOf(context).read(kycProvider);
   if (flow.canSubmit) {
     return null;
@@ -291,6 +312,14 @@ String? _kycEvidenceRedirect(BuildContext context, GoRouterState state) {
 }
 
 String? _kycSubmittedRedirect(BuildContext context, GoRouterState state) {
+  final durableRedirect = _kycDurableStatusRedirect(
+    context,
+    currentPath: state.uri.path,
+  );
+  if (durableRedirect != null) {
+    return durableRedirect;
+  }
+
   final flow = ProviderScope.containerOf(context).read(kycProvider);
   final status = flow.status;
   if (status.isSubmitted || status.isVerified) {
@@ -300,4 +329,23 @@ String? _kycSubmittedRedirect(BuildContext context, GoRouterState state) {
     return '/kyc/review';
   }
   return _kycEvidenceRedirect(context, state) ?? '/kyc';
+}
+
+String? _kycDurableStatusRedirect(
+  BuildContext context, {
+  required String currentPath,
+}) {
+  final status = ProviderScope.containerOf(
+    context,
+  ).read(kycStateMachineProvider).status;
+
+  if (status.isSubmitted) {
+    return currentPath == '/kyc/submitted' ? null : '/kyc/submitted';
+  }
+
+  if (status.isVerified && currentPath != '/kyc') {
+    return '/kyc';
+  }
+
+  return null;
 }
