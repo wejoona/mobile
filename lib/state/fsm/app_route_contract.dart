@@ -494,6 +494,42 @@ const appRouteContracts = <AppRouteContract>[
     events: {AppNavigationEvent.kycStarted},
   ),
   AppRouteContract(
+    pattern: '/kyc/liveness-instructions',
+    role: AppRouteRole.verificationStep,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.setupFlow,
+    },
+    events: {AppNavigationEvent.kycStarted},
+  ),
+  AppRouteContract(
+    pattern: '/kyc/liveness',
+    role: AppRouteRole.verificationStep,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.setupFlow,
+    },
+    events: {AppNavigationEvent.kycStarted},
+  ),
+  AppRouteContract(
+    pattern: '/kyc/review',
+    role: AppRouteRole.setupStep,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.setupFlow,
+    },
+    events: {AppNavigationEvent.kycStarted},
+  ),
+  AppRouteContract(
+    pattern: '/kyc/submitted',
+    role: AppRouteRole.setupStep,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.setupFlow,
+    },
+    events: {AppNavigationEvent.kycStarted},
+  ),
+  AppRouteContract(
     pattern: '/kyc/',
     role: AppRouteRole.setupStep,
     prefix: true,

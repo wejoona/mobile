@@ -141,6 +141,12 @@ void main() {
       () {
         final kycStart = appRouteContractFor('/kyc/start');
         final kycDocumentType = appRouteContractFor('/kyc/document-type');
+        final kycLivenessInstructions = appRouteContractFor(
+          '/kyc/liveness-instructions',
+        );
+        final kycLiveness = appRouteContractFor('/kyc/liveness');
+        final kycReview = appRouteContractFor('/kyc/review');
+        final kycSubmitted = appRouteContractFor('/kyc/submitted');
         final kycExpired = appRouteContractFor('/kyc-expired');
 
         expect(kycStart.role, AppRouteRole.setupStep);
@@ -150,6 +156,19 @@ void main() {
 
         expect(kycDocumentType.role, AppRouteRole.setupStep);
         expect(kycDocumentType.isSetupRoute, isTrue);
+
+        expect(kycLivenessInstructions.role, AppRouteRole.verificationStep);
+        expect(kycLivenessInstructions.requiresAuth, isTrue);
+        expect(kycLivenessInstructions.isSetupRoute, isTrue);
+
+        expect(kycLiveness.role, AppRouteRole.verificationStep);
+        expect(kycLiveness.requiresAuth, isTrue);
+        expect(kycLiveness.isSetupRoute, isTrue);
+
+        expect(kycReview.role, AppRouteRole.setupStep);
+        expect(kycReview.isSetupRoute, isTrue);
+        expect(kycSubmitted.role, AppRouteRole.setupStep);
+        expect(kycSubmitted.isSetupRoute, isTrue);
 
         expect(kycExpired.role, AppRouteRole.fsmState);
         expect(kycExpired.isFsmRoute, isTrue);
