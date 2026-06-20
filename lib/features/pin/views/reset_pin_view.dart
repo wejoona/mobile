@@ -1008,6 +1008,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           biometricVerified:
               decision.stepUpType == StepUpType.biometric ||
               decision.stepUpType == StepUpType.biometricAndLiveness,
+          useRecoveryToken: true,
         );
         if (!mounted) return false;
         if (!validated) {

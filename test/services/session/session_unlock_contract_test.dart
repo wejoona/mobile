@@ -879,6 +879,12 @@ void main() {
           'PIN recovery must branch high-risk liveness before generic step-up handling',
     );
     expect(
+      _methodBody(resetSource, '_prepareRecoveryDecisionForConfirmedPin'),
+      contains('useRecoveryToken: true'),
+      reason:
+          'all PIN recovery step-up validation paths must use the scoped recovery token, not the normal bearer session',
+    );
+    expect(
       resetSource.indexOf('await _createRecoveryAuthorizationFromOtp()'),
       lessThan(resetSource.indexOf('evaluateOperation')),
       reason:
