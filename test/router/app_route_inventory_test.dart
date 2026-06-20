@@ -133,6 +133,19 @@ void main() {
       expect(routePaths, isNot(contains('/pin/set')));
     });
 
+    test('legacy transfer success aliases cannot render fake success data', () {
+      final source = File(
+        'lib/router/routes/card_account_routes.dart',
+      ).readAsStringSync();
+
+      expect(source, contains("path: '/transfer/success'"));
+      expect(source, contains("path: '/transfer-success'"));
+      expect(source, contains("redirect: (_, _) => '/send/result'"));
+      expect(source, isNot(contains('TransferSuccessView(')));
+      expect(source, isNot(contains("transactionId: 'N/A'")));
+      expect(source, isNot(contains("recipient: 'Unknown'")));
+    });
+
     test(
       'production navigation literals resolve through the assembled router',
       () {

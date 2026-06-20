@@ -154,6 +154,24 @@ const _moneyEvents = {
   AppNavigationEvent.moneyCompleted,
 };
 
+const _authenticatedWalletCapabilities = {
+  AppRouteCapability.requiresAuth,
+  AppRouteCapability.requiresWallet,
+};
+
+const _moneyMovementCapabilities = {
+  AppRouteCapability.requiresAuth,
+  AppRouteCapability.requiresWallet,
+  AppRouteCapability.moneyMovement,
+};
+
+const _verifiedMoneyMovementCapabilities = {
+  AppRouteCapability.requiresAuth,
+  AppRouteCapability.requiresWallet,
+  AppRouteCapability.requiresVerifiedKyc,
+  AppRouteCapability.moneyMovement,
+};
+
 const appRouteContracts = <AppRouteContract>[
   AppRouteContract(
     pattern: '/',
@@ -655,10 +673,7 @@ const appRouteContracts = <AppRouteContract>[
     pattern: '/receive',
     role: AppRouteRole.moneyStep,
     prefix: true,
-    capabilities: {
-      AppRouteCapability.requiresAuth,
-      AppRouteCapability.requiresWallet,
-    },
+    capabilities: _authenticatedWalletCapabilities,
     events: _moneyEvents,
   ),
   AppRouteContract(
@@ -690,12 +705,173 @@ const appRouteContracts = <AppRouteContract>[
     pattern: '/bulk-payments',
     role: AppRouteRole.moneyStep,
     prefix: true,
-    capabilities: {
-      AppRouteCapability.requiresAuth,
-      AppRouteCapability.requiresWallet,
-      AppRouteCapability.requiresVerifiedKyc,
-      AppRouteCapability.moneyMovement,
-    },
+    capabilities: _verifiedMoneyMovementCapabilities,
+    events: _moneyEvents,
+  ),
+  AppRouteContract(
+    pattern: '/offline/pending-transfers',
+    role: AppRouteRole.moneyStep,
+    capabilities: _moneyMovementCapabilities,
+    events: _moneyEvents,
+  ),
+  AppRouteContract(
+    pattern: '/qr/scan-address',
+    role: AppRouteRole.moneyStep,
+    capabilities: _moneyMovementCapabilities,
+    events: _moneyEvents,
+  ),
+  AppRouteContract(
+    pattern: '/scan',
+    role: AppRouteRole.moneyStep,
+    capabilities: _moneyMovementCapabilities,
+    events: _moneyEvents,
+  ),
+  AppRouteContract(
+    pattern: '/scan-to-pay',
+    role: AppRouteRole.moneyStep,
+    capabilities: _verifiedMoneyMovementCapabilities,
+    events: _moneyEvents,
+  ),
+  AppRouteContract(
+    pattern: '/payment-receipt',
+    role: AppRouteRole.moneyStep,
+    capabilities: _authenticatedWalletCapabilities,
+    events: _moneyEvents,
+  ),
+  AppRouteContract(
+    pattern: '/bill-payments',
+    role: AppRouteRole.moneyStep,
+    prefix: true,
+    capabilities: _verifiedMoneyMovementCapabilities,
+    events: _moneyEvents,
+  ),
+  AppRouteContract(
+    pattern: '/bills',
+    role: AppRouteRole.moneyStep,
+    capabilities: _verifiedMoneyMovementCapabilities,
+    events: _moneyEvents,
+  ),
+  AppRouteContract(
+    pattern: '/airtime',
+    role: AppRouteRole.moneyStep,
+    capabilities: _verifiedMoneyMovementCapabilities,
+    events: _moneyEvents,
+  ),
+  AppRouteContract(
+    pattern: '/request',
+    role: AppRouteRole.moneyStep,
+    capabilities: _verifiedMoneyMovementCapabilities,
+    events: _moneyEvents,
+  ),
+  AppRouteContract(
+    pattern: '/split',
+    role: AppRouteRole.moneyStep,
+    capabilities: _moneyMovementCapabilities,
+    events: _moneyEvents,
+  ),
+  AppRouteContract(
+    pattern: '/bank-linking/transfer/',
+    role: AppRouteRole.moneyStep,
+    prefix: true,
+    capabilities: _verifiedMoneyMovementCapabilities,
+    events: _moneyEvents,
+  ),
+  AppRouteContract(
+    pattern: '/bank-linking',
+    role: AppRouteRole.setupStep,
+    prefix: true,
+    capabilities: _authenticatedWalletCapabilities,
+  ),
+  AppRouteContract(
+    pattern: '/beneficiaries',
+    role: AppRouteRole.settingsStep,
+    prefix: true,
+    capabilities: _authenticatedWalletCapabilities,
+  ),
+  AppRouteContract(
+    pattern: '/recipients',
+    role: AppRouteRole.settingsStep,
+    capabilities: _authenticatedWalletCapabilities,
+  ),
+  AppRouteContract(
+    pattern: '/contacts',
+    role: AppRouteRole.settingsStep,
+    prefix: true,
+    capabilities: {AppRouteCapability.requiresAuth},
+  ),
+  AppRouteContract(
+    pattern: '/sub-businesses/transfer/',
+    role: AppRouteRole.moneyStep,
+    prefix: true,
+    capabilities: _verifiedMoneyMovementCapabilities,
+    events: _moneyEvents,
+  ),
+  AppRouteContract(
+    pattern: '/sub-businesses',
+    role: AppRouteRole.settingsStep,
+    prefix: true,
+    capabilities: _authenticatedWalletCapabilities,
+  ),
+  AppRouteContract(
+    pattern: '/merchant-dashboard',
+    role: AppRouteRole.settingsStep,
+    capabilities: _authenticatedWalletCapabilities,
+  ),
+  AppRouteContract(
+    pattern: '/merchant-qr',
+    role: AppRouteRole.settingsStep,
+    capabilities: _authenticatedWalletCapabilities,
+  ),
+  AppRouteContract(
+    pattern: '/create-payment-request',
+    role: AppRouteRole.moneyStep,
+    capabilities: _verifiedMoneyMovementCapabilities,
+    events: _moneyEvents,
+  ),
+  AppRouteContract(
+    pattern: '/merchant-transactions',
+    role: AppRouteRole.authenticatedShell,
+    capabilities: _authenticatedWalletCapabilities,
+  ),
+  AppRouteContract(
+    pattern: '/savings-pots/create',
+    role: AppRouteRole.moneyStep,
+    prefix: true,
+    capabilities: _moneyMovementCapabilities,
+    events: _moneyEvents,
+  ),
+  AppRouteContract(
+    pattern: '/savings-pots/edit/',
+    role: AppRouteRole.moneyStep,
+    prefix: true,
+    capabilities: _moneyMovementCapabilities,
+    events: _moneyEvents,
+  ),
+  AppRouteContract(
+    pattern: '/savings-pots',
+    role: AppRouteRole.moneyStep,
+    prefix: true,
+    capabilities: _authenticatedWalletCapabilities,
+    events: _moneyEvents,
+  ),
+  AppRouteContract(
+    pattern: '/recurring-transfers/create',
+    role: AppRouteRole.moneyStep,
+    prefix: true,
+    capabilities: _moneyMovementCapabilities,
+    events: _moneyEvents,
+  ),
+  AppRouteContract(
+    pattern: '/recurring-transfers',
+    role: AppRouteRole.moneyStep,
+    prefix: true,
+    capabilities: _authenticatedWalletCapabilities,
+    events: _moneyEvents,
+  ),
+  AppRouteContract(
+    pattern: '/scheduled',
+    role: AppRouteRole.moneyStep,
+    capabilities: _authenticatedWalletCapabilities,
     events: _moneyEvents,
   ),
   AppRouteContract(

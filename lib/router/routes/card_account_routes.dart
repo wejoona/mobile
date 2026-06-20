@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/features/cards/views/card_detail_view.dart';
@@ -19,7 +18,6 @@ import 'package:usdc_wallet/features/qr_payment/views/scan_qr_screen.dart';
 import 'package:usdc_wallet/features/settings/views/change_pin_view.dart';
 import 'package:usdc_wallet/features/settings/views/profile_view.dart';
 import 'package:usdc_wallet/features/transactions/views/transaction_detail_view.dart';
-import 'package:usdc_wallet/features/wallet/views/transfer_success_view.dart';
 import 'package:usdc_wallet/router/page_transitions.dart';
 
 List<RouteBase> cardAccountRoutes() => [
@@ -76,45 +74,8 @@ List<RouteBase> cardAccountRoutes() => [
       child: const ReceiveQrScreen(),
     ),
   ),
-  GoRoute(
-    path: '/transfer/success',
-    pageBuilder: (context, state) {
-      final extra = state.extra as Map<String, dynamic>?;
-      Widget child;
-      if (extra != null) {
-        child = TransferSuccessView(
-          amount: extra['amount'] as double,
-          recipient: extra['recipient'] as String,
-          transactionId: extra['transactionId'] as String,
-          note: extra['note'] as String?,
-        );
-      } else {
-        // Fallback - go home
-        child = const TransferSuccessView(
-          amount: 0,
-          recipient: 'Unknown',
-          transactionId: 'N/A',
-        );
-      }
-      // Scale and fade for success screens
-      return createSuccessTransition(state: state, child: child);
-    },
-  ),
-  GoRoute(
-    path: '/transfer-success',
-    pageBuilder: (context, state) {
-      final extra = state.extra as Map<String, dynamic>?;
-      return createSuccessTransition(
-        state: state,
-        child: TransferSuccessView(
-          amount: extra?['amount'] as double? ?? 0,
-          recipient: extra?['recipient'] as String? ?? 'Unknown',
-          transactionId: extra?['transactionId'] as String? ?? 'N/A',
-          note: extra?['note'] as String?,
-        ),
-      );
-    },
-  ),
+  GoRoute(path: '/transfer/success', redirect: (_, _) => '/send/result'),
+  GoRoute(path: '/transfer-success', redirect: (_, _) => '/send/result'),
   GoRoute(
     path: '/notifications',
     pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
@@ -162,9 +123,8 @@ List<RouteBase> cardAccountRoutes() => [
   GoRoute(
     path: '/pin/reset',
     pageBuilder: (context, state) {
-      final extraContext = state.extra is PinResetRouteContext
-          ? state.extra as PinResetRouteContext
-          : null;
+      final extra = state.extra;
+      final extraContext = extra is PinResetRouteContext ? extra : null;
       final resetContext = _pinResetRouteContext(
         extraContext,
         state.uri.queryParameters['returnTo'],

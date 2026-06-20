@@ -147,6 +147,80 @@ void main() {
     });
 
     test(
+      'merchant, bill, and offline money routes are explicitly contracted',
+      () {
+        final scanToPay = appRouteContractFor('/scan-to-pay');
+        final billForm = appRouteContractFor(
+          '/bill-payments/form/orange-money',
+        );
+        final billSuccess = appRouteContractFor(
+          '/bill-payments/success/payment-123',
+        );
+        final bankTransfer = appRouteContractFor(
+          '/bank-linking/transfer/account-123',
+        );
+        final subBusinessTransfer = appRouteContractFor(
+          '/sub-businesses/transfer/business-123',
+        );
+        final offlineTransfers = appRouteContractFor(
+          '/offline/pending-transfers',
+        );
+        final merchantRequest = appRouteContractFor('/create-payment-request');
+
+        for (final contract in [
+          scanToPay,
+          billForm,
+          billSuccess,
+          bankTransfer,
+          subBusinessTransfer,
+          merchantRequest,
+        ]) {
+          expect(contract.role, AppRouteRole.moneyStep);
+          expect(contract.requiresAuth, isTrue);
+          expect(contract.requiresWallet, isTrue);
+          expect(contract.requiresVerifiedKyc, isTrue);
+          expect(
+            contract.capabilities,
+            contains(AppRouteCapability.moneyMovement),
+          );
+        }
+
+        expect(offlineTransfers.role, AppRouteRole.moneyStep);
+        expect(offlineTransfers.requiresWallet, isTrue);
+        expect(
+          offlineTransfers.capabilities,
+          contains(AppRouteCapability.moneyMovement),
+        );
+      },
+    );
+
+    test(
+      'stored beneficiary and business routes are not generic unknown routes',
+      () {
+        final contacts = appRouteContractFor('/contacts/list');
+        final beneficiaries = appRouteContractFor(
+          '/beneficiaries/detail/ben-1',
+        );
+        final bankLinking = appRouteContractFor('/bank-linking/verify/bank-1');
+        final subBusiness = appRouteContractFor('/sub-businesses/detail/sub-1');
+        final merchantTransactions = appRouteContractFor(
+          '/merchant-transactions',
+        );
+
+        for (final contract in [
+          contacts,
+          beneficiaries,
+          bankLinking,
+          subBusiness,
+          merchantTransactions,
+        ]) {
+          expect(contract.role, isNot(AppRouteRole.unknown));
+          expect(contract.requiresAuth, isTrue);
+        }
+      },
+    );
+
+    test(
       'KYC setup routes are explicit setup routes without swallowing FSM states',
       () {
         final kycStart = appRouteContractFor('/kyc/start');
