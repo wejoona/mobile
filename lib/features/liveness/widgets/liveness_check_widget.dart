@@ -95,6 +95,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
   String? _manualReviewTitle;
   String? _manualReviewSlaLabel;
   bool _cameraPermissionPermanentlyDenied = false;
+  bool _systemCameraAccessGranted = false;
   bool _waitingForCameraSettings = false;
 
   @override
@@ -157,11 +158,17 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
     );
 
     try {
+      final permissionStatus = await ph.Permission.camera.status;
+      _systemCameraAccessGranted =
+          permissionStatus.isGranted || permissionStatus.isLimited;
+
       if (!trustSystemSettings && !await _ensureCameraPermission()) {
         return false;
       }
 
-      final cameras = await availableCameras();
+      final cameras = await availableCameras().timeout(
+        const Duration(seconds: 8),
+      );
       if (cameras.isEmpty) {
         if (!kReleaseMode && ref.read(mockCameraProvider)) {
           await _completeMockLiveness();
@@ -186,15 +193,26 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
         imageFormatGroup: ImageFormatGroup.jpeg,
       );
 
-      await _cameraController!.initialize();
+      await _cameraController!.initialize().timeout(
+        const Duration(seconds: 12),
+      );
       if (mounted) setState(() {});
       return true;
     } catch (e) {
+      await _releaseCamera();
       if (_isCameraPermissionException(e)) {
+        final latestPermissionStatus = await ph.Permission.camera.status;
+        final systemAllowsCamera =
+            latestPermissionStatus.isGranted ||
+            latestPermissionStatus.isLimited;
+        _systemCameraAccessGranted = systemAllowsCamera;
         _showCameraPermissionRequired(
           permanentlyDenied:
-              trustSystemSettings || _cameraExceptionNeedsSettings(e),
-          message: trustSystemSettings
+              !systemAllowsCamera &&
+              (trustSystemSettings || _cameraExceptionNeedsSettings(e)),
+          message: systemAllowsCamera
+              ? 'Camera access is allowed, but the camera did not start. Try again; if it keeps failing, continue with manual review.'
+              : trustSystemSettings
               ? 'Camera is still unavailable for this Korido build. Confirm camera access in Settings, then return to continue.'
               : 'Korido needs camera access to complete this face and liveness check.',
         );
@@ -211,10 +229,13 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
 
   Future<bool> _ensureCameraPermission() async {
     final currentStatus = await ph.Permission.camera.status;
+    _systemCameraAccessGranted =
+        currentStatus.isGranted || currentStatus.isLimited;
     if (currentStatus.isGranted || currentStatus.isLimited) {
       if (mounted) {
         setState(() {
           _cameraPermissionPermanentlyDenied = false;
+          _systemCameraAccessGranted = true;
           _errorMessage = null;
         });
       }
@@ -226,11 +247,14 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
     }
 
     final requestedStatus = await ph.Permission.camera.request();
+    _systemCameraAccessGranted =
+        requestedStatus.isGranted || requestedStatus.isLimited;
     if (requestedStatus.isGranted || requestedStatus.isLimited) {
       if (mounted) {
         setState(() {
           _statusMessage = 'Camera access allowed...';
           _cameraPermissionPermanentlyDenied = false;
+          _systemCameraAccessGranted = true;
           _errorMessage = null;
         });
       }
@@ -280,6 +304,9 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
       _state = _LivenessState.cameraPermissionRequired;
       _statusMessage = 'Camera permission needed';
       _cameraPermissionPermanentlyDenied = permanentlyDenied;
+      if (permanentlyDenied) {
+        _systemCameraAccessGranted = false;
+      }
       _errorMessage = message;
     });
   }
@@ -733,6 +760,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
       _manualReviewTitle = null;
       _manualReviewSlaLabel = null;
       _cameraPermissionPermanentlyDenied = false;
+      _systemCameraAccessGranted = false;
       _sessionToken = null;
       _challenges = [];
       _submittedEvidence.clear();
@@ -888,6 +916,8 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
 
   Widget _buildCameraPermissionRequired(ThemeColors colors) {
     final canUseManualReview = widget.onManualReviewRequired != null;
+    final needsSettings =
+        _cameraPermissionPermanentlyDenied && !_systemCameraAccessGranted;
 
     return Center(
       child: Padding(
@@ -919,7 +949,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
             ),
             const SizedBox(height: AppSpacing.sm),
             AppText(
-              _cameraPermissionPermanentlyDenied
+              needsSettings
                   ? 'Camera access is disabled for Korido. Open Settings, allow camera access, then return to continue.'
                   : _errorMessage ??
                         'Korido needs camera access to complete this face and liveness check.',
@@ -928,15 +958,17 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
             ),
             const SizedBox(height: AppSpacing.xl),
             AppButton(
-              label: _cameraPermissionPermanentlyDenied
+              label: needsSettings
                   ? 'Open Settings'
+                  : _systemCameraAccessGranted
+                  ? 'Try camera again'
                   : 'Allow camera access',
-              onPressed: _cameraPermissionPermanentlyDenied
+              onPressed: needsSettings
                   ? () => unawaited(_openCameraSettings())
                   : () => unawaited(_retryCameraAccess()),
               isFullWidth: true,
             ),
-            if (_cameraPermissionPermanentlyDenied) ...[
+            if (needsSettings) ...[
               const SizedBox(height: AppSpacing.sm),
               AppButton(
                 label: 'I allowed access',

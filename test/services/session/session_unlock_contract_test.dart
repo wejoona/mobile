@@ -771,6 +771,10 @@ void main() {
     expect(livenessSource, contains('_openCameraSettings'));
     expect(livenessSource, contains('_retryCameraAccess'));
     expect(livenessSource, contains('trustSystemSettings: true'));
+    expect(livenessSource, contains('_systemCameraAccessGranted'));
+    expect(livenessSource, contains('Try camera again'));
+    expect(livenessSource, contains('Camera access is allowed'));
+    expect(livenessSource, contains('.timeout('));
     expect(livenessSource, contains('CameraException'));
     expect(livenessSource, contains('Continue with manual review'));
     expect(livenessSource, contains("'camera_permission_unavailable'"));
