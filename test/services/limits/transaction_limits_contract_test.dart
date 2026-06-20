@@ -79,6 +79,54 @@ void main() {
       );
     });
 
+    test('send step-up proof is preserved for guarded transfer submit', () {
+      final confirmSource = File(
+        'lib/features/send/views/confirm_screen.dart',
+      ).readAsStringSync();
+      final providerSource = File(
+        'lib/features/send/providers/send_provider.dart',
+      ).readAsStringSync();
+      final serviceSource = File(
+        'lib/services/transfers/transfers_service.dart',
+      ).readAsStringSync();
+      final headersSource = File(
+        'lib/core/utils/transaction_headers.dart',
+      ).readAsStringSync();
+      final dialogSource = File(
+        'lib/features/wallet/widgets/risk_step_up_dialog.dart',
+      ).readAsStringSync();
+
+      expect(confirmSource, contains('clearStepUpAuthorization()'));
+      expect(confirmSource, contains('markStepUpAuthorized(stepUpToken)'));
+      expect(
+        confirmSource.indexOf('markStepUpAuthorized(stepUpToken)'),
+        lessThan(confirmSource.indexOf("context.fsmPush('/send/pin')")),
+        reason:
+            'the completed challenge token must be stored before moving to the PIN step.',
+      );
+
+      expect(providerSource, contains('stepUpChallengeToken'));
+      expect(
+        providerSource,
+        contains('stepUpToken: state.stepUpChallengeToken'),
+      );
+      expect(serviceSource, contains('stepUpToken: stepUpToken'));
+      expect(headersSource, contains("'X-Step-Up-Token'"));
+
+      final verifyStart = dialogSource.indexOf('Future<void> _handleVerify');
+      final biometricCase = dialogSource.substring(
+        dialogSource.indexOf('case StepUpType.biometric:', verifyStart),
+        dialogSource.indexOf('case StepUpType.liveness:', verifyStart),
+      );
+      expect(biometricCase, contains('_validateBiometricStepUp'));
+      expect(
+        biometricCase.indexOf('_validateBiometricStepUp'),
+        lessThan(biometricCase.indexOf('widget.onSuccess()')),
+        reason:
+            'biometric step-up must be completed with /step-up/validate before the guarded transfer can consume it.',
+      );
+    });
+
     test('internal transfer submission does not own step-up UI checks', () {
       final providerSource = File(
         'lib/features/send/providers/send_provider.dart',

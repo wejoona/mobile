@@ -257,6 +257,9 @@ class ConfirmScreen extends ConsumerWidget {
                   }
 
                   try {
+                    final sendNotifier = ref.read(sendMoneyProvider.notifier);
+                    sendNotifier.clearStepUpAuthorization();
+
                     // Risk-based step-up evaluation
                     final securityService = ref.read(
                       riskBasedSecurityServiceProvider,
@@ -274,12 +277,49 @@ class ConfirmScreen extends ConsumerWidget {
                     );
 
                     if (decision.stepUpRequired) {
+                      if (decision.stepUpType == StepUpType.manualReview) {
+                        if (!context.mounted) return;
+                        HapticFeedback.heavyImpact();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              localizedSendCopy(
+                                context,
+                                en: 'This transfer needs manual review before it can continue.',
+                                fr: 'Ce transfert nécessite une revue manuelle avant de continuer.',
+                              ),
+                            ),
+                            backgroundColor: context.colors.error,
+                          ),
+                        );
+                        return;
+                      }
+
                       if (!context.mounted) return;
                       final passed = await RiskStepUpDialog.show(
                         context,
                         decision: decision,
                       );
                       if (!passed) return;
+                      final stepUpToken = decision.challengeToken?.trim();
+                      if (stepUpToken == null || stepUpToken.isEmpty) {
+                        if (!context.mounted) return;
+                        HapticFeedback.heavyImpact();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              localizedSendCopy(
+                                context,
+                                en: 'Security challenge is incomplete. Please try again before sending money.',
+                                fr: 'La vérification de sécurité est incomplète. Réessayez avant d’envoyer de l’argent.',
+                              ),
+                            ),
+                            backgroundColor: context.colors.error,
+                          ),
+                        );
+                        return;
+                      }
+                      sendNotifier.markStepUpAuthorized(stepUpToken);
                     }
                   } catch (e) {
                     if (!context.mounted) return;

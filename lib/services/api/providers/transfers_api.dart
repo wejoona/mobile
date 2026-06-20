@@ -16,12 +16,14 @@ class TransfersApi {
     Map<String, dynamic> data, {
     String? pinToken,
     String? idempotencyKey,
+    String? stepUpToken,
   }) => _dio.post(
     ApiEndpoints.transfersSend,
     data: _internalTransferPayload(data),
     options: _transferOptions(
       pinToken: pinToken,
       idempotencyKey: idempotencyKey,
+      stepUpToken: stepUpToken,
     ),
   );
 
@@ -30,12 +32,14 @@ class TransfersApi {
     Map<String, dynamic> data, {
     String? pinToken,
     String? idempotencyKey,
+    String? stepUpToken,
   }) => _dio.post(
     ApiEndpoints.transfersExternal,
     data: _externalTransferPayload(data),
     options: _transferOptions(
       pinToken: pinToken,
       idempotencyKey: idempotencyKey,
+      stepUpToken: stepUpToken,
     ),
   );
 
@@ -53,11 +57,17 @@ class TransfersApi {
   Future<Response> getById(String id) =>
       _dio.get(ApiEndpoints.walletTransactionById(id));
 
-  Options _transferOptions({String? pinToken, String? idempotencyKey}) {
+  Options _transferOptions({
+    String? pinToken,
+    String? idempotencyKey,
+    String? stepUpToken,
+  }) {
     if (pinToken == null || pinToken.isEmpty) {
       return Options(
         headers: {
           'X-Idempotency-Key': idempotencyKey ?? generateIdempotencyKey(),
+          if (stepUpToken != null && stepUpToken.isNotEmpty)
+            'X-Step-Up-Token': stepUpToken,
         },
       );
     }
@@ -66,6 +76,7 @@ class TransfersApi {
       headers: transactionHeaders(
         pinToken: pinToken,
         idempotencyKey: idempotencyKey,
+        stepUpToken: stepUpToken,
       ),
     );
   }

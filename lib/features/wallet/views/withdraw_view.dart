@@ -16,6 +16,7 @@ import 'package:usdc_wallet/features/wallet/providers/withdraw_provider.dart'
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
 import 'package:usdc_wallet/services/index.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/utils/context_extensions.dart';
 

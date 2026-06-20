@@ -29,6 +29,7 @@ class TransfersService {
     String? note,
     required String pinToken,
     required String idempotencyKey,
+    String? stepUpToken,
   }) async {
     final normalizedRecipientId = recipientId?.trim();
     final normalizedPhone = PhoneNumberValue.tryFromAny(
@@ -58,6 +59,7 @@ class TransfersService {
           headers: transactionHeaders(
             pinToken: pinToken,
             idempotencyKey: idempotencyKey,
+            stepUpToken: stepUpToken,
           ),
         ),
       );
@@ -111,6 +113,7 @@ class TransfersService {
     String? livenessSessionId,
     required String pinToken,
     required String idempotencyKey,
+    String? stepUpToken,
   }) async {
     // Check if we have a pre-validated step-up
     if (challengeToken != null && _riskSecurity != null) {
@@ -173,6 +176,7 @@ class TransfersService {
           headers: transactionHeaders(
             pinToken: pinToken,
             idempotencyKey: idempotencyKey,
+            stepUpToken: stepUpToken ?? challengeToken,
           ),
         ),
       );

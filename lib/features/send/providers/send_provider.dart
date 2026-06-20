@@ -34,6 +34,7 @@ class SendMoneyState {
   final double fee;
   final String? pinToken;
   final String? idempotencyKey;
+  final String? stepUpChallengeToken;
   final String? pendingTransferId;
   final bool isSubmitting;
 
@@ -49,6 +50,7 @@ class SendMoneyState {
     this.fee = 0.0,
     this.pinToken,
     this.idempotencyKey,
+    this.stepUpChallengeToken,
     this.pendingTransferId,
     this.isSubmitting = false,
   });
@@ -72,6 +74,8 @@ class SendMoneyState {
     double? fee,
     String? pinToken,
     String? idempotencyKey,
+    String? stepUpChallengeToken,
+    bool clearStepUpChallengeToken = false,
     String? pendingTransferId,
     bool? isSubmitting,
   }) {
@@ -87,6 +91,9 @@ class SendMoneyState {
       fee: fee ?? this.fee,
       pinToken: pinToken ?? this.pinToken,
       idempotencyKey: idempotencyKey ?? this.idempotencyKey,
+      stepUpChallengeToken: clearStepUpChallengeToken
+          ? null
+          : stepUpChallengeToken ?? this.stepUpChallengeToken,
       pendingTransferId: pendingTransferId ?? this.pendingTransferId,
       isSubmitting: isSubmitting ?? this.isSubmitting,
     );
@@ -135,7 +142,12 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
   /// Validate and set recipient
   /// Uses POST /contacts/sync with hashed phone to check if Korido user
   Future<void> setRecipient(String phoneNumber, {String? name}) async {
-    state = state.copyWith(isLoading: true, error: null, clearRecipient: true);
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      clearRecipient: true,
+      clearStepUpChallengeToken: true,
+    );
     try {
       if (_isCurrentUserPhone(phoneNumber)) {
         state = state.copyWith(
@@ -251,7 +263,12 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       return;
     }
 
-    state = state.copyWith(isLoading: false, error: null, recipient: recipient);
+    state = state.copyWith(
+      isLoading: false,
+      error: null,
+      recipient: recipient,
+      clearStepUpChallengeToken: true,
+    );
   }
 
   String _canonicalRecipientPhone(String? phoneNumber) {
@@ -271,7 +288,11 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
   void setAmount(double amount) {
     // Calculate fee (currently 0 for internal transfers)
     const fee = 0.0;
-    state = state.copyWith(amount: amount, fee: fee);
+    state = state.copyWith(
+      amount: amount,
+      fee: fee,
+      clearStepUpChallengeToken: true,
+    );
   }
 
   /// Set optional note
@@ -349,6 +370,20 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
     return true;
   }
 
+  void clearStepUpAuthorization() {
+    state = state.copyWith(clearStepUpChallengeToken: true);
+  }
+
+  void markStepUpAuthorized(String? challengeToken) {
+    final token = challengeToken?.trim();
+    if (token == null || token.isEmpty) {
+      state = state.copyWith(clearStepUpChallengeToken: true);
+      return;
+    }
+
+    state = state.copyWith(stepUpChallengeToken: token, error: null);
+  }
+
   /// Execute transfer. Requires verifyPin() to have been called first.
   Future<bool> executeTransfer() async {
     if (!state.canProceedToConfirm) {
@@ -401,6 +436,7 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
         note: state.note,
         pinToken: state.pinToken!,
         idempotencyKey: state.idempotencyKey!,
+        stepUpToken: state.stepUpChallengeToken,
       );
 
       state = state.copyWith(
