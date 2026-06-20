@@ -3,10 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 
-const double _securityPadKeyWidth = 74;
-const double _securityPadKeyHeight = 68;
-const double _securityPadIconSize = 27;
-const double _securityPadDigitSize = 26;
+const double _securityPadKeyWidth = 80;
+const double _securityPadKeyHeight = 74;
+const double _securityPadIconSize = 29;
+const double _securityPadDigitSize = 28;
 
 class SecurityCodeDots extends StatelessWidget {
   const SecurityCodeDots({
