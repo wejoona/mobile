@@ -484,10 +484,7 @@ const appRouteContracts = <AppRouteContract>[
   AppRouteContract(
     pattern: '/settings/pin',
     role: AppRouteRole.settingsStep,
-    capabilities: {
-      AppRouteCapability.requiresAuth,
-      AppRouteCapability.allowWhenLocked,
-    },
+    capabilities: {AppRouteCapability.requiresAuth},
     events: {
       AppNavigationEvent.pinRequired,
       AppNavigationEvent.forgotPinSelected,

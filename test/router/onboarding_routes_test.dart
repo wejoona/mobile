@@ -20,8 +20,8 @@ import 'package:usdc_wallet/state/kyc_state_machine.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 
-import '../helpers/test_utils.dart';
 import '../helpers/test_theme.dart';
+import '../helpers/test_utils.dart';
 
 class _TestAuthNotifier extends AuthNotifier {
   @override
@@ -161,24 +161,24 @@ void main() {
       expect(source, contains('SignupSuccessView'));
       expect(
         source,
-        isNot(contains("features/onboarding/views/otp_verification_view.dart")),
+        isNot(contains('features/onboarding/views/otp_verification_view.dart')),
       );
       expect(
         source,
-        isNot(contains("features/onboarding/views/profile_setup_view.dart")),
+        isNot(contains('features/onboarding/views/profile_setup_view.dart')),
       );
       expect(
         source,
-        isNot(contains("features/onboarding/views/onboarding_pin_view.dart")),
+        isNot(contains('features/onboarding/views/onboarding_pin_view.dart')),
       );
       expect(
         source,
-        isNot(contains("features/onboarding/views/kyc_prompt_view.dart")),
+        isNot(contains('features/onboarding/views/kyc_prompt_view.dart')),
       );
       expect(
         source,
         isNot(
-          contains("features/onboarding/views/onboarding_success_view.dart"),
+          contains('features/onboarding/views/onboarding_success_view.dart'),
         ),
       );
 
@@ -192,7 +192,7 @@ void main() {
         expect(
           signupSource,
           isNot(
-            contains("features/onboarding/widgets/onboarding_progress.dart"),
+            contains('features/onboarding/widgets/onboarding_progress.dart'),
           ),
           reason: '$path should use generic flow progress, not onboarding UI',
         );
@@ -213,7 +213,7 @@ void main() {
       expect(routeSource, contains("path: '/legal/terms'"));
       expect(routeSource, contains("path: '/legal/privacy'"));
       expect(routeSource, contains("state.uri.queryParameters['returnTo']"));
-      expect(consentSource, contains("context.fsmPush<void>("));
+      expect(consentSource, contains('context.fsmPush<void>('));
       expect(consentSource, contains("'/legal/terms'"));
       expect(consentSource, contains("'/legal/privacy'"));
       expect(consentSource, contains('Uri.encodeComponent'));
@@ -426,6 +426,16 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
 
       expect(router.routeInformationProvider.value.uri.path, '/pin/enter');
+
+      router.go('/settings/pin');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(router.routeInformationProvider.value.uri.path, '/session-locked');
+      expect(
+        router.routeInformationProvider.value.uri.queryParameters['returnTo'],
+        '/settings/pin',
+      );
 
       router.go('/home');
       await tester.pump();

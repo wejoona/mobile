@@ -82,6 +82,7 @@ void main() {
         );
       }
 
+      expect(appRouteContractFor('/settings/pin').isAllowedWhenLocked, isFalse);
       expect(appRouteContractFor('/pin/enter').isAllowedWhenLocked, isTrue);
       expect(
         appRouteContractFor('/pin/locked').events,
