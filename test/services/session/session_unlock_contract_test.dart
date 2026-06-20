@@ -977,6 +977,31 @@ void main() {
     expect(resetSource, contains('_transitionTo(_PinRecoveryStep.liveness)'));
     expect(reviewBody, contains("'newPinHash': pendingPinHash"));
     expect(reviewBody, contains("'reason': reason"));
+    expect(reviewBody, contains("'context': reviewContext"));
+    expect(
+      resetSource,
+      contains('Future<Map<String, dynamic>> _manualReviewContext'),
+      reason:
+          'manual review must pass durable device/risk/liveness context to the API so backoffice can decide safely',
+    );
+    expect(
+      resetSource,
+      contains("'source': 'pin_recovery_fsm'"),
+      reason:
+          'manual review context should identify the flow owner instead of relying on support-ticket text',
+    );
+    expect(
+      resetSource,
+      contains("context['riskDecision']"),
+      reason:
+          'manual review should preserve the backend risk decision shape for reviewers',
+    );
+    expect(
+      resetSource,
+      contains("context['livenessFallback']"),
+      reason:
+          'manual review should preserve the liveness fallback reason/SLA when camera or provider checks fail',
+    );
     expect(
       reviewBody,
       contains(

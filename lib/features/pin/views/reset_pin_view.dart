@@ -941,6 +941,57 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     return metadata;
   }
 
+  Future<Map<String, dynamic>> _manualReviewContext({
+    required String reason,
+    StepUpDecision? decision,
+    LivenessManualReviewRequest? livenessRequest,
+  }) async {
+    final context = await _accountRecoveryRiskMetadata();
+    context.addAll({
+      'reason': reason,
+      'source': 'pin_recovery_fsm',
+      'hasStepUpChallengeToken': _stepUpChallengeToken != null,
+    });
+
+    if (decision != null) {
+      context['riskDecision'] = {
+        'flow': decision.flow.name,
+        'riskScore': decision.riskScore,
+        'riskLevel': decision.riskLevel,
+        'stepUpRequired': decision.stepUpRequired,
+        'stepUpType': decision.stepUpType.name,
+        'supportReviewRequired': decision.supportReviewRequired,
+        'nextAction': decision.nextAction,
+        'nextEndpoint': decision.nextEndpoint,
+        'requiresPendingPinReset': decision.requiresPendingPinReset,
+        'factors': decision.factors,
+        if (decision.reason != null) 'reason': decision.reason,
+        if (decision.reviewSla != null)
+          'reviewSla': {
+            'label': decision.reviewSla!.label,
+            'firstResponseMinutes': decision.reviewSla!.firstResponseMinutes,
+            'resolutionMinutes': decision.reviewSla!.resolutionMinutes,
+            'manualReview': decision.reviewSla!.manualReview,
+          },
+      };
+    }
+
+    if (livenessRequest != null) {
+      context['livenessFallback'] = {
+        'reason': livenessRequest.reason,
+        'message': livenessRequest.message,
+        'title': livenessRequest.title,
+        'slaLabel': livenessRequest.slaLabel,
+        'backendReviewId': livenessRequest.backendReviewId,
+        'backendReviewStatus': livenessRequest.backendReviewStatus,
+        'backendReviewAlreadyCreated':
+            livenessRequest.backendReviewAlreadyCreated,
+      };
+    }
+
+    return context;
+  }
+
   bool _requiresManualReview(StepUpDecision decision) {
     return decision.stepUpType == StepUpType.manualReview;
   }
@@ -1173,6 +1224,11 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         throw StateError('Phone number is required');
       }
       await _ensureRecoveryAuthorization(phone);
+      final reviewContext = await _manualReviewContext(
+        reason: reason,
+        decision: decision,
+        livenessRequest: livenessRequest,
+      );
       final response = await ref
           .read(dioProvider)
           .post(
@@ -1180,6 +1236,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
             data: {
               'newPinHash': pendingPinHash,
               'reason': reason,
+              'context': reviewContext,
               if (_stepUpChallengeToken != null)
                 'stepUpChallengeToken': _stepUpChallengeToken,
             },
