@@ -476,10 +476,7 @@ const appRouteContracts = <AppRouteContract>[
     pattern: '/settings/profile',
     role: AppRouteRole.settingsStep,
     prefix: true,
-    capabilities: {
-      AppRouteCapability.requiresAuth,
-      AppRouteCapability.setupFlow,
-    },
+    capabilities: {AppRouteCapability.requiresAuth},
   ),
   AppRouteContract(
     pattern: '/settings/pin',
@@ -558,10 +555,7 @@ const appRouteContracts = <AppRouteContract>[
     pattern: '/settings/kyc',
     role: AppRouteRole.settingsStep,
     prefix: true,
-    capabilities: {
-      AppRouteCapability.requiresAuth,
-      AppRouteCapability.setupFlow,
-    },
+    capabilities: {AppRouteCapability.requiresAuth},
     events: {AppNavigationEvent.kycStarted},
   ),
   AppRouteContract(

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/app_route_contract.dart';
 
 void main() {
@@ -16,6 +17,8 @@ void main() {
       expect(login.isAuthDeadEnd, isTrue);
       expect(loginOtp.role, AppRouteRole.verificationStep);
       expect(loginOtp.isAuthDeadEnd, isTrue);
+      expect(appRouteContractFor('/otp').role, AppRouteRole.verificationStep);
+      expect(AppScreen.otp.route, '/login/otp');
       expect(loginWithReturn.role, AppRouteRole.authEntry);
       expect(loginWithReturn.isExplicitPublic, isTrue);
       expect(otpWithReturn.role, AppRouteRole.verificationStep);
@@ -23,6 +26,19 @@ void main() {
       expect(pinWithReturn.role, AppRouteRole.securityStep);
       expect(pinWithReturn.isExplicitPublic, isTrue);
       expect(appRoutePathForContract('/login?returnTo=/pay/abc'), '/login');
+    });
+
+    test('settings routes do not inherit setup flow ownership', () {
+      final profile = appRouteContractFor('/settings/profile');
+      final settingsKyc = appRouteContractFor('/settings/kyc');
+      final setupKyc = appRouteContractFor('/kyc/status');
+
+      expect(profile.role, AppRouteRole.settingsStep);
+      expect(profile.isSetupRoute, isFalse);
+      expect(settingsKyc.role, AppRouteRole.settingsStep);
+      expect(settingsKyc.isSetupRoute, isFalse);
+      expect(setupKyc.role, AppRouteRole.setupStep);
+      expect(setupKyc.isSetupRoute, isTrue);
     });
 
     test('signup consent is separate from the phone entry screen', () {

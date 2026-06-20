@@ -2,7 +2,6 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/features/auth/views/legal_document_view.dart';
 import 'package:usdc_wallet/features/auth/views/login_otp_view.dart';
 import 'package:usdc_wallet/features/auth/views/login_view.dart';
-import 'package:usdc_wallet/features/auth/views/otp_view.dart';
 import 'package:usdc_wallet/features/fsm_states/views/index.dart';
 import 'package:usdc_wallet/features/onboarding/views/onboarding_view.dart';
 import 'package:usdc_wallet/features/onboarding/views/profile_complete_view.dart';
@@ -156,8 +155,10 @@ List<RouteBase> authStateRoutes() => [
   ),
   GoRoute(
     path: '/otp',
-    pageBuilder: (context, state) =>
-        AppPageTransitions.fade(state: state, child: const OtpView()),
+    redirect: (_, state) {
+      final query = state.uri.query;
+      return query.isEmpty ? '/login/otp' : '/login/otp?$query';
+    },
   ),
 
   // FSM State-specific Routes

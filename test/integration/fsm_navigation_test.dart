@@ -84,7 +84,7 @@ void main() {
 
       // Assert
       expect(screen, equals(AppScreen.otp));
-      expect(screen.route, equals('/otp'));
+      expect(screen.route, equals('/login/otp'));
     });
 
     test('Session locked state should navigate to SessionLocked screen', () {

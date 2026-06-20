@@ -273,7 +273,7 @@ class AppState extends FsmState {
 enum AppScreen {
   login('/login'),
   loginLoading('/login'),
-  otp('/otp'),
+  otp('/login/otp'),
   otpExpired('/otp-expired'),
   authLocked('/auth-locked'),
   authSuspended('/auth-suspended'),
