@@ -316,6 +316,18 @@ void main() {
     expect(resetSource, contains('ref.read(loginProvider).phoneValue'));
     expect(
       resetSource,
+      contains('_selectedRecoveryCountry.fullPrefix'),
+      reason:
+          'Manual PIN recovery must parse phone input with the selected country, not a hidden default dial code',
+    );
+    expect(
+      resetSource,
+      isNot(contains("?? '+225'")),
+      reason:
+          'PIN reset must not silently default no-context recovery to Cote d\'Ivoire',
+    );
+    expect(
+      resetSource,
       contains('StorageKeys.rememberedPhone'),
       reason:
           'Forgot-PIN must prefill from the same remembered phone store as login when provider hydration has not finished',

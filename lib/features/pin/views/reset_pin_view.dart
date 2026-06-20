@@ -3,13 +3,15 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/config/countries.dart';
 import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
@@ -24,6 +26,7 @@ import 'package:usdc_wallet/services/security/device_fingerprint_service.dart';
 import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/input_formatters.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Reset PIN View
@@ -51,6 +54,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   final _otpController = TextEditingController();
   final _phoneController = TextEditingController();
   PhoneNumberValue? _recoveryPhone;
+  late CountryConfig _selectedRecoveryCountry;
   String _newPin = '';
   String _confirmPin = '';
   bool _showError = false;
@@ -72,6 +76,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   @override
   void initState() {
     super.initState();
+    _selectedRecoveryCountry = ref.read(selectedCountryProvider);
     _setRecoveryPhone(widget.initialContext?.phoneValue);
     unawaited(_prefillRecoveryPhone());
   }
@@ -150,24 +155,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           titleVariant: AppTextVariant.titleLarge,
         ),
         const SizedBox(height: AppSpacing.xl),
-        AppInput(
-          fieldKey: const ValueKey('pin_reset_phone_field'),
-          label: l10n.auth_phoneNumber,
-          controller: _phoneController,
-          hint: l10n.error_phoneRequired,
-          prefixIcon: Icons.phone_iphone_rounded,
-          keyboardType: TextInputType.phone,
-          textInputAction: TextInputAction.done,
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'[0-9+\s()-]')),
-          ],
-          readOnly: _recoveryPhone != null,
-          onChanged: (_) {
-            if (_errorMessage != null) {
-              setState(() => _errorMessage = null);
-            }
-          },
-        ),
+        _buildRecoveryPhoneFields(l10n),
         if (_errorMessage != null) ...[
           const SizedBox(height: AppSpacing.md),
           InfoCallout(
@@ -184,6 +172,147 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           isFullWidth: true,
         ),
       ],
+    );
+  }
+
+  Widget _buildRecoveryPhoneFields(AppLocalizations l10n) {
+    if (_recoveryPhone != null) {
+      return AppInput(
+        fieldKey: const ValueKey('pin_reset_phone_field'),
+        label: l10n.auth_phoneNumber,
+        controller: _phoneController,
+        hint: l10n.error_phoneRequired,
+        prefixIcon: Icons.phone_iphone_rounded,
+        keyboardType: TextInputType.phone,
+        textInputAction: TextInputAction.done,
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'[0-9+\s()-]')),
+        ],
+        readOnly: _recoveryPhone != null,
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildRecoveryCountrySelector(l10n),
+        const SizedBox(height: AppSpacing.md),
+        AppInput(
+          fieldKey: const ValueKey('pin_reset_phone_field'),
+          label: l10n.auth_phoneNumber,
+          controller: _phoneController,
+          hint:
+              _selectedRecoveryCountry.phoneFormat ??
+              List.filled(_selectedRecoveryCountry.phoneLength, '0').join(),
+          prefixIcon: Icons.phone_iphone_rounded,
+          keyboardType: TextInputType.phone,
+          textInputAction: TextInputAction.done,
+          inputFormatters: [
+            LocalPhoneInputFormatter(
+              dialCode: _selectedRecoveryCountry.fullPrefix,
+              maxLocalDigits: _selectedRecoveryCountry.phoneLength,
+              displayFormat: _selectedRecoveryCountry.phoneFormat,
+            ),
+          ],
+          readOnly: _recoveryPhone != null,
+          onChanged: (_) {
+            if (_errorMessage != null) {
+              setState(() => _errorMessage = null);
+            } else {
+              setState(() {});
+            }
+          },
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        AppText(
+          l10n.auth_enterDigits(_selectedRecoveryCountry.phoneLength),
+          variant: AppTextVariant.bodySmall,
+          color: context.colors.textTertiary,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRecoveryCountrySelector(AppLocalizations l10n) {
+    final colors = context.colors;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AppText(
+          l10n.auth_country,
+          variant: AppTextVariant.labelMedium,
+          color: colors.textSecondary,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        GestureDetector(
+          onTap: _showRecoveryCountryPicker,
+          child: Container(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            decoration: BoxDecoration(
+              color: colors.elevated,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              border: Border.all(color: colors.borderSubtle),
+            ),
+            child: Row(
+              children: [
+                Text(
+                  _selectedRecoveryCountry.flag,
+                  style: const TextStyle(fontSize: 24),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppText(
+                        _selectedRecoveryCountry.name,
+                        variant: AppTextVariant.bodyLarge,
+                        color: colors.textPrimary,
+                      ),
+                      const SizedBox(height: 2),
+                      AppText(
+                        _selectedRecoveryCountry.fullPrefix,
+                        variant: AppTextVariant.bodySmall,
+                        color: colors.textTertiary,
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.unfold_more_rounded,
+                  color: colors.textSecondary,
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showRecoveryCountryPicker() {
+    final countriesAsync = ref.read(countriesProvider);
+    final countries = countriesAsync.value ?? SupportedCountries.all;
+
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        backgroundColor: Colors.transparent,
+        isScrollControlled: true,
+        builder: (context) => _RecoveryCountryPickerSheet(
+          countries: countries,
+          selectedCountry: _selectedRecoveryCountry,
+          onSelect: (country) {
+            setState(() {
+              _selectedRecoveryCountry = country;
+              _phoneController.clear();
+              _errorMessage = null;
+            });
+            ref.read(selectedCountryProvider.notifier).select(country);
+          },
+        ),
+      ),
     );
   }
 
@@ -488,7 +617,9 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         if (mounted) {
           setState(() {
             _isLoading = false;
-            _errorMessage = l10n.error_phoneRequired;
+            _errorMessage = _phoneController.text.trim().isEmpty
+                ? l10n.error_phoneRequired
+                : l10n.auth_enterDigits(_selectedRecoveryCountry.phoneLength);
           });
         }
         return;
@@ -589,6 +720,9 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     if (manuallyEnteredPhone != null) {
       return manuallyEnteredPhone;
     }
+    if (_phoneController.text.trim().isNotEmpty) {
+      return null;
+    }
 
     final rememberedPhone = await ref
         .read(secureStorageProvider)
@@ -670,6 +804,10 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
 
     _recoveryPhone = phone;
     _phoneController.text = phone.displayInternational;
+    _selectedRecoveryCountry =
+        SupportedCountries.findByCode(phone.isoCountryCode) ??
+        SupportedCountries.findByPrefix(phone.dialCode) ??
+        _selectedRecoveryCountry;
   }
 
   PhoneNumberValue? _manualRecoveryPhoneFromInput() {
@@ -678,10 +816,9 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       return null;
     }
 
-    final loginState = ref.read(loginProvider);
     return PhoneNumberValue.tryFromAny(
       phoneNumber: input,
-      countryCode: loginState.dialCode ?? '+225',
+      countryCode: _selectedRecoveryCountry.fullPrefix,
     );
   }
 
@@ -1587,5 +1724,132 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   bool _isRepeated(String pin) {
     if (pin.length < 6) return false;
     return pin.split('').toSet().length == 1;
+  }
+}
+
+class _RecoveryCountryPickerSheet extends StatelessWidget {
+  const _RecoveryCountryPickerSheet({
+    required List<CountryConfig> countries,
+    required CountryConfig selectedCountry,
+    required ValueChanged<CountryConfig> onSelect,
+  }) : _countries = countries,
+       _selectedCountry = selectedCountry,
+       _onSelect = onSelect;
+
+  final List<CountryConfig> _countries;
+  final CountryConfig _selectedCountry;
+  final ValueChanged<CountryConfig> _onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.sizeOf(context).height * 0.72,
+      ),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.md,
+        AppSpacing.lg,
+        AppSpacing.lg,
+      ),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppRadius.xl),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: colors.borderSubtle,
+                borderRadius: BorderRadius.circular(AppRadius.full),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            AppText(
+              AppLocalizations.of(context)!.auth_country,
+              variant: AppTextVariant.titleMedium,
+              color: colors.textPrimary,
+              fontWeight: FontWeight.w700,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: _countries.length,
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: AppSpacing.sm),
+                itemBuilder: (context, index) {
+                  final country = _countries[index];
+                  final isSelected = country.code == _selectedCountry.code;
+                  return InkWell(
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                    onTap: () {
+                      _onSelect(country);
+                      Navigator.of(context).pop();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      decoration: BoxDecoration(
+                        color: isSelected ? colors.goldSubtle : colors.elevated,
+                        borderRadius: BorderRadius.circular(AppRadius.lg),
+                        border: Border.all(
+                          color: isSelected
+                              ? colors.borderGold
+                              : colors.borderSubtle,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            country.flag,
+                            style: const TextStyle(fontSize: 28),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                AppText(
+                                  country.name,
+                                  variant: AppTextVariant.bodyLarge,
+                                  color: colors.textPrimary,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
+                                ),
+                                const SizedBox(height: 2),
+                                AppText(
+                                  country.fullPrefix,
+                                  variant: AppTextVariant.bodySmall,
+                                  color: colors.textTertiary,
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (isSelected)
+                            Icon(
+                              Icons.check_circle_rounded,
+                              color: colors.gold,
+                              size: 20,
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
