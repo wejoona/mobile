@@ -65,8 +65,9 @@ void main() {
       );
 
       expect(deposit.role, AppRouteRole.moneyStep);
+      expect(deposit.canonicalRoute, '/deposit/amount');
       expect(deposit.requiresWallet, isTrue);
-      expect(deposit.requiresKycTier1, isTrue);
+      expect(deposit.requiresKycTier1, isFalse);
       expect(deposit.requiresVerifiedKyc, isFalse);
     });
   });

@@ -1007,13 +1007,13 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     WalletQuickActionData(
       icon: Icons.add_circle_outline_rounded,
       label: l10n.home_quickAction_deposit,
-      route: '/deposit',
+      route: '/deposit/amount',
       onTap: () => _openMoneyFlow(
         context,
         ref,
         l10n,
         operation: TransactionLimitOperation.deposit,
-        route: '/deposit',
+        route: '/deposit/amount',
       ),
     ),
     WalletQuickActionData(

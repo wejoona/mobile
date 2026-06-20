@@ -36,7 +36,7 @@
 /// Guards prevent invalid transitions:
 /// - Cannot access home without authentication
 /// - Cannot transact without wallet
-/// - Cannot deposit/withdraw without KYC
+/// - Cannot initiate gated money movement without the required KYC/limits
 ///
 /// ### Effects
 /// Effects are side-effects triggered by transitions:

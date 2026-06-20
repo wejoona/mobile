@@ -554,10 +554,10 @@ const appRouteContracts = <AppRouteContract>[
     pattern: '/deposit',
     role: AppRouteRole.moneyStep,
     prefix: true,
+    canonicalRoute: '/deposit/amount',
     capabilities: {
       AppRouteCapability.requiresAuth,
       AppRouteCapability.requiresWallet,
-      AppRouteCapability.requiresKycTier1,
       AppRouteCapability.moneyMovement,
     },
     events: _moneyEvents,

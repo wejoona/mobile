@@ -45,7 +45,8 @@ import 'package:usdc_wallet/state/fsm/app_route_contract.dart';
 /// │  GUARDS:                                                        │
 /// │  • Cannot access HOME without authentication                    │
 /// │  • Cannot access WALLET features without wallet                 │
-/// │  • Cannot access DEPOSIT/WITHDRAW without KYC tier 1            │
+/// │  • Deposit can open with a wallet; initiation is KYC/limit gated│
+/// │  • Cannot access WITHDRAW without KYC tier 1                    │
 /// │  • Cannot access HIGH_LIMIT features without KYC tier 2         │
 /// │                                                                  │
 /// │  GLOBAL ACTIONS:                                                │

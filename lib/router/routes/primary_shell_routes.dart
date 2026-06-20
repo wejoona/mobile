@@ -1,7 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/features/cards/views/cards_list_view.dart';
-import 'package:usdc_wallet/features/deposit/views/deposit_amount_screen.dart';
 import 'package:usdc_wallet/features/services/views/services_view.dart';
 import 'package:usdc_wallet/features/settings/views/settings_screen.dart';
 import 'package:usdc_wallet/features/transactions/views/transactions_view.dart';
@@ -59,10 +58,7 @@ List<RouteBase> primaryShellRoutes() => [
   // Full-screen routes (no bottom nav - vertical slide for modals)
   GoRoute(
     path: '/deposit',
-    pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
-      state: state,
-      child: const DepositAmountScreen(),
-    ),
+    redirect: (_, _) => '/deposit/amount',
   ),
 ];
 
