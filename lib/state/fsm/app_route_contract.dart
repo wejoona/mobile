@@ -464,6 +464,25 @@ const appRouteContracts = <AppRouteContract>[
     },
   ),
   AppRouteContract(
+    pattern: '/kyc',
+    role: AppRouteRole.setupStep,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.setupFlow,
+    },
+    events: {AppNavigationEvent.kycStarted},
+  ),
+  AppRouteContract(
+    pattern: '/kyc/',
+    role: AppRouteRole.setupStep,
+    prefix: true,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.setupFlow,
+    },
+    events: {AppNavigationEvent.kycStarted},
+  ),
+  AppRouteContract(
     pattern: '/settings/kyc',
     role: AppRouteRole.settingsStep,
     prefix: true,

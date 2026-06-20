@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/wallet/providers/home_provider.dart';
@@ -6,6 +8,7 @@ import 'package:usdc_wallet/features/wallet/providers/balance_visibility_provide
 import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart';
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/core/error/error_handler.dart';
 import 'package:usdc_wallet/design/theme/spacing.dart';
@@ -31,13 +34,13 @@ class HomeScreenWired extends ConsumerWidget {
               label: Text('${home.unreadNotifications}'),
               child: IconButton(
                 icon: const Icon(Icons.notifications_outlined),
-                onPressed: () => Navigator.pushNamed(context, '/notifications'),
+                onPressed: () => unawaited(context.fsmPush('/notifications')),
               ),
             )
           else
             IconButton(
               icon: const Icon(Icons.notifications_outlined),
-              onPressed: () => Navigator.pushNamed(context, '/notifications'),
+              onPressed: () => unawaited(context.fsmPush('/notifications')),
             ),
         ],
       ),
@@ -67,7 +70,12 @@ class HomeScreenWired extends ConsumerWidget {
               error: (e, _) => Card(
                 child: Padding(
                   padding: const EdgeInsets.all(AppSpacing.md),
-                  child: Text(ErrorHandler.getMessage(e), style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                  child: Text(
+                    ErrorHandler.getMessage(e),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -78,27 +86,47 @@ class HomeScreenWired extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _QuickAction(icon: Icons.arrow_upward, label: AppStrings.send, onTap: () => Navigator.pushNamed(context, '/send')),
-                _QuickAction(icon: Icons.arrow_downward, label: AppStrings.receive, onTap: () => Navigator.pushNamed(context, '/receive')),
-                _QuickAction(icon: Icons.add, label: AppStrings.deposit, onTap: () => Navigator.pushNamed(context, '/deposit')),
-                _QuickAction(icon: Icons.qr_code_scanner, label: AppStrings.search, onTap: () => Navigator.pushNamed(context, '/scan')),
+                _QuickAction(
+                  icon: Icons.arrow_upward,
+                  label: AppStrings.send,
+                  onTap: () => unawaited(context.fsmPush('/send')),
+                ),
+                _QuickAction(
+                  icon: Icons.arrow_downward,
+                  label: AppStrings.receive,
+                  onTap: () => unawaited(context.fsmPush('/receive')),
+                ),
+                _QuickAction(
+                  icon: Icons.add,
+                  label: AppStrings.deposit,
+                  onTap: () => unawaited(context.fsmPush('/deposit')),
+                ),
+                _QuickAction(
+                  icon: Icons.qr_code_scanner,
+                  label: AppStrings.search,
+                  onTap: () => unawaited(context.fsmPush('/scan')),
+                ),
               ],
             ),
 
             const SizedBox(height: AppSpacing.lg),
 
             // Alerts
-            ...home.visibleAlerts.map((alert) => Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: Card(
-                color: alert.type.name == 'warning' ? Colors.orange.shade50 : Colors.blue.shade50,
-                child: ListTile(
-                  title: Text(alert.title),
-                  subtitle: Text(alert.message),
-                  trailing: const Icon(Icons.chevron_right),
+            ...home.visibleAlerts.map(
+              (alert) => Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: Card(
+                  color: alert.type.name == 'warning'
+                      ? Colors.orange.shade50
+                      : Colors.blue.shade50,
+                  child: ListTile(
+                    title: Text(alert.title),
+                    subtitle: Text(alert.message),
+                    trailing: const Icon(Icons.chevron_right),
+                  ),
                 ),
               ),
-            )),
+            ),
 
             // Recent transactions header
             Padding(
@@ -106,9 +134,13 @@ class HomeScreenWired extends ConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(AppStrings.recentTransactions, style: Theme.of(context).textTheme.titleMedium),
+                  Text(
+                    AppStrings.recentTransactions,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                   TextButton(
-                    onPressed: () => Navigator.pushNamed(context, '/transactions'),
+                    onPressed: () =>
+                        unawaited(context.fsmPush('/transactions')),
                     child: Text(AppStrings.seeAll),
                   ),
                 ],
@@ -126,7 +158,11 @@ class _BalanceCard extends StatelessWidget {
   final bool isVisible;
   final Future<void> Function() onToggle;
 
-  const _BalanceCard({required this.balance, required this.isVisible, required this.onToggle});
+  const _BalanceCard({
+    required this.balance,
+    required this.isVisible,
+    required this.onToggle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -139,21 +175,36 @@ class _BalanceCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(AppStrings.balance, style: Theme.of(context).textTheme.bodySmall),
+                Text(
+                  AppStrings.balance,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
                 IconButton(
-                  icon: Icon(isVisible ? Icons.visibility : Icons.visibility_off, size: 20),
+                  icon: Icon(
+                    isVisible ? Icons.visibility : Icons.visibility_off,
+                    size: 20,
+                  ),
                   onPressed: onToggle,
                 ),
               ],
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              isVisible ? '\$${balance.available.toStringAsFixed(2)}' : '\$****',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+              isVisible
+                  ? '\$${balance.available.toStringAsFixed(2)}'
+                  : '\$****',
+              style: Theme.of(
+                context,
+              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             if (balance.pending > 0 && isVisible) ...[
               const SizedBox(height: AppSpacing.xs),
-              Text(AppLocalizations.of(context)!.wallet_pending(balance.pending.toStringAsFixed(2)), style: Theme.of(context).textTheme.bodySmall),
+              Text(
+                AppLocalizations.of(
+                  context,
+                )!.wallet_pending(balance.pending.toStringAsFixed(2)),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
             ],
           ],
         ),
@@ -167,7 +218,11 @@ class _QuickAction extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  const _QuickAction({required this.icon, required this.label, required this.onTap});
+  const _QuickAction({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {

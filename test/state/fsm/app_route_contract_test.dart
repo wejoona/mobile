@@ -70,5 +70,25 @@ void main() {
       expect(deposit.requiresKycTier1, isFalse);
       expect(deposit.requiresVerifiedKyc, isFalse);
     });
+
+    test(
+      'KYC setup routes are explicit setup routes without swallowing FSM states',
+      () {
+        final kycStart = appRouteContractFor('/kyc/start');
+        final kycDocumentType = appRouteContractFor('/kyc/document-type');
+        final kycExpired = appRouteContractFor('/kyc-expired');
+
+        expect(kycStart.role, AppRouteRole.setupStep);
+        expect(kycStart.requiresAuth, isTrue);
+        expect(kycStart.isSetupRoute, isTrue);
+        expect(kycStart.events, contains(AppNavigationEvent.kycStarted));
+
+        expect(kycDocumentType.role, AppRouteRole.setupStep);
+        expect(kycDocumentType.isSetupRoute, isTrue);
+
+        expect(kycExpired.role, AppRouteRole.fsmState);
+        expect(kycExpired.isFsmRoute, isTrue);
+      },
+    );
   });
 }

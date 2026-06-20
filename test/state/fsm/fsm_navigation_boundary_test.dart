@@ -23,6 +23,9 @@ void main() {
       'local router direct navigation': RegExp(
         r'\b(?:router|_router)\.(?:go|push|pop)\s*\(',
       ),
+      'Navigator route push': RegExp(
+        r'Navigator(?:\.of\s*\([^)]*\))?\.(?:push|pushNamed|pushReplacement|pushReplacementNamed|popAndPushNamed|restorablePush|restorablePushNamed)\s*\(',
+      ),
     };
 
     final violations = <String>[];
