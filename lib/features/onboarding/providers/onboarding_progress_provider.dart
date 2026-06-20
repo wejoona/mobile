@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:usdc_wallet/core/constants/preference_keys.dart';
 
 /// Onboarding progress tracking
 class OnboardingProgress {
@@ -32,8 +33,10 @@ class OnboardingProgress {
   }) {
     return OnboardingProgress(
       hasSeenTutorial: hasSeenTutorial ?? this.hasSeenTutorial,
-      hasCompletedFirstDeposit: hasCompletedFirstDeposit ?? this.hasCompletedFirstDeposit,
-      hasCompletedFirstTransfer: hasCompletedFirstTransfer ?? this.hasCompletedFirstTransfer,
+      hasCompletedFirstDeposit:
+          hasCompletedFirstDeposit ?? this.hasCompletedFirstDeposit,
+      hasCompletedFirstTransfer:
+          hasCompletedFirstTransfer ?? this.hasCompletedFirstTransfer,
       hasSeenKycPrompt: hasSeenKycPrompt ?? this.hasSeenKycPrompt,
       hasSeenTooltips: hasSeenTooltips ?? this.hasSeenTooltips,
       dismissedPrompts: dismissedPrompts ?? this.dismissedPrompts,
@@ -41,10 +44,12 @@ class OnboardingProgress {
     );
   }
 
-  bool get isNewUser => firstLoginAt != null &&
-    DateTime.now().difference(firstLoginAt!).inDays < 7;
+  bool get isNewUser =>
+      firstLoginAt != null &&
+      DateTime.now().difference(firstLoginAt!).inDays < 7;
 
-  bool get shouldShowDepositPrompt => !hasCompletedFirstDeposit && !dismissedPrompts.contains('deposit_prompt');
+  bool get shouldShowDepositPrompt =>
+      !hasCompletedFirstDeposit && !dismissedPrompts.contains('deposit_prompt');
 
   bool get shouldShowKycPrompt => !hasSeenKycPrompt && hasCompletedFirstDeposit;
 
@@ -53,13 +58,13 @@ class OnboardingProgress {
 
 /// Onboarding progress notifier
 class OnboardingProgressNotifier extends Notifier<OnboardingProgress> {
-  static const String _keyTutorial = 'onboarding_tutorial';
-  static const String _keyFirstDeposit = 'onboarding_first_deposit';
-  static const String _keyFirstTransfer = 'onboarding_first_transfer';
-  static const String _keyKycPrompt = 'onboarding_kyc_prompt';
-  static const String _keyTooltips = 'onboarding_tooltips';
-  static const String _keyDismissed = 'onboarding_dismissed_prompts';
-  static const String _keyFirstLogin = 'onboarding_first_login';
+  static const String _keyTutorial = PreferenceKeys.productIntroCompleted;
+  static const String _keyFirstDeposit = PreferenceKeys.firstDepositCompleted;
+  static const String _keyFirstTransfer = PreferenceKeys.firstTransferCompleted;
+  static const String _keyKycPrompt = PreferenceKeys.kycPromptSeen;
+  static const String _keyTooltips = PreferenceKeys.tooltipsSeen;
+  static const String _keyDismissed = PreferenceKeys.dismissedOnboardingPrompts;
+  static const String _keyFirstLogin = PreferenceKeys.firstLoginAt;
 
   @override
   OnboardingProgress build() {
@@ -80,7 +85,9 @@ class OnboardingProgressNotifier extends Notifier<OnboardingProgress> {
       hasSeenKycPrompt: prefs.getBool(_keyKycPrompt) ?? false,
       hasSeenTooltips: prefs.getBool(_keyTooltips) ?? false,
       dismissedPrompts: Set.from(dismissedList),
-      firstLoginAt: firstLoginStr != null ? DateTime.parse(firstLoginStr) : null,
+      firstLoginAt: firstLoginStr != null
+          ? DateTime.parse(firstLoginStr)
+          : null,
     );
   }
 
@@ -143,6 +150,7 @@ class OnboardingProgressNotifier extends Notifier<OnboardingProgress> {
   }
 }
 
-final onboardingProgressProvider = NotifierProvider<OnboardingProgressNotifier, OnboardingProgress>(
-  OnboardingProgressNotifier.new,
-);
+final onboardingProgressProvider =
+    NotifierProvider<OnboardingProgressNotifier, OnboardingProgress>(
+      OnboardingProgressNotifier.new,
+    );

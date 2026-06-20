@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:usdc_wallet/core/constants/preference_keys.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
@@ -105,7 +106,8 @@ class _SplashViewState extends ConsumerState<SplashView>
     // New users should land on login. Product intro/onboarding stays opt-in from
     // explicit signup actions so registration never becomes the default door.
     final prefs = await SharedPreferences.getInstance();
-    final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
+    final onboardingCompleted =
+        prefs.getBool(PreferenceKeys.productIntroCompleted) ?? false;
 
     if (!mounted || _hasNavigated) return;
 

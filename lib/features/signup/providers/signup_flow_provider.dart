@@ -2,9 +2,10 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:usdc_wallet/core/constants/preference_keys.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
-import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/legal/legal_documents_service.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
@@ -83,8 +84,7 @@ class SignupFlowState {
 
 /// Signup/account setup flow notifier.
 class SignupFlowNotifier extends Notifier<SignupFlowState> {
-  // Preserve the existing storage key so current installs do not regress.
-  static const _completionKey = 'onboarding_completed';
+  static const _completionKey = PreferenceKeys.signupSetupCompleted;
 
   @override
   SignupFlowState build() {

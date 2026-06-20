@@ -1,9 +1,10 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
+import 'package:usdc_wallet/core/constants/preference_keys.dart';
 import 'package:usdc_wallet/features/onboarding/views/onboarding_view.dart'
     as tutorial_onboarding;
+import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -29,40 +30,67 @@ void main() {
       },
     );
 
-    test('signupFlowProvider marks the same completion key', () async {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
+    test(
+      'signupFlowProvider marks only the signup setup completion key',
+      () async {
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
 
-      container.read(signupFlowProvider);
-      await pumpEventQueue();
+        container.read(signupFlowProvider);
+        await pumpEventQueue();
 
-      await container.read(signupFlowProvider.notifier).completeSignupFlow();
+        await container.read(signupFlowProvider.notifier).completeSignupFlow();
 
-      final isComplete = await container.refresh(
-        tutorial_onboarding.onboardingCompletedProvider.future,
-      );
+        final introComplete = await container.refresh(
+          tutorial_onboarding.onboardingCompletedProvider.future,
+        );
+        final prefs = await SharedPreferences.getInstance();
 
-      expect(isComplete, isTrue);
-      expect(container.read(signupFlowProvider).isComplete, isTrue);
-    });
+        expect(introComplete, isFalse);
+        expect(prefs.getBool(PreferenceKeys.signupSetupCompleted), isTrue);
+        expect(prefs.getBool(PreferenceKeys.productIntroCompleted), isNull);
+        expect(container.read(signupFlowProvider).isComplete, isTrue);
+      },
+    );
 
-    test('signupFlowProvider reset clears the same completion key', () async {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
+    test(
+      'signupFlowProvider reset does not clear product intro completion',
+      () async {
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
 
-      await tutorial_onboarding.completeOnboarding();
+        await tutorial_onboarding.completeOnboarding();
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool(PreferenceKeys.signupSetupCompleted, true);
 
-      container.read(signupFlowProvider);
-      await pumpEventQueue();
+        container.read(signupFlowProvider);
+        await pumpEventQueue();
 
-      await container.read(signupFlowProvider.notifier).resetSignupFlow();
+        await container.read(signupFlowProvider.notifier).resetSignupFlow();
 
-      final isComplete = await container.refresh(
-        tutorial_onboarding.onboardingCompletedProvider.future,
-      );
+        final introComplete = await container.refresh(
+          tutorial_onboarding.onboardingCompletedProvider.future,
+        );
 
-      expect(isComplete, isFalse);
-      expect(container.read(signupFlowProvider).isComplete, isFalse);
-    });
+        expect(introComplete, isTrue);
+        expect(prefs.getBool(PreferenceKeys.signupSetupCompleted), isNull);
+        expect(container.read(signupFlowProvider).isComplete, isFalse);
+      },
+    );
+
+    test(
+      'product intro completion does not imply signup setup completion',
+      () async {
+        await tutorial_onboarding.completeOnboarding();
+
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
+
+        container.read(signupFlowProvider);
+        await pumpEventQueue();
+
+        expect(container.read(signupFlowProvider).isComplete, isFalse);
+      },
+    );
   });
 }

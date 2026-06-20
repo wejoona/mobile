@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:usdc_wallet/core/constants/preference_keys.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
@@ -11,13 +12,13 @@ import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 /// Provider to track if onboarding has been completed
 final onboardingCompletedProvider = FutureProvider<bool>((ref) async {
   final prefs = await SharedPreferences.getInstance();
-  return prefs.getBool('onboarding_completed') ?? false;
+  return prefs.getBool(PreferenceKeys.productIntroCompleted) ?? false;
 });
 
 /// Set onboarding as completed
 Future<void> completeOnboarding() async {
   final prefs = await SharedPreferences.getInstance();
-  await prefs.setBool('onboarding_completed', true);
+  await prefs.setBool(PreferenceKeys.productIntroCompleted, true);
 }
 
 class OnboardingView extends ConsumerStatefulWidget {
@@ -77,7 +78,7 @@ class _OnboardingViewState extends ConsumerState<OnboardingView>
   Future<void> _redirectIfAlreadyCompleted() async {
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
-    if (prefs.getBool('onboarding_completed') ?? false) {
+    if (prefs.getBool(PreferenceKeys.productIntroCompleted) ?? false) {
       context.fsmGo('/login');
     }
   }
