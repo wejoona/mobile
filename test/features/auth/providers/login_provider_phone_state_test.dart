@@ -89,16 +89,16 @@ void main() {
       );
     });
 
-    test('keeps rate-limit copy from OTP request failures', () async {
+    test('shows cooldown copy from OTP request failures', () async {
       final dio = MockDio()
         ..queueErrorResponse(
-          statusCode: 400,
+          statusCode: 429,
           data: {
             'success': false,
             'error': {
-              'code': 'VERIFY_RATE_LIMITED',
-              'message':
-                  'Too many verification requests. Please try again later.',
+              'code': 'E9001',
+              'message': 'Too many verification requests',
+              'context': {'retryAfterSeconds': 120, 'resendAvailableIn': 120},
             },
           },
         );
@@ -120,8 +120,9 @@ void main() {
       expect(state.isLoading, isFalse);
       expect(
         state.error,
-        'Too many verification requests. Please try again later.',
+        'Use the verification code already sent. You can request another in 2 minutes.',
       );
+      expect(state.otpResendCountdown, 120);
       expect(dio.requestHistory.single.path, '/auth/login');
       expect(dio.requestHistory.single.data, {
         'phone': '+2250748805663',

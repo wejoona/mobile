@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdc_wallet/core/constants/preference_keys.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/legal/legal_documents_service.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
@@ -85,9 +86,11 @@ class SignupFlowState {
 /// Signup/account setup flow notifier.
 class SignupFlowNotifier extends Notifier<SignupFlowState> {
   static const _completionKey = PreferenceKeys.signupSetupCompleted;
+  Timer? _resendTimer;
 
   @override
   SignupFlowState build() {
+    ref.onDispose(() => _resendTimer?.cancel());
     unawaited(_checkStatus());
     return const SignupFlowState();
   }
@@ -162,10 +165,17 @@ class SignupFlowNotifier extends Notifier<SignupFlowState> {
       final authState = ref.read(auth.authProvider);
       if (authState.status == auth.AuthStatus.otpSent) {
         state = state.copyWith(isLoading: false, clearError: true);
+        _startOtpResendCountdown(authState.otpResendAvailableIn ?? 60);
       } else {
+        final cooldownSeconds = authState.otpResendAvailableIn;
+        if (cooldownSeconds != null && cooldownSeconds > 0) {
+          _startOtpResendCountdown(cooldownSeconds);
+        }
         state = state.copyWith(
           isLoading: false,
-          error: authState.error ?? 'Unable to send verification code',
+          error: cooldownSeconds != null && cooldownSeconds > 0
+              ? _verificationCooldownMessage(cooldownSeconds)
+              : authState.error ?? 'Unable to send verification code',
         );
       }
     } catch (e) {
@@ -330,7 +340,8 @@ class SignupFlowNotifier extends Notifier<SignupFlowState> {
   Future<void> resendOtp() async {
     await submitPhoneNumber(acceptedTerms: true);
     if (state.error == null) {
-      state = state.copyWith(otpResendCountdown: 60);
+      final authState = ref.read(auth.authProvider);
+      _startOtpResendCountdown(authState.otpResendAvailableIn ?? 60);
     }
   }
 
@@ -365,10 +376,46 @@ class SignupFlowNotifier extends Notifier<SignupFlowState> {
   }
 
   String _messageFrom(Object error) {
+    if (error is ApiException) {
+      final retryAfter = error.resendAvailableIn ?? error.retryAfterSeconds;
+      if (retryAfter != null) {
+        _startOtpResendCountdown(retryAfter);
+        return _verificationCooldownMessage(retryAfter);
+      }
+    }
     final message = error.toString();
     return message.startsWith('Exception: ')
         ? message.substring('Exception: '.length)
         : message;
+  }
+
+  void _startOtpResendCountdown([int seconds = 60]) {
+    final waitSeconds = _normalizedCooldownSeconds(seconds);
+    state = state.copyWith(otpResendCountdown: waitSeconds);
+    _resendTimer?.cancel();
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (state.otpResendCountdown <= 1) {
+        timer.cancel();
+        state = state.copyWith(otpResendCountdown: 0);
+        return;
+      }
+      state = state.copyWith(otpResendCountdown: state.otpResendCountdown - 1);
+    });
+  }
+
+  int _normalizedCooldownSeconds(int seconds) {
+    if (seconds <= 0) return 60;
+    if (seconds > 3600) return 3600;
+    return seconds;
+  }
+
+  String _verificationCooldownMessage(int seconds) {
+    final waitSeconds = _normalizedCooldownSeconds(seconds);
+    final minutes = (waitSeconds / 60).ceil();
+    final waitCopy = waitSeconds < 60
+        ? '$waitSeconds seconds'
+        : '$minutes minute${minutes == 1 ? '' : 's'}';
+    return 'Use the verification code already sent. You can request another in $waitCopy.';
   }
 }
 

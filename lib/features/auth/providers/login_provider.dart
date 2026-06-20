@@ -95,7 +95,7 @@ class LoginNotifier extends Notifier<LoginState> {
 
     try {
       // Call login API
-      await _authService.login(
+      final response = await _authService.login(
         phone: phoneValue.apiPhone,
         countryCode: phoneValue.apiCountryCode,
       );
@@ -112,11 +112,19 @@ class LoginNotifier extends Notifier<LoginState> {
 
       state = state.copyWith(isLoading: false, currentStep: LoginStep.otp);
 
-      _startResendCountdown();
+      _startResendCountdown(response.resendAvailableIn);
     } catch (e) {
+      final retryAfterSeconds = _otpRetryAfterSeconds(e);
+      if (retryAfterSeconds != null) {
+        _startResendCountdown(retryAfterSeconds);
+      }
       state = state.copyWith(
         isLoading: false,
-        error: _otpRequestErrorMessage(e, isResend: false),
+        error: _otpRequestErrorMessage(
+          e,
+          isResend: false,
+          retryAfterSeconds: retryAfterSeconds,
+        ),
       );
     }
   }
@@ -182,21 +190,40 @@ class LoginNotifier extends Notifier<LoginState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      await _authService.login(
+      final response = await _authService.login(
         phone: phoneValue.apiPhone,
         countryCode: phoneValue.apiCountryCode,
       );
       state = state.copyWith(isLoading: false);
-      _startResendCountdown();
+      _startResendCountdown(response.resendAvailableIn);
     } catch (e) {
+      final retryAfterSeconds = _otpRetryAfterSeconds(e);
+      if (retryAfterSeconds != null) {
+        _startResendCountdown(retryAfterSeconds);
+      }
       state = state.copyWith(
         isLoading: false,
-        error: _otpRequestErrorMessage(e, isResend: true),
+        error: _otpRequestErrorMessage(
+          e,
+          isResend: true,
+          retryAfterSeconds: retryAfterSeconds,
+        ),
       );
     }
   }
 
-  String _otpRequestErrorMessage(Object error, {required bool isResend}) {
+  int? _otpRetryAfterSeconds(Object error) {
+    if (error is ApiException) {
+      return error.resendAvailableIn ?? error.retryAfterSeconds;
+    }
+    return null;
+  }
+
+  String _otpRequestErrorMessage(
+    Object error, {
+    required bool isResend,
+    int? retryAfterSeconds,
+  }) {
     if (error is ApiException) {
       final message = error.message.trim();
       final normalized = message.toLowerCase();
@@ -204,11 +231,15 @@ class LoginNotifier extends Notifier<LoginState> {
       final isRateLimited =
           error.statusCode == 429 ||
           code == 'TOO_MANY_REQUESTS' ||
+          code == 'E9001' ||
           code == 'RATE_LIMITED' ||
           normalized.contains('too many') ||
           normalized.contains('rate limit');
-      if (isRateLimited && message.isNotEmpty) {
-        return message;
+      if (isRateLimited) {
+        if (retryAfterSeconds != null) {
+          return _verificationCooldownMessage(retryAfterSeconds);
+        }
+        return 'Verification is temporarily paused. Please wait a moment before requesting another code.';
       }
 
       final statusCode = error.statusCode;
@@ -226,8 +257,9 @@ class LoginNotifier extends Notifier<LoginState> {
   }
 
   /// Start OTP resend countdown
-  void _startResendCountdown() {
-    state = state.copyWith(otpResendCountdown: 60);
+  void _startResendCountdown([int seconds = 60]) {
+    final waitSeconds = _normalizedCooldownSeconds(seconds);
+    state = state.copyWith(otpResendCountdown: waitSeconds);
     _resendTimer?.cancel();
     _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (state.otpResendCountdown > 0) {
@@ -238,6 +270,21 @@ class LoginNotifier extends Notifier<LoginState> {
         timer.cancel();
       }
     });
+  }
+
+  int _normalizedCooldownSeconds(int seconds) {
+    if (seconds <= 0) return 60;
+    if (seconds > 3600) return 3600;
+    return seconds;
+  }
+
+  String _verificationCooldownMessage(int seconds) {
+    final waitSeconds = _normalizedCooldownSeconds(seconds);
+    final minutes = (waitSeconds / 60).ceil();
+    final waitCopy = waitSeconds < 60
+        ? '$waitSeconds seconds'
+        : '$minutes minute${minutes == 1 ? '' : 's'}';
+    return 'Use the verification code already sent. You can request another in $waitCopy.';
   }
 
   /// Verify PIN

@@ -32,6 +32,8 @@ class AuthState {
   final String? countryCode;
   final String? error;
   final int? otpExpiresIn;
+  final int? otpResendAvailableIn;
+  final bool otpReused;
 
   const AuthState({
     this.status = AuthStatus.initial,
@@ -40,6 +42,8 @@ class AuthState {
     this.countryCode,
     this.error,
     this.otpExpiresIn,
+    this.otpResendAvailableIn,
+    this.otpReused = false,
   });
 
   AuthState copyWith({
@@ -49,6 +53,8 @@ class AuthState {
     String? countryCode,
     String? error,
     int? otpExpiresIn,
+    int? otpResendAvailableIn,
+    bool? otpReused,
   }) {
     return AuthState(
       status: status ?? this.status,
@@ -57,6 +63,8 @@ class AuthState {
       countryCode: countryCode ?? this.countryCode,
       error: error,
       otpExpiresIn: otpExpiresIn ?? this.otpExpiresIn,
+      otpResendAvailableIn: otpResendAvailableIn ?? this.otpResendAvailableIn,
+      otpReused: otpReused ?? this.otpReused,
     );
   }
 
@@ -432,6 +440,8 @@ class AuthNotifier extends Notifier<AuthState> {
       status: AuthStatus.loading,
       phone: phoneValue.localNumber,
       countryCode: phoneValue.apiCountryCode,
+      otpResendAvailableIn: 0,
+      otpReused: false,
     );
 
     // Sync with FSM: notify that login/register is starting
@@ -451,6 +461,8 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(
         status: AuthStatus.otpSent,
         otpExpiresIn: response.expiresIn,
+        otpResendAvailableIn: response.resendAvailableIn,
+        otpReused: response.reused,
       );
 
       // Analytics: registration
@@ -461,7 +473,11 @@ class AuthNotifier extends Notifier<AuthState> {
           .read(appFsmProvider.notifier)
           .onOtpReceived(expiresIn: response.expiresIn);
     } on ApiException catch (e) {
-      state = state.copyWith(status: AuthStatus.error, error: e.message);
+      state = state.copyWith(
+        status: AuthStatus.error,
+        error: e.message,
+        otpResendAvailableIn: e.resendAvailableIn ?? e.retryAfterSeconds,
+      );
 
       // Sync with FSM: notify auth failed
       ref.read(appFsmProvider.notifier).onAuthFailed(e.message);
@@ -478,6 +494,8 @@ class AuthNotifier extends Notifier<AuthState> {
       status: AuthStatus.loading,
       phone: phoneValue.localNumber,
       countryCode: phoneValue.apiCountryCode,
+      otpResendAvailableIn: 0,
+      otpReused: false,
     );
 
     // Sync with FSM: notify that login is starting
@@ -494,6 +512,8 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(
         status: AuthStatus.otpSent,
         otpExpiresIn: response.expiresIn,
+        otpResendAvailableIn: response.resendAvailableIn,
+        otpReused: response.reused,
       );
 
       // Sync with FSM: notify that OTP was sent
@@ -501,7 +521,11 @@ class AuthNotifier extends Notifier<AuthState> {
           .read(appFsmProvider.notifier)
           .onOtpReceived(expiresIn: response.expiresIn);
     } on ApiException catch (e) {
-      state = state.copyWith(status: AuthStatus.error, error: e.message);
+      state = state.copyWith(
+        status: AuthStatus.error,
+        error: e.message,
+        otpResendAvailableIn: e.resendAvailableIn ?? e.retryAfterSeconds,
+      );
 
       // Sync with FSM: notify auth failed
       ref.read(appFsmProvider.notifier).onAuthFailed(e.message);
