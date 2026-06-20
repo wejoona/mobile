@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/entities/transaction_filter.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Run 346: Transaction filter bottom sheet view
 class TransactionFilterView extends ConsumerStatefulWidget {
@@ -52,7 +53,10 @@ class _TransactionFilterViewState extends ConsumerState<TransactionFilterView> {
           ),
           const SizedBox(height: AppSpacing.xxl),
           // Type filter
-          AppText(AppLocalizations.of(context)!.common_type, style: AppTextStyle.labelLarge),
+          AppText(
+            AppLocalizations.of(context)!.common_type,
+            style: AppTextStyle.labelLarge,
+          ),
           const SizedBox(height: AppSpacing.sm),
           Wrap(
             spacing: AppSpacing.sm,
@@ -60,33 +64,42 @@ class _TransactionFilterViewState extends ConsumerState<TransactionFilterView> {
               _FilterChip(
                 label: 'Tout',
                 selected: _filter.type == null,
-                onSelected: () => setState(() => _filter = _filter.copyWith(clearType: true)),
+                onSelected: () =>
+                    setState(() => _filter = _filter.copyWith(clearType: true)),
               ),
               _FilterChip(
                 label: 'Envoi',
                 selected: _filter.type == 'send',
-                onSelected: () => setState(() => _filter = _filter.copyWith(type: 'send')),
+                onSelected: () =>
+                    setState(() => _filter = _filter.copyWith(type: 'send')),
               ),
               _FilterChip(
                 label: 'Reception',
                 selected: _filter.type == 'receive',
-                onSelected: () => setState(() => _filter = _filter.copyWith(type: 'receive')),
+                onSelected: () =>
+                    setState(() => _filter = _filter.copyWith(type: 'receive')),
               ),
               _FilterChip(
                 label: 'Depot',
                 selected: _filter.type == 'deposit',
-                onSelected: () => setState(() => _filter = _filter.copyWith(type: 'deposit')),
+                onSelected: () =>
+                    setState(() => _filter = _filter.copyWith(type: 'deposit')),
               ),
               _FilterChip(
                 label: 'Retrait',
                 selected: _filter.type == 'withdraw',
-                onSelected: () => setState(() => _filter = _filter.copyWith(type: 'withdraw')),
+                onSelected: () => setState(
+                  () => _filter = _filter.copyWith(type: 'withdraw'),
+                ),
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.xxl),
           // Status filter
-          AppText(AppLocalizations.of(context)!.common_status, style: AppTextStyle.labelLarge),
+          AppText(
+            AppLocalizations.of(context)!.common_status,
+            style: AppTextStyle.labelLarge,
+          ),
           const SizedBox(height: AppSpacing.sm),
           Wrap(
             spacing: AppSpacing.sm,
@@ -94,22 +107,30 @@ class _TransactionFilterViewState extends ConsumerState<TransactionFilterView> {
               _FilterChip(
                 label: 'Tout',
                 selected: _filter.status == null,
-                onSelected: () => setState(() => _filter = _filter.copyWith(clearStatus: true)),
+                onSelected: () => setState(
+                  () => _filter = _filter.copyWith(clearStatus: true),
+                ),
               ),
               _FilterChip(
                 label: 'Complete',
                 selected: _filter.status == 'completed',
-                onSelected: () => setState(() => _filter = _filter.copyWith(status: 'completed')),
+                onSelected: () => setState(
+                  () => _filter = _filter.copyWith(status: 'completed'),
+                ),
               ),
               _FilterChip(
                 label: 'En attente',
                 selected: _filter.status == 'pending',
-                onSelected: () => setState(() => _filter = _filter.copyWith(status: 'pending')),
+                onSelected: () => setState(
+                  () => _filter = _filter.copyWith(status: 'pending'),
+                ),
               ),
               _FilterChip(
                 label: 'Echoue',
                 selected: _filter.status == 'failed',
-                onSelected: () => setState(() => _filter = _filter.copyWith(status: 'failed')),
+                onSelected: () => setState(
+                  () => _filter = _filter.copyWith(status: 'failed'),
+                ),
               ),
             ],
           ),
@@ -120,7 +141,8 @@ class _TransactionFilterViewState extends ConsumerState<TransactionFilterView> {
                 child: AppButton(
                   label: 'Reinitialiser',
                   variant: AppButtonVariant.ghost,
-                  onPressed: () => setState(() => _filter = const TransactionFilter()),
+                  onPressed: () =>
+                      setState(() => _filter = const TransactionFilter()),
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -130,7 +152,7 @@ class _TransactionFilterViewState extends ConsumerState<TransactionFilterView> {
                   variant: AppButtonVariant.primary,
                   onPressed: () {
                     widget.onApply(_filter);
-                    Navigator.of(context).pop();
+                    context.fsmPop();
                   },
                 ),
               ),
@@ -167,7 +189,9 @@ class _FilterChip extends StatelessWidget {
             vertical: AppSpacing.sm,
           ),
           decoration: BoxDecoration(
-            color: selected ? context.colors.gold.withValues(alpha: 0.15) : context.colors.elevated,
+            color: selected
+                ? context.colors.gold.withValues(alpha: 0.15)
+                : context.colors.elevated,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: selected ? context.colors.gold : Colors.transparent,
@@ -176,7 +200,9 @@ class _FilterChip extends StatelessWidget {
           child: AppText(
             label,
             style: AppTextStyle.labelMedium,
-            color: selected ? context.colors.gold : context.colors.textSecondary,
+            color: selected
+                ? context.colors.gold
+                : context.colors.textSecondary,
           ),
         ),
       ),

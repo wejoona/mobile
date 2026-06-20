@@ -26,6 +26,9 @@ void main() {
       'Navigator route push': RegExp(
         r'Navigator(?:\.of\s*\([^)]*\))?\.(?:push|pushNamed|pushReplacement|pushReplacementNamed|popAndPushNamed|restorablePush|restorablePushNamed)\s*\(',
       ),
+      'Navigator route pop': RegExp(
+        r'Navigator(?:\.of\s*\([^)]*\))?\.pop(?:<[^>]+>)?\s*\(',
+      ),
     };
 
     final violations = <String>[];
@@ -43,6 +46,9 @@ void main() {
         for (var index = 0; index < lines.length; index++) {
           final line = lines[index];
           for (final entry in forbiddenPatterns.entries) {
+            if (_isAllowedModalPop(file.path, lines, index, entry.key)) {
+              continue;
+            }
             if (entry.value.hasMatch(line)) {
               violations.add(
                 '$relativePath:${index + 1} uses ${entry.key}: ${line.trim()}',
@@ -60,4 +66,34 @@ void main() {
           'Route changes must go through context.fsmGo/fsmPush/fsmPop or an AppFsmNotifier method.',
     );
   });
+}
+
+bool _isAllowedModalPop(
+  String path,
+  List<String> lines,
+  int index,
+  String patternName,
+) {
+  if (patternName != 'Navigator route pop') return false;
+
+  final line = lines[index];
+  final modalOwnerPath = RegExp(
+    r'/(widgets|dialogs|components)/|sheet|dialog|picker|select',
+  );
+  if (modalOwnerPath.hasMatch(path)) return true;
+
+  final modalContextName = RegExp(r'\b(dialogContext|sheetContext|ctx)\b');
+  if (modalContextName.hasMatch(line)) return true;
+
+  final hasResult = RegExp(
+    r'Navigator(?:\.of\s*\([^)]*\))?\.pop(?:<[^>]+>)?\s*\([^,]+,',
+  ).hasMatch(line);
+  if (hasResult) return true;
+
+  final start = (index - 60).clamp(0, lines.length - 1);
+  final end = (index + 3).clamp(0, lines.length - 1);
+  final window = lines.sublist(start, end + 1).join('\n');
+  return RegExp(
+    r'showDialog|showModalBottomSheet|AlertDialog|Dialog\(|BottomSheet|builder:\s*\(',
+  ).hasMatch(window);
 }

@@ -1793,7 +1793,7 @@ class _RecoveryCountryPickerSheet extends StatelessWidget {
                     borderRadius: BorderRadius.circular(AppRadius.lg),
                     onTap: () {
                       _onSelect(country);
-                      Navigator.of(context).pop();
+                      context.fsmPop();
                     },
                     child: Container(
                       padding: const EdgeInsets.all(AppSpacing.md),

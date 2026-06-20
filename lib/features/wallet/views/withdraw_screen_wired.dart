@@ -12,6 +12,7 @@ import 'package:usdc_wallet/features/wallet/widgets/risk_step_up_dialog.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Fully wired withdrawal screen.
 class WithdrawScreenWired extends ConsumerStatefulWidget {
@@ -44,7 +45,7 @@ class _WithdrawScreenWiredState extends ConsumerState<WithdrawScreenWired> {
         result: state.result!,
         onDone: () {
           notifier.reset();
-          Navigator.pop(context);
+          context.fsmSafePop(fallbackRoute: '/home');
         },
       );
     }

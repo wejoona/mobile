@@ -279,7 +279,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
             backgroundColor: context.colors.success,
           ),
         );
-        Navigator.of(context).pop();
+        context.fsmSafePop(fallbackRoute: '/home');
       } else {
         // Error is handled by listener
         if (mounted && _selectedMethod != WithdrawMethod.crypto) {

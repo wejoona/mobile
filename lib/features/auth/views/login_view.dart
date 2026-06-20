@@ -866,7 +866,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                 return GestureDetector(
                   onTap: () {
                     widget.onSelect(country);
-                    Navigator.pop(context);
+                    context.fsmPop();
                   },
                   child: Container(
                     margin: const EdgeInsets.symmetric(
