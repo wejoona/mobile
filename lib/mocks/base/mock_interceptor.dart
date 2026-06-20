@@ -167,7 +167,9 @@ class MockInterceptor extends Interceptor {
             response: Response(
               requestOptions: options,
               statusCode: mockResponse.statusCode,
-              data: {'error': mockResponse.errorMessage},
+              data:
+                  mockResponse.data ??
+                  {'error': mockResponse.errorMessage ?? 'Mock request failed'},
             ),
             type: DioExceptionType.badResponse,
           ),

@@ -35,11 +35,11 @@ class DepositMock {
       handler: _handleGetProviders,
     );
 
-    // POST /deposits/initiate - Initiate canonical deposit flow
+    // POST /deposits/initiate - Retired legacy writer.
     interceptor.register(
       method: 'POST',
       path: '/deposits/initiate',
-      handler: _handleInitiateMobileMoneyDeposit,
+      handler: _handleRetiredDepositWrite,
     );
 
     // GET /deposits - List deposits
@@ -56,11 +56,11 @@ class DepositMock {
       handler: _handleGetLegacyDepositStatus,
     );
 
-    // POST /deposits/confirm - Confirm a provider-side payment.
+    // POST /deposits/confirm - Retired legacy writer.
     interceptor.register(
       method: 'POST',
       path: '/deposits/confirm',
-      handler: _handleConfirmDeposit,
+      handler: _handleRetiredDepositWrite,
     );
 
     // GET /wallet/exchange-rate - Exchange rate (canonical)
@@ -171,70 +171,20 @@ class DepositMock {
     });
   }
 
-  static Future<MockResponse<dynamic>> _handleInitiateMobileMoneyDeposit(
-    RequestOptions options,
-  ) async {
-    final data = options.data as Map<String, dynamic>? ?? {};
-    final amount = _valueAsDouble(data['amount']) ?? 0;
-    final currency = data['currency'] as String? ?? 'XOF';
-    // Mirror backend contract: the canonical initiate route requires
-    // `providerCode`; the stale `provider`-only shape is rejected.
-    final providerCode = data['providerCode'] as String?;
-    if (providerCode == null || providerCode.isEmpty) {
-      return MockResponse.badRequest(
-        'providerCode is required for /deposits/initiate',
-      );
-    }
-    final provider = _providerForCode(providerCode);
-
-    return MockResponse.success({
-      'depositId': 'dep_${DateTime.now().millisecondsSinceEpoch}',
-      'token': 'dep_token_${DateTime.now().millisecondsSinceEpoch}',
-      'paymentMethodType': provider['paymentMethodType'],
-      'instructions': _getProviderInstructions(providerCode),
-      'qrCodeData': providerCode == 'WAVECI'
-          ? 'korido://deposit/${DateTime.now().millisecondsSinceEpoch}'
-          : null,
-      'deepLinkUrl': providerCode == 'WAVECI'
-          ? 'wave://pay?ref=${_generateReference(providerCode)}'
-          : null,
-      'expiresAt': DateTime.now()
-          .add(const Duration(minutes: 15))
-          .toIso8601String(),
-      'status': 'processing',
-      'amount': amount,
-      'currency': currency,
-      'convertedAmount': currency == 'USD'
-          ? amount
-          : (amount * 0.99) / _rateFor(currency),
-      'convertedCurrency': 'USD',
-      'providerCode': providerCode,
-      'providerName': provider['name'],
-      'reference': _generateReference(providerCode),
-    });
-  }
-
-  static Future<MockResponse<dynamic>> _handleConfirmDeposit(
-    RequestOptions options,
-  ) async {
-    final data = options.data as Map<String, dynamic>? ?? {};
-    return MockResponse.success({
-      'depositId':
-          data['depositId'] as String? ??
-          'dep_${DateTime.now().millisecondsSinceEpoch}',
-      'token': data['token'] as String? ?? '',
-      'paymentMethodType': 'OTP',
-      'instructions': 'Payment confirmed. Your balance will update shortly.',
-      'expiresAt': DateTime.now()
-          .add(const Duration(minutes: 15))
-          .toIso8601String(),
-      'status': 'completed',
-      'amount': _valueAsDouble(data['amount']) ?? 0,
-      'currency': data['currency'] as String? ?? 'XOF',
-      'convertedCurrency': 'USD',
-      'providerCode': data['providerCode'] as String? ?? 'OMCI',
-    });
-  }
+  static Future<MockResponse<dynamic>> _handleRetiredDepositWrite(
+    RequestOptions _,
+  ) async => const MockResponse<dynamic>(
+    statusCode: 410,
+    data: {
+      'error': {
+        'code': 'DEPOSIT_WRITE_ENDPOINT_RETIRED',
+        'message':
+            'This deposit write endpoint is retired. Use the canonical Korido wallet pay-in route.',
+        'canonicalEndpoint': '/api/v1/wallet/deposit',
+      },
+    },
+    errorMessage: 'Deposit write endpoint is retired',
+  );
 
   static Future<MockResponse<dynamic>> _handleGetDepositStatus(
     RequestOptions options,
@@ -583,13 +533,6 @@ class DepositMock {
     return null;
   }
 
-  static Map<String, dynamic> _providerForCode(String providerCode) {
-    return _legacyProviders.firstWhere(
-      (provider) => provider['code'] == providerCode,
-      orElse: () => _legacyProviders.first,
-    );
-  }
-
   static String _getChannelType(String channelId) {
     if (channelId.contains('bank')) {
       return 'bank_transfer';
@@ -644,19 +587,6 @@ class DepositMock {
       return 'Send USDC from your wallet using the generated deposit address.';
     }
     return 'Follow the instructions from your mobile money provider';
-  }
-
-  static String _getProviderInstructions(String providerCode) {
-    switch (providerCode) {
-      case 'OMCI':
-        return _legacyInstructions('orange-money-ci');
-      case 'MTNCI':
-        return _legacyInstructions('mtn-momo-ci');
-      case 'WAVECI':
-        return _legacyInstructions('wave-ci');
-      default:
-        return 'Follow the in-app payment instructions to complete deposit.';
-    }
   }
 
   static String _generateReference(String seed) {

@@ -116,6 +116,8 @@ KYC state should drive the mobile FSM: unverified users can start KYC, pending/m
 
 Mobile money-flow screens must check these booleans before presenting transfer, deposit, or withdrawal actions. When `reviewRequired=true`, show the backend `blockReason` and route the user to the manual-review/SLA state instead of retrying liveness or showing a generic limit error.
 
+`POST /wallet/deposit` is the canonical deposit/pay-in writer. Legacy `/deposits/initiate` and `/deposits/confirm` write routes are retired and return `410 DEPOSIT_WRITE_ENDPOINT_RETIRED`; do not use them for new mobile flows. `/deposits` reads can remain only for historical/legacy records until the transaction history surface fully owns pay-in history.
+
 Use only `/kyc/liveness/*` for product liveness. The legacy backend `/liveness/*` mock controller is not part of the mobile/API contract and must not be used for KYC, account recovery, or money-flow step-up.
 
 ### Liveness Capability Contract

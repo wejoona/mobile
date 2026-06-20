@@ -125,23 +125,33 @@ void main() {
       expect(res.statusCode, anyOf(400, 428));
     });
 
-    test('POST /deposits/initiate — missing fields returns 400', () async {
+    test('POST /deposits/initiate — retired writer returns 410', () async {
       final res = await client.post(
         '/deposits/initiate',
         {},
         _idempotencyHeaders(),
       );
-      expect(res.statusCode, 400);
+      expect(res.statusCode, 410);
+      final error = res.data?['error'];
+      expect(error, isA<Map<String, dynamic>>());
+      expect(
+        (error as Map<String, dynamic>)['code'],
+        'DEPOSIT_WRITE_ENDPOINT_RETIRED',
+      );
+      expect(error['canonicalEndpoint'], '/api/v1/wallet/deposit');
     });
 
-    test('POST /deposits/initiate — invalid amount returns 400', () async {
-      final res = await client.post('/deposits/initiate', {
-        'amount': -100,
-        'currency': 'XOF',
-        'providerCode': 'OMCI',
-      }, _idempotencyHeaders());
-      expect(res.statusCode, 400);
-    });
+    test(
+      'POST /deposits/initiate — retired before legacy validation',
+      () async {
+        final res = await client.post('/deposits/initiate', {
+          'amount': -100,
+          'currency': 'XOF',
+          'providerCode': 'OMCI',
+        }, _idempotencyHeaders());
+        expect(res.statusCode, 410);
+      },
+    );
   });
 
   e2eGroup('Transfer E2E', () {
