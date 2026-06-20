@@ -989,6 +989,9 @@ void main() {
     final kycServiceSource = File(
       'lib/services/kyc/kyc_service.dart',
     ).readAsStringSync();
+    final kycRoutesSource = File(
+      'lib/router/routes/kyc_settings_routes.dart',
+    ).readAsStringSync();
     final riskStepUpSource = File(
       'lib/features/wallet/widgets/risk_step_up_dialog.dart',
     ).readAsStringSync();
@@ -1044,6 +1047,12 @@ void main() {
           'money-flow liveness must fail closed instead of crashing when a backend challenge token is missing',
     );
     expect(kycServiceSource, contains("'/kyc/manual-review'"));
+    expect(kycRoutesSource, contains('redirect: _kycEvidenceRedirect'));
+    expect(kycRoutesSource, contains('flow.canSubmit'));
+    expect(kycRoutesSource, contains('!flow.hasRequiredPersonalInfo'));
+    expect(kycRoutesSource, contains('flow.selectedDocumentType == null'));
+    expect(kycRoutesSource, contains('flow.capturedDocuments.isEmpty'));
+    expect(kycRoutesSource, contains('flow.selfiePath == null'));
     expect(manualReviewBody, contains('routeToManualReview'));
     expect(manualReviewBody, contains('request.backendReviewAlreadyCreated'));
     expect(manualReviewBody, contains('_refreshKycManualReviewState()'));

@@ -1,9 +1,12 @@
+import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/features/biometric/views/biometric_enrollment_view.dart';
 import 'package:usdc_wallet/features/biometric/views/biometric_settings_view.dart';
 import 'package:usdc_wallet/features/business/views/business_profile_view.dart';
 import 'package:usdc_wallet/features/business/views/business_setup_view.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_tier.dart' as kyc_models;
+import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
 import 'package:usdc_wallet/features/kyc/views/document_capture_view.dart';
 import 'package:usdc_wallet/features/kyc/views/document_type_view.dart';
 import 'package:usdc_wallet/features/kyc/views/kyc_additional_docs_view.dart';
@@ -73,6 +76,7 @@ List<RouteBase> kycSettingsRoutes() => [
   ),
   GoRoute(
     path: '/kyc/liveness-instructions',
+    redirect: _kycEvidenceRedirect,
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const KycLivenessInstructionsView(),
@@ -80,6 +84,7 @@ List<RouteBase> kycSettingsRoutes() => [
   ),
   GoRoute(
     path: '/kyc/liveness',
+    redirect: _kycEvidenceRedirect,
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const KycLivenessView(),
@@ -263,3 +268,23 @@ List<RouteBase> kycSettingsRoutes() => [
         AppPageTransitions.fade(state: state, child: const ReferralsView()),
   ),
 ];
+
+String? _kycEvidenceRedirect(BuildContext context, GoRouterState state) {
+  final flow = ProviderScope.containerOf(context).read(kycProvider);
+  if (flow.canSubmit) {
+    return null;
+  }
+  if (!flow.hasRequiredPersonalInfo) {
+    return '/kyc/personal-info';
+  }
+  if (flow.selectedDocumentType == null) {
+    return '/kyc/document-type';
+  }
+  if (flow.capturedDocuments.isEmpty) {
+    return '/kyc/document-capture';
+  }
+  if (flow.selfiePath == null) {
+    return '/kyc/selfie';
+  }
+  return '/kyc/review';
+}
