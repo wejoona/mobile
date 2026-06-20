@@ -1,12 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/services/wallet/wallet_service.dart';
-import 'package:usdc_wallet/services/app_review/app_review_service.dart';
-import 'package:usdc_wallet/services/realtime/realtime_service.dart';
-import 'package:usdc_wallet/domain/entities/wallet.dart';
-import 'package:usdc_wallet/features/send_external/services/external_transfer_service.dart';
-import 'package:usdc_wallet/features/send_external/models/external_transfer_request.dart';
-import 'package:usdc_wallet/services/pin/pin_service.dart';
+
 import 'package:usdc_wallet/core/utils/idempotency.dart';
+import 'package:usdc_wallet/domain/entities/wallet.dart';
+import 'package:usdc_wallet/features/send_external/models/external_transfer_request.dart';
+import 'package:usdc_wallet/features/send_external/services/external_transfer_service.dart';
+import 'package:usdc_wallet/services/app_review/app_review_service.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
+import 'package:usdc_wallet/services/realtime/realtime_service.dart';
+import 'package:usdc_wallet/services/wallet/wallet_service.dart';
 
 /// External Transfer State
 class ExternalTransferState {
@@ -22,6 +23,7 @@ class ExternalTransferState {
   final bool isEstimatingFee;
   final String? pinToken;
   final String? idempotencyKey;
+  final String? stepUpChallengeToken;
   final bool isSubmitting;
 
   const ExternalTransferState({
@@ -37,6 +39,7 @@ class ExternalTransferState {
     this.isEstimatingFee = false,
     this.pinToken,
     this.idempotencyKey,
+    this.stepUpChallengeToken,
     this.isSubmitting = false,
   });
 
@@ -65,6 +68,8 @@ class ExternalTransferState {
     bool? isEstimatingFee,
     String? pinToken,
     String? idempotencyKey,
+    String? stepUpChallengeToken,
+    bool clearStepUpChallengeToken = false,
     bool? isSubmitting,
   }) {
     return ExternalTransferState(
@@ -80,6 +85,9 @@ class ExternalTransferState {
       isEstimatingFee: isEstimatingFee ?? this.isEstimatingFee,
       pinToken: pinToken ?? this.pinToken,
       idempotencyKey: idempotencyKey ?? this.idempotencyKey,
+      stepUpChallengeToken: clearStepUpChallengeToken
+          ? null
+          : stepUpChallengeToken ?? this.stepUpChallengeToken,
       isSubmitting: isSubmitting ?? this.isSubmitting,
     );
   }
@@ -135,7 +143,9 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
     if (address != null) {
       setAddress(address);
     } else {
-      state = state.copyWith(error: 'Invalid QR code. Not a valid wallet address.');
+      state = state.copyWith(
+        error: 'Invalid QR code. Not a valid wallet address.',
+      );
     }
   }
 
@@ -160,7 +170,10 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
 
     try {
       final service = ref.read(externalTransferServiceProvider);
-      final fee = await service.estimateFee(state.amount!, state.selectedNetwork);
+      final fee = await service.estimateFee(
+        state.amount!,
+        state.selectedNetwork,
+      );
       state = state.copyWith(estimatedFee: fee, isEstimatingFee: false);
     } catch (e) {
       state = state.copyWith(
@@ -227,6 +240,7 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
         request,
         pinToken: state.pinToken!,
         idempotencyKey: state.idempotencyKey!,
+        stepUpToken: state.stepUpChallengeToken,
       );
 
       state = state.copyWith(
@@ -253,6 +267,20 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
     }
   }
 
+  void clearStepUpAuthorization() {
+    state = state.copyWith(clearStepUpChallengeToken: true);
+  }
+
+  void markStepUpAuthorized(String? challengeToken) {
+    final token = challengeToken?.trim();
+    if (token == null || token.isEmpty) {
+      state = state.copyWith(clearStepUpChallengeToken: true);
+      return;
+    }
+
+    state = state.copyWith(stepUpChallengeToken: token, error: null);
+  }
+
   /// Reset state (e.g., when starting new transfer)
   void reset() {
     state = state.reset();
@@ -267,5 +295,5 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
 /// External Transfer Provider
 final externalTransferProvider =
     NotifierProvider<ExternalTransferNotifier, ExternalTransferState>(
-  ExternalTransferNotifier.new,
-);
+      ExternalTransferNotifier.new,
+    );

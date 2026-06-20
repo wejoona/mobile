@@ -65,6 +65,7 @@ class ExternalTransferService {
     ExternalTransferRequest request, {
     required String pinToken,
     required String idempotencyKey,
+    String? stepUpToken,
   }) async {
     try {
       final data = request.toJson();
@@ -79,6 +80,7 @@ class ExternalTransferService {
           headers: transactionHeaders(
             pinToken: pinToken,
             idempotencyKey: idempotencyKey,
+            stepUpToken: stepUpToken,
           ),
         ),
       );
