@@ -1154,7 +1154,24 @@ void main() {
     expect(riskBody, contains('StepUpType.biometric'));
     expect(riskBody, contains('StepUpType.liveness'));
     expect(riskBody, contains('StepUpType.biometricAndLiveness'));
-    expect(riskBody, contains('ChangePinPhase.pinEntry'));
+    expect(
+      riskBody,
+      isNot(contains('ChangePinPhase.pinEntry')),
+      reason:
+          'risk evaluation alone must not open PIN entry for a backend-token-gated mutation',
+    );
+    expect(
+      source,
+      contains('_phase = ChangePinPhase.pinEntry'),
+      reason:
+          'PIN entry should still be reachable after validated step-up proof',
+    );
+    expect(source, contains('String? _validatedStepUpChallengeToken'));
+    expect(
+      source,
+      contains('_validatedStepUpChallengeToken = null'),
+      reason: 'each new Change PIN risk evaluation must start with no token',
+    );
     expect(
       livenessBody,
       contains('validateStepUp'),
@@ -1162,10 +1179,27 @@ void main() {
           'liveness must validate the backend step-up token before the PIN form opens',
     );
     expect(
+      livenessBody,
+      contains('_validatedStepUpChallengeToken = challengeToken'),
+      reason:
+          'the PIN form may open only after backend step-up validation succeeds',
+    );
+    expect(
+      saveBody,
+      contains('final challengeToken = _validatedStepUpChallengeToken'),
+      reason:
+          'the final PIN mutation must use only a validated backend step-up token',
+    );
+    expect(
       saveBody,
       contains('stepUpChallengeToken: challengeToken'),
+      reason: 'the validated token must be sent to the PIN mutation endpoint',
+    );
+    expect(
+      saveBody,
+      isNot(contains('final challengeToken = _riskDecision?.challengeToken')),
       reason:
-          'the final PIN mutation must send the backend-owned step-up token, not rely on UI validation only',
+          'the raw risk decision token is only pending; it is not enough to change the PIN',
     );
     expect(
       source,

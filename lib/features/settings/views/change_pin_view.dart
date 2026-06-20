@@ -42,6 +42,8 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
   bool _isLoading = false;
   StepUpDecision? _riskDecision;
   bool _biometricVerifiedForStepUp = false;
+  String? _validatedStepUpChallengeToken;
+  String? _manualReviewMessage;
 
   static const int _pinLength = 6;
 
@@ -198,7 +200,8 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
               ),
               const SizedBox(height: AppSpacing.md),
               AppText(
-                _riskDecision?.reason ??
+                _manualReviewMessage ??
+                    _riskDecision?.reason ??
                     'This PIN change needs review before it can continue.',
                 variant: AppTextVariant.bodyMedium,
                 color: context.colors.textSecondary,
@@ -224,6 +227,8 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
       _isLoading = true;
       _error = null;
       _biometricVerifiedForStepUp = false;
+      _validatedStepUpChallengeToken = null;
+      _manualReviewMessage = null;
     });
 
     try {
@@ -237,8 +242,11 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
       _riskDecision = decision;
       if (!decision.stepUpRequired || decision.stepUpType == StepUpType.none) {
         setState(() {
-          _phase = ChangePinPhase.pinEntry;
+          _phase = ChangePinPhase.manualReview;
           _isLoading = false;
+          _error = null;
+          _manualReviewMessage =
+              'Korido could not issue a verified security challenge for this PIN change.';
         });
         return;
       }
@@ -275,12 +283,15 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
           setState(() {
             _phase = ChangePinPhase.manualReview;
             _isLoading = false;
+            _manualReviewMessage = decision.reason;
           });
           return;
         case StepUpType.none:
           setState(() {
-            _phase = ChangePinPhase.pinEntry;
+            _phase = ChangePinPhase.manualReview;
             _isLoading = false;
+            _manualReviewMessage =
+                'Korido could not issue a verified security challenge for this PIN change.';
           });
           return;
       }
@@ -290,6 +301,8 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
         _phase = ChangePinPhase.manualReview;
         _isLoading = false;
         _error = null;
+        _manualReviewMessage =
+            'Korido could not evaluate this PIN change safely.';
       });
     }
   }
@@ -300,6 +313,8 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
       setState(() {
         _phase = ChangePinPhase.manualReview;
         _isLoading = false;
+        _manualReviewMessage =
+            'Korido could not issue a verified security challenge for this PIN change.';
       });
       return;
     }
@@ -322,12 +337,20 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
           biometricVerified: true,
         );
     if (!mounted) return;
-    setState(() {
-      _phase = validated
-          ? ChangePinPhase.pinEntry
-          : ChangePinPhase.manualReview;
-      _isLoading = false;
-    });
+    if (validated) {
+      setState(() {
+        _validatedStepUpChallengeToken = challengeToken;
+        _phase = ChangePinPhase.pinEntry;
+        _isLoading = false;
+      });
+    } else {
+      setState(() {
+        _phase = ChangePinPhase.manualReview;
+        _isLoading = false;
+        _manualReviewMessage =
+            'The security verification could not be completed.';
+      });
+    }
   }
 
   Future<bool> _authenticateBiometricForChangePin() async {
@@ -349,7 +372,11 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
         faceScore >= 0.85) {
       final challengeToken = _riskDecision?.challengeToken;
       if (challengeToken == null || challengeToken.isEmpty) {
-        setState(() => _phase = ChangePinPhase.manualReview);
+        setState(() {
+          _phase = ChangePinPhase.manualReview;
+          _manualReviewMessage =
+              'Korido could not issue a verified security challenge for this PIN change.';
+        });
         return;
       }
 
@@ -364,11 +391,18 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
                 : null,
           );
       if (!mounted) return;
-      setState(() {
-        _phase = validated
-            ? ChangePinPhase.pinEntry
-            : ChangePinPhase.manualReview;
-      });
+      if (validated) {
+        setState(() {
+          _validatedStepUpChallengeToken = challengeToken;
+          _phase = ChangePinPhase.pinEntry;
+        });
+      } else {
+        setState(() {
+          _phase = ChangePinPhase.manualReview;
+          _manualReviewMessage =
+              'The security verification could not be completed.';
+        });
+      }
     } else {
       // Liveness failed — go back to explanation
       ScaffoldMessenger.of(context).showSnackBar(
@@ -710,7 +744,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
 
     try {
       final pinService = ref.read(pinServiceProvider);
-      final challengeToken = _riskDecision?.challengeToken;
+      final challengeToken = _validatedStepUpChallengeToken;
       if (challengeToken == null || challengeToken.isEmpty) {
         setState(() {
           _isLoading = false;
