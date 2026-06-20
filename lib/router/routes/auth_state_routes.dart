@@ -146,7 +146,10 @@ List<RouteBase> authStateRoutes() => [
     path: '/login/pin',
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
-      child: const PinScreen(pinContext: PinContext.login),
+      child: PinScreen(
+        pinContext: PinContext.login,
+        successRoute: _authReturnTo(state),
+      ),
     ),
   ),
   GoRoute(
@@ -247,9 +250,17 @@ List<RouteBase> authStateRoutes() => [
 ];
 
 String _sessionLockReturnTo(GoRouterState state) {
+  return _safeReturnTo(state) ?? '/home';
+}
+
+String? _authReturnTo(GoRouterState state) {
+  return _safeReturnTo(state);
+}
+
+String? _safeReturnTo(GoRouterState state) {
   final returnTo = state.uri.queryParameters['returnTo']?.trim();
   if (returnTo == null || returnTo.isEmpty) {
-    return '/home';
+    return null;
   }
 
   final uri = Uri.tryParse(returnTo);
@@ -262,7 +273,7 @@ String _sessionLockReturnTo(GoRouterState state) {
       returnTo.startsWith('/signup') ||
       returnTo.startsWith('/onboarding') ||
       returnTo == '/session-locked') {
-    return '/home';
+    return null;
   }
 
   return returnTo;

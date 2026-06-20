@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/countries.dart';
 import 'package:usdc_wallet/config/environment_config.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -15,6 +15,7 @@ import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/utils/input_formatters.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
@@ -181,7 +182,13 @@ class _LoginViewState extends ConsumerState<LoginView>
       }
       if (next.currentStep == LoginStep.otp &&
           prev?.currentStep != LoginStep.otp) {
-        context.fsmGo('/login/otp');
+        final returnTo = GoRouterState.of(
+          context,
+        ).uri.queryParameters['returnTo']?.trim();
+        final otpRoute = returnTo == null || returnTo.isEmpty
+            ? '/login/otp'
+            : '/login/otp?returnTo=${Uri.encodeComponent(returnTo)}';
+        context.fsmGo(otpRoute);
       } else if (next.error != null && next.error != prev?.error) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

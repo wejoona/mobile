@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/environment_config.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/models/login_state.dart';
+import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/auth/widgets/otp_progress_cue.dart';
-import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Login OTP verification screen
 class LoginOtpView extends ConsumerStatefulWidget {
@@ -162,7 +163,13 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
       if (mounted) {
         final state = ref.read(loginProvider);
         if (state.currentStep == LoginStep.pin) {
-          context.fsmGo('/login/pin');
+          final returnTo = GoRouterState.of(
+            context,
+          ).uri.queryParameters['returnTo']?.trim();
+          final pinRoute = returnTo == null || returnTo.isEmpty
+              ? '/login/pin'
+              : '/login/pin?returnTo=${Uri.encodeComponent(returnTo)}';
+          context.fsmGo(pinRoute);
         } else if (state.error != null) {
           setState(() {
             _hasError = true;

@@ -186,7 +186,8 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
       return;
     }
 
-    context.fsmGo('/login');
+    final returnTo = Uri.encodeComponent('/pay/${widget.linkCode}');
+    context.fsmGo('/login?returnTo=$returnTo');
   }
 
   void _showErrorDialog(String title, String message) {

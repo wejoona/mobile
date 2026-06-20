@@ -555,18 +555,43 @@ void main() {
     ).readAsStringSync();
 
     expect(routesSource, contains('_sessionLockReturnTo(state)'));
+    expect(routesSource, contains('_authReturnTo(state)'));
+    expect(routesSource, contains('successRoute: _authReturnTo(state)'));
     expect(routesSource, contains("state.uri.queryParameters['returnTo']"));
     expect(routesSource, contains('uri.hasScheme'));
     expect(routesSource, contains('uri.hasAuthority'));
     expect(routesSource, contains("returnTo.startsWith('/login')"));
     expect(routesSource, contains("returnTo.startsWith('/onboarding')"));
-    expect(routesSource, contains("return '/home'"));
+    expect(routesSource, contains("_safeReturnTo(state) ?? '/home'"));
     expect(
       sessionsScreenSource,
       contains("Uri.encodeComponent('/settings/sessions')"),
       reason:
           'Active Sessions should return to its task context after explicit unlock',
     );
+  });
+
+  test('pay link login preserves return intent through OTP and PIN', () {
+    final payLinkSource = File(
+      'lib/features/payment_links/views/pay_link_view.dart',
+    ).readAsStringSync();
+    final loginSource = File(
+      'lib/features/auth/views/login_view.dart',
+    ).readAsStringSync();
+    final otpSource = File(
+      'lib/features/auth/views/login_otp_view.dart',
+    ).readAsStringSync();
+    final routesSource = File(
+      'lib/router/routes/auth_state_routes.dart',
+    ).readAsStringSync();
+
+    expect(payLinkSource, contains("Uri.encodeComponent('/pay/"));
+    expect(payLinkSource, contains("'/login?returnTo="));
+    expect(loginSource, contains("queryParameters['returnTo']"));
+    expect(loginSource, contains('/login/otp?returnTo='));
+    expect(otpSource, contains("queryParameters['returnTo']"));
+    expect(otpSource, contains('/login/pin?returnTo='));
+    expect(routesSource, contains('successRoute: _authReturnTo(state)'));
   });
 
   test('local auth cleanup clears pending OTP and PIN login flow state', () {
