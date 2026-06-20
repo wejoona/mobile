@@ -152,10 +152,10 @@ class WalletMock {
       handler: _handleGetWithdrawOptions,
     );
 
-    // GET /wallet/limits
+    // GET /user/limits
     interceptor.register(
       method: 'GET',
-      path: '/wallet/limits',
+      path: '/user/limits',
       handler: _handleGetLimits,
     );
   }

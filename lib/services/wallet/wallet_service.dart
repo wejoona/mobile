@@ -277,10 +277,10 @@ class WalletService {
     }
   }
 
-  /// GET /wallet/limits
+  /// GET /user/limits
   Future<TransactionLimitsResponse> getTransactionLimits() async {
     try {
-      final response = await _dio.get(ApiEndpoints.walletLimits);
+      final response = await _dio.get(ApiEndpoints.limits);
       return TransactionLimitsResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);

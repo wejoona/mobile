@@ -4,10 +4,10 @@ import 'package:usdc_wallet/mocks/base/mock_interceptor.dart';
 
 class LimitsMock {
   static void register(MockInterceptor interceptor) {
-    // GET /wallet/limits
+    // GET /user/limits
     interceptor.register(
       method: 'GET',
-      path: '/wallet/limits',
+      path: '/user/limits',
       handler: _handleGetLimits,
     );
   }

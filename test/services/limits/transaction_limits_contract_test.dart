@@ -391,7 +391,7 @@ void main() {
       },
     );
 
-    test('keeps flat /wallet/limits and mock payload compatibility', () {
+    test('keeps canonical /user/limits and mock payload compatibility', () {
       final limits = TransactionLimits.fromJson({
         'dailyLimit': 1000,
         'dailyUsed': 100,

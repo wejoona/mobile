@@ -139,8 +139,8 @@ class WalletApi {
 
   // ── Limits ──
 
-  /// GET /wallet/limits
-  Future<Response> getLimits() => _dio.get(ApiEndpoints.walletLimits);
+  /// GET /user/limits
+  Future<Response> getLimits() => _dio.get(ApiEndpoints.limits);
 
   Options _moneyMovementOptions({
     String? pinToken,

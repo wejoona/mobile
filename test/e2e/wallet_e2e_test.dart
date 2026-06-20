@@ -46,8 +46,8 @@ void main() {
       expect(data, isNotNull);
     });
 
-    test('GET /wallet/limits — returns transaction limits', () async {
-      final res = await client.get('/wallet/limits');
+    test('GET /user/limits — returns transaction limits', () async {
+      final res = await client.get('/user/limits');
       res.expectOk();
     });
 
