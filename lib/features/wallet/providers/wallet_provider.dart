@@ -208,8 +208,8 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
     required String destinationAddress,
     String? network,
     String? method,
-    String? pinToken,
-    String? idempotencyKey,
+    required String pinToken,
+    required String idempotencyKey,
     String? stepUpToken,
   }) async {
     state = state.copyWith(isLoading: true, error: null);

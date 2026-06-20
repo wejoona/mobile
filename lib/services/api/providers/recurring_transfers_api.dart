@@ -15,7 +15,7 @@ class RecurringTransfersApi {
   Future<Response> create(
     Map<String, dynamic> data, {
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) => _dio.post(
     '/recurring-transfers',
     data: data,

@@ -179,12 +179,16 @@ void main() {
     final dio = MockDio();
     dio.queueResponse({'transactionId': 'tx-api', 'status': 'completed'});
 
-    await TransfersApi(dio).sendInternal({
-      'recipientId': ' 123e4567-e89b-12d3-a456-426614174003 ',
-      'recipientPhone': '+225+2250748805663',
-      'recipientUsername': '@awa_k',
-      'amount': 10,
-    });
+    await TransfersApi(dio).sendInternal(
+      {
+        'recipientId': ' 123e4567-e89b-12d3-a456-426614174003 ',
+        'recipientPhone': '+225+2250748805663',
+        'recipientUsername': '@awa_k',
+        'amount': 10,
+      },
+      pinToken: 'pin-token',
+      idempotencyKey: 'idem-legacy-map',
+    );
 
     final request = dio.requestHistory.single;
     expect(request.path, '/wallet/transfer/internal');

@@ -115,8 +115,8 @@ class WalletService {
     required double amount,
     required String currency,
     String? note,
-    String? pinToken,
-    String? idempotencyKey,
+    required String pinToken,
+    required String idempotencyKey,
   }) async {
     try {
       final response = await _dio.post(
@@ -147,8 +147,8 @@ class WalletService {
     required String currency,
     String? network,
     String? note,
-    String? pinToken,
-    String? idempotencyKey,
+    required String pinToken,
+    required String idempotencyKey,
   }) async {
     try {
       final response = await _dio.post(
@@ -208,8 +208,8 @@ class WalletService {
     required String destinationAddress,
     String? network,
     String? method,
-    String? pinToken,
-    String? idempotencyKey,
+    required String pinToken,
+    required String idempotencyKey,
     String? stepUpToken,
   }) async {
     try {
@@ -927,13 +927,13 @@ final walletServiceProvider = Provider<WalletService>((ref) {
 });
 
 Map<String, String> _transactionHeaders({
-  String? pinToken,
-  String? idempotencyKey,
+  required String pinToken,
+  required String idempotencyKey,
   String? stepUpToken,
 }) {
   return {
-    if (pinToken != null) 'X-Pin-Token': pinToken,
-    'X-Idempotency-Key': idempotencyKey ?? generateIdempotencyKey(),
+    'X-Pin-Token': pinToken,
+    'X-Idempotency-Key': idempotencyKey,
     if (stepUpToken != null && stepUpToken.isNotEmpty)
       'X-Step-Up-Token': stepUpToken,
   };

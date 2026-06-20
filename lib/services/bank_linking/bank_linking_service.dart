@@ -79,7 +79,7 @@ class BankLinkingService {
     required double amount,
     required String pinToken,
     String? description,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) async {
     final response = await _dio.post(
       '/bank-accounts/$accountId/deposit',
@@ -103,7 +103,7 @@ class BankLinkingService {
     required double amount,
     required String pinToken,
     String? description,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) async {
     final response = await _dio.post(
       '/bank-accounts/$accountId/withdraw',

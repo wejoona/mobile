@@ -749,7 +749,10 @@ void main() {
           ..selectMethod(WithdrawMethod.orangeMoney)
           ..setPhoneNumber('0748805663');
         await notifier.setAmount(25);
-        await notifier.submit(pinToken: 'pin_token_123');
+        await notifier.submit(
+          pinToken: 'pin_token_123',
+          idempotencyKey: 'idem-invalid-phone',
+        );
 
         expect(dio.requestHistory, hasLength(1));
         expect(

@@ -3,7 +3,6 @@ library;
 
 import 'package:dio/dio.dart';
 import 'package:usdc_wallet/core/constants/api_endpoints.dart';
-import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
@@ -14,8 +13,8 @@ class TransfersApi {
   /// POST /wallet/transfer/internal
   Future<Response> sendInternal(
     Map<String, dynamic> data, {
-    String? pinToken,
-    String? idempotencyKey,
+    required String pinToken,
+    required String idempotencyKey,
     String? stepUpToken,
   }) => _dio.post(
     ApiEndpoints.transfersSend,
@@ -30,8 +29,8 @@ class TransfersApi {
   /// POST /wallet/transfer/external
   Future<Response> sendExternal(
     Map<String, dynamic> data, {
-    String? pinToken,
-    String? idempotencyKey,
+    required String pinToken,
+    required String idempotencyKey,
     String? stepUpToken,
   }) => _dio.post(
     ApiEndpoints.transfersExternal,
@@ -58,28 +57,16 @@ class TransfersApi {
       _dio.get(ApiEndpoints.walletTransactionById(id));
 
   Options _transferOptions({
-    String? pinToken,
-    String? idempotencyKey,
+    required String pinToken,
+    required String idempotencyKey,
     String? stepUpToken,
-  }) {
-    if (pinToken == null || pinToken.isEmpty) {
-      return Options(
-        headers: {
-          'X-Idempotency-Key': idempotencyKey ?? generateIdempotencyKey(),
-          if (stepUpToken != null && stepUpToken.isNotEmpty)
-            'X-Step-Up-Token': stepUpToken,
-        },
-      );
-    }
-
-    return Options(
-      headers: transactionHeaders(
-        pinToken: pinToken,
-        idempotencyKey: idempotencyKey,
-        stepUpToken: stepUpToken,
-      ),
-    );
-  }
+  }) => Options(
+    headers: transactionHeaders(
+      pinToken: pinToken,
+      idempotencyKey: idempotencyKey,
+      stepUpToken: stepUpToken,
+    ),
+  );
 }
 
 Map<String, dynamic> _internalTransferPayload(Map<String, dynamic> data) {

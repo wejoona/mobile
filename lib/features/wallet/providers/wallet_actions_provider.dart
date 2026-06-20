@@ -24,8 +24,8 @@ class WalletActions {
     required String provider, // orangeMoney, mtnMomo, wave, moovMoney
     required String phoneNumber,
     required String countryCode,
-    String? pinToken,
-    String? idempotencyKey,
+    required String pinToken,
+    required String idempotencyKey,
     String? stepUpToken,
   }) async {
     await _verifyWithdrawalLimits(amount);
@@ -47,15 +47,13 @@ class WalletActions {
           'phoneNumber': normalizedPhoneNumber,
           'currency': 'XOF',
         },
-        options: pinToken == null
-            ? null
-            : Options(
-                headers: transactionHeaders(
-                  pinToken: pinToken,
-                  idempotencyKey: idempotencyKey,
-                  stepUpToken: stepUpToken,
-                ),
-              ),
+        options: Options(
+          headers: transactionHeaders(
+            pinToken: pinToken,
+            idempotencyKey: idempotencyKey,
+            stepUpToken: stepUpToken,
+          ),
+        ),
       );
     } catch (e) {
       if (isCashOutUnavailableError(e)) {

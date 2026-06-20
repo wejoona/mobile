@@ -69,7 +69,7 @@ class PaymentLinksService {
     String shortCode, {
     double? amount,
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) async {
     final response = await _dio.post(
       '/payment-links/code/$shortCode/pay',

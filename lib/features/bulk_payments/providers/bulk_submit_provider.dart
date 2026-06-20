@@ -93,6 +93,11 @@ class BulkSubmitNotifier extends Notifier<BulkSubmitState> {
       return false;
     }
 
+    if (state.idempotencyKey == null) {
+      state = state.copyWith(error: 'Payment request identity missing');
+      return false;
+    }
+
     if (state.isSubmitting) return false;
 
     state = state.copyWith(isSubmitting: true, error: null);
@@ -101,7 +106,7 @@ class BulkSubmitNotifier extends Notifier<BulkSubmitState> {
       await service.submitBatch(
         batch,
         pinToken: state.pinToken!,
-        idempotencyKey: state.idempotencyKey,
+        idempotencyKey: state.idempotencyKey!,
       );
       state = state.copyWith(isSubmitting: false, isComplete: true);
       return true;

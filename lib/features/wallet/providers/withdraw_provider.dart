@@ -225,7 +225,7 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
   /// Fix #3: Amount converted to cents for backend.
   Future<void> submit({
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
     String? stepUpToken,
   }) async {
     if (state.method == null || state.amount == null) return;

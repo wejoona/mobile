@@ -74,7 +74,7 @@ class BillPaymentsService {
     String? phone,
     String? email,
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) async {
     try {
       final response = await _dio.post(

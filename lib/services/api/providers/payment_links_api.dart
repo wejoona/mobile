@@ -23,7 +23,7 @@ class PaymentLinksApi {
     String code,
     Map<String, dynamic> data, {
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) => _dio.post(
     '/payment-links/code/$code/pay',
     data: data,
@@ -40,7 +40,7 @@ class PaymentLinksApi {
     String code,
     Map<String, dynamic> data, {
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) =>
       payByCode(code, data, pinToken: pinToken, idempotencyKey: idempotencyKey);
 

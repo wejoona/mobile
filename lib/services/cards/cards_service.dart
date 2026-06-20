@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 
 /// Cards Service
 ///
@@ -182,4 +181,4 @@ double? _parseDouble(Object? value) {
 }
 
 Options _pinProtectedOptions(String pinToken) =>
-    Options(headers: transactionHeaders(pinToken: pinToken));
+    Options(headers: {'X-Pin-Token': pinToken});

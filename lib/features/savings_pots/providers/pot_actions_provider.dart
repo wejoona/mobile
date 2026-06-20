@@ -32,7 +32,7 @@ class PotActionsNotifier extends Notifier<PotActionState> {
     String potId,
     double amount, {
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) async {
     state = state.copyWith(isLoading: true);
     try {
@@ -55,7 +55,7 @@ class PotActionsNotifier extends Notifier<PotActionState> {
     String potId,
     double amount, {
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) async {
     state = state.copyWith(isLoading: true);
     try {
@@ -77,7 +77,7 @@ class PotActionsNotifier extends Notifier<PotActionState> {
   Future<void> withdrawAll(
     String potId, {
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) async {
     state = state.copyWith(isLoading: true);
     try {
