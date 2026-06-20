@@ -613,7 +613,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.textPrimary),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => context.fsmSafePop(),
         ),
       ),
       body: SingleChildScrollView(
