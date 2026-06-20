@@ -101,7 +101,7 @@ Avatar URL handling: the API may return absolute URLs, `/user/avatar/...`, `user
 
 KYC state should drive the mobile FSM: unverified users can start KYC, pending/manual-review users should see review state, rejected users should see retry/remediation, and approved/verified/auto-approved users should unlock higher-risk flows according to backend limits and risk decisions.
 
-`GET /user/limits` and `GET /wallet/limits` include a `permissions` object:
+`GET /user/limits` is the canonical limits endpoint and includes a `permissions` object. `GET /wallet/limits` is retired and should not be used by mobile callers.
 
 ```json
 {

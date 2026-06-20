@@ -169,12 +169,23 @@ void main() {
       'createdAt': DateTime.utc(2026, 6, 4).toIso8601String(),
       'isUnread': true,
     });
+    final sensitiveInternalLink = AppNotification.fromJson({
+      'id': 'notif-sensitive',
+      'type': 'system',
+      'action': 'none',
+      'title': 'Sensitive',
+      'body': 'Do not open sensitive recovery routes from notification data.',
+      'actionUrl': '/pin/reset',
+      'createdAt': DateTime.utc(2026, 6, 4).toIso8601String(),
+      'isUnread': true,
+    });
 
     expect(transactionNotification.action, 'open_transaction');
     expect(transactionNotification.navigationRoute, '/transactions/txn_123');
     expect(securityNotification.navigationRoute, '/settings/security');
     expect(safeDeepLink.navigationRoute, '/transactions/txn_safe');
     expect(externalLink.navigationRoute, isNull);
+    expect(sensitiveInternalLink.navigationRoute, isNull);
   });
 
   test('push notification tap routes point to live app screens', () {
@@ -194,9 +205,17 @@ void main() {
     );
     expect(
       routeForNotificationData({'type': 'kyc', 'action': 'approved'}),
-      '/settings/kyc',
+      '/kyc',
     );
     expect(routeForNotificationData({'type': 'balance'}), '/home');
+    expect(
+      routeForNotificationData({'type': 'security', 'route': '/pin/reset'}),
+      '/settings/security',
+    );
+    expect(
+      routeForNotificationData({'type': 'system', 'actionUrl': '/pin/reset'}),
+      '/notifications',
+    );
   });
 
   test('rich notification quick actions avoid unwired routes', () {

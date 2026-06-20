@@ -7,6 +7,7 @@ import 'package:usdc_wallet/domain/entities/notification.dart';
 import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart';
 import 'package:usdc_wallet/features/notifications/widgets/notification_tile.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/notifications/notification_route_intent.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Notifications list screen.
@@ -252,9 +253,8 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
       }
     }
 
-    final route = notification.navigationRoute;
-    if (route != null && mounted) {
-      await context.fsmPush(route);
+    if (mounted) {
+      await context.fsmPush(routeForNotification(notification));
     }
   }
 }

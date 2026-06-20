@@ -165,7 +165,26 @@ String? _safeInAppPath(String? raw) {
   if (value.startsWith('//') || value.contains('://')) {
     return null;
   }
-  return value;
+  const exactRoutes = {
+    '/home',
+    '/transactions',
+    '/settings/security',
+    '/settings/devices',
+    '/settings/kyc',
+    '/kyc',
+    '/deposit',
+    '/referrals',
+    '/notifications',
+  };
+  if (exactRoutes.contains(value)) {
+    return value;
+  }
+  const allowedPrefixes = {
+    '/transactions/',
+    '/payment-links/detail/',
+    '/payment-links/created/',
+  };
+  return allowedPrefixes.any(value.startsWith) ? value : null;
 }
 
 NotificationType _notificationTypeFromJson(Map<String, dynamic> json) {

@@ -4,9 +4,13 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/services/notifications/notification_route_intent.dart';
 import 'package:usdc_wallet/services/notifications/push_notification_service.dart';
 import 'package:usdc_wallet/services/notifications/rich_notification_helper.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+
+export 'package:usdc_wallet/services/notifications/notification_route_intent.dart'
+    show routeForNotificationData;
 
 /// Notification Handler Widget
 ///
@@ -106,36 +110,3 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
 
 /// Provider for notification handler state
 final notificationHandlerInitializedProvider = Provider<bool>((ref) => false);
-
-String routeForNotificationData(Map<String, dynamic> data) {
-  final type = data['type'] as String?;
-  final action = data['action'] as String?;
-  final transactionId = data['transactionId'] as String?;
-
-  switch (type) {
-    case 'transaction':
-      if (transactionId != null && transactionId.isNotEmpty) {
-        return '/transactions/$transactionId';
-      }
-      return '/transactions';
-
-    case 'security':
-      switch (action) {
-        case 'new_device_login':
-          return '/settings/devices';
-        case 'large_transaction':
-        case 'address_whitelisted':
-        default:
-          return '/settings/security';
-      }
-
-    case 'kyc':
-      return '/settings/kyc';
-
-    case 'balance':
-      return '/home';
-
-    default:
-      return '/notifications';
-  }
-}

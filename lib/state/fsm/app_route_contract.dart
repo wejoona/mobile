@@ -632,6 +632,11 @@ const appRouteContracts = <AppRouteContract>[
     },
   ),
   AppRouteContract(
+    pattern: '/notifications',
+    role: AppRouteRole.authenticatedShell,
+    capabilities: {AppRouteCapability.requiresAuth},
+  ),
+  AppRouteContract(
     pattern: '/settings',
     role: AppRouteRole.authenticatedShell,
     prefix: true,
@@ -805,6 +810,11 @@ const appRouteContracts = <AppRouteContract>[
   ),
   AppRouteContract(
     pattern: '/merchant-dashboard',
+    role: AppRouteRole.settingsStep,
+    capabilities: _authenticatedWalletCapabilities,
+  ),
+  AppRouteContract(
+    pattern: '/referrals',
     role: AppRouteRole.settingsStep,
     capabilities: _authenticatedWalletCapabilities,
   ),
