@@ -66,6 +66,59 @@ void main() {
           'Route changes must go through context.fsmGo/fsmPush/fsmPop or an AppFsmNotifier method.',
     );
   });
+
+  test('FSM state views never bypass the FSM navigation facade', () {
+    final root = Directory('lib/features/fsm_states/views');
+    expect(
+      root.existsSync(),
+      isTrue,
+      reason: 'FSM state view contracts must be scanned from the package root.',
+    );
+
+    final forbiddenPatterns = <String, RegExp>{
+      'Navigator route pop': RegExp(
+        r'Navigator(?:\.of\s*\([^)]*\))?\.pop(?:<[^>]+>)?\s*\(',
+      ),
+      'Navigator route push': RegExp(
+        r'Navigator(?:\.of\s*\([^)]*\))?\.(?:push|pushNamed|pushReplacement|pushReplacementNamed|popAndPushNamed|restorablePush|restorablePushNamed)\s*\(',
+      ),
+      'raw context route call': RegExp(
+        r'context\.(?:go|push|pop|safePop)(?:<[^>]+>)?\s*\(',
+      ),
+      'raw GoRouter access': RegExp(r'GoRouter\.of\s*\('),
+    };
+
+    final violations = <String>[];
+
+    final files = root
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((file) => file.path.endsWith('.dart'));
+
+    for (final file in files) {
+      final lines = file.readAsLinesSync();
+      for (var index = 0; index < lines.length; index++) {
+        final line = lines[index];
+        for (final entry in forbiddenPatterns.entries) {
+          if (_isAllowedModalPop(file.path, lines, index, entry.key)) {
+            continue;
+          }
+          if (entry.value.hasMatch(line)) {
+            violations.add(
+              '${file.path}:${index + 1} uses ${entry.key}: ${line.trim()}',
+            );
+          }
+        }
+      }
+    }
+
+    expect(
+      violations,
+      isEmpty,
+      reason:
+          'FSM state views must use context.fsmGo/fsmPush/fsmPop/fsmSafePop so recovery and fallback behavior stays deterministic.',
+    );
+  });
 }
 
 bool _isAllowedModalPop(
@@ -74,21 +127,29 @@ bool _isAllowedModalPop(
   int index,
   String patternName,
 ) {
-  if (patternName != 'Navigator route pop') return false;
+  if (patternName != 'Navigator route pop') {
+    return false;
+  }
 
   final line = lines[index];
   final modalOwnerPath = RegExp(
-    r'/(widgets|dialogs|components)/|sheet|dialog|picker|select',
+    '/(widgets|dialogs|components)/|sheet|dialog|picker|select',
   );
-  if (modalOwnerPath.hasMatch(path)) return true;
+  if (modalOwnerPath.hasMatch(path)) {
+    return true;
+  }
 
   final modalContextName = RegExp(r'\b(dialogContext|sheetContext|ctx)\b');
-  if (modalContextName.hasMatch(line)) return true;
+  if (modalContextName.hasMatch(line)) {
+    return true;
+  }
 
   final hasResult = RegExp(
     r'Navigator(?:\.of\s*\([^)]*\))?\.pop(?:<[^>]+>)?\s*\([^,]+,',
   ).hasMatch(line);
-  if (hasResult) return true;
+  if (hasResult) {
+    return true;
+  }
 
   final start = (index - 60).clamp(0, lines.length - 1);
   final end = (index + 3).clamp(0, lines.length - 1);

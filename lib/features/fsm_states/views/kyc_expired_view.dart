@@ -143,7 +143,7 @@ class KycExpiredView extends ConsumerWidget {
                   SizedBox(height: AppSpacing.md),
                   AppButton(
                     label: l10n.kyc_remindLater,
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: () => context.fsmSafePop(fallbackRoute: '/home'),
                     variant: AppButtonVariant.secondary,
                     isFullWidth: true,
                   ),
