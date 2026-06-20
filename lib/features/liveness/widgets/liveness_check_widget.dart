@@ -50,6 +50,7 @@ class LivenessCheckWidget extends ConsumerStatefulWidget {
   final VoidCallback? onManualReviewAcknowledged;
   final VoidCallback? onCancel;
   final bool useRecoveryToken;
+  final bool showHeader;
 
   const LivenessCheckWidget({
     super.key,
@@ -58,6 +59,7 @@ class LivenessCheckWidget extends ConsumerStatefulWidget {
     this.onManualReviewAcknowledged,
     this.onCancel,
     this.useRecoveryToken = false,
+    this.showHeader = true,
   });
 
   @override
@@ -630,7 +632,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
       child: SafeArea(
         child: Column(
           children: [
-            _buildHeader(colors),
+            if (widget.showHeader) _buildHeader(colors),
             Expanded(child: _buildContent(colors)),
             if (_state == _LivenessState.ready) _buildCaptureButton(colors),
           ],

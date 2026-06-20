@@ -361,6 +361,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
                   _routePinResetToManualReview(request.reason),
               onManualReviewAcknowledged: _openManualReviewStepFromLiveness,
               useRecoveryToken: true,
+              showHeader: false,
             ),
           ),
         ),
