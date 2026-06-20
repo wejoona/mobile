@@ -160,6 +160,31 @@ void main() {
       );
     });
 
+    test('keeps recovery OTP verification public', () async {
+      final container = ProviderContainer(
+        overrides: [secureStorageProvider.overrideWithValue(mockStorage)],
+      );
+      addTearDown(container.dispose);
+
+      await mockStorage.write(
+        key: StorageKeys.accessToken,
+        value: 'active.access',
+      );
+      await mockStorage.write(
+        key: StorageKeys.recoveryAccessToken,
+        value: 'recovery.access',
+      );
+
+      final adapter = _RecordingStatusAdapter();
+      final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
+        ..httpClientAdapter = adapter
+        ..interceptors.add(container.read(_authInterceptorTestProvider));
+
+      await dio.post('/auth/recovery/verify-otp');
+
+      expect(adapter.requests.single.headers['Authorization'], isNull);
+    });
+
     test(
       'explicit recovery scope wins over active access token for liveness',
       () async {

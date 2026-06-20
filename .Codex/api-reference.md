@@ -150,7 +150,7 @@ When the final liveness challenge completes, the response should include `livene
 
 Provider unavailability returns a retryable `KYC_PROVIDER_UNAVAILABLE` response with `supportReviewRequired=true`; mobile account recovery and KYC should route the user to manual review with an SLA instead of looping on liveness.
 
-Account recovery manual review uses `POST /support/tickets` with `category=account_recovery`. The API dedupes active account-recovery tickets for the user and appends new outage/risk signals to the same ticket. Ticket responses may include `reviewSla` with `label`, `firstResponseDueAt`, and `resolutionDueAt`; prefer those values over hardcoded SLA copy.
+PIN recovery manual review uses `POST /user/pin/reset/manual-review` with the scoped recovery token and staged `newPinHash`. The backend creates the support review and owns applying the pending PIN after backoffice approval. Do not create a generic `POST /support/tickets` account-recovery ticket from mobile for PIN reset, because that cannot stage or apply the replacement PIN. Review responses may include `reviewSla` with `label`, `firstResponseDueAt`, and `resolutionDueAt`; prefer those values over hardcoded SLA copy.
 
 ## Contacts
 

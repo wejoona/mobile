@@ -384,6 +384,7 @@ class AuthInterceptor extends Interceptor {
     const publicEndpoints = [
       '/auth/register',
       '/auth/verify-otp',
+      '/auth/recovery/verify-otp',
       '/auth/login',
       '/auth/refresh',
       '/config/countries',
