@@ -896,8 +896,11 @@ void main() {
     expect(riskSource, contains('stepUpType == StepUpType.manualReview'));
     expect(
       riskSource,
-      contains('low-risk recovery proceeds\n  /// with OTP only'),
-      reason: 'account recovery must stay risk-based, not hardcoded liveness',
+      contains(
+        'low-risk recovery uses an\n  /// OTP user ceremony with a scoped recovery challenge token',
+      ),
+      reason:
+          'account recovery must stay risk-based, while still preserving the backend recovery challenge token',
     );
     expect(
       resetSource,

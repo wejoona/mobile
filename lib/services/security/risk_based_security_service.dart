@@ -490,9 +490,10 @@ class RiskBasedSecurityService {
 
   /// Guard for account recovery.
   ///
-  /// The backend owns the recovery risk decision: low-risk recovery proceeds
-  /// with OTP only, high-risk recovery requires liveness, and critical or
-  /// unavailable provider cases move to manual review.
+  /// The backend owns the recovery risk decision: low-risk recovery uses an
+  /// OTP user ceremony with a scoped recovery challenge token, high-risk
+  /// recovery requires liveness, and critical or unavailable provider cases
+  /// move to manual review.
   Future<StepUpDecision> guardAccountRecovery() async {
     return await evaluateOperation(operation: 'account_recovery');
   }
