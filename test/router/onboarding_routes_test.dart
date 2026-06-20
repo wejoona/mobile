@@ -212,9 +212,11 @@ void main() {
 
       expect(routeSource, contains("path: '/legal/terms'"));
       expect(routeSource, contains("path: '/legal/privacy'"));
+      expect(routeSource, contains("state.uri.queryParameters['returnTo']"));
       expect(consentSource, contains("context.fsmPush<void>("));
       expect(consentSource, contains("'/legal/terms'"));
       expect(consentSource, contains("'/legal/privacy'"));
+      expect(consentSource, contains('Uri.encodeComponent'));
       expect(
         consentSource,
         isNot(contains('Navigator.push')),
@@ -222,6 +224,47 @@ void main() {
             'Consent documents are screens; opening them must stay inside the FSM route contract.',
       );
       expect(documentSource, contains('context.fsmSafePop'));
+      expect(documentSource, contains('_safeFallbackRoute(fallbackRoute)'));
+    });
+
+    test('signup KYC handoff completes signup before entering KYC', () {
+      final promptSource = File(
+        'lib/features/signup/views/signup_kyc_prompt_view.dart',
+      ).readAsStringSync();
+      final providerSource = File(
+        'lib/features/signup/providers/signup_flow_provider.dart',
+      ).readAsStringSync();
+
+      expect(providerSource, contains('Future<void> startKyc() async'));
+      expect(providerSource, contains('await completeSignupFlow();'));
+      expect(
+        promptSource,
+        contains('await ref.read(signupFlowProvider.notifier).startKyc();'),
+      );
+      expect(promptSource, contains("context.fsmGo('/kyc/document-type')"));
+      expect(
+        promptSource,
+        isNot(contains("context.fsmPush('/kyc/document-type')")),
+        reason:
+            'KYC is a setup handoff after signup completion, not a nested signup page.',
+      );
+    });
+
+    test('KYC submitted route requires durable KYC flow state', () {
+      final routeSource = File(
+        'lib/router/routes/kyc_settings_routes.dart',
+      ).readAsStringSync();
+      final providerSource = File(
+        'lib/features/kyc/providers/kyc_provider.dart',
+      ).readAsStringSync();
+
+      expect(routeSource, contains('redirect: _kycSubmittedRedirect'));
+      expect(routeSource, contains('status.isSubmitted || status.isVerified'));
+      expect(routeSource, contains("return '/kyc/review';"));
+      expect(
+        providerSource,
+        contains('verificationStatus: KycStatus.submitted'),
+      );
     });
 
     test('starts anonymous users on login instead of registration', () {

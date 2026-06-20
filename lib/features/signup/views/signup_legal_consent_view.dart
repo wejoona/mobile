@@ -24,6 +24,8 @@ class SignupLegalConsentView extends ConsumerStatefulWidget {
 
 class _SignupLegalConsentViewState
     extends ConsumerState<SignupLegalConsentView> {
+  static const _legalConsentRoute = '/signup/legal-consent';
+
   bool _termsRead = false;
   bool _privacyRead = false;
   bool _isSubmitting = false;
@@ -170,10 +172,12 @@ class _SignupLegalConsentViewState
     });
   }
 
-  String _legalDocumentRoute(LegalDocumentType type) =>
-      type == LegalDocumentType.termsOfService
-      ? '/legal/terms'
-      : '/legal/privacy';
+  String _legalDocumentRoute(LegalDocumentType type) {
+    final path = type == LegalDocumentType.termsOfService
+        ? '/legal/terms'
+        : '/legal/privacy';
+    return '$path?returnTo=${Uri.encodeComponent(_legalConsentRoute)}';
+  }
 
   Future<void> _handleAcceptAndSubmit() async {
     final state = ref.read(signupFlowProvider);

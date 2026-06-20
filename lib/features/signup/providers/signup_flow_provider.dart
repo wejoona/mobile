@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
@@ -86,7 +88,7 @@ class SignupFlowNotifier extends Notifier<SignupFlowState> {
 
   @override
   SignupFlowState build() {
-    _checkStatus();
+    unawaited(_checkStatus());
     return const SignupFlowState();
   }
 
@@ -309,8 +311,10 @@ class SignupFlowNotifier extends Notifier<SignupFlowState> {
     }
   }
 
-  void startKyc() {
-    state = state.copyWith(clearError: true);
+  Future<void> startKyc() async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    await completeSignupFlow();
+    state = state.copyWith(isLoading: false);
   }
 
   /// Skip KYC for now and mark signup/account setup complete locally.

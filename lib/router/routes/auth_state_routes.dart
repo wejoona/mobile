@@ -63,8 +63,9 @@ List<RouteBase> authStateRoutes() => [
     path: '/legal/terms',
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
-      child: const LegalDocumentView(
+      child: LegalDocumentView(
         documentType: LegalDocumentType.termsOfService,
+        fallbackRoute: _legalReturnTo(state),
       ),
     ),
   ),
@@ -72,8 +73,9 @@ List<RouteBase> authStateRoutes() => [
     path: '/legal/privacy',
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
-      child: const LegalDocumentView(
+      child: LegalDocumentView(
         documentType: LegalDocumentType.privacyPolicy,
+        fallbackRoute: _legalReturnTo(state),
       ),
     ),
   ),
@@ -251,6 +253,24 @@ List<RouteBase> authStateRoutes() => [
 
 String _sessionLockReturnTo(GoRouterState state) {
   return _safeReturnTo(state) ?? '/home';
+}
+
+String _legalReturnTo(GoRouterState state) {
+  final returnTo = state.uri.queryParameters['returnTo']?.trim();
+  if (returnTo == null || returnTo.isEmpty) {
+    return '/login';
+  }
+
+  final uri = Uri.tryParse(returnTo);
+  if (uri == null ||
+      uri.hasScheme ||
+      uri.hasAuthority ||
+      !returnTo.startsWith('/') ||
+      returnTo.startsWith('//')) {
+    return '/login';
+  }
+
+  return returnTo;
 }
 
 String? _authReturnTo(GoRouterState state) {

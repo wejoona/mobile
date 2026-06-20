@@ -10,9 +10,14 @@ import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Full-screen legal document viewer
 class LegalDocumentView extends ConsumerWidget {
-  const LegalDocumentView({super.key, required this.documentType});
+  const LegalDocumentView({
+    required this.documentType,
+    this.fallbackRoute = '/login',
+    super.key,
+  });
 
   final LegalDocumentType documentType;
+  final String fallbackRoute;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,7 +34,7 @@ class LegalDocumentView extends ConsumerWidget {
         leading: IconButton(
           icon: Icon(Icons.close_rounded, color: colors.textPrimary),
           onPressed: () => context.fsmSafePop(
-            fallbackRoute: '/login',
+            fallbackRoute: _safeFallbackRoute(fallbackRoute),
             event: AppNavigationEvent.legalDocumentOpened,
           ),
         ),
@@ -68,6 +73,15 @@ class LegalDocumentView extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  static String _safeFallbackRoute(String route) {
+    final parsed = Uri.tryParse(route);
+    if (parsed == null || parsed.hasScheme || parsed.hasAuthority) {
+      return '/login';
+    }
+    final normalized = parsed.toString();
+    return normalized.startsWith('/') ? normalized : '/login';
   }
 
   Widget _buildContent(

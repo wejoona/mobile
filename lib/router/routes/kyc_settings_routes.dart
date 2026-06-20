@@ -99,6 +99,7 @@ List<RouteBase> kycSettingsRoutes() => [
   ),
   GoRoute(
     path: '/kyc/submitted',
+    redirect: _kycSubmittedRedirect,
     pageBuilder: (context, state) =>
         AppPageTransitions.fade(state: state, child: const SubmittedView()),
   ),
@@ -287,4 +288,16 @@ String? _kycEvidenceRedirect(BuildContext context, GoRouterState state) {
     return '/kyc/selfie';
   }
   return '/kyc/review';
+}
+
+String? _kycSubmittedRedirect(BuildContext context, GoRouterState state) {
+  final flow = ProviderScope.containerOf(context).read(kycProvider);
+  final status = flow.status;
+  if (status.isSubmitted || status.isVerified) {
+    return null;
+  }
+  if (flow.canSubmit) {
+    return '/kyc/review';
+  }
+  return _kycEvidenceRedirect(context, state) ?? '/kyc';
 }

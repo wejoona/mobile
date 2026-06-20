@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -75,13 +77,13 @@ class SignupKycPromptView extends ConsumerWidget {
               // Verify now button
               AppButton(
                 label: l10n.onboarding_kyc_verify,
-                onPressed: () => _handleVerifyNow(context, ref),
+                onPressed: () => unawaited(_handleVerifyNow(context, ref)),
                 isFullWidth: true,
               ),
               SizedBox(height: AppSpacing.md),
               // Maybe later button
               TextButton(
-                onPressed: () => _handleMaybeLater(context, ref),
+                onPressed: () => unawaited(_handleMaybeLater(context, ref)),
                 child: AppText(
                   l10n.onboarding_kyc_later,
                   style: AppTypography.bodyMedium.copyWith(
@@ -124,16 +126,17 @@ class SignupKycPromptView extends ConsumerWidget {
     );
   }
 
-  void _handleVerifyNow(BuildContext context, WidgetRef ref) {
-    // Mark that user chose to verify (for tracking)
-    ref.read(signupFlowProvider.notifier).startKyc();
-    // Navigate to KYC document type selection
-    // After KYC submission, user will be redirected to home
-    context.fsmPush('/kyc/document-type');
+  Future<void> _handleVerifyNow(BuildContext context, WidgetRef ref) async {
+    await ref.read(signupFlowProvider.notifier).startKyc();
+    if (context.mounted) {
+      context.fsmGo('/kyc/document-type');
+    }
   }
 
-  void _handleMaybeLater(BuildContext context, WidgetRef ref) {
-    ref.read(signupFlowProvider.notifier).skipKyc();
-    context.fsmGo('/signup/success');
+  Future<void> _handleMaybeLater(BuildContext context, WidgetRef ref) async {
+    await ref.read(signupFlowProvider.notifier).skipKyc();
+    if (context.mounted) {
+      context.fsmGo('/signup/success');
+    }
   }
 }

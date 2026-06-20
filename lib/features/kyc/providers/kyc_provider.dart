@@ -226,7 +226,10 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
         idNumber: state.personalInfo['documentNumber'],
       );
       if (!ref.mounted) return;
-      state = state.copyWith(isLoading: false);
+      state = state.copyWith(
+        isLoading: false,
+        verificationStatus: KycStatus.submitted,
+      );
       analytics.trackKycCompleted(success: true);
     } catch (e) {
       if (!ref.mounted) return;
@@ -250,7 +253,10 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
         documentPath: address['documentPath'] ?? '',
       );
       if (!ref.mounted) return;
-      state = state.copyWith(isLoading: false);
+      state = state.copyWith(
+        isLoading: false,
+        verificationStatus: KycStatus.submitted,
+      );
     } catch (e) {
       if (!ref.mounted) return;
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -270,7 +276,10 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
         supportingDocuments: paths,
       );
       if (!ref.mounted) return;
-      state = state.copyWith(isLoading: false);
+      state = state.copyWith(
+        isLoading: false,
+        verificationStatus: KycStatus.submitted,
+      );
     } catch (e) {
       if (!ref.mounted) return;
       state = state.copyWith(isLoading: false, error: e.toString());
