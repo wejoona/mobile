@@ -60,6 +60,10 @@ class StorageKeys {
   static const String userLocalPhone = 'user_local_phone';
   static const String userPhoneE164 = 'user_phone_e164';
   static const String recoveryAccessToken = 'recovery_access_token';
+  static const String recoveryAccessTokenPhone = 'recovery_access_token_phone';
+  static const String recoveryAccessTokenScope = 'recovery_access_token_scope';
+  static const String recoveryAccessTokenCreatedAt =
+      'recovery_access_token_created_at';
   static const String userPin = 'user_pin';
   static const String biometricEnabled = 'biometric_enabled';
   static const String rememberedPhone = 'remembered_phone';
@@ -183,6 +187,8 @@ class AuthInterceptor extends Interceptor {
   Completer<bool>? _refreshCompleter;
   bool _sessionInvalidated = false;
 
+  static const _pinResetRecoveryScope = 'pin_reset';
+
   AuthInterceptor(this._ref);
 
   @override
@@ -200,8 +206,9 @@ class AuthInterceptor extends Interceptor {
         options.extra[ApiRequestExtra.useRecoveryToken] == true;
 
     if (useRecoveryToken) {
-      final recoveryToken = await storage.read(
-        key: StorageKeys.recoveryAccessToken,
+      final recoveryToken = await _readRecoveryTokenForScope(
+        storage,
+        _pinResetRecoveryScope,
       );
       if (recoveryToken != null && recoveryToken.isNotEmpty) {
         options.headers['Authorization'] = 'Bearer $recoveryToken';
@@ -216,8 +223,9 @@ class AuthInterceptor extends Interceptor {
       _sessionInvalidated = false;
       options.headers['Authorization'] = 'Bearer $token';
     } else if (_isAccountRecoveryEndpoint(options.path)) {
-      final recoveryToken = await storage.read(
-        key: StorageKeys.recoveryAccessToken,
+      final recoveryToken = await _readRecoveryTokenForScope(
+        storage,
+        _pinResetRecoveryScope,
       );
       if (recoveryToken != null && recoveryToken.isNotEmpty) {
         options.headers['Authorization'] = 'Bearer $recoveryToken';
@@ -246,9 +254,7 @@ class AuthInterceptor extends Interceptor {
     }
 
     if (err.response?.statusCode == 401 && isAccountRecoveryEndpoint) {
-      await _ref
-          .read(secureStorageProvider)
-          .delete(key: StorageKeys.recoveryAccessToken);
+      await _clearRecoveryAuthorization(_ref.read(secureStorageProvider));
       return handler.next(err);
     }
 
@@ -402,6 +408,32 @@ class AuthInterceptor extends Interceptor {
       '/kyc/liveness',
     ];
     return recoveryEndpoints.any(path.contains);
+  }
+
+  Future<String?> _readRecoveryTokenForScope(
+    FlutterSecureStorage storage,
+    String scope,
+  ) async {
+    final token = await storage.read(key: StorageKeys.recoveryAccessToken);
+    if (token == null || token.isEmpty) {
+      return null;
+    }
+
+    final storedScope = await storage.read(
+      key: StorageKeys.recoveryAccessTokenScope,
+    );
+    if (storedScope != scope) {
+      return null;
+    }
+
+    return token;
+  }
+
+  Future<void> _clearRecoveryAuthorization(FlutterSecureStorage storage) async {
+    await storage.delete(key: StorageKeys.recoveryAccessToken);
+    await storage.delete(key: StorageKeys.recoveryAccessTokenPhone);
+    await storage.delete(key: StorageKeys.recoveryAccessTokenScope);
+    await storage.delete(key: StorageKeys.recoveryAccessTokenCreatedAt);
   }
 
   Future<Response<dynamic>> _retryWithAccessToken(

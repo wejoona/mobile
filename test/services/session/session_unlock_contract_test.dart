@@ -804,7 +804,7 @@ void main() {
     expect(requestOtpBody, contains('authServiceProvider'));
     expect(requestOtpBody, contains('_hasRecoveryAuthorizationCandidate'));
     expect(
-      requestOtpBody.indexOf('_ensureRecoveryAuthorization()'),
+      requestOtpBody.indexOf('_ensureRecoveryAuthorization(phone)'),
       greaterThan(requestOtpBody.indexOf('_hasRecoveryAuthorizationCandidate')),
       reason:
           'Requesting a recovery OTP is a public recovery action; recovery authorization can only be required when an existing token is already available.',
@@ -827,6 +827,31 @@ void main() {
     );
     expect(resetSource, contains('verifyRecoveryOtp'));
     expect(resetSource, contains('StorageKeys.recoveryAccessToken'));
+    expect(resetSource, contains('StorageKeys.recoveryAccessTokenPhone'));
+    expect(resetSource, contains('StorageKeys.recoveryAccessTokenScope'));
+    expect(resetSource, contains('StorageKeys.recoveryAccessTokenCreatedAt'));
+    expect(resetSource, contains('_readScopedRecoveryToken(phone)'));
+    expect(resetSource, contains('_routeRecoveryTokenFor(phone)'));
+    expect(
+      resetSource,
+      contains('storedPhone?.e164 != phone.e164'),
+      reason:
+          'recovery tokens must be scoped to the exact phone they authorize',
+    );
+    expect(
+      _methodBody(
+        resetSource,
+        '_ensureRecoveryAuthorization',
+      ).indexOf('_routeRecoveryTokenFor(phone)'),
+      lessThan(
+        _methodBody(
+          resetSource,
+          '_ensureRecoveryAuthorization',
+        ).indexOf('_readScopedRecoveryToken(phone)'),
+      ),
+      reason:
+          'a fresh route recovery token must win over any stored recovery token',
+    );
     expect(resetSource, contains('ApiRequestExtra.useRecoveryToken'));
     expect(resetSource, contains('LivenessDecision.autoApprove'));
     expect(resetSource, contains("'liveness_manual_review_confidence'"));
@@ -914,7 +939,7 @@ void main() {
     );
     expect(
       reviewBody.indexOf('_markManualReviewCreating(reason'),
-      lessThan(reviewBody.indexOf('await _ensureRecoveryAuthorization()')),
+      lessThan(reviewBody.indexOf('await _ensureRecoveryAuthorization(phone)')),
       reason:
           'manual-review creation state must appear immediately and must not wait for the support ticket network call',
     );
@@ -927,7 +952,7 @@ void main() {
     expect(reviewBody, contains('_markManualReviewCreationFailed(reason)'));
     expect(
       reviewBody.indexOf('_transitionTo(_PinRecoveryStep.manualReview)'),
-      lessThan(reviewBody.indexOf('await _ensureRecoveryAuthorization()')),
+      lessThan(reviewBody.indexOf('await _ensureRecoveryAuthorization(phone)')),
       reason:
           'liveness provider failures should not strand the user inside the liveness widget while a ticket is created',
     );

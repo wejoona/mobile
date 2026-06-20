@@ -50,6 +50,8 @@ enum _PinRecoveryStep {
 }
 
 class _ResetPinViewState extends ConsumerState<ResetPinView> {
+  static const _pinResetRecoveryScope = 'pin_reset';
+
   _PinRecoveryStep _recoveryStep = _PinRecoveryStep.requestOtp;
   final _otpController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -654,8 +656,8 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         setState(() => _setRecoveryPhone(phone));
       }
 
-      if (await _hasRecoveryAuthorizationCandidate()) {
-        await _ensureRecoveryAuthorization();
+      if (await _hasRecoveryAuthorizationCandidate(phone)) {
+        await _ensureRecoveryAuthorization(phone);
         final hasActiveReview = await _loadActiveAccountRecoveryReview();
         if (hasActiveReview) {
           if (mounted) {
@@ -695,22 +697,24 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     }
   }
 
-  Future<bool> _hasRecoveryAuthorizationCandidate() async {
-    final storage = ref.read(secureStorageProvider);
-    final existingRecoveryToken = await storage.read(
-      key: StorageKeys.recoveryAccessToken,
-    );
-    if (existingRecoveryToken != null && existingRecoveryToken.isNotEmpty) {
+  Future<bool> _hasRecoveryAuthorizationCandidate(
+    PhoneNumberValue phone,
+  ) async {
+    final scopedRecoveryToken = await _readScopedRecoveryToken(phone);
+    if (scopedRecoveryToken != null && scopedRecoveryToken.isNotEmpty) {
       return true;
     }
 
-    final routeToken = widget.initialContext?.recoveryAccessToken;
+    final routeToken = _routeRecoveryTokenFor(phone);
     if (routeToken != null && routeToken.isNotEmpty) {
       return true;
     }
 
     final pendingToken = ref.read(loginProvider).sessionToken;
-    return pendingToken != null && pendingToken.isNotEmpty;
+    final pendingPhone = ref.read(loginProvider).phoneValue;
+    return pendingToken != null &&
+        pendingToken.isNotEmpty &&
+        pendingPhone?.e164 == phone.e164;
   }
 
   Future<PhoneNumberValue?> _resolveRecoveryPhone() async {
@@ -901,12 +905,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           otp: _otpController.text,
         );
 
-    await ref
-        .read(secureStorageProvider)
-        .write(
-          key: StorageKeys.recoveryAccessToken,
-          value: recovery.recoveryAccessToken,
-        );
+    await _storeRecoveryAuthorization(recovery.recoveryAccessToken, phone);
   }
 
   Future<Map<String, dynamic>> _accountRecoveryRiskMetadata() async {
@@ -1164,7 +1163,11 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     });
 
     try {
-      await _ensureRecoveryAuthorization();
+      final phone = await _resolveRecoveryPhone();
+      if (phone == null) {
+        throw StateError('Phone number is required');
+      }
+      await _ensureRecoveryAuthorization(phone);
       final response = await ref
           .read(dioProvider)
           .post(
@@ -1456,7 +1459,11 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     final l10n = AppLocalizations.of(context)!;
 
     try {
-      await _ensureRecoveryAuthorization();
+      final phone = await _resolveRecoveryPhone();
+      if (phone == null) {
+        throw StateError('Phone number is required');
+      }
+      await _ensureRecoveryAuthorization(phone);
       final dio = ref.read(dioProvider);
       final stepUpChallengeToken = _stepUpChallengeToken;
 
@@ -1542,37 +1549,89 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     }
   }
 
-  Future<void> _ensureRecoveryAuthorization() async {
-    final storage = ref.read(secureStorageProvider);
-    final existingRecoveryToken = await storage.read(
-      key: StorageKeys.recoveryAccessToken,
-    );
+  Future<void> _ensureRecoveryAuthorization(PhoneNumberValue phone) async {
+    final routeToken = _routeRecoveryTokenFor(phone);
+    if (routeToken != null && routeToken.isNotEmpty) {
+      await _storeRecoveryAuthorization(routeToken, phone);
+      return;
+    }
+
+    final existingRecoveryToken = await _readScopedRecoveryToken(phone);
     if (existingRecoveryToken != null && existingRecoveryToken.isNotEmpty) {
       return;
     }
 
-    final routeToken = widget.initialContext?.recoveryAccessToken;
-    if (routeToken != null && routeToken.isNotEmpty) {
-      await storage.write(
-        key: StorageKeys.recoveryAccessToken,
-        value: routeToken,
-      );
-      return;
-    }
-
     final pendingToken = ref.read(loginProvider).sessionToken;
-    if (pendingToken != null && pendingToken.isNotEmpty) {
-      await storage.write(
-        key: StorageKeys.recoveryAccessToken,
-        value: pendingToken,
-      );
+    final pendingPhone = ref.read(loginProvider).phoneValue;
+    if (pendingToken != null &&
+        pendingToken.isNotEmpty &&
+        pendingPhone?.e164 == phone.e164) {
+      await _storeRecoveryAuthorization(pendingToken, phone);
     }
   }
 
   Future<void> _clearRecoveryAuthorization() async {
-    await ref
-        .read(secureStorageProvider)
-        .delete(key: StorageKeys.recoveryAccessToken);
+    final storage = ref.read(secureStorageProvider);
+    await storage.delete(key: StorageKeys.recoveryAccessToken);
+    await storage.delete(key: StorageKeys.recoveryAccessTokenPhone);
+    await storage.delete(key: StorageKeys.recoveryAccessTokenScope);
+    await storage.delete(key: StorageKeys.recoveryAccessTokenCreatedAt);
+  }
+
+  Future<void> _storeRecoveryAuthorization(
+    String token,
+    PhoneNumberValue phone,
+  ) async {
+    final storage = ref.read(secureStorageProvider);
+    await storage.write(key: StorageKeys.recoveryAccessToken, value: token);
+    await storage.write(
+      key: StorageKeys.recoveryAccessTokenPhone,
+      value: phone.storageValue,
+    );
+    await storage.write(
+      key: StorageKeys.recoveryAccessTokenScope,
+      value: _pinResetRecoveryScope,
+    );
+    await storage.write(
+      key: StorageKeys.recoveryAccessTokenCreatedAt,
+      value: DateTime.now().toUtc().toIso8601String(),
+    );
+  }
+
+  Future<String?> _readScopedRecoveryToken(PhoneNumberValue phone) async {
+    final storage = ref.read(secureStorageProvider);
+    final token = await storage.read(key: StorageKeys.recoveryAccessToken);
+    if (token == null || token.isEmpty) {
+      return null;
+    }
+
+    final storedScope = await storage.read(
+      key: StorageKeys.recoveryAccessTokenScope,
+    );
+    final storedPhone = PhoneNumberValue.tryFromStorageValue(
+      await storage.read(key: StorageKeys.recoveryAccessTokenPhone),
+    );
+    if (storedScope != _pinResetRecoveryScope ||
+        storedPhone?.e164 != phone.e164) {
+      await _clearRecoveryAuthorization();
+      return null;
+    }
+
+    return token;
+  }
+
+  String? _routeRecoveryTokenFor(PhoneNumberValue phone) {
+    final routeToken = widget.initialContext?.recoveryAccessToken;
+    if (routeToken == null || routeToken.isEmpty) {
+      return null;
+    }
+
+    final routePhone = widget.initialContext?.phoneValue;
+    if (routePhone != null && routePhone.e164 != phone.e164) {
+      return null;
+    }
+
+    return routeToken;
   }
 
   bool _applyBackendManualReview(ApiException error) {
