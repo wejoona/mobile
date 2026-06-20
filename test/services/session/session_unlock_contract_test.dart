@@ -1,8 +1,31 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:usdc_wallet/features/pin/models/pin_reset_route_context.dart';
 
 void main() {
+  test('PIN reset return targets stay inside safe app routes', () {
+    expect(
+      PinResetRouteContext.safeReturnTo('/pay/abc?source=qr'),
+      '/pay/abc?source=qr',
+    );
+    expect(
+      PinResetRouteContext.safeReturnTo('/settings/sessions'),
+      '/settings/sessions',
+    );
+    expect(
+      PinResetRouteContext.safeReturnTo('https://evil.example/pay'),
+      isNull,
+    );
+    expect(PinResetRouteContext.safeReturnTo('//evil.example/pay'), isNull);
+    expect(PinResetRouteContext.safeReturnTo('/login'), isNull);
+    expect(PinResetRouteContext.safeReturnTo('/pin/reset'), isNull);
+    expect(
+      PinResetRouteContext.safeReturnTo('/session-locked?returnTo=/pay/abc'),
+      isNull,
+    );
+  });
+
   test('PIN and biometric unlock clear session lock and route home', () {
     final pinScreenSource = File(
       'lib/features/pin/views/pin_screen.dart',
@@ -286,6 +309,9 @@ void main() {
     final routesSource = File(
       'lib/router/routes/card_account_routes.dart',
     ).readAsStringSync();
+    final resetContextSource = File(
+      'lib/features/pin/models/pin_reset_route_context.dart',
+    ).readAsStringSync();
     final fsmSource = File(
       'lib/state/fsm/fsm_provider.dart',
     ).readAsStringSync();
@@ -298,6 +324,25 @@ void main() {
       routesSource,
       contains('ResetPinView(initialContext: resetContext)'),
       reason: 'PIN reset route must forward recovery context to the screen',
+    );
+    expect(routesSource, contains("state.uri.queryParameters['returnTo']"));
+    expect(routesSource, contains('_pinResetRouteContext'));
+    expect(resetContextSource, contains('final String? returnTo'));
+    expect(resetContextSource, contains('safeReturnTo'));
+    expect(pinScreenSource, contains('returnTo: widget.successRoute'));
+    expect(resetSource, contains('String get _resetSuccessRoute'));
+    expect(resetSource, contains('String get _loginRouteAfterRecoveryExit'));
+    expect(
+      resetSource,
+      contains('context.fsmEnterAuthenticatedApp(route: _resetSuccessRoute)'),
+      reason:
+          'successful PIN recovery must return to the user intent that opened reset',
+    );
+    expect(
+      resetSource,
+      contains('context.fsmGo(_loginRouteAfterRecoveryExit)'),
+      reason:
+          'manual-review exit should preserve the original return target through login',
     );
     expect(
       resetSource,

@@ -11,11 +11,13 @@ class PinResetRouteContext {
     this.e164Phone,
     this.countryCode,
     this.recoveryAccessToken,
+    this.returnTo,
   });
 
   factory PinResetRouteContext.fromPhoneValue(
     PhoneNumberValue phone, {
     String? recoveryAccessToken,
+    String? returnTo,
   }) {
     return PinResetRouteContext(
       localPhoneNumber: phone.localNumber,
@@ -23,21 +25,27 @@ class PinResetRouteContext {
       e164Phone: phone.e164,
       countryCode: phone.apiCountryCode,
       recoveryAccessToken: recoveryAccessToken,
+      returnTo: safeReturnTo(returnTo),
     );
   }
 
   factory PinResetRouteContext.fromOptionalPhoneValue({
     PhoneNumberValue? phone,
     String? recoveryAccessToken,
+    String? returnTo,
   }) {
     if (phone != null) {
       return PinResetRouteContext.fromPhoneValue(
         phone,
         recoveryAccessToken: recoveryAccessToken,
+        returnTo: returnTo,
       );
     }
 
-    return PinResetRouteContext(recoveryAccessToken: recoveryAccessToken);
+    return PinResetRouteContext(
+      recoveryAccessToken: recoveryAccessToken,
+      returnTo: safeReturnTo(returnTo),
+    );
   }
 
   final String? localPhoneNumber;
@@ -45,6 +53,34 @@ class PinResetRouteContext {
   final String? e164Phone;
   final String? countryCode;
   final String? recoveryAccessToken;
+  final String? returnTo;
+
+  static String? safeReturnTo(String? raw) {
+    final returnTo = raw?.trim();
+    if (returnTo == null || returnTo.isEmpty) {
+      return null;
+    }
+
+    final uri = Uri.tryParse(returnTo);
+    if (uri == null ||
+        uri.hasScheme ||
+        uri.hasAuthority ||
+        !returnTo.startsWith('/') ||
+        returnTo.startsWith('//')) {
+      return null;
+    }
+
+    final path = uri.path;
+    if (path == '/pin/reset' ||
+        path.startsWith('/login') ||
+        path.startsWith('/signup') ||
+        path.startsWith('/onboarding') ||
+        path.startsWith('/session-locked')) {
+      return null;
+    }
+
+    return returnTo;
+  }
 
   PhoneNumberValue? get phoneValue {
     final preferredPhone = e164Phone ?? localPhoneNumber;

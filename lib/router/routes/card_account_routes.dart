@@ -162,9 +162,13 @@ List<RouteBase> cardAccountRoutes() => [
   GoRoute(
     path: '/pin/reset',
     pageBuilder: (context, state) {
-      final resetContext = state.extra is PinResetRouteContext
+      final extraContext = state.extra is PinResetRouteContext
           ? state.extra as PinResetRouteContext
           : null;
+      final resetContext = _pinResetRouteContext(
+        extraContext,
+        state.uri.queryParameters['returnTo'],
+      );
       return AppPageTransitions.verticalSlide(
         state: state,
         child: ResetPinView(initialContext: resetContext),
@@ -206,3 +210,25 @@ List<RouteBase> cardAccountRoutes() => [
         AppPageTransitions.fade(state: state, child: const KycStatusView()),
   ),
 ];
+
+PinResetRouteContext? _pinResetRouteContext(
+  PinResetRouteContext? extraContext,
+  String? queryReturnTo,
+) {
+  final returnTo =
+      extraContext?.returnTo ??
+      PinResetRouteContext.safeReturnTo(queryReturnTo);
+
+  if (extraContext == null) {
+    return returnTo == null ? null : PinResetRouteContext(returnTo: returnTo);
+  }
+
+  return PinResetRouteContext(
+    localPhoneNumber: extraContext.localPhoneNumber,
+    dialCode: extraContext.dialCode,
+    e164Phone: extraContext.e164Phone,
+    countryCode: extraContext.countryCode,
+    recoveryAccessToken: extraContext.recoveryAccessToken,
+    returnTo: returnTo,
+  );
+}

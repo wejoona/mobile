@@ -450,6 +450,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
       extra: PinResetRouteContext.fromOptionalPhoneValue(
         phone: loginState.phoneValue ?? authPhone,
         recoveryAccessToken: loginState.sessionToken,
+        returnTo: widget.successRoute,
       ),
     );
   }

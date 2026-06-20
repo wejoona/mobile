@@ -138,9 +138,21 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     _recoveryStep = nextStep;
   }
 
+  String? get _recoveryReturnTo => widget.initialContext?.returnTo;
+
+  String get _resetSuccessRoute => _recoveryReturnTo ?? '/home';
+
+  String get _loginRouteAfterRecoveryExit {
+    final returnTo = _recoveryReturnTo;
+    if (returnTo == null) {
+      return '/login';
+    }
+    return '/login?returnTo=${Uri.encodeComponent(returnTo)}';
+  }
+
   void _handleRecoveryBack() {
     unawaited(_clearRecoveryAuthorization());
-    context.fsmSafePop(fallbackRoute: '/login');
+    context.fsmSafePop(fallbackRoute: _loginRouteAfterRecoveryExit);
   }
 
   Widget _buildRequestOtpStep(AppLocalizations l10n) {
@@ -1301,7 +1313,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       await ref.read(authProvider.notifier).clearLocalSession();
     } catch (_) {}
     if (!mounted) return;
-    context.fsmGo('/login');
+    context.fsmGo(_loginRouteAfterRecoveryExit);
   }
 
   String? _formatReviewDueAt(String? raw) {
@@ -1479,7 +1491,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           backgroundColor: context.colors.success,
         ),
       );
-      context.fsmEnterAuthenticatedApp();
+      context.fsmEnterAuthenticatedApp(route: _resetSuccessRoute);
     } on DioException catch (e) {
       if (mounted) {
         final apiError = ApiException.fromDioError(e);
