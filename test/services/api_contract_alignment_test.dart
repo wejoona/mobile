@@ -1895,6 +1895,38 @@ void main() {
       },
     );
 
+    test('merchant clients use canonical plural merchant routes only', () {
+      final apiProviderSource = File(
+        'lib/services/api/providers/api_provider.dart',
+      ).readAsStringSync();
+      final endpointConstantsSource = File(
+        'lib/core/constants/api_endpoints.dart',
+      ).readAsStringSync();
+      final merchantApiFile = File(
+        'lib/services/api/providers/merchant_api.dart',
+      );
+      final merchantServiceSource = File(
+        'lib/features/merchant_pay/services/merchant_service.dart',
+      ).readAsStringSync();
+      final qrPaymentProviderSource = File(
+        'lib/features/qr_payment/providers/qr_payment_provider.dart',
+      ).readAsStringSync();
+
+      expect(
+        merchantApiFile.existsSync(),
+        isFalse,
+        reason:
+            'merchant payments must use the feature-owned MerchantService, not the stale singular MerchantApi facade',
+      );
+      expect(apiProviderSource, isNot(contains('MerchantApi')));
+      expect(apiProviderSource, isNot(contains('merchant =')));
+      expect(endpointConstantsSource, isNot(contains('/merchant/')));
+      expect(merchantServiceSource, contains('/merchants/pay'));
+      expect(qrPaymentProviderSource, contains('/merchants/pay'));
+      expect(merchantServiceSource, isNot(contains('/merchant/payments')));
+      expect(qrPaymentProviderSource, isNot(contains('/merchant/payments')));
+    });
+
     test('PIN client contract stays on user PIN routes', () {
       final walletApiSource = File(
         'lib/services/api/providers/wallet_api.dart',

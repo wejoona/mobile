@@ -153,8 +153,4 @@ abstract final class ApiEndpoints {
   static const contacts = '/contacts';
   static const contactsSync = '/contacts/sync';
 
-  // Merchant Pay
-  static const merchantPayments = '/merchant/payments';
-  static const merchantQr = '/merchant/qr';
-  static const merchantDashboard = '/merchant/dashboard';
 }
