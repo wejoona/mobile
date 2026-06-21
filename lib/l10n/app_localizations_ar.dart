@@ -1720,6 +1720,29 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pin_confirmNewPin => 'أكد رمزك السري الجديد';
 
   @override
+  String get pin_temporaryReset_chooseNewDescription =>
+      'تم قبول الرمز السري المؤقت. اختر رمزاً سرياً جديداً للمتابعة.';
+
+  @override
+  String get pin_temporaryReset_confirmNewDescription =>
+      'أكد الرمز السري الجديد الذي تريد استخدامه في Korido.';
+
+  @override
+  String get pin_temporaryReset_missingSession =>
+      'تم قبول الرمز السري المؤقت، لكن جلسة إعادة التعيين غير موجودة. اطلب من الدعم إصدار رمز سري مؤقت جديد.';
+
+  @override
+  String get pin_temporaryReset_expiredSession =>
+      'انتهت صلاحية جلسة إعادة التعيين هذه. الرجاء تسجيل الدخول مرة أخرى.';
+
+  @override
+  String get pin_temporaryReset_mismatch =>
+      'الرمزان السريان غير متطابقين. أكد مرة أخرى.';
+
+  @override
+  String get pin_temporaryReset_setFailed => 'تعذر تعيين الرمز السري الجديد.';
+
+  @override
   String get pin_requirements => 'متطلبات الرمز السري';
 
   @override

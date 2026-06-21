@@ -1724,6 +1724,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pin_confirmNewPin => 'Confirm your new PIN';
 
   @override
+  String get pin_temporaryReset_chooseNewDescription =>
+      'Your temporary PIN worked. Choose your own new PIN to continue.';
+
+  @override
+  String get pin_temporaryReset_confirmNewDescription =>
+      'Confirm the new PIN you want to use for Korido.';
+
+  @override
+  String get pin_temporaryReset_missingSession =>
+      'Temporary PIN accepted, but the reset session was missing. Ask support to issue a new temporary PIN.';
+
+  @override
+  String get pin_temporaryReset_expiredSession =>
+      'This reset session expired. Please sign in again.';
+
+  @override
+  String get pin_temporaryReset_mismatch =>
+      'The PINs do not match. Confirm it again.';
+
+  @override
+  String get pin_temporaryReset_setFailed => 'Unable to set the new PIN.';
+
+  @override
   String get pin_requirements => 'PIN Requirements';
 
   @override

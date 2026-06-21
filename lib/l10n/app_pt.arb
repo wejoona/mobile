@@ -1951,6 +1951,30 @@
   "@pin_confirmNewPin": {
     "description": "Confirm new PIN instruction"
   },
+  "pin_temporaryReset_chooseNewDescription": "O PIN temporário foi aceite. Escolha o seu novo PIN para continuar.",
+  "@pin_temporaryReset_chooseNewDescription": {
+    "description": "Temporary PIN reset screen description before entering a new PIN"
+  },
+  "pin_temporaryReset_confirmNewDescription": "Confirme o novo PIN que quer usar no Korido.",
+  "@pin_temporaryReset_confirmNewDescription": {
+    "description": "Temporary PIN reset screen description before confirming a new PIN"
+  },
+  "pin_temporaryReset_missingSession": "O PIN temporário foi aceite, mas a sessão de redefinição está em falta. Peça ao suporte para emitir um novo PIN temporário.",
+  "@pin_temporaryReset_missingSession": {
+    "description": "Error shown when backend accepts a temporary PIN without returning a reset token"
+  },
+  "pin_temporaryReset_expiredSession": "Esta sessão de redefinição expirou. Inicie sessão novamente.",
+  "@pin_temporaryReset_expiredSession": {
+    "description": "Error shown when temporary PIN reset token or login session has expired"
+  },
+  "pin_temporaryReset_mismatch": "Os PINs não coincidem. Confirme novamente.",
+  "@pin_temporaryReset_mismatch": {
+    "description": "Temporary PIN reset confirmation mismatch error"
+  },
+  "pin_temporaryReset_setFailed": "Não foi possível definir o novo PIN.",
+  "@pin_temporaryReset_setFailed": {
+    "description": "Generic error shown when temporary PIN reset completion fails"
+  },
   "pin_requirements": "Pin requirements",
   "@pin_requirements": {
     "description": "PIN requirements section title"

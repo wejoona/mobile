@@ -172,6 +172,61 @@ void main() {
       expect(storedToken, equals('test-pin-token'));
     });
 
+    test(
+      'should surface temporary PIN reset requirement without storing a PIN token',
+      () async {
+        // Arrange
+        mockDio.queueResponse({
+          'verified': false,
+          'requiresPinChange': true,
+          'nextAction': 'set_new_pin',
+          'temporaryPinToken': 'temp-token-123',
+          'expiresIn': 600,
+        });
+
+        // Act
+        final result = await pinService.verifyPinWithBackend(
+          '739251',
+          accessToken: 'pending-login-token',
+        );
+
+        // Assert
+        expect(result.success, isTrue);
+        expect(result.requiresPinChange, isTrue);
+        expect(result.temporaryPinToken, equals('temp-token-123'));
+        expect(result.pinToken, isNull);
+        expect(mockStorage.storage['pin_verification_token'], isNull);
+        expect(
+          mockDio.requestHistory.single.headers['Authorization'],
+          equals('Bearer pending-login-token'),
+        );
+      },
+    );
+
+    test(
+      'should complete temporary PIN reset through canonical endpoint',
+      () async {
+        // Arrange
+        mockDio.queueResponse({'success': true});
+
+        // Act
+        final result = await pinService.completeTemporaryPinReset(
+          temporaryPinToken: 'temp-token-123',
+          newPin: '739251',
+          accessToken: 'pending-login-token',
+        );
+
+        // Assert
+        expect(result.success, isTrue);
+        expect(mockDio.requestHistory.single.path, contains('temporary-reset'));
+        expect(
+          mockDio.requestHistory.single.headers['Authorization'],
+          equals('Bearer pending-login-token'),
+        );
+        expect(mockStorage.storage['pin_hash'], isNotNull);
+      },
+    );
+
     test('should handle 401 unauthorized response', () async {
       // Arrange
       mockDio.queueErrorResponse(statusCode: 401);

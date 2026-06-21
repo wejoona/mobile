@@ -26,6 +26,8 @@ abstract final class ApiEndpoints {
   static const userPinVerify = '${userPinPrefix}verify';
   static const userPinChange = '${userPinPrefix}change';
   static const userPinReset = '${userPinPrefix}reset';
+  static const userPinTemporaryResetComplete =
+      '${userPinPrefix}temporary-reset/complete';
   static const userPinResetManualReview = '$userPinReset/manual-review';
   static const userPinResetReviewCurrent = '$userPinReset/review/current';
 

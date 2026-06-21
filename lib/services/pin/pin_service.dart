@@ -132,17 +132,37 @@ class PinService {
   /// Verify PIN with backend (for sensitive operations like transfers)
   /// SECURITY: Always verify with backend for financial transactions
   /// Returns a PIN token that must be included in transfer requests
-  Future<PinVerificationResult> verifyPinWithBackend(String pin) async {
+  Future<PinVerificationResult> verifyPinWithBackend(
+    String pin, {
+    String? accessToken,
+  }) async {
     try {
       // SECURITY: Hash PIN before transmission to prevent plaintext exposure
       final hashedPin = _hashPinForTransmission(pin);
       final response = await _dio.post(
         ApiEndpoints.userPinVerify,
         data: {'pinHash': hashedPin},
+        options: _authOptions(accessToken),
       );
 
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
+        final requiresPinChange =
+            data['requiresPinChange'] == true ||
+            data['nextAction'] == 'set_new_pin';
+        if (requiresPinChange) {
+          final temporaryPinToken = data['temporaryPinToken'] as String?;
+          return PinVerificationResult(
+            success: temporaryPinToken != null,
+            requiresPinChange: true,
+            temporaryPinToken: temporaryPinToken,
+            expiresIn: data['expiresIn'] as int? ?? 600,
+            message:
+                data['message'] as String? ??
+                'Temporary PIN accepted. Set a new PIN to continue.',
+          );
+        }
+
         // ignore: avoid_dynamic_calls
         if (data['verified'] == true) {
           // Store the PIN token for subsequent transfer operations
@@ -195,6 +215,42 @@ class PinService {
       return PinVerificationResult(
         success: false,
         message: 'Unable to verify PIN. Please try again.',
+      );
+    }
+  }
+
+  Future<PinVerificationResult> completeTemporaryPinReset({
+    required String temporaryPinToken,
+    required String newPin,
+    String? accessToken,
+  }) async {
+    if (!_isValidPin(newPin) || _isWeakPin(newPin)) {
+      return PinVerificationResult(
+        success: false,
+        message: 'Choose a less predictable 6-digit PIN.',
+      );
+    }
+
+    try {
+      await _dio.post(
+        ApiEndpoints.userPinTemporaryResetComplete,
+        data: {
+          'temporaryPinToken': temporaryPinToken,
+          'newPinHash': _hashPinForTransmission(newPin),
+        },
+        options: _authOptions(accessToken),
+      );
+
+      await _storePinLocally(newPin);
+      await clearPinToken();
+      return PinVerificationResult(success: true);
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      return PinVerificationResult(
+        success: false,
+        message: data is Map<String, dynamic>
+            ? data['message'] as String? ?? 'Unable to set new PIN.'
+            : 'Unable to set new PIN. Please try again.',
       );
     }
   }
@@ -270,6 +326,14 @@ class PinService {
     final bytes = utf8.encode(pin);
     final digest = sha256.convert(bytes);
     return digest.toString(); // 64-char lowercase hex
+  }
+
+  Options? _authOptions(String? accessToken) {
+    if (accessToken == null || accessToken.isEmpty) {
+      return null;
+    }
+
+    return Options(headers: {'Authorization': 'Bearer $accessToken'});
   }
 
   bool _isValidPin(String pin) => RegExp(r'^\d{6}$').hasMatch(pin);
@@ -465,19 +529,23 @@ class PinService {
 class PinVerificationResult {
   final bool success;
   final bool isLocked;
+  final bool requiresPinChange;
   final int? remainingAttempts;
   final int? lockRemainingSeconds;
   final String? message;
   final String? pinToken;
+  final String? temporaryPinToken;
   final int? expiresIn;
 
   PinVerificationResult({
     required this.success,
     this.isLocked = false,
+    this.requiresPinChange = false,
     this.remainingAttempts,
     this.lockRemainingSeconds,
     this.message,
     this.pinToken,
+    this.temporaryPinToken,
     this.expiresIn,
   });
 }

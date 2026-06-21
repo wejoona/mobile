@@ -1758,6 +1758,30 @@ class AppLocalizationsFr extends AppLocalizations {
   String get pin_confirmNewPin => 'Confirmez votre nouveau code PIN';
 
   @override
+  String get pin_temporaryReset_chooseNewDescription =>
+      'Votre code PIN temporaire a fonctionné. Choisissez maintenant votre nouveau code PIN.';
+
+  @override
+  String get pin_temporaryReset_confirmNewDescription =>
+      'Confirmez le nouveau code PIN que vous voulez utiliser pour Korido.';
+
+  @override
+  String get pin_temporaryReset_missingSession =>
+      'Code PIN temporaire accepté, mais la session de réinitialisation est introuvable. Demandez au support d\'émettre un nouveau code PIN temporaire.';
+
+  @override
+  String get pin_temporaryReset_expiredSession =>
+      'Cette session de réinitialisation a expiré. Veuillez vous reconnecter.';
+
+  @override
+  String get pin_temporaryReset_mismatch =>
+      'Les codes PIN ne correspondent pas. Confirmez-le à nouveau.';
+
+  @override
+  String get pin_temporaryReset_setFailed =>
+      'Impossible de définir le nouveau code PIN.';
+
+  @override
   String get pin_requirements => 'Exigences du code PIN';
 
   @override

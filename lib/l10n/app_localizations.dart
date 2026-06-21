@@ -3270,6 +3270,42 @@ abstract class AppLocalizations {
   /// **'Confirm your new PIN'**
   String get pin_confirmNewPin;
 
+  /// Temporary PIN reset screen description before entering a new PIN
+  ///
+  /// In en, this message translates to:
+  /// **'Your temporary PIN worked. Choose your own new PIN to continue.'**
+  String get pin_temporaryReset_chooseNewDescription;
+
+  /// Temporary PIN reset screen description before confirming a new PIN
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm the new PIN you want to use for Korido.'**
+  String get pin_temporaryReset_confirmNewDescription;
+
+  /// Error shown when backend accepts a temporary PIN without returning a reset token
+  ///
+  /// In en, this message translates to:
+  /// **'Temporary PIN accepted, but the reset session was missing. Ask support to issue a new temporary PIN.'**
+  String get pin_temporaryReset_missingSession;
+
+  /// Error shown when temporary PIN reset token or login session has expired
+  ///
+  /// In en, this message translates to:
+  /// **'This reset session expired. Please sign in again.'**
+  String get pin_temporaryReset_expiredSession;
+
+  /// Temporary PIN reset confirmation mismatch error
+  ///
+  /// In en, this message translates to:
+  /// **'The PINs do not match. Confirm it again.'**
+  String get pin_temporaryReset_mismatch;
+
+  /// Generic error shown when temporary PIN reset completion fails
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to set the new PIN.'**
+  String get pin_temporaryReset_setFailed;
+
   /// PIN requirements section title
   ///
   /// In en, this message translates to:
