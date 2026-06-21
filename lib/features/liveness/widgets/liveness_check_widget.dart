@@ -98,6 +98,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
   bool _systemCameraAccessGranted = false;
   bool _waitingForCameraSettings = false;
   int _cameraStartAttemptsAfterPermission = 0;
+  int _cameraSettingsConfirmAttempts = 0;
   Timer? _retryCooldownTimer;
   int? _retryAfterSeconds;
 
@@ -207,6 +208,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
         const Duration(seconds: 12),
       );
       _cameraStartAttemptsAfterPermission = 0;
+      _cameraSettingsConfirmAttempts = 0;
       if (mounted) setState(() {});
       return true;
     } catch (e) {
@@ -234,6 +236,16 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
             permanentlyDenied: false,
             message:
                 'Camera access is allowed, but this device could not start the camera safely. Try once more, or continue with manual review.',
+          );
+          return false;
+        }
+        if (trustSystemSettings &&
+            _cameraSettingsConfirmAttempts > 0 &&
+            widget.onManualReviewRequired != null) {
+          _fail(
+            'Camera permission still could not be confirmed after returning from Settings. A Korido reviewer can continue this flow.',
+            manualReviewReason: 'camera_permission_settings_unconfirmed',
+            manualReviewTitle: 'Manual review needed',
           );
           return false;
         }
@@ -829,6 +841,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
   Future<void> _confirmCameraAccessFromSettings() async {
     if (!mounted) return;
 
+    _cameraSettingsConfirmAttempts += 1;
     final latestStatus = await ph.Permission.camera.status;
     _systemCameraAccessGranted =
         latestStatus.isGranted || latestStatus.isLimited;
@@ -895,6 +908,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
       _cameraPermissionPermanentlyDenied = false;
       _systemCameraAccessGranted = false;
       _cameraStartAttemptsAfterPermission = 0;
+      _cameraSettingsConfirmAttempts = 0;
       _sessionToken = null;
       _challenges = [];
       _submittedEvidence.clear();
@@ -934,7 +948,9 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
           ),
           if (widget.onCancel != null &&
               _state != _LivenessState.completed &&
-              _state != _LivenessState.manualReview)
+              _state != _LivenessState.manualReview &&
+              _state != _LivenessState.processing &&
+              _manualReviewReason == null)
             IconButton(
               icon: const Icon(Icons.close),
               onPressed: widget.onCancel,
