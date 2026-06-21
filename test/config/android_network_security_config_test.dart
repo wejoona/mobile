@@ -23,6 +23,12 @@ void main() {
       );
       expect(
         xml,
+        contains(
+          '<domain includeSubdomains="false">staging-korido-api.joonapay.com</domain>',
+        ),
+      );
+      expect(
+        xml,
         contains('<domain includeSubdomains="false">joonapay.com</domain>'),
       );
       expect(
@@ -33,8 +39,14 @@ void main() {
         xml,
         isNot(contains('<domain includeSubdomains="true">joonapay.com')),
       );
-      expect(xml, isNot(contains('staging-korido-api.joonapay.com')));
+      expect(
+        xml,
+        isNot(contains('<domain includeSubdomains="false">api.joonapay.com')),
+      );
       expect(xml, contains('DcXImxqsw11wXDKaem3Be3mcFibKSosQGkPpNOw9Zuw='));
+      expect(xml, contains('dnwFNJb53pgHXDzto90QqivYDXDUKaYHYU7OxVOxgVw='));
+      expect(xml, contains('<pin-set expiration="2026-08-04">'));
+      expect(xml, contains('<pin-set expiration="2026-09-16">'));
     });
 
     test('debug config allows local API hosts only in debug resources', () {

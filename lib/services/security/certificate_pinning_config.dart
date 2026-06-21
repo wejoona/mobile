@@ -22,8 +22,9 @@ class CertificatePinRegistry {
   static const List<CertificatePinningConfig> productionPins = [
     CertificatePinningConfig(
       host: 'korido-api.joonapay.com',
+      includeSubdomains: false,
       sha256Pins: [
-        // Leaf SPKI SHA-256 for Korido API, generated 2026-06-03.
+        // Leaf SPKI SHA-256 for Korido API, verified 2026-06-20.
         'DcXImxqsw11wXDKaem3Be3mcFibKSosQGkPpNOw9Zuw=',
         // Google Trust Services WE1 intermediate SPKI backup pin.
         'kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=',
@@ -31,17 +32,29 @@ class CertificatePinRegistry {
     ),
     CertificatePinningConfig(
       host: 'joonapay.com',
+      includeSubdomains: false,
       sha256Pins: [
-        // Leaf SPKI SHA-256 for joonapay.com, generated 2026-06-03.
+        // Leaf SPKI SHA-256 for joonapay.com, verified 2026-06-20.
+        'dnwFNJb53pgHXDzto90QqivYDXDUKaYHYU7OxVOxgVw=',
+        // Previous apex leaf SPKI SHA-256 kept as a rollover pin.
         'vz/Oj4HDd7i5iGnOiGk+BAZa/i62MKNdA74TWH/6pew=',
         'kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=',
       ],
     ),
   ];
 
-  /// Staging is intentionally unpinned until a stable staging API certificate
-  /// exists. Production pinning remains enforced through [productionPins].
-  static const List<CertificatePinningConfig> stagingPins = [];
+  static const List<CertificatePinningConfig> stagingPins = [
+    CertificatePinningConfig(
+      host: 'staging-korido-api.joonapay.com',
+      includeSubdomains: false,
+      sha256Pins: [
+        // Leaf SPKI SHA-256 for Korido staging API, verified 2026-06-20.
+        'DcXImxqsw11wXDKaem3Be3mcFibKSosQGkPpNOw9Zuw=',
+        // Google Trust Services WE1 intermediate SPKI backup pin.
+        'kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=',
+      ],
+    ),
+  ];
 
   static List<CertificatePinningConfig> getPins({required bool isProduction}) =>
       isProduction ? productionPins : stagingPins;
@@ -52,9 +65,14 @@ class CertificatePinRegistry {
     required bool isProduction,
   }) {
     final pins = getPins(isProduction: isProduction);
-    final config = pins.where((p) => host.endsWith(p.host)).firstOrNull;
+    final config = pins.where((p) {
+      if (host == p.host) {
+        return true;
+      }
+      return p.includeSubdomains && host.endsWith('.${p.host}');
+    }).firstOrNull;
     if (config == null || config.isExpired) {
-      return true; // Pas de pin = accepter
+      return true; // No configured pin: fall back to platform TLS.
     }
     return config.sha256Pins.contains(pinHash);
   }

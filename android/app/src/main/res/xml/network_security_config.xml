@@ -23,16 +23,28 @@
         </trust-anchors>
     </base-config>
 
-    <!-- Production hosts with certificate pinning.
-         Keep these exact-host scoped so staging and future product subdomains
-         are not accidentally pinned to Korido prod. -->
+    <!-- Korido API hosts with certificate pinning. -->
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="false">korido-api.joonapay.com</domain>
+        <domain includeSubdomains="false">staging-korido-api.joonapay.com</domain>
+        <pin-set expiration="2026-09-16">
+            <!-- Leaf SPKI SHA-256 for Korido API hosts, verified 2026-06-20. -->
+            <pin digest="SHA-256">DcXImxqsw11wXDKaem3Be3mcFibKSosQGkPpNOw9Zuw=</pin>
+            <!-- Google Trust Services WE1 intermediate SPKI backup pin. -->
+            <pin digest="SHA-256">kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=</pin>
+        </pin-set>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <!-- JoonaPay apex host with its own pin set. -->
+    <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="false">joonapay.com</domain>
         <pin-set expiration="2026-08-04">
-            <!-- Leaf SPKI SHA-256 for Korido API, generated 2026-06-03. -->
-            <pin digest="SHA-256">DcXImxqsw11wXDKaem3Be3mcFibKSosQGkPpNOw9Zuw=</pin>
-            <!-- Leaf SPKI SHA-256 for joonapay.com, generated 2026-06-03. -->
+            <!-- Leaf SPKI SHA-256 for joonapay.com, verified 2026-06-20. -->
+            <pin digest="SHA-256">dnwFNJb53pgHXDzto90QqivYDXDUKaYHYU7OxVOxgVw=</pin>
+            <!-- Previous apex leaf SPKI SHA-256 kept as a rollover pin. -->
             <pin digest="SHA-256">vz/Oj4HDd7i5iGnOiGk+BAZa/i62MKNdA74TWH/6pew=</pin>
             <!-- Google Trust Services WE1 intermediate SPKI backup pin. -->
             <pin digest="SHA-256">kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=</pin>
