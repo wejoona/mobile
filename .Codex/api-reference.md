@@ -239,7 +239,7 @@ High-risk PIN reset, new-device, profile-photo, KYC, and money movement flows sh
 | Delete user limit override | DELETE | `/admin/users/:userId/limit-override` | Remove special limits. |
 | Suspend user | POST | `/admin/users/:userId/suspend` | Compliance/security action. |
 | Unsuspend user | POST | `/admin/users/:userId/unsuspend` | Compliance/security action. |
-| Reset user PIN | POST | `/admin/users/:userId/reset-pin` | Support flow. |
+| Reset user PIN | POST | `/admin/users/:userId/reset-pin` | Support action. Sends an SMS temporary PIN, revokes active sessions, and forces the user to set a new PIN after `/user/pin/verify` returns `temporaryPinToken`; `/admin/users/:userId/temporary-pin-reset` is a compatibility alias. |
 | Unlock user PIN | POST | `/admin/users/:userId/unlock-pin` | Support flow. |
 | Force logout user | POST | `/admin/users/:userId/force-logout` | Security/session action. |
 | Deactivate device | POST | `/admin/devices/:deviceId/deactivate` | Backoffice device blacklist/deactivation surface. |
