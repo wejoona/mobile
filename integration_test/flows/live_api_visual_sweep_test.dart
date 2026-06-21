@@ -88,6 +88,7 @@ void main() {
       () =>
           driver.hasAnyText(['Orange Money', 'Wave', 'MTN']) ||
           driver.hasAnyText([
+            ..._kycGateTitles,
             'Account review needed',
             'Deposits for CI may need an account review',
             'Reason: no deposit channels available',
@@ -168,6 +169,13 @@ void main() {
     driver.expectNoAuthOrUnexpectedError();
   });
 }
+
+const _kycGateTitles = [
+  'Start Verification',
+  'Identity Verification',
+  'Verify your identity',
+  'Vérifiez votre identité',
+];
 
 bool _hasContactsList(KoridoFlowDriver driver) =>
     driver.hasAnyText(['Search contacts', 'Rechercher des contacts']) &&
