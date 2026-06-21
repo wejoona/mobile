@@ -727,6 +727,55 @@ void main() {
       expect(exception.message, equals('Custom error message'));
     });
 
+    test('should hide framework route-miss messages from users', () {
+      final dioError = DioException(
+        requestOptions: RequestOptions(path: '/auth/recovery/request-otp'),
+        response: Response(
+          statusCode: 404,
+          data: {
+            'success': false,
+            'error': {
+              'code': 'NOT_FOUND',
+              'message': 'Cannot POST /api/v1/auth/recovery/request-otp',
+            },
+          },
+          requestOptions: RequestOptions(path: '/auth/recovery/request-otp'),
+        ),
+        type: DioExceptionType.badResponse,
+      );
+
+      final exception = ApiException.fromDioError(dioError);
+
+      expect(exception.statusCode, equals(404));
+      expect(exception.message, equals('Not found'));
+      expect(exception.message, isNot(contains('Cannot POST')));
+    });
+
+    test('should preserve business 404 messages', () {
+      final dioError = DioException(
+        requestOptions: RequestOptions(path: '/auth/recovery/request-otp'),
+        response: Response(
+          statusCode: 404,
+          data: {
+            'success': false,
+            'error': {
+              'code': 'NOT_FOUND',
+              'message': 'User not found. Please register first.',
+            },
+          },
+          requestOptions: RequestOptions(path: '/auth/recovery/request-otp'),
+        ),
+        type: DioExceptionType.badResponse,
+      );
+
+      final exception = ApiException.fromDioError(dioError);
+
+      expect(
+        exception.message,
+        equals('User not found. Please register first.'),
+      );
+    });
+
     test('should handle connection timeout', () {
       // Arrange
       final dioError = DioException(

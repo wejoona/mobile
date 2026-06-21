@@ -630,6 +630,10 @@ class ApiException implements Exception {
       } else {
         message = _getMessageFromStatusCode(statusCode);
       }
+
+      if (statusCode == 404 && _isFrameworkRouteMiss(message)) {
+        message = _getMessageFromStatusCode(statusCode);
+      }
     } else {
       switch (error.type) {
         case DioExceptionType.connectionTimeout:
@@ -657,6 +661,14 @@ class ApiException implements Exception {
   }
 
   bool get isDeviceBlacklisted => code == 'DEVICE_BLACKLISTED';
+
+  static bool _isFrameworkRouteMiss(String message) {
+    final normalized = message.trim();
+    return RegExp(
+      r'^Cannot\s+(GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD)\s+/',
+      caseSensitive: false,
+    ).hasMatch(normalized);
+  }
 
   int? get retryAfterSeconds => _positiveSecondsFrom(data, const [
     'retryAfterSeconds',
