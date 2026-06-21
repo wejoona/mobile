@@ -88,8 +88,14 @@ const _surfaces = <_Surface>[
   _Surface('/savings-pots/create', ['Create Pot', 'Créer']),
   _Surface('/recurring-transfers', ['Recurring Transfers']),
   _Surface('/recurring-transfers/create', ['Create Recurring']),
-  _Surface('/bill-payments', ['Bill Payments', 'Pay Bills']),
-  _Surface('/bill-payments/history', ['Payment History', 'History']),
+  _Surface('/bill-payments', [
+    'Bill Payments',
+    'Pay Bills',
+  ], allowsKycGate: true),
+  _Surface('/bill-payments/history', [
+    'Payment History',
+    'History',
+  ], allowsKycGate: true),
   _Surface('/bank-linking', ['Bank', 'Linked']),
   _Surface('/bank-linking/select', ['Select Bank', 'Bank']),
   _Surface('/beneficiaries', ['Beneficiaries']),

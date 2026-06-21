@@ -169,6 +169,8 @@ void main() {
       'merchant, bill, and offline money routes are explicitly contracted',
       () {
         final scanToPay = appRouteContractFor('/scan-to-pay');
+        final billList = appRouteContractFor('/bill-payments');
+        final billHistory = appRouteContractFor('/bill-payments/history');
         final billForm = appRouteContractFor(
           '/bill-payments/form/orange-money',
         );
@@ -188,6 +190,8 @@ void main() {
 
         for (final contract in [
           scanToPay,
+          billList,
+          billHistory,
           billForm,
           billSuccess,
           bankTransfer,
