@@ -84,7 +84,10 @@ post_install do |installer|
       append_build_setting(config, 'OTHER_CFLAGS', '-w')
       append_build_setting(config, 'OTHER_SWIFT_FLAGS', '-suppress-warnings')
       definitions = config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
+      definitions << 'PERMISSION_CAMERA=1' unless definitions.include?('PERMISSION_CAMERA=1')
       definitions << 'PERMISSION_CONTACTS=1' unless definitions.include?('PERMISSION_CONTACTS=1')
+      definitions << 'PERMISSION_PHOTOS=1' unless definitions.include?('PERMISSION_PHOTOS=1')
+      definitions << 'PERMISSION_PHOTOS_ADD_ONLY=1' unless definitions.include?('PERMISSION_PHOTOS_ADD_ONLY=1')
 
     end
   end
