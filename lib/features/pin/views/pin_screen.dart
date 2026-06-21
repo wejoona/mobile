@@ -215,14 +215,15 @@ class _PinScreenState extends ConsumerState<PinScreen>
       if (accessToken == null || accessToken.isEmpty) {
         return false;
       }
+      final loginPhoneValue = loginState.phoneValue;
       return ref
           .read(authProvider.notifier)
           .completePinLogin(
             accessToken: accessToken,
             refreshToken: loginState.refreshToken,
             user: loginState.user,
-            phone: loginState.phoneNumber,
-            countryCode: loginState.dialCode,
+            phone: loginPhoneValue?.apiPhone ?? loginState.phoneNumber,
+            countryCode: loginPhoneValue?.apiCountryCode ?? loginState.dialCode,
             kycStatus: loginState.kycStatus,
             expiresIn: loginState.sessionExpiresIn,
           );

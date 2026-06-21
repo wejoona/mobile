@@ -64,6 +64,7 @@ void main() {
       'lib/features/fsm_states/views/session_locked_view.dart',
     ).readAsStringSync();
 
+    final pinLoginUnlockBody = _methodBody(pinScreenSource, '_applyUnlock');
     final pinUnlockBody = _methodBody(pinScreenSource, '_applySessionUnlock');
     final pinSuccessBody = _methodBody(pinScreenSource, '_onSuccess');
     final biometricUnlockBody = _methodBody(
@@ -92,6 +93,29 @@ void main() {
       pinSuccessBody,
       contains('PinContext.sessionLock'),
       reason: 'PIN unlock contract must cover the active session lock route',
+    );
+    expect(
+      pinLoginUnlockBody,
+      contains('final loginPhoneValue = loginState.phoneValue;'),
+      reason:
+          'login PIN completion must keep phone/country serialization on PhoneNumberValue',
+    );
+    expect(
+      pinLoginUnlockBody,
+      contains('phone: loginPhoneValue?.apiPhone ?? loginState.phoneNumber'),
+      reason: 'pending login completion must hand off E.164 when available',
+    );
+    expect(
+      pinLoginUnlockBody,
+      contains('loginPhoneValue?.apiCountryCode ?? loginState.dialCode'),
+      reason:
+          'pending login completion must prefer ISO country code, not the UI dial code',
+    );
+    expect(
+      pinLoginUnlockBody,
+      isNot(contains('countryCode: loginState.dialCode')),
+      reason:
+          'dial code is display/input state and must not be the primary API country value',
     );
     expect(
       pinSuccessBody,
@@ -295,6 +319,30 @@ void main() {
     expect(pendingLoginBody, contains('completePinLogin('));
     expect(pendingLoginBody, contains('refreshToken: loginState.refreshToken'));
     expect(pendingLoginBody, contains('user: loginState.user'));
+    expect(
+      pendingLoginBody,
+      contains('final loginPhoneValue = loginState.phoneValue;'),
+      reason:
+          'PIN reset login completion must reuse canonical phone serialization',
+    );
+    expect(
+      pendingLoginBody,
+      contains('phone: loginPhoneValue?.apiPhone ?? loginState.phoneNumber'),
+      reason:
+          'PIN reset must not rebuild mixed local/international phone input',
+    );
+    expect(
+      pendingLoginBody,
+      contains('loginPhoneValue?.apiCountryCode ?? loginState.dialCode'),
+      reason:
+          'PIN reset must prefer ISO country code over the visible dial code',
+    );
+    expect(
+      pendingLoginBody,
+      isNot(contains('countryCode: loginState.dialCode')),
+      reason:
+          'dial code is display/input state and must not be the primary API country value',
+    );
     expect(pendingLoginBody, contains('kycStatus: loginState.kycStatus'));
     expect(
       unlockBody,
