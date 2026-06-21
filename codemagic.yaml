@@ -92,8 +92,13 @@ workflows:
           export JAVA_HOME=$(/usr/libexec/java_home -v 17)
           export PATH="$JAVA_HOME/bin:$PATH"
           java -version
+          APPLICATION_ID=$(grep -E 'applicationId = "[^"]+"' "$CM_BUILD_DIR/android/app/build.gradle.kts" | head -1 | sed -E 's/.*applicationId = "([^"]+)".*/\1/')
+          if [ -z "$APPLICATION_ID" ]; then
+            echo "Could not resolve Android applicationId from build.gradle.kts"
+            exit 1
+          fi
           LATEST=$(google-play get-latest-build-number \
-            --package-name "com.joonapay.usdc_wallet" \
+            --package-name "$APPLICATION_ID" \
             --tracks="internal" 2>/dev/null || echo 0)
           if [ -z "$LATEST" ]; then LATEST=0; fi
           BUILD_NUMBER=$(($LATEST + 1))

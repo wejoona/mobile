@@ -118,7 +118,12 @@ void main() {
         ).firstMatch(gradle)?.group(1);
 
         expect(applicationId, isNotNull);
-        expect(codemagic, contains('--package-name "$applicationId"'));
+        expect(
+          codemagic,
+          contains("APPLICATION_ID=\$(grep -E 'applicationId = \"[^\"]+\"'"),
+        );
+        expect(codemagic, contains(r'--package-name "$APPLICATION_ID"'));
+        expect(codemagic, isNot(contains('--package-name "$applicationId"')));
       },
     );
 
