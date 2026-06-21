@@ -221,7 +221,9 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
         _systemCameraAccessGranted = systemAllowsCamera;
         if (systemAllowsCamera) {
           _cameraStartAttemptsAfterPermission += 1;
-          if (_cameraStartAttemptsAfterPermission >= 2 &&
+          if ((trustSystemSettings ||
+                  _cameraSettingsConfirmAttempts > 0 ||
+                  _cameraStartAttemptsAfterPermission >= 2) &&
               widget.onManualReviewRequired != null) {
             _fail(
               'Camera access is allowed, but this device could not start the camera safely. A Korido reviewer can continue this flow.',

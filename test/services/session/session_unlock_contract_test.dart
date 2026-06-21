@@ -870,6 +870,8 @@ void main() {
     );
     expect(livenessSource, contains('_systemCameraAccessGranted'));
     expect(livenessSource, contains('_cameraStartAttemptsAfterPermission'));
+    expect(livenessSource, contains('trustSystemSettings ||'));
+    expect(livenessSource, contains('_cameraSettingsConfirmAttempts > 0'));
     expect(
       livenessSource,
       contains("'camera_initialization_failed_after_permission'"),
