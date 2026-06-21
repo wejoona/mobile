@@ -777,6 +777,12 @@ void main() {
       reason:
           'once the OS says camera access is granted, retry should trust Settings instead of re-entering the permission prompt loop',
     );
+    expect(
+      _methodBody(livenessSource, '_initializeCamera'),
+      contains('if (trustSystemSettings)'),
+      reason:
+          'after returning from Settings, liveness should attempt camera startup directly instead of looping through a stale permission prompt',
+    );
     expect(livenessSource, contains('_systemCameraAccessGranted'));
     expect(livenessSource, contains('_cameraStartAttemptsAfterPermission'));
     expect(
@@ -831,6 +837,14 @@ void main() {
     expect(
       livenessSource,
       contains('final review = _manualReviewFromError(e)'),
+    );
+    expect(livenessSource, contains('_startRetryCooldown'));
+    expect(livenessSource, contains('Verification paused'));
+    expect(
+      livenessSource,
+      contains('Try again in'),
+      reason:
+          'provider or route rate limits should show a cooldown, not create a fake manual-review state',
     );
     expect(
       livenessStartBody.indexOf('await _createSession()'),

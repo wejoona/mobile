@@ -98,6 +98,8 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
   bool _systemCameraAccessGranted = false;
   bool _waitingForCameraSettings = false;
   int _cameraStartAttemptsAfterPermission = 0;
+  Timer? _retryCooldownTimer;
+  int? _retryAfterSeconds;
 
   @override
   void initState() {
@@ -109,6 +111,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _retryCooldownTimer?.cancel();
     unawaited(_releaseCamera());
     super.dispose();
   }
@@ -159,7 +162,17 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
     );
 
     try {
-      if (!await _ensureCameraPermission()) {
+      if (trustSystemSettings) {
+        final latestStatus = await ph.Permission.camera.status;
+        _systemCameraAccessGranted =
+            latestStatus.isGranted || latestStatus.isLimited;
+        if (mounted && _systemCameraAccessGranted) {
+          setState(() {
+            _cameraPermissionPermanentlyDenied = false;
+            _errorMessage = null;
+          });
+        }
+      } else if (!await _ensureCameraPermission()) {
         return false;
       }
 
@@ -403,6 +416,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
         manualReviewSlaLabel: review.slaLabel,
         backendReviewId: review.backendReviewId,
         backendReviewStatus: review.backendReviewStatus,
+        retryAfterSeconds: review.retryAfterSeconds,
       );
       return false;
     }
@@ -547,6 +561,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
         manualReviewSlaLabel: review.slaLabel,
         backendReviewId: review.backendReviewId,
         backendReviewStatus: review.backendReviewStatus,
+        retryAfterSeconds: review.retryAfterSeconds,
       );
     }
   }
@@ -613,6 +628,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
     String? manualReviewSlaLabel,
     String? backendReviewId,
     String? backendReviewStatus,
+    int? retryAfterSeconds,
   }) {
     if (mounted) {
       unawaited(_releaseCamera());
@@ -629,6 +645,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
         );
         return;
       }
+      _startRetryCooldown(retryAfterSeconds);
       setState(() {
         _state = manualReviewReason == null
             ? _LivenessState.failed
@@ -647,15 +664,33 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
   ({
     String title,
     String message,
-    String reason,
+    String? reason,
     String? slaLabel,
     String? backendReviewId,
     String? backendReviewStatus,
+    int? retryAfterSeconds,
   })
   _manualReviewFromError(Object error) {
     if (error is ApiException) {
       final data = _apiErrorData(error.data);
       final supportReviewRequired = data['supportReviewRequired'] == true;
+      final retryAfterSeconds =
+          error.resendAvailableIn ?? error.retryAfterSeconds;
+      final isRateLimited =
+          error.statusCode == 429 || retryAfterSeconds != null;
+      if (!supportReviewRequired && isRateLimited) {
+        return (
+          title: 'Verification paused',
+          message: retryAfterSeconds != null
+              ? 'Too many verification attempts. Try again in ${_formatRetryAfter(retryAfterSeconds)}.'
+              : 'Too many verification attempts. Please wait before trying again.',
+          reason: null,
+          slaLabel: null,
+          backendReviewId: null,
+          backendReviewStatus: null,
+          retryAfterSeconds: retryAfterSeconds,
+        );
+      }
       final reason =
           data['featureReason']?.toString() ??
           data['reason']?.toString() ??
@@ -679,6 +714,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
         slaLabel: slaLabel,
         backendReviewId: backendReviewId,
         backendReviewStatus: backendReviewStatus,
+        retryAfterSeconds: retryAfterSeconds,
       );
     }
 
@@ -690,7 +726,42 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
       slaLabel: null,
       backendReviewId: null,
       backendReviewStatus: null,
+      retryAfterSeconds: null,
     );
+  }
+
+  void _startRetryCooldown(int? seconds) {
+    _retryCooldownTimer?.cancel();
+    if (seconds == null || seconds <= 0) {
+      _retryAfterSeconds = null;
+      return;
+    }
+
+    _retryAfterSeconds = seconds;
+    _retryCooldownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
+      final remaining = (_retryAfterSeconds ?? 0) - 1;
+      setState(() {
+        _retryAfterSeconds = remaining > 0 ? remaining : null;
+      });
+      if (remaining <= 0) {
+        timer.cancel();
+      }
+    });
+  }
+
+  String _formatRetryAfter(int seconds) {
+    if (seconds < 60) return '$seconds seconds';
+    final minutes = seconds ~/ 60;
+    final remainder = seconds % 60;
+    if (remainder == 0) {
+      return minutes == 1 ? '1 minute' : '$minutes minutes';
+    }
+    return '${minutes}m ${remainder}s';
   }
 
   Map<String, dynamic> _apiErrorData(Object? raw) {
@@ -770,6 +841,10 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
   }
 
   void _retry() {
+    if ((_retryAfterSeconds ?? 0) > 0) {
+      return;
+    }
+    _retryCooldownTimer?.cancel();
     setState(() {
       _state = _LivenessState.initializing;
       _statusMessage = 'Initializing...';
@@ -777,6 +852,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
       _manualReviewReason = null;
       _manualReviewTitle = null;
       _manualReviewSlaLabel = null;
+      _retryAfterSeconds = null;
       _cameraPermissionPermanentlyDenied = false;
       _systemCameraAccessGranted = false;
       _cameraStartAttemptsAfterPermission = 0;
@@ -1185,8 +1261,10 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
           ],
           const SizedBox(height: AppSpacing.xl),
           AppButton(
-            label: AppLocalizations.of(context)!.liveness_tryAgain,
-            onPressed: _retry,
+            label: (_retryAfterSeconds ?? 0) > 0
+                ? 'Try again in ${_formatRetryAfter(_retryAfterSeconds!)}'
+                : AppLocalizations.of(context)!.liveness_tryAgain,
+            onPressed: (_retryAfterSeconds ?? 0) > 0 ? null : _retry,
           ),
           const SizedBox(height: AppSpacing.sm),
           TextButton(
