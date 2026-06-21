@@ -66,6 +66,7 @@ void main() {
       labels: ['Send', 'Envoyer'],
       expected: ['Select Recipient', 'Sélectionner le destinataire'],
       name: 'home send action',
+      allowVerificationBlock: true,
     );
     await _openHomeAction(
       driver,
@@ -73,6 +74,7 @@ void main() {
       labels: ['Deposit', 'Dépôt'],
       expected: ['Deposit Funds', 'Déposer des fonds'],
       name: 'home deposit action',
+      allowVerificationBlock: true,
     );
     await _openHomeAction(
       driver,
@@ -80,6 +82,7 @@ void main() {
       labels: ['Receive', 'Recevoir'],
       expected: ['Receive', 'Recevoir'],
       name: 'home receive action',
+      allowVerificationBlock: true,
     );
 
     await _openBottomTab(
@@ -166,12 +169,17 @@ Future<void> _openHomeAction(
   required List<String> labels,
   required List<String> expected,
   required String name,
+  bool allowVerificationBlock = false,
 }) async {
   await driver.goToRoute('/home');
   await driver.waitForHome();
   await driver.tapText(labels);
+  final acceptedText = [
+    ...expected,
+    if (allowVerificationBlock) ..._moneyActionVerificationBlockText,
+  ];
   await driver.pumpUntil(
-    () => driver.hasAnyText(expected),
+    () => driver.hasAnyText(acceptedText),
     reason: name,
     timeout: const Duration(seconds: 25),
   );
@@ -179,6 +187,13 @@ Future<void> _openHomeAction(
   await driver.goToRoute('/home');
   await driver.waitForHome();
 }
+
+const _moneyActionVerificationBlockText = [
+  'Complete identity verification to use this action.',
+  'Complete identity verification before using money movement.',
+  'Verify',
+  'Vérifiez',
+];
 
 Future<void> _openBottomTab(
   KoridoFlowDriver driver,
