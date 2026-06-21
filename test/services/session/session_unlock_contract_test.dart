@@ -744,6 +744,9 @@ void main() {
     final resetSource = File(
       'lib/features/pin/views/reset_pin_view.dart',
     ).readAsStringSync();
+    final verificationCooldownSource = File(
+      'lib/utils/verification_cooldown.dart',
+    ).readAsStringSync();
     final userApiSource = File(
       'lib/services/api/providers/user_api.dart',
     ).readAsStringSync();
@@ -1172,18 +1175,18 @@ void main() {
     );
     expect(
       resetSource,
-      contains("_apiErrorString(apiError.data, 'cooldownReason')"),
+      contains('verificationCooldownReason(apiError.data)'),
       reason:
           'PIN recovery cooldown copy must use the backend cooldownReason instead of treating every 429 as a reusable OTP',
     );
     expect(
-      resetSource,
+      verificationCooldownSource,
       contains('Too many verification requests.'),
       reason:
           'route throttles must not tell the user that a verification code was already sent',
     );
     expect(
-      resetSource,
+      verificationCooldownSource,
       contains('Verification provider cooldown is active.'),
       reason:
           'provider throttles should be explained as provider cooldowns, not generic form errors',

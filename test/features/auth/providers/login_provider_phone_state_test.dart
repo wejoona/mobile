@@ -98,7 +98,11 @@ void main() {
             'error': {
               'code': 'E9001',
               'message': 'Too many verification requests',
-              'context': {'retryAfterSeconds': 120, 'resendAvailableIn': 120},
+              'context': {
+                'cooldownReason': 'route_throttle',
+                'retryAfterSeconds': 120,
+                'resendAvailableIn': 120,
+              },
             },
           },
         );
@@ -120,7 +124,7 @@ void main() {
       expect(state.isLoading, isFalse);
       expect(
         state.error,
-        'Use the verification code already sent. You can request another in 2 minutes.',
+        'Too many verification requests. You can request another in 2 minutes.',
       );
       expect(state.otpResendCountdown, 120);
       expect(dio.requestHistory.single.path, '/auth/login');

@@ -28,6 +28,7 @@ import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/utils/input_formatters.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
+import 'package:usdc_wallet/utils/verification_cooldown.dart';
 
 /// Reset PIN View
 /// Multi-step flow to reset PIN via OTP
@@ -751,7 +752,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       final apiError = ApiException.fromDioError(e);
       final retryAfterSeconds =
           apiError.resendAvailableIn ?? apiError.retryAfterSeconds;
-      final cooldownReason = _apiErrorString(apiError.data, 'cooldownReason');
+      final cooldownReason = verificationCooldownReason(apiError.data);
       if (retryAfterSeconds != null) {
         _startOtpResendCooldown(retryAfterSeconds, reason: cooldownReason);
       }
@@ -786,9 +787,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     _otpResendTimer?.cancel();
     final normalizedSeconds = seconds <= 0
         ? 0
-        : seconds > 3600
-        ? 3600
-        : seconds;
+        : normalizeVerificationCooldownSeconds(seconds);
 
     if (!mounted) {
       return;
@@ -828,42 +827,11 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     String? reason,
   }) {
     final waitSeconds = seconds > 0 ? seconds : _otpResendCountdown;
-    final wait = l10n.login_resendIn(waitSeconds);
-    switch (reason) {
-      case 'route_throttle':
-      case 'otp_request_limit':
-      case 'verification_rate_limited':
-        return 'Too many verification requests. $wait.';
-      case 'verification_attempts_rate_limited':
-        return 'Too many code attempts. $wait.';
-      case 'provider_rate_limit':
-        return 'Verification provider cooldown is active. $wait.';
-      default:
-        return 'Use the verification code already sent. $wait.';
-    }
-  }
-
-  String? _apiErrorString(Object? raw, String key) {
-    if (raw is Map<String, dynamic>) {
-      final direct = raw[key];
-      if (direct != null) return direct.toString();
-      final error = raw['error'];
-      if (error is Map) {
-        final nested = error[key];
-        if (nested != null) return nested.toString();
-        final context = error['context'];
-        if (context is Map && context[key] != null) {
-          return context[key].toString();
-        }
-      }
-      final context = raw['context'];
-      if (context is Map && context[key] != null) {
-        return context[key].toString();
-      }
-    } else if (raw is Map) {
-      return _apiErrorString(Map<String, dynamic>.from(raw), key);
-    }
-    return null;
+    return verificationCooldownMessage(
+      seconds: waitSeconds,
+      reason: reason,
+      formatWait: l10n.login_resendIn,
+    );
   }
 
   Future<bool> _hasRecoveryAuthorizationCandidate(
@@ -1043,7 +1011,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       }
     } on ApiException catch (e) {
       final retryAfterSeconds = e.resendAvailableIn ?? e.retryAfterSeconds;
-      final cooldownReason = _apiErrorString(e.data, 'cooldownReason');
+      final cooldownReason = verificationCooldownReason(e.data);
       if (retryAfterSeconds != null) {
         _startOtpResendCooldown(retryAfterSeconds, reason: cooldownReason);
       }

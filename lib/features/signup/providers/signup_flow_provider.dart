@@ -10,6 +10,7 @@ import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
+import 'package:usdc_wallet/utils/verification_cooldown.dart';
 
 /// Signup/account setup flow state.
 ///
@@ -174,7 +175,7 @@ class SignupFlowNotifier extends Notifier<SignupFlowState> {
         state = state.copyWith(
           isLoading: false,
           error: cooldownSeconds != null && cooldownSeconds > 0
-              ? _verificationCooldownMessage(cooldownSeconds)
+              ? verificationCooldownMessage(seconds: cooldownSeconds)
               : authState.error ?? 'Unable to send verification code',
         );
       }
@@ -380,7 +381,10 @@ class SignupFlowNotifier extends Notifier<SignupFlowState> {
       final retryAfter = error.resendAvailableIn ?? error.retryAfterSeconds;
       if (retryAfter != null) {
         _startOtpResendCountdown(retryAfter);
-        return _verificationCooldownMessage(retryAfter);
+        return verificationCooldownMessage(
+          seconds: retryAfter,
+          reason: verificationCooldownReason(error.data),
+        );
       }
     }
     final message = error.toString();
@@ -390,7 +394,7 @@ class SignupFlowNotifier extends Notifier<SignupFlowState> {
   }
 
   void _startOtpResendCountdown([int seconds = 60]) {
-    final waitSeconds = _normalizedCooldownSeconds(seconds);
+    final waitSeconds = normalizeVerificationCooldownSeconds(seconds);
     state = state.copyWith(otpResendCountdown: waitSeconds);
     _resendTimer?.cancel();
     _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -401,21 +405,6 @@ class SignupFlowNotifier extends Notifier<SignupFlowState> {
       }
       state = state.copyWith(otpResendCountdown: state.otpResendCountdown - 1);
     });
-  }
-
-  int _normalizedCooldownSeconds(int seconds) {
-    if (seconds <= 0) return 60;
-    if (seconds > 3600) return 3600;
-    return seconds;
-  }
-
-  String _verificationCooldownMessage(int seconds) {
-    final waitSeconds = _normalizedCooldownSeconds(seconds);
-    final minutes = (waitSeconds / 60).ceil();
-    final waitCopy = waitSeconds < 60
-        ? '$waitSeconds seconds'
-        : '$minutes minute${minutes == 1 ? '' : 's'}';
-    return 'Use the verification code already sent. You can request another in $waitCopy.';
   }
 }
 
