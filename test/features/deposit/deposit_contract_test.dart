@@ -217,6 +217,14 @@ Map<String, dynamic> _limitsResponse() {
     },
     'perTransaction': {'send': 2500, 'withdraw': 2500},
     'tier': 'verified',
+    'permissions': {
+      'can_send': true,
+      'can_deposit': true,
+      'can_withdraw': true,
+      'can_receive': true,
+      'review_required': false,
+      'block_reason': null,
+    },
   };
 }
 

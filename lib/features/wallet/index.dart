@@ -13,7 +13,6 @@ export 'package:usdc_wallet/features/wallet/views/budget_view.dart';
 export 'package:usdc_wallet/features/wallet/views/buy_airtime_view.dart';
 export 'package:usdc_wallet/features/wallet/views/currency_converter_view.dart';
 export 'package:usdc_wallet/features/wallet/views/deposit_instructions_view.dart';
-export 'package:usdc_wallet/features/wallet/views/deposit_view.dart';
 export 'package:usdc_wallet/features/wallet/views/receive_view.dart';
 export 'package:usdc_wallet/features/wallet/views/request_money_view.dart';
 export 'package:usdc_wallet/features/wallet/views/saved_recipients_view.dart';
