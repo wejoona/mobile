@@ -14,7 +14,7 @@ void main() {
     await GoldenTestUtils.init();
   });
 
-  testWidgets('phone input row focuses and accepts typed login phone', (
+  testWidgets('phone input starts focused and accepts typed login phone', (
     tester,
   ) async {
     await _pumpLoginView(tester);
@@ -23,11 +23,6 @@ void main() {
 
     final phoneFieldFinder = find.byKey(const ValueKey('login_phone_field'));
     final phoneField = tester.widget<TextField>(phoneFieldFinder);
-
-    expect(phoneField.focusNode?.hasFocus, isFalse);
-
-    await tester.tap(phoneFieldFinder);
-    await tester.pump();
 
     expect(phoneField.focusNode?.hasFocus, isTrue);
 

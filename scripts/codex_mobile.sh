@@ -29,6 +29,8 @@ release_stale_lock() {
 acquire_mobile_lock() {
   local attempts=0
 
+  release_stale_lock
+
   while ! mkdir "${LOCK_DIR}" 2>/dev/null; do
     release_stale_lock
     attempts=$((attempts + 1))
@@ -80,6 +82,8 @@ trap 'cleanup_mobile_lock; exit 143' TERM
 export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode-beta.app/Contents/Developer}"
 
 KORIDO_SIM_UDID="${KORIDO_SIM_UDID:-C796EC5E-0EBE-4E08-BF64-4DCDC84753D3}"
+KORIDO_SIM_BUNDLE_ID="${KORIDO_SIM_BUNDLE_ID:-com.joonapay.usdcWallet.dev}"
+KORIDO_SIM_BLOCKED_BUNDLE_IDS="${KORIDO_SIM_BLOCKED_BUNDLE_IDS:-ci.heritagepay.wallet}"
 KORIDO_ENV="${KORIDO_ENV:-staging}"
 KORIDO_API_URL="${KORIDO_API_URL:-https://staging-korido-api.joonapay.com/api/v1}"
 KORIDO_DEFAULT_OTP="${KORIDO_DEFAULT_OTP:-123456}"
@@ -99,6 +103,9 @@ Usage:
   ./scripts/codex_mobile.sh pub-get
   ./scripts/codex_mobile.sh devices
   ./scripts/codex_mobile.sh sim-boot
+  ./scripts/codex_mobile.sh sim-enable-keyboard
+  ./scripts/codex_mobile.sh sim-clean
+  ./scripts/codex_mobile.sh sim-screenshot [path]
   ./scripts/codex_mobile.sh sim-install
   ./scripts/codex_mobile.sh device-install
   ./scripts/codex_mobile.sh live-crawl
@@ -127,6 +134,8 @@ Usage:
 Defaults:
   DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer
   KORIDO_SIM_UDID=C796EC5E-0EBE-4E08-BF64-4DCDC84753D3
+  KORIDO_SIM_BUNDLE_ID=com.joonapay.usdcWallet.dev
+  KORIDO_SIM_BLOCKED_BUNDLE_IDS=ci.heritagepay.wallet
   KORIDO_ENV=staging
   KORIDO_API_URL=https://staging-korido-api.joonapay.com/api/v1
   KORIDO_DEFAULT_OTP=123456
@@ -145,6 +154,34 @@ run_flutter() {
 
 run_flutter_for_sim() {
   flutter "$@" -d "${KORIDO_SIM_UDID}" "${flutter_defines[@]}"
+}
+
+clean_simulator_app_state() {
+  local blocked_bundle_id
+
+  for blocked_bundle_id in ${KORIDO_SIM_BLOCKED_BUNDLE_IDS}; do
+    xcrun simctl terminate "${KORIDO_SIM_UDID}" "${blocked_bundle_id}" >/dev/null 2>&1 || true
+    xcrun simctl uninstall "${KORIDO_SIM_UDID}" "${blocked_bundle_id}" >/dev/null 2>&1 || true
+  done
+
+  xcrun simctl terminate "${KORIDO_SIM_UDID}" "${KORIDO_SIM_BUNDLE_ID}" >/dev/null 2>&1 || true
+  xcrun simctl launch "${KORIDO_SIM_UDID}" "${KORIDO_SIM_BUNDLE_ID}"
+}
+
+enable_simulator_keyboard_input() {
+  defaults write com.apple.iphonesimulator ConnectHardwareKeyboard -bool true || true
+  osascript \
+    -e 'tell application "Simulator" to activate' \
+    -e 'tell application "System Events" to tell process "Simulator"' \
+    -e 'try' \
+    -e 'set keyboardInputItem to menu item "Send Keyboard Input to Device" of menu 1 of menu item "Input" of menu "I/O" of menu bar item "I/O" of menu bar 1' \
+    -e 'if (value of attribute "AXMenuItemMarkChar" of keyboardInputItem) is missing value then click keyboardInputItem' \
+    -e 'end try' \
+    -e 'try' \
+    -e 'set hardwareKeyboardItem to menu item "Connect Hardware Keyboard" of menu 1 of menu item "Keyboard" of menu "I/O" of menu bar item "I/O" of menu bar 1' \
+    -e 'if (value of attribute "AXMenuItemMarkChar" of hardwareKeyboardItem) is missing value then click hardwareKeyboardItem' \
+    -e 'end try' \
+    -e 'end tell'
 }
 
 run_analyze_gate() {
@@ -214,6 +251,16 @@ case "${command}" in
   sim-boot)
     xcrun simctl boot "${KORIDO_SIM_UDID}" "$@" 2>/dev/null || true
     xcrun simctl bootstatus "${KORIDO_SIM_UDID}" -b
+    ;;
+  sim-enable-keyboard)
+    enable_simulator_keyboard_input
+    ;;
+  sim-clean)
+    clean_simulator_app_state
+    ;;
+  sim-screenshot)
+    screenshot_path="${1:-${TMPDIR:-/tmp}/korido-simulator.png}"
+    xcrun simctl io "${KORIDO_SIM_UDID}" screenshot "${screenshot_path}"
     ;;
   sim-install)
     run_flutter_for_sim run --no-resident "$@"
