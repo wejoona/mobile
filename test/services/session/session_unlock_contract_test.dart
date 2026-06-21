@@ -770,6 +770,7 @@ void main() {
     expect(livenessSource, contains('didChangeAppLifecycleState'));
     expect(livenessSource, contains('_openCameraSettings'));
     expect(livenessSource, contains('_retryCameraAccess'));
+    expect(livenessSource, contains('_confirmCameraAccessFromSettings'));
     expect(livenessSource, contains('trustSystemSettings: true'));
     expect(
       livenessSource,
@@ -782,6 +783,14 @@ void main() {
       contains('if (trustSystemSettings)'),
       reason:
           'after returning from Settings, liveness should attempt camera startup directly instead of looping through a stale permission prompt',
+    );
+    expect(
+      _methodBody(livenessSource, '_initializeCamera'),
+      contains(
+        'if (!_systemCameraAccessGranted && !await _ensureCameraPermission())',
+      ),
+      reason:
+          'if Settings status is still stale/denied, retry must refresh through the normal permission request path instead of trying camera startup blindly',
     );
     expect(livenessSource, contains('_systemCameraAccessGranted'));
     expect(livenessSource, contains('_cameraStartAttemptsAfterPermission'));

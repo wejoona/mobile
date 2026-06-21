@@ -172,6 +172,9 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
             _errorMessage = null;
           });
         }
+        if (!_systemCameraAccessGranted && !await _ensureCameraPermission()) {
+          return false;
+        }
       } else if (!await _ensureCameraPermission()) {
         return false;
       }
@@ -797,6 +800,21 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
     }
   }
 
+  Future<void> _confirmCameraAccessFromSettings() async {
+    if (!mounted) return;
+
+    final latestStatus = await ph.Permission.camera.status;
+    _systemCameraAccessGranted =
+        latestStatus.isGranted || latestStatus.isLimited;
+
+    if (!_systemCameraAccessGranted) {
+      await _retryCameraAccess(trustSystemSettings: false);
+      return;
+    }
+
+    await _retryCameraAccess(trustSystemSettings: true);
+  }
+
   Future<void> _retryCameraAccess({bool trustSystemSettings = false}) async {
     if (!mounted) return;
     if (trustSystemSettings) {
@@ -1075,8 +1093,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
               AppButton(
                 label: 'I allowed access',
                 variant: AppButtonVariant.secondary,
-                onPressed: () =>
-                    unawaited(_retryCameraAccess(trustSystemSettings: true)),
+                onPressed: () => unawaited(_confirmCameraAccessFromSettings()),
                 isFullWidth: true,
               ),
             ],
