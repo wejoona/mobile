@@ -204,6 +204,17 @@ void main() {
         reason:
             'LoginProvider must not carry a second biometric unlock authority',
       );
+      expect(loginProviderSource, contains('pinResult.requiresPinChange'));
+      expect(
+        loginProviderSource.indexOf('pinResult.requiresPinChange'),
+        lessThan(loginProviderSource.indexOf('if (!pinResult.success)')),
+        reason:
+            'temporary support PINs are successful verifications but must force a new PIN before any login path can unlock',
+      );
+      expect(
+        loginProviderSource,
+        contains('Temporary PIN accepted. Choose a new PIN to continue.'),
+      );
       expect(
         pinScreenSource,
         contains('biometric_usePinInstead'),

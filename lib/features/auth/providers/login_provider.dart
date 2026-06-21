@@ -312,6 +312,17 @@ class LoginNotifier extends Notifier<LoginState> {
       final pinService = ref.read(pinServiceProvider);
       final pinResult = await pinService.verifyPinWithBackend(pin);
 
+      if (pinResult.requiresPinChange) {
+        state = state.copyWith(
+          isLoading: false,
+          currentStep: LoginStep.pin,
+          error:
+              pinResult.message ??
+              'Temporary PIN accepted. Choose a new PIN to continue.',
+        );
+        return false;
+      }
+
       if (!pinResult.success) {
         throw Exception(pinResult.message ?? 'PIN verification failed');
       }
