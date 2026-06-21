@@ -159,15 +159,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
     );
 
     try {
-      final permissionStatus = await ph.Permission.camera.status;
-      _systemCameraAccessGranted =
-          permissionStatus.isGranted || permissionStatus.isLimited;
-
-      if (!_systemCameraAccessGranted && !await _ensureCameraPermission()) {
-        return false;
-      }
-
-      if (!trustSystemSettings && !await _ensureCameraPermission()) {
+      if (!await _ensureCameraPermission()) {
         return false;
       }
 
@@ -224,6 +216,13 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
             );
             return false;
           }
+
+          _showCameraPermissionRequired(
+            permanentlyDenied: false,
+            message:
+                'Camera access is allowed, but this device could not start the camera safely. Try once more, or continue with manual review.',
+          );
+          return false;
         }
         _showCameraPermissionRequired(
           permanentlyDenied:
@@ -938,6 +937,9 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
     final canUseManualReview = widget.onManualReviewRequired != null;
     final needsSettings =
         _cameraPermissionPermanentlyDenied && !_systemCameraAccessGranted;
+    final title = _systemCameraAccessGranted
+        ? 'Camera could not start'
+        : 'Camera permission needed';
 
     return Center(
       child: Padding(
@@ -961,7 +963,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
             ),
             const SizedBox(height: AppSpacing.lg),
             AppText(
-              'Camera permission needed',
+              title,
               variant: AppTextVariant.titleMedium,
               color: colors.textPrimary,
               textAlign: TextAlign.center,
