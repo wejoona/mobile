@@ -644,6 +644,18 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
           backendReviewId: backendReviewId,
           backendReviewStatus: backendReviewStatus,
         );
+        if (widget.onManualReviewRequired != null) {
+          setState(() {
+            _state = _LivenessState.processing;
+            _statusMessage = manualReviewTitle ?? 'Starting manual review...';
+            _errorMessage = message;
+            _manualReviewReason = manualReviewReason;
+            _manualReviewTitle = manualReviewTitle;
+            _manualReviewSlaLabel = manualReviewSlaLabel;
+          });
+          widget.onManualReviewRequired!(request);
+          return;
+        }
         setState(() {
           _state = _LivenessState.manualReview;
           _statusMessage = 'Manual review needed';
@@ -946,8 +958,9 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
 
       case _LivenessState.capturing:
       case _LivenessState.uploading:
-      case _LivenessState.processing:
         return _buildCameraWithProgress(colors);
+      case _LivenessState.processing:
+        return _buildLoading(colors, _statusMessage);
 
       case _LivenessState.completed:
         return _buildSuccess(colors);

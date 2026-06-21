@@ -460,6 +460,18 @@ void main() {
       reason:
           'Account recovery/KYC owners need typed manual-review metadata; the liveness widget should hand off instead of showing a dismissible nested review',
     );
+    expect(
+      _methodBody(livenessSource, '_fail'),
+      contains('if (widget.onManualReviewRequired != null)'),
+      reason:
+          'owner-handled liveness failures must hand off before rendering a nested manual-review screen',
+    );
+    expect(
+      _methodBody(livenessSource, '_fail'),
+      contains('_state = _LivenessState.processing'),
+      reason:
+          'the child liveness widget should only show a short loading bridge while the parent switches to its durable manual-review flow',
+    );
   });
 
   test('session lock screen restores PIN and biometric if unlock stalls', () {
