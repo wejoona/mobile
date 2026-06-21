@@ -222,9 +222,32 @@ class KoridoFlowDriver {
   }
 
   Future<void> waitForHome() async {
-    await pumpUntil(
-      hasHomeDashboard,
-      reason: 'home dashboard with balance and quick actions',
+    final deadline = DateTime.now().add(const Duration(seconds: 25));
+    var unlockAttempted = false;
+
+    while (DateTime.now().isBefore(deadline)) {
+      await tester.pump(const Duration(milliseconds: 250));
+      if (hasHomeDashboard()) {
+        return;
+      }
+
+      if (_isSessionLockScreen()) {
+        if (!unlockAttempted) {
+          unlockAttempted = true;
+          await enterPin(defaultPin);
+        }
+        continue;
+      }
+
+      unlockAttempted = false;
+    }
+
+    throw TestFailure(
+      'Timed out waiting for home dashboard with balance and quick actions. '
+      'Route: ${currentRouteSnapshot()}. '
+      'Visible text: ${visibleTextSnapshot()}. '
+      'Route error: ${routeErrorSnapshot()}. '
+      'Widgets: ${widgetTypeSnapshot()}',
     );
   }
 
@@ -238,6 +261,18 @@ class KoridoFlowDriver {
       hasAnyText(['USDC']) &&
       hasAnyText(['Send', 'Envoyer']) &&
       hasAnyText(['Deposit', 'Dépôt']);
+
+  bool _isSessionLockScreen() {
+    final route = currentRouteSnapshot();
+    return route.startsWith('/session-locked') ||
+        hasAnyText([
+          'Enter PIN to Unlock',
+          'Enter your PIN',
+          'Entrez votre PIN',
+          'session has been locked',
+          'session est verrouillée',
+        ]);
+  }
 
   Future<void> loginReturningUser({
     required String phone,
@@ -544,8 +579,8 @@ class KoridoFlowDriver {
   }
 
   Future<void> tapText(List<String> candidates) async {
-    Finder? finder = findText(candidates, hitTestableOnly: true);
-    Finder? button = findButton(candidates, hitTestableOnly: true);
+    var finder = findText(candidates, hitTestableOnly: true);
+    var button = findButton(candidates, hitTestableOnly: true);
 
     if (button == null && finder == null) {
       await scrollUntilText(candidates, maxScrolls: 6);

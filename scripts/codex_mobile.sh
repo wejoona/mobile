@@ -87,6 +87,12 @@ KORIDO_SIM_BLOCKED_BUNDLE_IDS="${KORIDO_SIM_BLOCKED_BUNDLE_IDS:-ci.heritagepay.w
 KORIDO_ENV="${KORIDO_ENV:-staging}"
 KORIDO_API_URL="${KORIDO_API_URL:-https://staging-korido-api.joonapay.com/api/v1}"
 KORIDO_DEFAULT_OTP="${KORIDO_DEFAULT_OTP:-123456}"
+export KORIDO_SIM_UDID
+export KORIDO_SIM_BUNDLE_ID
+export KORIDO_SIM_BLOCKED_BUNDLE_IDS
+export KORIDO_ENV
+export KORIDO_API_URL
+export KORIDO_DEFAULT_OTP
 
 flutter_defines=(
   "--dart-define=ENV=${KORIDO_ENV}"
@@ -111,6 +117,8 @@ Usage:
   ./scripts/codex_mobile.sh live-crawl
   ./scripts/codex_mobile.sh live-login
   ./scripts/codex_mobile.sh live-visual
+  ./scripts/codex_mobile.sh live-visual-capture
+  ./scripts/codex_mobile.sh ceo-screen-catalog
   ./scripts/codex_mobile.sh live-secondary
   ./scripts/codex_mobile.sh live-e2e-wallet
   ./scripts/codex_mobile.sh live-e2e-auth
@@ -182,6 +190,13 @@ enable_simulator_keyboard_input() {
     -e 'if (value of attribute "AXMenuItemMarkChar" of hardwareKeyboardItem) is missing value then click hardwareKeyboardItem' \
     -e 'end try' \
     -e 'end tell'
+}
+
+grant_simulator_test_permissions() {
+  local service
+  for service in camera contacts photos; do
+    xcrun simctl privacy "${KORIDO_SIM_UDID}" grant "${service}" "${KORIDO_SIM_BUNDLE_ID}" >/dev/null 2>&1 || true
+  done
 }
 
 run_analyze_gate() {
@@ -280,6 +295,13 @@ case "${command}" in
     ;;
   live-visual)
     run_flutter_for_sim test integration_test/flows/live_api_visual_sweep_test.dart "$@"
+    ;;
+  live-visual-capture)
+    grant_simulator_test_permissions
+    node scripts/capture_live_visual_sweep.mjs "$@"
+    ;;
+  ceo-screen-catalog)
+    node scripts/create_ceo_screen_catalog.mjs "$@"
     ;;
   live-secondary)
     run_flutter_for_sim test integration_test/flows/live_api_secondary_surfaces_flow_test.dart "$@"

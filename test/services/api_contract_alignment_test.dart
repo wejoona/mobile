@@ -1208,7 +1208,7 @@ void main() {
     });
 
     test(
-      'home notification badge uses backend unread count provider',
+      'home notification badge uses cached unread count refreshed from backend',
       () async {
         final container = ProviderContainer(
           overrides: [
@@ -1221,9 +1221,10 @@ void main() {
         );
         addTearDown(container.dispose);
 
-        await container.read(
-          notification_feed.unreadNotificationCountProvider.future,
-        );
+        await container
+            .read(notification_count.refreshUnreadNotificationCountProvider)
+            .call();
+        await Future<void>.delayed(Duration.zero);
 
         expect(
           container.read(notification_count.unreadNotificationCountProvider),
