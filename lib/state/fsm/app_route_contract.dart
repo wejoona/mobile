@@ -668,6 +668,7 @@ const appRouteContracts = <AppRouteContract>[
     capabilities: {
       AppRouteCapability.requiresAuth,
       AppRouteCapability.requiresWallet,
+      AppRouteCapability.requiresKycTier1,
       AppRouteCapability.moneyMovement,
     },
     events: _moneyEvents,

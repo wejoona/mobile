@@ -405,6 +405,16 @@ void main() {
       );
     });
 
+    test('login OTP route survives accepted-code transition to PIN', () {
+      final source = File('lib/router/app_redirector.dart').readAsStringSync();
+      final otpContextBody = _methodBody(source, 'bool _hasLoginOtpContext');
+
+      expect(source, contains('..listen(loginProvider'));
+      expect(otpContextBody, contains('state.currentStep == LoginStep.otp'));
+      expect(otpContextBody, contains('state.currentStep == LoginStep.pin'));
+      expect(otpContextBody, contains('state.sessionToken?.isNotEmpty'));
+    });
+
     test('KYC submitted route requires durable KYC flow state', () {
       final routeSource = File(
         'lib/router/routes/kyc_settings_routes.dart',

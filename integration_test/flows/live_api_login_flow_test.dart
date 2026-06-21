@@ -59,7 +59,7 @@ void main() {
         'Commencer à utiliser Korido',
       ]);
       await driver.waitForHome();
-      await driver.exerciseDepositFromHome();
+      await driver.expectDepositBlockedByKycFromHome();
       await _openLiveSecondarySurfaces(driver);
       await _logoutFromLiveSession(driver);
 
@@ -133,6 +133,8 @@ Future<void> _openLiveSecondarySurfaces(KoridoFlowDriver driver) async {
         driver.hasAnyText(['Notifications']) &&
         driver.hasAnyText([
           'PIN Changed',
+          'Identity Documents Needed',
+          'Upload your identity documents to continue verification.',
           'No Notifications',
           "You're all caught up",
           'Aucune notification',

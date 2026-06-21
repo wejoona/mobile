@@ -392,6 +392,25 @@ class KoridoFlowDriver {
     }
   }
 
+  Future<void> expectDepositBlockedByKycFromHome() async {
+    await tapText(['Deposit', 'Dépôt']);
+
+    await pumpUntil(
+      () =>
+          currentRouteSnapshot() == '/home' &&
+          hasAnyText([
+            'Complete identity verification before using money movement.',
+            'Complete identity verification to use this action.',
+            "Terminez la vérification d'identité pour utiliser cette action.",
+            'Verify Now',
+            'Vérifier',
+          ]),
+      reason: 'deposit KYC gate for unverified account',
+      timeout: const Duration(seconds: 8),
+    );
+    expectNoAuthOrUnexpectedError();
+  }
+
   Future<void> returnHomeFromDeposit() async {
     final doneButton = findText(['Done', 'Terminé']);
     if (doneButton != null) {

@@ -25,6 +25,8 @@ class RouterRefreshNotifier extends ChangeNotifier {
     ref
       // Listen to auth state changes.
       ..listen(auth.authProvider, (_, _) => notifyListeners())
+      // Login phone/OTP/PIN state is a route context source for /login/*.
+      ..listen(loginProvider, (_, _) => notifyListeners())
       // Listen to session lock/unlock changes.
       ..listen(sessionServiceProvider, (_, _) => notifyListeners())
       // Listen to wallet state changes for onboarding redirect.
@@ -269,8 +271,17 @@ String? _otpContextRedirect({
   return null;
 }
 
-bool _hasLoginOtpContext(LoginState state) =>
-    state.currentStep == LoginStep.otp && state.phoneValue != null;
+bool _hasLoginOtpContext(LoginState state) {
+  final hasPhone = state.phoneValue != null;
+  if (!hasPhone) {
+    return false;
+  }
+  if (state.currentStep == LoginStep.otp) {
+    return true;
+  }
+  return state.currentStep == LoginStep.pin &&
+      (state.sessionToken?.isNotEmpty ?? false);
+}
 
 bool _hasSignupOtpContext(SignupFlowState state, auth.AuthState authState) {
   final hasPhone =
