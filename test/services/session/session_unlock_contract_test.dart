@@ -864,6 +864,12 @@ void main() {
     expect(livenessSource, contains('Verification paused'));
     expect(
       livenessSource,
+      contains('failedStatusMessage: review.title'),
+      reason:
+          'rate-limited liveness should preserve the paused title instead of rendering as a failed check',
+    );
+    expect(
+      livenessSource,
       contains('Try again in'),
       reason:
           'provider or route rate limits should show a cooldown, not create a fake manual-review state',

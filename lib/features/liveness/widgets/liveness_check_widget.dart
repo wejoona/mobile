@@ -417,6 +417,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
         backendReviewId: review.backendReviewId,
         backendReviewStatus: review.backendReviewStatus,
         retryAfterSeconds: review.retryAfterSeconds,
+        failedStatusMessage: review.title,
       );
       return false;
     }
@@ -562,6 +563,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
         backendReviewId: review.backendReviewId,
         backendReviewStatus: review.backendReviewStatus,
         retryAfterSeconds: review.retryAfterSeconds,
+        failedStatusMessage: review.title,
       );
     }
   }
@@ -629,6 +631,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
     String? backendReviewId,
     String? backendReviewStatus,
     int? retryAfterSeconds,
+    String? failedStatusMessage,
   }) {
     if (mounted) {
       unawaited(_releaseCamera());
@@ -655,7 +658,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
       _startRetryCooldown(retryAfterSeconds);
       setState(() {
         _state = _LivenessState.failed;
-        _statusMessage = 'Verification failed';
+        _statusMessage = failedStatusMessage ?? 'Verification failed';
         _errorMessage = message;
       });
     }
