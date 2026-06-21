@@ -31,6 +31,16 @@ void main() {
           contains('WidgetsBinding.instance.addPostFrameCallback'),
         );
         expect(initBody, contains('_loadContacts()'));
+        expect(source, contains('with WidgetsBindingObserver'));
+        expect(source, contains('WidgetsBinding.instance.addObserver(this)'));
+        expect(
+          source,
+          contains('WidgetsBinding.instance.removeObserver(this)'),
+        );
+        expect(source, contains('didChangeAppLifecycleState'));
+        expect(source, contains('AppLifecycleState.resumed'));
+        expect(source, contains('contactsState.permissionRequired'));
+        expect(source, contains('contactsState.permissionRequiresSettings'));
         expect(loadBody, contains('syncContacts()'));
         expect(
           initBody,

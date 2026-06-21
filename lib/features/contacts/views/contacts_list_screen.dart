@@ -22,7 +22,8 @@ class ContactsListScreen extends ConsumerStatefulWidget {
   ConsumerState<ContactsListScreen> createState() => _ContactsListScreenState();
 }
 
-class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
+class _ContactsListScreenState extends ConsumerState<ContactsListScreen>
+    with WidgetsBindingObserver {
   final _searchController = TextEditingController();
   String _searchQuery = '';
   List<SyncedContact> _lookupResults = [];
@@ -34,6 +35,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) {
         return;
@@ -44,9 +46,23 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _lookupDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed || !mounted) {
+      return;
+    }
+
+    final contactsState = ref.read(contactsProvider);
+    if (contactsState.permissionRequired ||
+        contactsState.permissionRequiresSettings) {
+      unawaited(_loadContacts());
+    }
   }
 
   void _handleSearchChanged(String value) {
