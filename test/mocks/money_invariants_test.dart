@@ -42,9 +42,12 @@ void main() {
             .having(
               (error) => error.response?.data,
               'data',
-              containsPair(
-                'error',
-                'PIN verification required for this operation',
+              allOf(
+                containsPair(
+                  'message',
+                  'PIN verification required for this operation',
+                ),
+                containsPair('code', 'PIN_REQUIRED'),
               ),
             ),
       ),
@@ -101,13 +104,17 @@ void main() {
       final dio = await _authenticatedDio();
 
       final initiateResponse = await dio.post(
-        '/deposits/initiate',
-        data: {'providerCode': 'OMCI', 'amount': 5000, 'currency': 'XOF'},
+        '/wallet/deposit',
+        data: {
+          'channelId': 'orange_money_ci',
+          'amount': 5000,
+          'sourceCurrency': 'XOF',
+        },
       );
       final deposit = initiateResponse.data as Map<String, dynamic>;
       final depositId = deposit['depositId'] as String;
 
-      final statusResponse = await dio.get('/deposits/$depositId');
+      final statusResponse = await dio.get('/wallet/deposit/$depositId');
       final status = statusResponse.data as Map<String, dynamic>;
 
       expect(depositId, isNotEmpty);

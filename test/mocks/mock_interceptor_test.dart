@@ -97,11 +97,7 @@ void main() {
 
     final transferResponse = await dio.post(
       '/wallet/transfer/internal',
-      data: {
-        'toPhone': '+2250700000000',
-        'amount': 10,
-        'currency': 'USDC',
-      },
+      data: {'toPhone': '+2250700000000', 'amount': 10, 'currency': 'USDC'},
       options: Options(headers: {'X-Pin-Token': 'mock_pin_token_test'}),
     );
     final transfer = transferResponse.data as Map<String, dynamic>;
@@ -325,17 +321,17 @@ void main() {
       (
         method: 'POST',
         path: '/wallet/transfer/internal',
-        data: {
-          'toPhone': '+2250708091011',
-          'amount': 5,
-          'currency': 'USDC',
-        },
+        data: {'toPhone': '+2250708091011', 'amount': 5, 'currency': 'USDC'},
       ),
       (method: 'GET', path: '/deposits/providers', data: null),
       (
         method: 'POST',
-        path: '/deposits/initiate',
-        data: {'providerCode': 'OMCI', 'amount': 5000, 'currency': 'XOF'},
+        path: '/wallet/deposit',
+        data: {
+          'channelId': 'orange_money_ci',
+          'amount': 5000,
+          'sourceCurrency': 'XOF',
+        },
       ),
       (method: 'GET', path: '/deposits', data: null),
       (method: 'GET', path: '/contacts', data: null),
@@ -370,7 +366,7 @@ void main() {
     }
   });
 
-  test('deposit mocks reject the stale provider-only request shape', () async {
+  test('deposit mocks reject retired legacy deposit writes', () async {
     MockRegistry.initialize();
     MockRegistry.reset();
 
@@ -392,7 +388,7 @@ void main() {
         isA<DioException>().having(
           (error) => error.response?.statusCode,
           'status',
-          400,
+          410,
         ),
       ),
     );
@@ -438,7 +434,7 @@ void _expectParseableRoute(String path, Object? data) {
         isNotEmpty,
       );
       return;
-    case '/deposits/initiate':
+    case '/wallet/deposit':
       final deposit = _expectMap(path, data);
       expect(deposit['depositId'] ?? deposit['id'], isA<String>());
       expect(deposit['status'], isA<String>());

@@ -147,28 +147,45 @@ class DepositMock {
     final rate = _rateFor(sourceCurrency);
     final fee = amount * 0.01;
     final estimatedAmount = (amount / rate) - (fee / rate);
-
-    return MockResponse.success({
-      'transactionId': 'txn_${DateTime.now().millisecondsSinceEpoch}',
-      'depositId': 'dep_${DateTime.now().millisecondsSinceEpoch}',
+    final createdAt = DateTime.now();
+    final depositId = 'dep_${createdAt.microsecondsSinceEpoch}';
+    final transactionId = 'txn_${createdAt.microsecondsSinceEpoch}';
+    final instructions = {
+      'type': _getChannelType(channelId),
+      'provider': _getProviderName(channelId),
+      'accountNumber': _getAccountNumber(channelId),
+      'reference': _generateReference(channelId),
+      'instructions': _legacyInstructions(channelId),
+      'qrCode': null,
+    };
+    final deposit = {
+      'id': depositId,
+      'transactionId': transactionId,
+      'depositId': depositId,
       'amount': amount,
       'sourceCurrency': sourceCurrency,
+      'currency': sourceCurrency,
       'targetCurrency': 'USD',
       'rate': rate,
       'fee': fee,
       'estimatedAmount': estimatedAmount,
-      'paymentInstructions': {
-        'type': _getChannelType(channelId),
-        'provider': _getProviderName(channelId),
-        'accountNumber': _getAccountNumber(channelId),
-        'reference': _generateReference(channelId),
-        'instructions': _legacyInstructions(channelId),
-        'qrCode': null,
-      },
-      'expiresAt': DateTime.now()
-          .add(const Duration(minutes: 30))
-          .toIso8601String(),
-    });
+      'convertedAmount': estimatedAmount,
+      'convertedCurrency': 'USD',
+      'providerCode': channelId,
+      'channelId': channelId,
+      'paymentMethodType': _getChannelType(channelId),
+      'paymentInstructions': instructions,
+      'instructions': instructions['instructions'],
+      'reference': instructions['reference'],
+      'expiresAt': createdAt.add(const Duration(minutes: 30)).toIso8601String(),
+      'status': 'processing',
+      'createdAt': createdAt.toIso8601String(),
+    };
+
+    _deposits[depositId] = deposit;
+    DepositMockState.deposits.insert(0, deposit);
+
+    return MockResponse.success(deposit);
   }
 
   static Future<MockResponse<dynamic>> _handleRetiredDepositWrite(
@@ -189,6 +206,12 @@ class DepositMock {
   static Future<MockResponse<dynamic>> _handleGetDepositStatus(
     RequestOptions options,
   ) async {
+    final depositId = options.path.split('/').last;
+    final stored = _deposits[depositId];
+    if (stored != null) {
+      return MockResponse.success(stored);
+    }
+
     final isPending = DateTime.now().second % 5 == 0;
     final amount = 60000.0;
     final rate = _rateFor('XOF');
@@ -227,7 +250,9 @@ class DepositMock {
     RequestOptions options,
   ) async {
     final depositId = options.path.split('/').last;
-    return MockResponse.success(_legacyDepositStatus(depositId));
+    return MockResponse.success(
+      _deposits[depositId] ?? _legacyDepositStatus(depositId),
+    );
   }
 
   static Future<MockResponse<dynamic>> _handleListDeposits(
