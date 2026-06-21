@@ -753,10 +753,23 @@ class ApiException implements Exception {
     final retryAfter = _parseRetryHeader(headers.value('retry-after'));
     if (retryAfter != null) return retryAfter;
 
-    final rateLimitReset = _parsePositiveSeconds(
-      headers.value('x-ratelimit-reset'),
-    );
-    return rateLimitReset;
+    return _parseRateLimitResetHeader(headers.value('x-ratelimit-reset'));
+  }
+
+  static int? _parseRateLimitResetHeader(String? value) {
+    final parsed = _parsePositiveSeconds(value);
+    if (parsed == null) return null;
+
+    // VerifyHQ and many gateway stacks expose X-RateLimit-Reset as epoch
+    // seconds, while other APIs use relative seconds. Treat Unix-like values
+    // as timestamps so the app never shows multi-year cooldowns.
+    if (parsed > 1000000000) {
+      final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      final waitSeconds = parsed - now;
+      return waitSeconds <= 0 ? 1 : waitSeconds;
+    }
+
+    return parsed;
   }
 
   static int? _parseRetryHeader(String? value) {

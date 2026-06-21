@@ -875,6 +875,29 @@ void main() {
       expect(exception.resendAvailableIn, 45);
     });
 
+    test('should treat X-RateLimit-Reset epoch seconds as cooldown', () {
+      final resetAtEpochSeconds =
+          DateTime.now().millisecondsSinceEpoch ~/ 1000 + 75;
+      final dioError = DioException(
+        requestOptions: RequestOptions(path: '/kyc/liveness/session'),
+        response: Response(
+          statusCode: 429,
+          data: {'message': 'Too many liveness checks'},
+          headers: Headers.fromMap({
+            'x-ratelimit-reset': ['$resetAtEpochSeconds'],
+          }),
+          requestOptions: RequestOptions(path: '/kyc/liveness/session'),
+        ),
+        type: DioExceptionType.badResponse,
+      );
+
+      final exception = ApiException.fromDioError(dioError);
+
+      expect(exception.statusCode, 429);
+      expect(exception.retryAfterSeconds, inInclusiveRange(70, 75));
+      expect(exception.resendAvailableIn, inInclusiveRange(70, 75));
+    });
+
     test('should create exception with message only', () {
       // Arrange & Act
       final exception = ApiException(message: 'Simple error');
