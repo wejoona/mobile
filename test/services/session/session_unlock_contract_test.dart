@@ -874,6 +874,14 @@ void main() {
       reason:
           'provider or route rate limits should show a cooldown, not create a fake manual-review state',
     );
+    expect(livenessSource, contains('widget.useRecoveryToken'));
+    expect(livenessSource, contains("'liveness_rate_limited'"));
+    expect(
+      livenessSource,
+      contains('continue this account recovery flow'),
+      reason:
+          'account recovery liveness rate limits must become manual review so a locked user is not stranded in retry-only state',
+    );
     expect(
       livenessStartBody.indexOf('await _createSession()'),
       lessThan(livenessStartBody.indexOf('await _initializeCamera(')),

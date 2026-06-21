@@ -682,6 +682,20 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
       final isRateLimited =
           error.statusCode == 429 || retryAfterSeconds != null;
       if (!supportReviewRequired && isRateLimited) {
+        if (widget.useRecoveryToken && widget.onManualReviewRequired != null) {
+          return (
+            title: 'Manual review needed',
+            message: retryAfterSeconds != null
+                ? 'Too many liveness attempts. A Korido reviewer will continue this account recovery flow. You can try automated liveness again in ${_formatRetryAfter(retryAfterSeconds)}.'
+                : 'Too many liveness attempts. A Korido reviewer will continue this account recovery flow.',
+            reason: 'liveness_rate_limited',
+            slaLabel: null,
+            backendReviewId: null,
+            backendReviewStatus: null,
+            retryAfterSeconds: retryAfterSeconds,
+          );
+        }
+
         return (
           title: 'Verification paused',
           message: retryAfterSeconds != null
