@@ -797,11 +797,13 @@ void main() {
     );
     expect(
       _methodBody(livenessSource, '_initializeCamera'),
-      contains(
-        'if (!_systemCameraAccessGranted && !await _ensureCameraPermission())',
+      isNot(
+        contains(
+          'if (!_systemCameraAccessGranted && !await _ensureCameraPermission())',
+        ),
       ),
       reason:
-          'if Settings status is still stale/denied, retry must refresh through the normal permission request path instead of trying camera startup blindly',
+          'after the user confirms Settings, stale permission_handler status must not block a direct camera startup attempt',
     );
     expect(livenessSource, contains('_systemCameraAccessGranted'));
     expect(livenessSource, contains('_cameraStartAttemptsAfterPermission'));

@@ -172,9 +172,6 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
             _errorMessage = null;
           });
         }
-        if (!_systemCameraAccessGranted && !await _ensureCameraPermission()) {
-          return false;
-        }
       } else if (!await _ensureCameraPermission()) {
         return false;
       }
@@ -806,11 +803,6 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
     final latestStatus = await ph.Permission.camera.status;
     _systemCameraAccessGranted =
         latestStatus.isGranted || latestStatus.isLimited;
-
-    if (!_systemCameraAccessGranted) {
-      await _retryCameraAccess(trustSystemSettings: false);
-      return;
-    }
 
     await _retryCameraAccess(trustSystemSettings: true);
   }
