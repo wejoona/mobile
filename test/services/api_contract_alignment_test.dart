@@ -18,7 +18,7 @@ import 'package:usdc_wallet/features/notifications/providers/notifications_provi
 import 'package:usdc_wallet/features/payment_links/repositories/payment_links_repository.dart';
 import 'package:usdc_wallet/features/payment_links/providers/pay_link_provider.dart';
 import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
-import 'package:usdc_wallet/features/qr_payment/models/qr_data.dart';
+import 'package:usdc_wallet/features/qr_payment/models/qr_payment_data.dart';
 import 'package:usdc_wallet/features/qr_payment/providers/qr_payment_provider.dart';
 import 'package:usdc_wallet/features/settings/repositories/devices_repository.dart';
 import 'package:usdc_wallet/features/settings/repositories/sessions_repository.dart';

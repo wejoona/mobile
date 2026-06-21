@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/core/utils/transaction_headers.dart';
-import 'package:usdc_wallet/features/qr_payment/models/qr_data.dart';
+import 'package:usdc_wallet/features/qr_payment/models/qr_payment_data.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
@@ -215,16 +215,7 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
   }
 
   String? _recipientPhone(QrPaymentData data) {
-    for (final value in [data.recipient, data.phone, data.userId]) {
-      if (value == null || value.isEmpty) continue;
-      final normalized = value.startsWith('00')
-          ? '+${value.substring(2)}'
-          : value;
-      if (RegExp(r'^\+[1-9]\d{6,14}$').hasMatch(normalized)) {
-        return normalized;
-      }
-    }
-    return null;
+    return data.canonicalRecipientPhone;
   }
 
   void reset() => state = const QrPaymentState();

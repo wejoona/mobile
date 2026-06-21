@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/features/qr_payment/models/qr_payment_data.dart';
 import 'package:usdc_wallet/features/qr_payment/widgets/qr_display.dart';
-import 'package:usdc_wallet/features/qr_payment/models/qr_data.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// QR code display screen for receiving payments.
@@ -20,7 +20,12 @@ class QrReceiveView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final qrData = QrPaymentData(userId: userId, phone: phone, displayName: displayName, amount: amount);
+    final qrData = QrPaymentData(
+      userId: userId,
+      phone: phone ?? '',
+      displayName: displayName,
+      amount: amount,
+    );
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -31,10 +36,19 @@ class QrReceiveView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              QrCodeDisplay(data: qrData.encode(), displayName: displayName, onShare: () {}),
+              QrCodeDisplay(
+                data: qrData.encode(),
+                displayName: displayName,
+                onShare: () {},
+              ),
               if (amount != null) ...[
                 const SizedBox(height: 24),
-                Text('Requesting \$${amount!.toStringAsFixed(2)}', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                Text(
+                  'Requesting \$${amount!.toStringAsFixed(2)}',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ],
           ),
