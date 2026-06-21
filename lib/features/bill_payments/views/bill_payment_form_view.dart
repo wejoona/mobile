@@ -59,14 +59,22 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
 
     providersAsync.whenData((data) {
       if (!mounted) return;
-      final provider = data.providers.firstWhere(
-        (p) => p.id == widget.providerId,
-        orElse: () => throw Exception('Provider not found'),
-      );
-      setState(() {
-        _provider = provider;
-      });
+      final provider = _findProvider(data.providers, widget.providerId);
+      if (provider != null) {
+        setState(() {
+          _provider = provider;
+        });
+      }
     });
+  }
+
+  BillProvider? _findProvider(List<BillProvider> providers, String providerId) {
+    for (final provider in providers) {
+      if (provider.id == providerId) {
+        return provider;
+      }
+    }
+    return null;
   }
 
   @override
@@ -84,8 +92,16 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
     final validationState = ref.watch(accountValidationProvider);
     final formState = ref.watch(billPaymentFormProvider);
     final walletAsync = ref.watch(walletBalanceProvider);
+    final selectedProvider = ref.watch(selectedBillProviderProvider);
+    final providersAsync = ref.watch(
+      billProvidersProvider(const BillProvidersParams()),
+    );
+    final provider =
+        _provider ??
+        (selectedProvider?.id == widget.providerId ? selectedProvider : null) ??
+        _findProvider(providersAsync.value?.providers ?? [], widget.providerId);
 
-    if (_provider == null) {
+    if (provider == null) {
       return Scaffold(
         backgroundColor: colors.canvas,
         appBar: AppBar(
@@ -96,11 +112,21 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
             onPressed: () => context.fsmPop(),
           ),
         ),
-        body: Center(child: CircularProgressIndicator(color: colors.gold)),
+        body: Center(
+          child: providersAsync.isLoading
+              ? CircularProgressIndicator(color: colors.gold)
+              : Padding(
+                  padding: const EdgeInsets.all(AppSpacing.xxl),
+                  child: AppText(
+                    l10n.error_notFound,
+                    variant: AppTextVariant.bodyLarge,
+                    color: colors.textSecondary,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+        ),
       );
     }
-
-    final provider = _provider!;
 
     return Scaffold(
       backgroundColor: colors.canvas,

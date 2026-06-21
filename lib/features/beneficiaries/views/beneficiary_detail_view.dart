@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,22 +16,68 @@ import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 /// Beneficiary Detail View
 ///
 /// Shows detailed information about a beneficiary
-class BeneficiaryDetailView extends ConsumerWidget {
+class BeneficiaryDetailView extends ConsumerStatefulWidget {
   const BeneficiaryDetailView({super.key, required this.beneficiaryId});
 
   final String beneficiaryId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BeneficiaryDetailView> createState() =>
+      _BeneficiaryDetailViewState();
+}
+
+class _BeneficiaryDetailViewState extends ConsumerState<BeneficiaryDetailView> {
+  bool _requestedBeneficiariesLoad = false;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
     final appColors = context.appColors;
     final state = ref.watch(beneficiariesProvider);
 
-    final beneficiary = state.beneficiaries.firstWhere(
-      (b) => b.id == beneficiaryId,
-      orElse: () => throw Exception('Beneficiary not found'),
+    if (!_requestedBeneficiariesLoad &&
+        !state.isLoading &&
+        state.error == null &&
+        state.beneficiaries.isEmpty) {
+      _requestedBeneficiariesLoad = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        unawaited(
+          ref.read(beneficiariesProvider.notifier).loadBeneficiaries(),
+        );
+      });
+    }
+
+    final beneficiary = _findBeneficiary(
+      state.beneficiaries,
+      widget.beneficiaryId,
     );
+
+    if (state.isLoading && beneficiary == null) {
+      return Scaffold(
+        backgroundColor: colors.canvas,
+        appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (beneficiary == null) {
+      return Scaffold(
+        backgroundColor: colors.canvas,
+        appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xxl),
+            child: AppText(
+              l10n.error_beneficiaryNotFound,
+              variant: AppTextVariant.bodyLarge,
+              color: colors.textSecondary,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -46,9 +94,11 @@ class BeneficiaryDetailView extends ConsumerWidget {
                   : colors.textSecondary,
             ),
             onPressed: () {
-              ref
-                  .read(beneficiariesProvider.notifier)
-                  .toggleFavorite(beneficiaryId);
+              unawaited(
+                ref
+                    .read(beneficiariesProvider.notifier)
+                    .toggleFavorite(widget.beneficiaryId),
+              );
             },
           ),
           PopupMenuButton<String>(
@@ -104,7 +154,7 @@ class BeneficiaryDetailView extends ConsumerWidget {
                 label: l10n.send_title,
                 onPressed: () {
                   context.fsmPop(beneficiary);
-                  context.fsmPush('/send');
+                  unawaited(context.fsmPush('/send'));
                 },
                 icon: Icons.send,
               ),
@@ -113,6 +163,18 @@ class BeneficiaryDetailView extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Beneficiary? _findBeneficiary(
+    List<Beneficiary> beneficiaries,
+    String beneficiaryId,
+  ) {
+    for (final beneficiary in beneficiaries) {
+      if (beneficiary.id == beneficiaryId) {
+        return beneficiary;
+      }
+    }
+    return null;
   }
 
   Widget _buildProfileSection(
@@ -355,7 +417,7 @@ class BeneficiaryDetailView extends ConsumerWidget {
                 IconButton(
                   icon: Icon(Icons.copy, size: 20, color: colors.textSecondary),
                   onPressed: () {
-                    Clipboard.setData(ClipboardData(text: value));
+                    unawaited(Clipboard.setData(ClipboardData(text: value)));
                   },
                 ),
             ],
@@ -442,9 +504,13 @@ class BeneficiaryDetailView extends ConsumerWidget {
   ) async {
     switch (action) {
       case 'edit':
-        context.fsmPush('/beneficiaries/edit/${beneficiary.id}').then((_) {
-          ref.read(beneficiariesProvider.notifier).loadBeneficiaries();
-        });
+        unawaited(
+          context.fsmPush('/beneficiaries/edit/${beneficiary.id}').then((_) {
+            unawaited(
+              ref.read(beneficiariesProvider.notifier).loadBeneficiaries(),
+            );
+          }),
+        );
         break;
 
       case 'delete':

@@ -1,6 +1,8 @@
 /// Bank Transfer View (Deposit/Withdraw)
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
@@ -9,6 +11,7 @@ import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/design/components/primitives/app_input.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/bank_linking/models/linked_bank_account.dart';
 import 'package:usdc_wallet/features/bank_linking/providers/bank_linking_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
@@ -33,6 +36,7 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   bool _isLoading = false;
+  bool _requestedLinkedAccountsLoad = false;
 
   bool get isDeposit => widget.type == 'deposit';
 
@@ -46,10 +50,52 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(bankLinkingProvider);
-    final account = state.linkedAccounts.firstWhere(
-      (a) => a.id == widget.accountId,
-      orElse: () => state.linkedAccounts.first,
-    );
+    if (!_requestedLinkedAccountsLoad &&
+        !state.isLoading &&
+        state.error == null &&
+        state.linkedAccounts.isEmpty) {
+      _requestedLinkedAccountsLoad = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        unawaited(
+          ref.read(bankLinkingProvider.notifier).loadLinkedAccounts(),
+        );
+      });
+    }
+
+    final account = _findAccount(state.linkedAccounts, widget.accountId);
+
+    if (account == null) {
+      return Scaffold(
+        backgroundColor: context.colors.canvas,
+        appBar: AppBar(
+          title: AppText(
+            isDeposit
+                ? l10n.bankLinking_depositFromBank
+                : l10n.bankLinking_withdrawToBank,
+            style: AppTypography.headlineSmall,
+          ),
+          backgroundColor: Colors.transparent,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.fsmPop(),
+          ),
+        ),
+        body: Center(
+          child: state.isLoading
+              ? const CircularProgressIndicator()
+              : Padding(
+                  padding: const EdgeInsets.all(AppSpacing.xxl),
+                  child: AppText(
+                    l10n.bankLinking_noLinkedAccounts,
+                    style: AppTypography.bodyLarge.copyWith(
+                      color: context.colors.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: context.colors.canvas,
@@ -125,7 +171,19 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
     );
   }
 
-  Widget _buildAccountCard(account, AppLocalizations l10n) {
+  LinkedBankAccount? _findAccount(
+    List<LinkedBankAccount> accounts,
+    String accountId,
+  ) {
+    for (final account in accounts) {
+      if (account.id == accountId) {
+        return account;
+      }
+    }
+    return null;
+  }
+
+  Widget _buildAccountCard(LinkedBankAccount account, AppLocalizations l10n) {
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
@@ -143,7 +201,6 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
             ),
             child: Center(
               child: AppText(
-                // ignore: avoid_dynamic_calls
                 account.bankName.substring(0, 1),
                 style: AppTypography.headlineSmall.copyWith(
                   color: context.colors.gold,
@@ -157,7 +214,6 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppText(
-                  // ignore: avoid_dynamic_calls
                   account.bankName,
                   style: AppTypography.bodyLarge.copyWith(
                     fontWeight: FontWeight.w600,
@@ -165,17 +221,14 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
                 ),
                 SizedBox(height: 2),
                 AppText(
-                  // ignore: avoid_dynamic_calls
                   account.accountNumberMasked,
                   style: AppTypography.bodyMedium.copyWith(
                     color: context.colors.textSecondary,
                   ),
                 ),
-                // ignore: avoid_dynamic_calls
                 if (account.availableBalance != null) ...[
                   SizedBox(height: 4),
                   AppText(
-                    // ignore: avoid_dynamic_calls
                     '${l10n.bankLinking_balance}: ${_formatAmount(account.availableBalance!)} ${account.currency}',
                     style: AppTypography.bodySmall.copyWith(
                       color: context.colors.gold,

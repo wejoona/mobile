@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/domain/entities/savings_pot.dart';
 import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
 import 'package:usdc_wallet/features/savings_pots/widgets/emoji_picker.dart';
 import 'package:usdc_wallet/features/savings_pots/widgets/color_picker.dart';
@@ -25,21 +26,7 @@ class _EditPotViewState extends ConsumerState<EditPotView> {
 
   String? _selectedEmoji;
   Color? _selectedColor;
-
-  @override
-  void initState() {
-    super.initState();
-    // Pre-fill with current pot data
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final state = ref.read(savingsPotsStateProvider);
-      final pot = state.pots.firstWhere((p) => p.id == widget.potId);
-
-      _nameController.text = pot.name;
-      _selectedEmoji = pot.emoji;
-      _selectedColor = pot.color;
-      _targetController.text = pot.targetAmount.toStringAsFixed(2);
-    });
-  }
+  bool _prefilled = false;
 
   @override
   void dispose() {
@@ -53,6 +40,47 @@ class _EditPotViewState extends ConsumerState<EditPotView> {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(savingsPotsStateProvider);
     final colors = context.colors;
+    final pot = _findPot(state.pots, widget.potId);
+
+    if (state.isLoading && pot == null) {
+      return Scaffold(
+        backgroundColor: colors.canvas,
+        appBar: AppBar(
+          title: AppText(
+            l10n.savingsPots_editTitle,
+            variant: AppTextVariant.headlineSmall,
+          ),
+          backgroundColor: Colors.transparent,
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (pot == null) {
+      return Scaffold(
+        backgroundColor: colors.canvas,
+        appBar: AppBar(
+          title: AppText(
+            l10n.savingsPots_editTitle,
+            variant: AppTextVariant.headlineSmall,
+          ),
+          backgroundColor: Colors.transparent,
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xxl),
+            child: AppText(
+              l10n.savingsPots_error('Pot not found'),
+              variant: AppTextVariant.bodyLarge,
+              color: colors.textSecondary,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
+
+    _prefillOnce(pot);
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -126,6 +154,27 @@ class _EditPotViewState extends ConsumerState<EditPotView> {
         ),
       ),
     );
+  }
+
+  SavingsPot? _findPot(List<SavingsPot> pots, String potId) {
+    for (final pot in pots) {
+      if (pot.id == potId) {
+        return pot;
+      }
+    }
+    return null;
+  }
+
+  void _prefillOnce(SavingsPot pot) {
+    if (_prefilled) {
+      return;
+    }
+
+    _prefilled = true;
+    _nameController.text = pot.name;
+    _selectedEmoji = pot.emoji;
+    _selectedColor = pot.color;
+    _targetController.text = pot.targetAmount.toStringAsFixed(2);
   }
 
   Future<void> _handleUpdate() async {

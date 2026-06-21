@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
@@ -30,6 +32,7 @@ class _AddBeneficiaryScreenState extends ConsumerState<AddBeneficiaryScreen> {
   String? _selectedMobileMoneyProvider;
   bool _isLoading = false;
   Beneficiary? _existingBeneficiary;
+  bool _requestedBeneficiariesLoad = false;
 
   @override
   void initState() {
@@ -40,8 +43,9 @@ class _AddBeneficiaryScreenState extends ConsumerState<AddBeneficiaryScreen> {
   void _loadBeneficiary() {
     if (widget.beneficiaryId != null) {
       final state = ref.read(beneficiariesProvider);
-      _existingBeneficiary = state.beneficiaries.firstWhere(
-        (b) => b.id == widget.beneficiaryId,
+      _existingBeneficiary = _findBeneficiary(
+        state.beneficiaries,
+        widget.beneficiaryId!,
       );
 
       if (_existingBeneficiary != null) {
@@ -70,6 +74,18 @@ class _AddBeneficiaryScreenState extends ConsumerState<AddBeneficiaryScreen> {
     }
   }
 
+  Beneficiary? _findBeneficiary(
+    List<Beneficiary> beneficiaries,
+    String beneficiaryId,
+  ) {
+    for (final beneficiary in beneficiaries) {
+      if (beneficiary.id == beneficiaryId) {
+        return beneficiary;
+      }
+    }
+    return null;
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -85,6 +101,68 @@ class _AddBeneficiaryScreenState extends ConsumerState<AddBeneficiaryScreen> {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
     final isEdit = widget.beneficiaryId != null;
+    final state = ref.watch(beneficiariesProvider);
+
+    if (isEdit && _existingBeneficiary == null) {
+      if (!_requestedBeneficiariesLoad &&
+          !state.isLoading &&
+          state.error == null &&
+          state.beneficiaries.isEmpty) {
+        _requestedBeneficiariesLoad = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          unawaited(
+            ref.read(beneficiariesProvider.notifier).loadBeneficiaries(),
+          );
+        });
+      }
+
+      final loadedBeneficiary = _findBeneficiary(
+        state.beneficiaries,
+        widget.beneficiaryId!,
+      );
+      if (loadedBeneficiary != null) {
+        _existingBeneficiary = loadedBeneficiary;
+        _nameController.text = loadedBeneficiary.name;
+        _phoneController.text = loadedBeneficiary.phoneE164 ?? '';
+        _selectedAccountType = loadedBeneficiary.accountType;
+      } else if (state.isLoading) {
+        return Scaffold(
+          backgroundColor: colors.canvas,
+          appBar: AppBar(
+            title: AppText(
+              l10n.beneficiaries_editTitle,
+              variant: AppTextVariant.headlineSmall,
+            ),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+          ),
+          body: const Center(child: CircularProgressIndicator()),
+        );
+      } else {
+        return Scaffold(
+          backgroundColor: colors.canvas,
+          appBar: AppBar(
+            title: AppText(
+              l10n.beneficiaries_editTitle,
+              variant: AppTextVariant.headlineSmall,
+            ),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+          ),
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.xxl),
+              child: AppText(
+                l10n.error_beneficiaryNotFound,
+                variant: AppTextVariant.bodyLarge,
+                color: colors.textSecondary,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        );
+      }
+    }
 
     return Scaffold(
       backgroundColor: colors.canvas,
