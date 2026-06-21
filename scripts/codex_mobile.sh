@@ -224,7 +224,7 @@ run_live_e2e() {
 has_e2e_test_arg() {
   for arg in "$@"; do
     case "${arg}" in
-      test/e2e/*|*/test/e2e/*)
+      test/e2e|./test/e2e|*/test/e2e|test/e2e/*|*/test/e2e/*)
         return 0
         ;;
     esac

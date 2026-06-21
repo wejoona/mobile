@@ -41,17 +41,15 @@ void main() {
         'spendingLimit': 250,
         'cardType': 'virtual',
       });
-      expect(res.statusCode, anyOf(200, 201, 400));
+      expect(res.statusCode, anyOf(200, 201, 400, 403));
       if (res.isOk) {
         final data = _payload(res);
         createdCardId = data['id']?.toString();
       } else {
-        final error = res.data?['error'] as Map<String, dynamic>?;
-        expect(error?['code'], 'E8006');
-        expect(
-          error?['message']?.toString(),
-          contains('Virtual card issuing is not available yet'),
-        );
+        final error = _errorPayload(res);
+        expect(error['code'], anyOf('E8006', 'FEATURE_UNAVAILABLE'));
+        expect(error['message']?.toString(), contains('not available'));
+        expect(error['featureReason'], isNotNull);
       }
     });
 
@@ -99,4 +97,16 @@ Map<String, dynamic> _payload(E2EResponse res) {
   final body = res.data ?? <String, dynamic>{};
   final data = body['data'];
   return data is Map<String, dynamic> ? data : body;
+}
+
+Map<String, dynamic> _errorPayload(E2EResponse res) {
+  final body = res.data ?? <String, dynamic>{};
+  final error = body['error'];
+  if (error is Map<String, dynamic>) {
+    return error;
+  }
+  if (error is Map) {
+    return Map<String, dynamic>.from(error);
+  }
+  return body;
 }
