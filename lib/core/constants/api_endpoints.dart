@@ -38,8 +38,6 @@ abstract final class ApiEndpoints {
   static const walletExchangeRate = '/wallet/exchange-rate';
   static const walletCreate = '/wallet/create';
   static const walletReceive = '/wallet/receive';
-  static const walletKycStatus = '/wallet/kyc/status';
-  static const walletKycSubmit = '/wallet/kyc/submit';
   static const walletTransactionStats = '/wallet/transactions/stats';
   static String walletTransactionById(String id) => '/wallet/transactions/$id';
   static String walletDepositTransactionStatus(String depositId) =>

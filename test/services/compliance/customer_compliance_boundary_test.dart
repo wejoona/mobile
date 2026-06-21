@@ -30,7 +30,7 @@ void main() {
         isEmpty,
         reason:
             'Customer UI/navigation must not call admin/compliance-officer routes. '
-            'Use user-facing APIs such as /user/limits, /wallet/kyc/status, '
+            'Use user-facing APIs such as /user/limits, /kyc/status, '
             'or a dedicated mobile-safe endpoint instead.',
       );
     });
@@ -64,7 +64,7 @@ void main() {
         reason:
             'Compliance, reporting, sanctions, CDD/EDD, and limit decisions '
             'are backend-owned. Mobile should call explicit customer-safe '
-            'endpoints such as /user/limits and /wallet/kyc/status only.',
+            'endpoints such as /user/limits and /kyc/status only.',
       );
     });
   });

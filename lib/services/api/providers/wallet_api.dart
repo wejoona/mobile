@@ -130,12 +130,12 @@ class WalletApi {
 
   // ── KYC ──
 
-  /// GET /wallet/kyc/status
-  Future<Response> getKycStatus() => _dio.get(ApiEndpoints.walletKycStatus);
+  /// GET /kyc/status
+  Future<Response> getKycStatus() => _dio.get(ApiEndpoints.kycStatus);
 
-  /// POST /wallet/kyc/submit
+  /// POST /kyc/submit
   Future<Response> submitKyc(Map<String, dynamic> data) =>
-      _dio.post(ApiEndpoints.walletKycSubmit, data: data);
+      _dio.post(ApiEndpoints.kycSubmit, data: data);
 
   // ── Limits ──
 

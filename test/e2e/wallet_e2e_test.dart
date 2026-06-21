@@ -94,8 +94,8 @@ void main() {
       expect(data['timestamp'], isA<String>());
     });
 
-    test('GET /wallet/kyc/status — returns KYC status', () async {
-      final res = await client.get('/wallet/kyc/status');
+    test('GET /kyc/status — returns KYC status', () async {
+      final res = await client.get('/kyc/status');
       res.expectOk();
     });
 
