@@ -430,9 +430,10 @@ Future<void> _capture(
     'KORIDO_SCREENSHOT_MARKERS',
   );
   if (useHostScreenshotMarkers) {
+    await tester.pump(const Duration(milliseconds: 1200));
     // ignore: avoid_print
     print('KORIDO_SCREENSHOT_MARKER::$name');
-    await tester.pump(const Duration(milliseconds: 1200));
+    await tester.pump(const Duration(milliseconds: 100));
     return;
   }
   await binding.takeScreenshot(name);

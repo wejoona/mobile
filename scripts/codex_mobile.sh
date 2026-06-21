@@ -118,7 +118,7 @@ Usage:
   ./scripts/codex_mobile.sh live-login
   ./scripts/codex_mobile.sh live-visual
   ./scripts/codex_mobile.sh live-visual-capture
-  ./scripts/codex_mobile.sh ceo-screen-catalog
+  ./scripts/codex_mobile.sh ceo-screen-catalog [--from-existing [source output]]
   ./scripts/codex_mobile.sh live-secondary
   ./scripts/codex_mobile.sh live-e2e-wallet
   ./scripts/codex_mobile.sh live-e2e-auth
@@ -301,7 +301,14 @@ case "${command}" in
     node scripts/capture_live_visual_sweep.mjs "$@"
     ;;
   ceo-screen-catalog)
-    node scripts/create_ceo_screen_catalog.mjs "$@"
+    if [ "${1:-}" = "--from-existing" ]; then
+      shift
+      node scripts/create_ceo_screen_catalog.mjs "$@"
+    else
+      grant_simulator_test_permissions
+      node scripts/capture_live_visual_sweep.mjs
+      node scripts/create_ceo_screen_catalog.mjs
+    fi
     ;;
   live-secondary)
     run_flutter_for_sim test integration_test/flows/live_api_secondary_surfaces_flow_test.dart "$@"

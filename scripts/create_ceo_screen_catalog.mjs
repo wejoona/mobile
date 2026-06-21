@@ -12,6 +12,25 @@ const outputDir = path.resolve(
   projectRoot,
   process.argv[3] ?? 'artifacts/ceo-screen-catalog-latest',
 );
+const canonicalLiveSourceDir = path.resolve(
+  projectRoot,
+  'build/screenshots/korido_live_visual_sweep',
+);
+
+if (
+  sourceDir !== canonicalLiveSourceDir &&
+  process.env.KORIDO_ALLOW_EXTERNAL_SCREEN_SOURCE !== 'true'
+) {
+  console.error(
+    [
+      `Refusing non-live screenshot source: ${sourceDir}`,
+      `Expected live simulator source: ${canonicalLiveSourceDir}`,
+      'Run `./scripts/codex_mobile.sh ceo-screen-catalog` to capture real app screens first.',
+      'Set KORIDO_ALLOW_EXTERNAL_SCREEN_SOURCE=true only for an audited real screenshot directory.',
+    ].join('\n'),
+  );
+  process.exit(65);
+}
 
 function walk(dir) {
   if (!fs.existsSync(dir)) return [];
@@ -189,6 +208,7 @@ const html = [
   '<header>',
   '<h1>Korido Screen Catalog</h1>',
   `<p>${copied.length} live app screenshots captured from simulator/API visual sweep.</p>`,
+  `<p class="meta">Source: ${sourceDir}</p>`,
   '</header>',
   `<main class="grid">${cards}</main>`,
   '</body>',
@@ -202,6 +222,7 @@ fs.writeFileSync(
     'Korido Screen Catalog',
     `Source: ${sourceDir}`,
     `Screens: ${copied.length}`,
+    'Capture type: live simulator framebuffer screenshots',
     'Open index.html to browse the real app screenshots.',
     '',
   ].join('\n'),
