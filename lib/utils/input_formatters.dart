@@ -89,7 +89,7 @@ class LocalPhoneInputFormatter extends TextInputFormatter {
   }
 
   String _localDigits(String value) {
-    return localPhoneInputDigits(
+    return editableLocalPhoneInputDigits(
       dialCode: dialCode,
       phoneNumber: value,
       maxLocalDigits: maxLocalDigits,

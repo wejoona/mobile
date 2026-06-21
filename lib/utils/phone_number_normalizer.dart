@@ -162,6 +162,36 @@ String localPhoneInputDigits({
   return localDigits.substring(0, maxLocalDigits);
 }
 
+/// Digit extraction for fields where the country code is displayed outside
+/// the editable value. Partial local input must stay untouched while typing;
+/// canonical phone normalization belongs at submit/API boundaries.
+String editableLocalPhoneInputDigits({
+  required String dialCode,
+  required String phoneNumber,
+  int? maxLocalDigits,
+}) {
+  final raw = phoneNumber.trim();
+  final digits = digitsOnly(raw);
+  final dialDigits = digitsOnly(dialCode);
+  final looksInternational =
+      raw.contains('|') ||
+      raw.startsWith('+') ||
+      digits.startsWith('00') ||
+      (maxLocalDigits != null &&
+          dialDigits.isNotEmpty &&
+          digits.startsWith(dialDigits) &&
+          digits.length > maxLocalDigits);
+
+  final localDigits = looksInternational
+      ? localPhoneDigits(dialCode: dialCode, phoneNumber: raw)
+      : digits;
+
+  if (maxLocalDigits == null || localDigits.length <= maxLocalDigits) {
+    return localDigits;
+  }
+  return localDigits.substring(0, maxLocalDigits);
+}
+
 String normalizePhoneE164({
   required String dialCode,
   required String localNumber,

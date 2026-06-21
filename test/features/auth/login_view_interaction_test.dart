@@ -21,12 +21,12 @@ void main() {
 
     expect(find.text('By continuing, you agree to our'), findsNothing);
 
-    final phoneFieldFinder = find.byType(TextField).first;
+    final phoneFieldFinder = find.byKey(const ValueKey('login_phone_field'));
     final phoneField = tester.widget<TextField>(phoneFieldFinder);
 
     expect(phoneField.focusNode?.hasFocus, isFalse);
 
-    await tester.tap(find.text('+225'));
+    await tester.tap(phoneFieldFinder);
     await tester.pump();
 
     expect(phoneField.focusNode?.hasFocus, isTrue);
@@ -107,7 +107,8 @@ void main() {
     ).readAsStringSync();
 
     expect(source, contains('loginProvider'));
-    expect(source, contains("context.fsmGo('/login/otp')"));
+    expect(source, contains("'/login/otp'"));
+    expect(source, contains('context.fsmGo(otpRoute)'));
     expect(
       source,
       isNot(contains("context.fsmGo('/otp')")),
@@ -150,7 +151,8 @@ void main() {
     expect(source, contains("en: 'Code accepted. Securing your session...'"));
     expect(source, contains('_holdOtpCue(submittedAt)'));
     expect(source, contains('Duration(milliseconds: 1600)'));
-    expect(source, contains("context.fsmGo('/login/pin')"));
+    expect(source, contains("'/login/pin'"));
+    expect(source, contains('context.fsmGo(pinRoute)'));
   });
 }
 

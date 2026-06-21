@@ -535,24 +535,24 @@ class _LoginViewState extends ConsumerState<LoginView>
           color: colors.textSecondary,
         ),
         const SizedBox(height: AppSpacing.sm),
-        GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () => _phoneFocusNode.requestFocus(),
-          child: Container(
-            decoration: BoxDecoration(
-              color: colors.elevated,
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-              border: Border.all(
-                color: hasText && !isValid
-                    ? colors.error.withValues(alpha: 0.5)
-                    : isValid && hasText
-                    ? colors.success.withValues(alpha: 0.5)
-                    : colors.borderSubtle,
-              ),
+        Container(
+          decoration: BoxDecoration(
+            color: colors.elevated,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            border: Border.all(
+              color: hasText && !isValid
+                  ? colors.error.withValues(alpha: 0.5)
+                  : isValid && hasText
+                  ? colors.success.withValues(alpha: 0.5)
+                  : colors.borderSubtle,
             ),
-            child: Row(
-              children: [
-                Container(
+          ),
+          child: Row(
+            children: [
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => _phoneFocusNode.requestFocus(),
+                child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.lg,
                     vertical: AppSpacing.lg + 2,
@@ -568,52 +568,58 @@ class _LoginViewState extends ConsumerState<LoginView>
                     color: colors.textSecondary,
                   ),
                 ),
-                Expanded(
-                  child: TextField(
-                    controller: _phoneController,
-                    focusNode: _phoneFocusNode,
-                    keyboardType: TextInputType.phone,
-                    style: AppTypography.bodyLarge.copyWith(
-                      color: colors.textPrimary,
+              ),
+              Expanded(
+                child: TextField(
+                  key: const ValueKey('login_phone_field'),
+                  controller: _phoneController,
+                  focusNode: _phoneFocusNode,
+                  keyboardType: TextInputType.phone,
+                  textInputAction: TextInputAction.done,
+                  autofillHints: const [AutofillHints.telephoneNumberNational],
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  style: AppTypography.bodyLarge.copyWith(
+                    color: colors.textPrimary,
+                    letterSpacing: 1.2,
+                  ),
+                  cursorColor: colors.gold,
+                  decoration: InputDecoration(
+                    hintText: _getFormattedHint(),
+                    hintStyle: AppTypography.bodyLarge.copyWith(
+                      color: colors.textTertiary,
                       letterSpacing: 1.2,
                     ),
-                    cursorColor: colors.gold,
-                    decoration: InputDecoration(
-                      hintText: _getFormattedHint(),
-                      hintStyle: AppTypography.bodyLarge.copyWith(
-                        color: colors.textTertiary,
-                        letterSpacing: 1.2,
-                      ),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.lg,
-                        vertical: AppSpacing.lg,
-                      ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.lg,
                     ),
-                    inputFormatters: [
-                      LocalPhoneInputFormatter(
-                        dialCode: _selectedCountry.fullPrefix,
-                        maxLocalDigits: _selectedCountry.phoneLength,
-                      ),
-                    ],
-                    onTapOutside: (_) => _phoneFocusNode.unfocus(),
-                    onChanged: (_) {
-                      _syncPhoneControllerToLocal();
-                      setState(() {});
-                    },
+                  ),
+                  inputFormatters: [
+                    LocalPhoneInputFormatter(
+                      dialCode: _selectedCountry.fullPrefix,
+                      maxLocalDigits: _selectedCountry.phoneLength,
+                    ),
+                  ],
+                  onTap: () => _phoneFocusNode.requestFocus(),
+                  onTapOutside: (_) => _phoneFocusNode.unfocus(),
+                  onChanged: (_) {
+                    _syncPhoneControllerToLocal();
+                    setState(() {});
+                  },
+                ),
+              ),
+              if (hasText)
+                Padding(
+                  padding: const EdgeInsets.only(right: AppSpacing.md),
+                  child: Icon(
+                    isValid ? Icons.check_circle : Icons.error_outline,
+                    color: isValid ? colors.success : colors.error,
+                    size: 20,
                   ),
                 ),
-                if (hasText)
-                  Padding(
-                    padding: const EdgeInsets.only(right: AppSpacing.md),
-                    child: Icon(
-                      isValid ? Icons.check_circle : Icons.error_outline,
-                      color: isValid ? colors.success : colors.error,
-                      size: 20,
-                    ),
-                  ),
-              ],
-            ),
+            ],
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
