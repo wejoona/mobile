@@ -1171,6 +1171,24 @@ void main() {
           'manual-review staging failures must be honest and retryable, not a false queued state',
     );
     expect(
+      resetSource,
+      contains("_apiErrorString(apiError.data, 'cooldownReason')"),
+      reason:
+          'PIN recovery cooldown copy must use the backend cooldownReason instead of treating every 429 as a reusable OTP',
+    );
+    expect(
+      resetSource,
+      contains('Too many verification requests.'),
+      reason:
+          'route throttles must not tell the user that a verification code was already sent',
+    );
+    expect(
+      resetSource,
+      contains('Verification provider cooldown is active.'),
+      reason:
+          'provider throttles should be explained as provider cooldowns, not generic form errors',
+    );
+    expect(
       handleLivenessBody,
       contains('_transitionTo(_PinRecoveryStep.confirmPin)'),
       reason:

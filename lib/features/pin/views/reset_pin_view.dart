@@ -63,6 +63,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   String? _errorMessage;
   String? _otpNoticeMessage;
   int _otpResendCountdown = 0;
+  String? _otpCooldownReason;
   Timer? _otpResendTimer;
   bool _isLoading = false;
   StepUpDecision? _riskDecision;
@@ -671,7 +672,11 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     if (_isOtpResendCoolingDown) {
       setState(() {
         _errorMessage = null;
-        _otpNoticeMessage = _cooldownMessage(l10n, _otpResendCountdown);
+        _otpNoticeMessage = _cooldownMessage(
+          l10n,
+          _otpResendCountdown,
+          reason: _otpCooldownReason,
+        );
       });
       return;
     }
@@ -722,7 +727,10 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
             countryCode: phone.apiCountryCode,
           );
 
-      _startOtpResendCooldown(response.resendAvailableIn);
+      _startOtpResendCooldown(
+        response.resendAvailableIn,
+        reason: response.reused ? 'otp_reused' : 'otp_sent',
+      );
 
       if (mounted) {
         setState(() {
@@ -733,6 +741,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
                   response.resendAvailableIn > 0
                       ? response.resendAvailableIn
                       : _otpResendCountdown,
+                  reason: 'otp_reused',
                 )
               : null;
           _transitionTo(_PinRecoveryStep.enterOtp);
@@ -742,15 +751,20 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       final apiError = ApiException.fromDioError(e);
       final retryAfterSeconds =
           apiError.resendAvailableIn ?? apiError.retryAfterSeconds;
+      final cooldownReason = _apiErrorString(apiError.data, 'cooldownReason');
       if (retryAfterSeconds != null) {
-        _startOtpResendCooldown(retryAfterSeconds);
+        _startOtpResendCooldown(retryAfterSeconds, reason: cooldownReason);
       }
       if (mounted) {
         setState(() {
           _isLoading = false;
           if (retryAfterSeconds != null) {
             _errorMessage = null;
-            _otpNoticeMessage = _cooldownMessage(l10n, retryAfterSeconds);
+            _otpNoticeMessage = _cooldownMessage(
+              l10n,
+              retryAfterSeconds,
+              reason: cooldownReason,
+            );
           } else {
             _otpNoticeMessage = null;
             _errorMessage = apiError.message;
@@ -768,7 +782,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     }
   }
 
-  void _startOtpResendCooldown(int seconds) {
+  void _startOtpResendCooldown(int seconds, {String? reason}) {
     _otpResendTimer?.cancel();
     final normalizedSeconds = seconds <= 0
         ? 0
@@ -780,7 +794,10 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       return;
     }
 
-    setState(() => _otpResendCountdown = normalizedSeconds);
+    setState(() {
+      _otpResendCountdown = normalizedSeconds;
+      _otpCooldownReason = normalizedSeconds > 0 ? reason : null;
+    });
     if (normalizedSeconds == 0) {
       return;
     }
@@ -795,6 +812,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         timer.cancel();
         setState(() {
           _otpResendCountdown = 0;
+          _otpCooldownReason = null;
           _otpNoticeMessage = null;
         });
         return;
@@ -804,9 +822,48 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     });
   }
 
-  String _cooldownMessage(AppLocalizations l10n, int seconds) {
+  String _cooldownMessage(
+    AppLocalizations l10n,
+    int seconds, {
+    String? reason,
+  }) {
     final waitSeconds = seconds > 0 ? seconds : _otpResendCountdown;
-    return 'Use the verification code already sent. ${l10n.login_resendIn(waitSeconds)}.';
+    final wait = l10n.login_resendIn(waitSeconds);
+    switch (reason) {
+      case 'route_throttle':
+      case 'otp_request_limit':
+      case 'verification_rate_limited':
+        return 'Too many verification requests. $wait.';
+      case 'verification_attempts_rate_limited':
+        return 'Too many code attempts. $wait.';
+      case 'provider_rate_limit':
+        return 'Verification provider cooldown is active. $wait.';
+      default:
+        return 'Use the verification code already sent. $wait.';
+    }
+  }
+
+  String? _apiErrorString(Object? raw, String key) {
+    if (raw is Map<String, dynamic>) {
+      final direct = raw[key];
+      if (direct != null) return direct.toString();
+      final error = raw['error'];
+      if (error is Map) {
+        final nested = error[key];
+        if (nested != null) return nested.toString();
+        final context = error['context'];
+        if (context is Map && context[key] != null) {
+          return context[key].toString();
+        }
+      }
+      final context = raw['context'];
+      if (context is Map && context[key] != null) {
+        return context[key].toString();
+      }
+    } else if (raw is Map) {
+      return _apiErrorString(Map<String, dynamic>.from(raw), key);
+    }
+    return null;
   }
 
   Future<bool> _hasRecoveryAuthorizationCandidate(
@@ -986,8 +1043,9 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       }
     } on ApiException catch (e) {
       final retryAfterSeconds = e.resendAvailableIn ?? e.retryAfterSeconds;
+      final cooldownReason = _apiErrorString(e.data, 'cooldownReason');
       if (retryAfterSeconds != null) {
-        _startOtpResendCooldown(retryAfterSeconds);
+        _startOtpResendCooldown(retryAfterSeconds, reason: cooldownReason);
       }
 
       if (mounted) {
@@ -995,7 +1053,11 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           _isLoading = false;
           if (retryAfterSeconds != null) {
             _errorMessage = null;
-            _otpNoticeMessage = _cooldownMessage(l10n, retryAfterSeconds);
+            _otpNoticeMessage = _cooldownMessage(
+              l10n,
+              retryAfterSeconds,
+              reason: cooldownReason,
+            );
           } else {
             _otpNoticeMessage = null;
             _errorMessage =
