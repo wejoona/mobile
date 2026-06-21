@@ -632,31 +632,31 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
   }) {
     if (mounted) {
       unawaited(_releaseCamera());
-      if (manualReviewReason != null && widget.onManualReviewRequired != null) {
-        widget.onManualReviewRequired?.call(
-          LivenessManualReviewRequest(
-            reason: manualReviewReason,
-            message: message,
-            title: manualReviewTitle,
-            slaLabel: manualReviewSlaLabel,
-            backendReviewId: backendReviewId,
-            backendReviewStatus: backendReviewStatus,
-          ),
+      if (manualReviewReason != null) {
+        final request = LivenessManualReviewRequest(
+          reason: manualReviewReason,
+          message: message,
+          title: manualReviewTitle,
+          slaLabel: manualReviewSlaLabel,
+          backendReviewId: backendReviewId,
+          backendReviewStatus: backendReviewStatus,
         );
+        setState(() {
+          _state = _LivenessState.manualReview;
+          _statusMessage = 'Manual review needed';
+          _errorMessage = message;
+          _manualReviewReason = manualReviewReason;
+          _manualReviewTitle = manualReviewTitle;
+          _manualReviewSlaLabel = manualReviewSlaLabel;
+        });
+        widget.onManualReviewRequired?.call(request);
         return;
       }
       _startRetryCooldown(retryAfterSeconds);
       setState(() {
-        _state = manualReviewReason == null
-            ? _LivenessState.failed
-            : _LivenessState.manualReview;
-        _statusMessage = manualReviewReason == null
-            ? 'Verification failed'
-            : 'Manual review needed';
+        _state = _LivenessState.failed;
+        _statusMessage = 'Verification failed';
         _errorMessage = message;
-        _manualReviewReason = manualReviewReason;
-        _manualReviewTitle = manualReviewTitle;
-        _manualReviewSlaLabel = manualReviewSlaLabel;
       });
     }
   }
