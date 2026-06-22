@@ -217,6 +217,17 @@ const copied = screenshots.map((filePath, index) => {
   const safeName = `${String(index + 1).padStart(3, '0')}_${name}`;
   const dest = path.join(outputDir, 'screens', safeName);
   const dimensions = pngDimensions(filePath);
+  const displayScale = dimensions?.width && dimensions.width >= 900
+    ? 3
+    : dimensions?.width && dimensions.width >= 600
+      ? 2
+      : 1;
+  const displayWidth = dimensions?.width
+    ? Math.round(dimensions.width / displayScale)
+    : 402;
+  const displayHeight = dimensions?.height
+    ? Math.round(dimensions.height / displayScale)
+    : 874;
   fs.copyFileSync(filePath, dest);
   return {
     title: titleFromName(name),
@@ -224,16 +235,30 @@ const copied = screenshots.map((filePath, index) => {
     source: path.relative(sourceDir, filePath),
     width: dimensions?.width,
     height: dimensions?.height,
+    displayWidth,
+    displayHeight,
     bytes: dimensions?.bytes,
     sha256: sha256(filePath),
   };
 });
 
-const cards = copied.map(({ title, file }) => [
+const cards = copied.map(({
+  title,
+  file,
+  source,
+  width,
+  height,
+  displayWidth,
+  displayHeight,
+}) => [
   '<article class="card">',
-  `<img src="${file}" loading="lazy" alt="${title}">`,
-  '<div>',
+  `<a class="shotLink" href="${file}" target="_blank" rel="noopener" style="--shot-width:${displayWidth}px">`,
+  `<img src="${file}" loading="lazy" alt="${title}" width="${displayWidth}" height="${displayHeight}">`,
+  '</a>',
+  '<div class="caption">',
   `<b>${title}</b>`,
+  `<span>${width}x${height} raw simulator PNG</span>`,
+  `<span>${source}</span>`,
   '</div>',
   '</article>',
 ].join('')).join('\n');
@@ -246,17 +271,24 @@ const html = [
   '<meta name="viewport" content="width=device-width,initial-scale=1">',
   '<title>Korido Screen Catalog</title>',
   '<style>',
+  ':root{color-scheme:dark;--gold:#e2c266;--ink:#08080b;--surface:#14141a}',
+  '*{box-sizing:border-box}',
   'body{margin:0;background:#08080b;color:#f7f3ea;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif}',
-  'header{position:sticky;top:0;z-index:1;background:rgba(8,8,11,.92);backdrop-filter:blur(16px);padding:24px 32px;border-bottom:1px solid rgba(226,194,102,.22)}',
-  'h1{margin:0;font-size:28px}p{margin:8px 0 0;color:#b9b2a7}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;padding:28px}',
-  '.card{background:#14141a;border:1px solid rgba(226,194,102,.28);border-radius:18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.35)}',
-  '.card img{width:100%;display:block;background:#050507}.card div{padding:14px 16px}.card b{text-transform:capitalize;font-size:14px}',
+  'header{position:sticky;top:0;z-index:1;background:rgba(8,8,11,.94);backdrop-filter:blur(16px);padding:24px 32px;border-bottom:1px solid rgba(226,194,102,.22)}',
+  'h1{margin:0;font-size:28px;letter-spacing:0}p{margin:8px 0 0;color:#b9b2a7;max-width:960px}.meta{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8f887e}',
+  '.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,430px),430px));gap:32px;align-items:start;justify-content:center;padding:32px}',
+  '.card{background:#14141a;border:1px solid rgba(226,194,102,.30);border-radius:18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.35)}',
+  '.shotLink{display:block;width:min(100%,var(--shot-width));margin:0 auto;background:#050507;text-decoration:none}',
+  '.shotLink img{width:100%;height:auto;display:block;background:#050507}',
+  '.caption{display:grid;gap:5px;padding:14px 16px 16px;border-top:1px solid rgba(226,194,102,.18)}',
+  '.caption b{text-transform:capitalize;font-size:15px}.caption span{font-size:12px;color:#a9a198;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+  '@media (max-width:520px){header{padding:20px}.grid{padding:18px;gap:24px;grid-template-columns:1fr}.card{border-radius:14px}}',
   '</style>',
   '</head>',
   '<body>',
   '<header>',
   '<h1>Korido Screen Catalog</h1>',
-  `<p>${copied.length} live app screenshots captured from simulator/API visual sweep.</p>`,
+  `<p>${copied.length} direct simulator screenshots captured from the live API visual sweep. Images are displayed at phone logical size; click any screen to inspect the raw PNG.</p>`,
   `<p class="meta">Source: ${sourceDir}</p>`,
   '</header>',
   `<main class="grid">${cards}</main>`,
