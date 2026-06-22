@@ -97,6 +97,8 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
       case ChangePinPhase.livenessCheck:
         return LivenessCheckWidget(
           onComplete: _onLivenessComplete,
+          onManualReviewRequired: _routeLivenessManualReview,
+          onManualReviewAcknowledged: _openManualReviewStepFromLiveness,
           onCancel: () =>
               setState(() => _phase = ChangePinPhase.livenessExplanation),
         );
@@ -427,6 +429,37 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
 
   void _onLivenessComplete(LivenessResult result) {
     unawaited(_handleLivenessComplete(result));
+  }
+
+  void _routeLivenessManualReview(LivenessManualReviewRequest request) {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _phase = ChangePinPhase.manualReview;
+      _isLoading = false;
+      _manualReviewMessage = _manualReviewCopyForLiveness(request);
+    });
+  }
+
+  void _openManualReviewStepFromLiveness() {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _phase = ChangePinPhase.manualReview;
+      _isLoading = false;
+      _manualReviewMessage ??=
+          'Automated liveness could not continue this PIN change. Use PIN recovery so Korido can verify you and stage a new PIN for review.';
+    });
+  }
+
+  String _manualReviewCopyForLiveness(LivenessManualReviewRequest request) {
+    final reason = request.reason.replaceAll('_', ' ');
+    final detail = request.message.trim();
+    final suffix = detail.isEmpty ? '' : '\n\n$detail';
+
+    return 'Automated liveness could not continue this PIN change. Use PIN recovery so Korido can verify you and stage a new PIN for review.\n\nReason: $reason$suffix';
   }
 
   Future<void> _handleLivenessComplete(LivenessResult result) async {
