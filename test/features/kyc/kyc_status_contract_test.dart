@@ -78,7 +78,7 @@ void main() {
         'lib/services/kyc/kyc_service.dart',
       ).readAsStringSync();
       final getStatusBody = RegExp(
-        r'Future<KycStatusResponse> getKycStatus\(\) async \{([\s\S]*?)\n  \}',
+        r'Future<KycStatusResponse> getKycStatus\(\{bool forceRefresh = false\}\) async \{([\s\S]*?)\n  \}',
       ).firstMatch(serviceSource)!.group(1)!;
 
       expect(getStatusBody, contains('apiResponsePayload(response.data)'));
@@ -87,6 +87,12 @@ void main() {
         isNot(contains('response.data as Map<String, dynamic>')),
         reason:
             'Wrapped API responses must not fall back to pending when the real status is approved.',
+      );
+      expect(
+        serviceSource,
+        contains('final data = apiResponsePayload(response.data);'),
+        reason:
+            'Document, liveness, and verification responses can also be API envelopes.',
       );
     });
 
@@ -184,6 +190,8 @@ void main() {
             'A stale submitted route should reconcile at status, not restart evidence capture.',
       );
       expect(routeSource, contains("return '/kyc/submitted';"));
+      expect(routeSource, contains('_kycSubmittedRouteFrom(state.uri)'));
+      expect(routeSource, contains("'returnTo': returnTo"));
     });
 
     test('deposit intent survives KYC wizard submission', () {

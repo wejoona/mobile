@@ -287,17 +287,13 @@ List<RouteBase> kycSettingsRoutes() => [
 ];
 
 String? _kycStartRedirect(BuildContext context, GoRouterState state) =>
-    _kycDurableStatusRedirect(context, currentPath: state.uri.path) ??
-    '/kyc/document-type';
+    _kycDurableStatusRedirect(context, state) ?? '/kyc/document-type';
 
 String? _kycWizardRedirect(BuildContext context, GoRouterState state) =>
-    _kycDurableStatusRedirect(context, currentPath: state.uri.path);
+    _kycDurableStatusRedirect(context, state);
 
 String? _kycEvidenceRedirect(BuildContext context, GoRouterState state) {
-  final durableRedirect = _kycDurableStatusRedirect(
-    context,
-    currentPath: state.uri.path,
-  );
+  final durableRedirect = _kycDurableStatusRedirect(context, state);
   if (durableRedirect != null) {
     return durableRedirect;
   }
@@ -325,10 +321,7 @@ String? _kycEvidenceRedirect(BuildContext context, GoRouterState state) {
 }
 
 String? _kycSubmittedRedirect(BuildContext context, GoRouterState state) {
-  final durableRedirect = _kycDurableStatusRedirect(
-    context,
-    currentPath: state.uri.path,
-  );
+  final durableRedirect = _kycDurableStatusRedirect(context, state);
   if (durableRedirect != null) {
     return durableRedirect;
   }
@@ -351,16 +344,16 @@ String? _kycSubmittedRedirect(BuildContext context, GoRouterState state) {
   return '/kyc';
 }
 
-String? _kycDurableStatusRedirect(
-  BuildContext context, {
-  required String currentPath,
-}) {
+String? _kycDurableStatusRedirect(BuildContext context, GoRouterState state) {
+  final currentPath = state.uri.path;
   final status = ProviderScope.containerOf(
     context,
   ).read(kycStateMachineProvider).status;
 
   if (status.isSubmitted) {
-    return currentPath == '/kyc/submitted' ? null : '/kyc/submitted';
+    return currentPath == '/kyc/submitted'
+        ? null
+        : _kycSubmittedRouteFrom(state.uri);
   }
 
   if (status.isVerified && currentPath != '/kyc') {
@@ -368,4 +361,17 @@ String? _kycDurableStatusRedirect(
   }
 
   return null;
+}
+
+String _kycSubmittedRouteFrom(Uri uri) {
+  final intent = uri.queryParameters['intent']?.trim();
+  final returnTo = uri.queryParameters['returnTo']?.trim();
+  final query = <String, String>{
+    if (intent != null && intent.isNotEmpty) 'intent': intent,
+    if (returnTo != null && returnTo.startsWith('/')) 'returnTo': returnTo,
+  };
+  return Uri(
+    path: '/kyc/submitted',
+    queryParameters: query.isEmpty ? null : query,
+  ).toString();
 }

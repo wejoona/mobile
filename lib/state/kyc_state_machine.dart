@@ -44,16 +44,20 @@ class KycStateMachine extends Notifier<KycStateMachineState> {
 
   KycService get _service => ref.read(kycServiceProvider);
 
-  /// Map API status string to FSM status string
+  /// Map API status string to FSM status string.
+  ///
+  /// Review states are deliberately explicit. Mapping submitted/manual review
+  /// to a generic pending value makes route guards treat a terminal review
+  /// state as if the wizard can continue collecting evidence.
   String _mapToFsmStatus(String apiStatus) {
-    // API returns: none, pending, documents_pending, submitted, verified, rejected
-    // FSM expects: none, pending, verified, rejected, expired, manual_review
+    // API returns: none, pending, documents_pending, submitted,
+    // pending_verification, manual_review, verified/approved, rejected.
     //
     // Mapping:
     // - "none" = never started → 'none' (should show KYC screen)
     // - "documents_pending" = needs to submit docs → 'none' (should show KYC screen)
     // - "pending" = user has status but not verified → 'none' for new signup flow
-    // - "submitted" = submitted, awaiting review → 'pending' (can proceed to wallet)
+    // - "submitted" = submitted, awaiting review → 'submitted'
     // - "verified" / "approved" / "auto_approved" = verified → 'verified'
     // - "rejected" = rejected → 'rejected'
     switch (apiStatus.toLowerCase()) {
@@ -62,8 +66,9 @@ class KycStateMachine extends Notifier<KycStateMachineState> {
       case 'pending': // New signups have "pending" status, need KYC
         return 'none';
       case 'submitted':
+      case 'pending_verification':
       case 'in_review':
-        return 'pending';
+        return 'submitted';
       case 'verified':
       case 'approved':
       case 'auto_approved':

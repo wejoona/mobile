@@ -203,9 +203,8 @@ class KycService {
     // Upload to /kyc/documents
     final response = await _dio.post('/kyc/documents', data: formData);
 
-    // Extract S3 keys from response
-    // ignore: avoid_dynamic_calls
-    final documents = response.data['documents'] as Map<String, dynamic>;
+    final data = apiResponsePayload(response.data);
+    final documents = data['documents'] as Map<String, dynamic>;
     return {
       // ignore: avoid_dynamic_calls
       'idFront': documents['idFront']['key'] as String,
@@ -351,7 +350,7 @@ class KycService {
   /// Get liveness verification status for current user
   Future<LivenessSubmitResponse?> getLivenessStatus() async {
     final response = await _dio.get('/kyc/liveness/status');
-    final data = response.data as Map<String, dynamic>;
+    final data = apiResponsePayload(response.data);
     if (data['status'] == 'NOT_STARTED') return null;
     return LivenessSubmitResponse.fromJson(data);
   }
@@ -370,17 +369,13 @@ class KycService {
         if (backImageKey != null) 'backImageKey': backImageKey,
       },
     );
-    return DocumentSubmitResponse.fromJson(
-      response.data as Map<String, dynamic>,
-    );
+    return DocumentSubmitResponse.fromJson(apiResponsePayload(response.data));
   }
 
   /// Get full KYC verification status (doc + liveness + overall)
   Future<FullVerificationStatus> getVerificationStatus() async {
     final response = await _dio.get('/kyc/verification/status');
-    return FullVerificationStatus.fromJson(
-      response.data as Map<String, dynamic>,
-    );
+    return FullVerificationStatus.fromJson(apiResponsePayload(response.data));
   }
 
   /// Upload a file and return its S3 key
@@ -419,7 +414,7 @@ class KycService {
     }
 
     final response = await _dio.post('/kyc/documents', data: formData);
-    final responseData = response.data as Map<String, dynamic>;
+    final responseData = apiResponsePayload(response.data);
     final documents = responseData['documents'] as Map<String, dynamic>;
     final fieldData = documents[documentField] as Map<String, dynamic>;
     return fieldData['key'] as String;
@@ -489,7 +484,7 @@ class KycService {
       documentField: await MultipartFile.fromFile(filePath),
     });
     final response = await _dio.post('/kyc/documents', data: formData);
-    return response.data as Map<String, dynamic>;
+    return apiResponsePayload(response.data);
   }
 
   String _documentFieldForType(String type) {
