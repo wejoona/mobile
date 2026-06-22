@@ -230,9 +230,7 @@ void main() {
         'lib/router/routes/kyc_settings_routes.dart',
       ).readAsStringSync();
 
-      expect(routeSource, contains('durableState.hasLoaded'));
       expect(routeSource, contains('_isKycReviewOrApprovalStatus'));
-      expect(routeSource, contains('flow.verificationStatus == null'));
       expect(routeSource, contains('_kycPrerequisiteRedirectForPath'));
       expect(routeSource, contains('flow.hasCompletedLiveness'));
       expect(routeSource, contains("return '/kyc/liveness-instructions';"));
@@ -242,10 +240,23 @@ void main() {
       );
       expect(
         routeSource,
-        contains("return '/kyc';"),
+        contains(
+          'String? _kycSubmittedRedirect(BuildContext _, GoRouterState __)',
+        ),
         reason:
-            'A stale submitted route should reconcile at status, not restart evidence capture.',
+            'The submitted route should render its reconciliation screen instead of redirecting into the wizard.',
       );
+      expect(
+        routeSource,
+        contains('The submitted view owns backend reconciliation'),
+      );
+      expect(
+        routeSource,
+        contains("if (currentPath == '/kyc/submitted')"),
+        reason:
+            'A verified KYC update must let /kyc/submitted preserve intent/returnTo so users can continue the deposit they started.',
+      );
+      expect(routeSource, contains('return null;'));
       expect(routeSource, contains("return '/kyc/submitted';"));
       expect(routeSource, contains('_kycSubmittedRouteFrom(state.uri)'));
       expect(routeSource, contains("'returnTo': returnTo"));

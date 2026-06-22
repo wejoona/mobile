@@ -328,33 +328,12 @@ String? _kycEvidenceRedirect(BuildContext context, GoRouterState state) {
   return null;
 }
 
-String? _kycSubmittedRedirect(BuildContext context, GoRouterState state) {
-  final durableState = ProviderScope.containerOf(
-    context,
-  ).read(kycStateMachineProvider);
-  if (durableState.hasLoaded) {
-    final durableStatus = durableState.status;
-    if (_isKycReviewOrApprovalStatus(durableStatus)) {
-      return null;
-    }
-    return durableStatus.canSubmit ? '/kyc' : null;
-  }
-
-  final flow = ProviderScope.containerOf(context).read(kycProvider);
-  final status = flow.status;
-  if (_isKycReviewOrApprovalStatus(status)) {
-    return null;
-  }
-
-  if (flow.verificationStatus == null || flow.isLoading || flow.error != null) {
-    return null;
-  }
-
-  if (status.canSubmit) {
-    return '/kyc';
-  }
-
-  return '/kyc';
+String? _kycSubmittedRedirect(BuildContext _, GoRouterState __) {
+  // The submitted view owns backend reconciliation and displays pending,
+  // manual-review, approved, rejected, or restart states. Redirecting away from
+  // this terminal route can create loops with evidence-step guards while API
+  // status and local wizard state are settling.
+  return null;
 }
 
 String? _kycPrerequisiteRedirectForPath(String path, KycFlowState flow) {
@@ -424,6 +403,9 @@ String? _kycDurableStatusRedirect(BuildContext context, GoRouterState state) {
   }
 
   if (status.isVerified && currentPath != '/kyc') {
+    if (currentPath == '/kyc/submitted') {
+      return null;
+    }
     return '/kyc';
   }
 

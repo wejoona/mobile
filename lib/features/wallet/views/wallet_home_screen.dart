@@ -1055,27 +1055,15 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         unawaited(ref.read(limitsProvider.notifier).fetchLimits());
       }
 
-      final hasError = limitsState.error?.trim().isNotEmpty ?? false;
       context.showSnack(
-        hasError
-            ? _localizedText(
-                en: 'Unable to verify account permissions. Refresh and try again.',
-                fr: 'Impossible de vérifier les permissions du compte. Actualisez puis réessayez.',
-              )
-            : _localizedText(
-                en: 'Checking account permissions. Try again when this finishes.',
-                fr: 'Vérification des permissions du compte. Réessayez à la fin.',
-              ),
+        _localizedText(
+          en: 'We will verify account permissions before completion.',
+          fr: 'Nous vérifierons les permissions du compte avant la validation.',
+        ),
         tone: AppSnackTone.info,
         duration: const Duration(seconds: 4),
-        action: hasError
-            ? SnackBarAction(
-                label: l10n.action_retry,
-                onPressed: () =>
-                    unawaited(ref.read(limitsProvider.notifier).fetchLimits()),
-              )
-            : null,
       );
+      unawaited(context.fsmPush(route));
       return;
     }
 
