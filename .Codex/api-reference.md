@@ -248,9 +248,12 @@ High-risk PIN reset, new-device, profile-photo, KYC, and money movement flows sh
 | Force logout user | POST | `/admin/users/:userId/force-logout` | Security/session action. |
 | Deactivate device | POST | `/admin/devices/:deviceId/deactivate` | Backoffice device blacklist/deactivation surface. |
 | Pending KYC | GET | `/admin/kyc/pending` | Manual review queue. |
-| Approve KYC | POST | `/admin/users/:userId/kyc/approve` | Manual override/review. |
-| Reject KYC | POST | `/admin/users/:userId/kyc/reject` | Manual override/review. |
+| KYC detail | GET | `/admin/kyc/:kycVerificationId` | Review payload, submitted evidence metadata, and signed evidence URL routes. |
+| Review KYC | POST | `/admin/kyc/:kycVerificationId/review` | Canonical manual approval/rejection. Body: `{ "approved": true, "notes": "..." }` or `{ "approved": false, "rejectionReason": "...", "notes": "..." }`. |
+| Request KYC reupload | POST | `/admin/kyc/:kycVerificationId/request-reupload` | Rejects the current evidence and asks the user for corrected documents/selfie/profile evidence. |
 | Audit logs | GET | `/admin/audit-logs` | Backoffice audit trail. |
+
+The old user-scoped KYC routes `/admin/users/:userId/kyc/approve` and `/admin/users/:userId/kyc/reject` are retired compatibility stubs that return `410`; dashboard, backoffice, mobile tools, and test agents must not call them.
 
 ## Local OTP Stack
 
