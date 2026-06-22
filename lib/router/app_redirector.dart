@@ -11,6 +11,7 @@ import 'package:usdc_wallet/services/feature_flags/feature_flags_extensions.dart
 import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/state/app_state.dart';
+import 'package:usdc_wallet/state/fsm/app_fsm.dart' as app_fsm;
 import 'package:usdc_wallet/state/fsm/index.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart' as kyc_machine;
 import 'package:usdc_wallet/state/user_state_machine.dart';
@@ -197,6 +198,14 @@ String? appRedirect(BuildContext context, GoRouterState state) {
     return '/home';
   }
 
+  final routeGuardRedirect = _routeGuardRedirect(
+    location: location,
+    appFsmState: appFsmState,
+  );
+  if (routeGuardRedirect != null) {
+    return routeGuardRedirect;
+  }
+
   if (isAuthenticated &&
       _requiresVerifiedKycPath(location) &&
       kycState.status.name != 'verified') {
@@ -204,6 +213,25 @@ String? appRedirect(BuildContext context, GoRouterState state) {
   }
 
   return _featureFlagRedirect(location, flags);
+}
+
+String? _routeGuardRedirect({
+  required String location,
+  required app_fsm.AppState appFsmState,
+}) {
+  if (!appFsmState.isAuthenticated) {
+    return null;
+  }
+
+  final guardResult = AppGuards(appFsmState).canAccessRoute(location);
+  if (guardResult is GuardDenied) {
+    _routerLogger.debug(
+      'Route contract denied: $location -> ${guardResult.redirectTo} '
+      '(${guardResult.reason})',
+    );
+    return guardResult.redirectTo;
+  }
+  return null;
 }
 
 String? _loadingWalletRedirect(String location, String fsmTargetRoute) {
