@@ -18,7 +18,7 @@ final kycProfileProvider = FutureProvider<KycProfile>((ref) async {
   final timer = Timer(const Duration(minutes: 5), () => link.close());
   ref.onDispose(() => timer.cancel());
 
-  final data = await service.getKycStatus();
+  final data = await service.getKycStatus(forceRefresh: true);
   TransactionLimits? limits;
   try {
     limits = await ref.read(limitsServiceProvider).getLimits();
@@ -194,10 +194,11 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
   }
 
   Future<void> loadVerificationStatus() async {
+    ref.invalidate(kycProfileProvider);
     state = state.copyWith(isLoading: true);
     try {
       final service = ref.read(kycServiceProvider);
-      final data = await service.getKycStatus();
+      final data = await service.getKycStatus(forceRefresh: true);
       if (!ref.mounted) return;
       final profile = KycProfile.fromJson({
         'status': data.status.name,
@@ -332,7 +333,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
   }
 
   Future<void> _refreshBackendStatusAfterSubmission(KycService service) async {
-    final data = await service.getKycStatus();
+    final data = await service.getKycStatus(forceRefresh: true);
     if (!ref.mounted) return;
 
     state = state.copyWith(

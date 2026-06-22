@@ -90,7 +90,8 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
         status.canSubmit;
     final canContinueToReturn = status.isVerified && _hasReturnTo;
 
-    if (shouldWaitForBackend || (state.isLoading && !hasAuthoritativeStatus)) {
+    if ((state.isLoading && state.verificationStatus == null) ||
+        shouldWaitForBackend) {
       return _buildStatusLoading(context, l10n);
     }
 

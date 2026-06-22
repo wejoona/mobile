@@ -16,12 +16,22 @@ class CachedResponse {
 /// Caches GET requests to reduce network calls and improve performance
 class CacheInterceptor extends Interceptor {
   static const int _maxEntries = 128;
+  static const String skipCacheExtraKey = 'skipCache';
   final Map<String, CachedResponse> _cache = {};
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     // Only cache eligible GET requests
     if (options.method != 'GET' || !_isCacheablePath(options.path)) {
+      return handler.next(options);
+    }
+
+    if (_shouldSkipCacheRead(options)) {
+      if (kDebugMode) {
+        AppLogger(
+          'Debug',
+        ).debug('[CacheInterceptor] Cache BYPASS: ${options.path}');
+      }
       return handler.next(options);
     }
 
@@ -90,7 +100,8 @@ class CacheInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     // On error, try to return stale cache if available
-    if (err.requestOptions.method == 'GET') {
+    if (err.requestOptions.method == 'GET' &&
+        !_shouldSkipCacheRead(err.requestOptions)) {
       final key = _generateKey(err.requestOptions);
       final cached = _cache[key];
 
@@ -216,6 +227,22 @@ class CacheInterceptor extends Interceptor {
   }
 
   bool _isCacheablePath(String path) => getTTL(path) > Duration.zero;
+
+  bool _shouldSkipCacheRead(RequestOptions options) {
+    if (options.extra[skipCacheExtraKey] == true) {
+      return true;
+    }
+
+    final cacheControl = options.headers['Cache-Control']?.toString();
+    return cacheControl != null &&
+        cacheControl
+            .toLowerCase()
+            .split(',')
+            .map((e) => e.trim())
+            .any(
+              (directive) => directive == 'no-cache' || directive == 'no-store',
+            );
+  }
 
   String _authorizationCacheKey(Object? authorization) {
     final token = authorization?.toString().trim();

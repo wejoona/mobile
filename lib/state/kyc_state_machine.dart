@@ -89,7 +89,7 @@ class KycStateMachine extends Notifier<KycStateMachineState> {
     state = state.copyWith(isLoading: true);
 
     try {
-      final response = await _service.getKycStatus();
+      final response = await _service.getKycStatus(forceRefresh: true);
 
       state = state.copyWith(
         status: response.status,

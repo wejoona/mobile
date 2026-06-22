@@ -248,8 +248,11 @@ class KycService {
     );
   }
 
-  Future<KycStatusResponse> getKycStatus() async {
-    final response = await _dio.get('/kyc/status');
+  Future<KycStatusResponse> getKycStatus({bool forceRefresh = false}) async {
+    final response = await _dio.get(
+      '/kyc/status',
+      options: forceRefresh ? Options(extra: const {'skipCache': true}) : null,
+    );
     final data = apiResponsePayload(response.data);
     final kycStatus = data['status'] as String? ?? 'pending';
     final rejectionReason = data['rejectionReason'] as String?;
@@ -527,7 +530,7 @@ class KycService {
       selfiePath: selfiePath,
       idNumber: idNumber,
     );
-    return getKycStatus();
+    return getKycStatus(forceRefresh: true);
   }
 }
 
