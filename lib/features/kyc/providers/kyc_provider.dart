@@ -5,6 +5,8 @@ import 'package:usdc_wallet/features/kyc/models/document_type.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_document.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_tier.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
+import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart'
+    as notification_feed;
 import 'package:usdc_wallet/services/kyc/kyc_service.dart';
 import 'package:usdc_wallet/services/limits/limits_service.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
@@ -194,6 +196,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
   }
 
   Future<void> loadVerificationStatus() async {
+    final previousStatus = state.verificationStatus;
     ref.invalidate(kycProfileProvider);
     state = state.copyWith(isLoading: true);
     try {
@@ -212,6 +215,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
         verificationStatus: _mapStatus(profile),
         rejectionReason: data.rejectionReason,
       );
+      _refreshNotificationFeedIfStatusChanged(previousStatus, data.status);
     } catch (e) {
       if (!ref.mounted) return;
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -333,6 +337,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
   }
 
   Future<void> _refreshBackendStatusAfterSubmission(KycService service) async {
+    final previousStatus = state.verificationStatus;
     final data = await service.getKycStatus(forceRefresh: true);
     if (!ref.mounted) return;
 
@@ -341,9 +346,23 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
       verificationStatus: data.status,
       rejectionReason: data.rejectionReason,
     );
+    _refreshNotificationFeedIfStatusChanged(previousStatus, data.status);
     ref
         .read(kyc_machine.kycStateMachineProvider.notifier)
         .updateFromAuthResponse(data.status.toApiString());
+  }
+
+  void _refreshNotificationFeedIfStatusChanged(
+    KycStatus? previousStatus,
+    KycStatus latestStatus,
+  ) {
+    if (previousStatus == latestStatus) {
+      return;
+    }
+
+    ref
+      ..invalidate(notification_feed.notificationsProvider)
+      ..invalidate(notification_feed.unreadNotificationCountProvider);
   }
 }
 
