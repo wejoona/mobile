@@ -88,6 +88,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         () => ref.read(limitsProvider.notifier).fetchLimits(),
       ),
     );
+    unawaited(Future<void>.microtask(_refreshKycForHome));
   }
 
   @override
@@ -1040,11 +1041,41 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     required TransactionLimitOperation operation,
     required String route,
   }) {
-    final limits = ref.read(limitsProvider).limits;
+    final limitsState = ref.read(limitsProvider);
+    final limits = limitsState.limits;
     final permissions = limits?.permissions;
 
     if (permissions != null && permissions.can(operation)) {
       unawaited(context.fsmPush(route));
+      return;
+    }
+
+    if (limits == null) {
+      if (!limitsState.isLoading) {
+        unawaited(ref.read(limitsProvider.notifier).fetchLimits());
+      }
+
+      final hasError = limitsState.error?.trim().isNotEmpty ?? false;
+      context.showSnack(
+        hasError
+            ? _localizedText(
+                en: 'Account permissions could not be loaded. Refresh and try again.',
+                fr: 'Les permissions du compte ne sont pas disponibles. Actualisez puis réessayez.',
+              )
+            : _localizedText(
+                en: 'Checking your account permissions. Try again in a moment.',
+                fr: 'Vérification des permissions du compte. Réessayez dans un instant.',
+              ),
+        tone: hasError ? AppSnackTone.warning : AppSnackTone.info,
+        duration: const Duration(seconds: 4),
+        action: hasError
+            ? SnackBarAction(
+                label: l10n.action_retry,
+                onPressed: () =>
+                    unawaited(ref.read(limitsProvider.notifier).fetchLimits()),
+              )
+            : null,
+      );
       return;
     }
 
@@ -1076,13 +1107,17 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     ThemeColors colors,
   ) {
     final userState = ref.watch(userStateMachineProvider);
+    final kycState = ref.watch(kycStateMachineProvider);
 
     // Only show if user is authenticated and KYC is not verified
     if (!userState.isAuthenticated) {
       return const SizedBox.shrink();
     }
 
-    final kycStatus = userState.kycStatus;
+    final kycStatus =
+        kycState.isLoading && userState.kycStatus == KycStatus.verified
+        ? userState.kycStatus
+        : kycState.status;
 
     // Don't show banner if verified or already submitted (in review)
     if (kycStatus == KycStatus.verified || kycStatus.isInReview) {
@@ -1283,11 +1318,13 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
       _refreshTransactionsForHome(),
       _refreshKycForHome(),
       _refreshNotificationsForHome(),
+      _refreshLimitsForHome(),
     ]);
     final walletRefreshCompleted = results.first;
     final transactionsRefreshCompleted = results[1];
     final kycRefreshCompleted = results[2];
     final notificationsRefreshCompleted = results[3];
+    final limitsRefreshCompleted = results[4];
 
     if (!mounted) {
       return;
@@ -1307,7 +1344,9 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         transactions.status == TransactionListStatus.error ||
         transactions.isCached;
     final accountUpdatesNeedAttention =
-        !kycRefreshCompleted || !notificationsRefreshCompleted;
+        !kycRefreshCompleted ||
+        !notificationsRefreshCompleted ||
+        !limitsRefreshCompleted;
 
     if (balanceNeedsAttention &&
         historyNeedsAttention &&
@@ -1406,6 +1445,23 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     } on Object catch (error, stackTrace) {
       _logger.error(
         'Home notification refresh did not complete cleanly',
+        error,
+        stackTrace,
+      );
+      return false;
+    }
+  }
+
+  Future<bool> _refreshLimitsForHome() async {
+    try {
+      await ref
+          .read(limitsProvider.notifier)
+          .fetchLimits()
+          .timeout(const Duration(seconds: 8));
+      return ref.read(limitsProvider).error == null;
+    } on Object catch (error, stackTrace) {
+      _logger.error(
+        'Home limits refresh did not complete cleanly',
         error,
         stackTrace,
       );

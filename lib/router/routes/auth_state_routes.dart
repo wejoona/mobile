@@ -252,9 +252,8 @@ List<RouteBase> authStateRoutes() => [
   ),
 ];
 
-String _sessionLockReturnTo(GoRouterState state) {
-  return _safeReturnTo(state) ?? '/home';
-}
+String _sessionLockReturnTo(GoRouterState state) =>
+    _safeReturnTo(state) ?? '/home';
 
 String _legalReturnTo(GoRouterState state) {
   final returnTo = state.uri.queryParameters['returnTo']?.trim();
@@ -274,9 +273,7 @@ String _legalReturnTo(GoRouterState state) {
   return returnTo;
 }
 
-String? _authReturnTo(GoRouterState state) {
-  return _safeReturnTo(state);
-}
+String? _authReturnTo(GoRouterState state) => _safeReturnTo(state);
 
 String? _safeReturnTo(GoRouterState state) {
   final returnTo = state.uri.queryParameters['returnTo']?.trim();
@@ -293,7 +290,7 @@ String? _safeReturnTo(GoRouterState state) {
       returnTo.startsWith('/login') ||
       returnTo.startsWith('/signup') ||
       returnTo.startsWith('/onboarding') ||
-      returnTo == '/session-locked') {
+      returnTo.startsWith('/session-locked')) {
     return null;
   }
 

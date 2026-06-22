@@ -708,6 +708,9 @@ void main() {
     final routesSource = File(
       'lib/router/routes/auth_state_routes.dart',
     ).readAsStringSync();
+    final redirectorSource = File(
+      'lib/router/app_redirector.dart',
+    ).readAsStringSync();
     final sessionsScreenSource = File(
       'lib/features/settings/views/sessions_screen.dart',
     ).readAsStringSync();
@@ -720,7 +723,16 @@ void main() {
     expect(routesSource, contains('uri.hasAuthority'));
     expect(routesSource, contains("returnTo.startsWith('/login')"));
     expect(routesSource, contains("returnTo.startsWith('/onboarding')"));
+    expect(routesSource, contains("returnTo.startsWith('/session-locked')"));
     expect(routesSource, contains("_safeReturnTo(state) ?? '/home'"));
+    expect(redirectorSource, contains('_safeUnlockedReturnTo(returnTo)'));
+    expect(redirectorSource, contains("state.uri.queryParameters['returnTo']"));
+    expect(
+      redirectorSource,
+      contains("returnTo.startsWith('/session-locked')"),
+      reason:
+          'Unlock redirects must not preserve a nested lock screen as the next route.',
+    );
     expect(
       sessionsScreenSource,
       contains("Uri.encodeComponent('/settings/sessions')"),

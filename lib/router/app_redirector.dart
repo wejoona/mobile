@@ -117,6 +117,7 @@ String? appRedirect(BuildContext context, GoRouterState state) {
 
   final unlockedLockScreenRedirect = _unlockedLockScreenRedirect(
     location: location,
+    returnTo: state.uri.queryParameters['returnTo'],
     isAuthenticated: isAuthenticated,
     isLockedState: isLockedState,
   );
@@ -239,13 +240,47 @@ String? _lockRedirect({
 
 String? _unlockedLockScreenRedirect({
   required String location,
+  required String? returnTo,
   required bool isAuthenticated,
   required bool isLockedState,
 }) {
   if (location != '/session-locked' || isLockedState) {
     return null;
   }
-  return isAuthenticated ? '/home' : '/login';
+  if (!isAuthenticated) {
+    return '/login';
+  }
+
+  return _safeUnlockedReturnTo(returnTo) ?? '/home';
+}
+
+String? _safeUnlockedReturnTo(String? raw) {
+  final returnTo = raw?.trim();
+  if (returnTo == null || returnTo.isEmpty) {
+    return null;
+  }
+
+  final uri = Uri.tryParse(returnTo);
+  if (uri == null ||
+      uri.hasScheme ||
+      uri.hasAuthority ||
+      !returnTo.startsWith('/') ||
+      returnTo.startsWith('//') ||
+      returnTo.startsWith('/session-locked')) {
+    return null;
+  }
+
+  final contract = appRouteContractFor(uri.path);
+  if (contract.isSecurityRecovery ||
+      contract.isAuthDeadEnd ||
+      contract.isSignupRoute ||
+      contract.isLegacySignupRoute ||
+      contract.isFsmRoute ||
+      contract.role == AppRouteRole.securityStep) {
+    return null;
+  }
+
+  return returnTo;
 }
 
 String? _otpContextRedirect({

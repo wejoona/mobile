@@ -123,15 +123,29 @@ void main() {
       expect(submittedView, contains('isVerified'));
     });
 
-    test('home refresh reconciles KYC and notification state', () {
+    test('home refresh reconciles KYC, limits, and notification state', () {
       final homeView = File(
         'lib/features/wallet/views/wallet_home_screen.dart',
       ).readAsStringSync();
 
       expect(homeView, contains('_refreshKycForHome()'));
       expect(homeView, contains('_refreshNotificationsForHome()'));
+      expect(homeView, contains('_refreshLimitsForHome()'));
       expect(homeView, contains('updateProfile(kycStatus: kyc.status)'));
       expect(homeView, contains('refreshUnreadNotificationCountProvider'));
+      expect(homeView, contains('fetchLimits()'));
+      expect(
+        homeView,
+        contains('final kycState = ref.watch(kycStateMachineProvider)'),
+        reason:
+            'Home KYC calls to action must reflect durable/API KYC state, not only copied auth profile state.',
+      );
+      expect(
+        homeView,
+        contains('Account permissions could not be loaded'),
+        reason:
+            'Unknown limits should be shown as a sync/retry state, not as a false verification failure.',
+      );
     });
 
     test('submitted review routes cannot redirect back into evidence steps', () {

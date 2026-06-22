@@ -232,9 +232,12 @@ class PushNotificationService {
   void _handleMessageOpenedApp(RemoteMessage message) {
     _logger.info('Message opened app', message.messageId);
 
-    onMessageOpenedApp?.call(message);
+    final handleOpenedApp = onMessageOpenedApp;
+    if (handleOpenedApp != null) {
+      handleOpenedApp(message);
+      return;
+    }
 
-    // Handle navigation based on message data
     _handleNavigation(message.data);
   }
 
