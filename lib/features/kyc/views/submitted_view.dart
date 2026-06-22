@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
@@ -13,7 +14,18 @@ import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart';
 
 class SubmittedView extends ConsumerStatefulWidget {
-  const SubmittedView({super.key});
+  const SubmittedView({super.key, this.intent, this.returnTo});
+
+  final String? intent;
+  final String? returnTo;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('intent', intent))
+      ..add(StringProperty('returnTo', returnTo));
+  }
 
   @override
   ConsumerState<SubmittedView> createState() => _SubmittedViewState();
@@ -34,8 +46,10 @@ class _SubmittedViewState extends ConsumerState<SubmittedView> {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
     final durableStatus = ref.watch(kycStateMachineProvider).status;
-    final wizardStatus = ref.watch(kycProvider).verificationStatus;
+    final flow = ref.watch(kycProvider);
+    final wizardStatus = flow.verificationStatus;
     final status = wizardStatus ?? durableStatus;
+    final returnTo = _safeReturnTo(flow);
     final isManualReview =
         durableStatus == KycStatus.manualReview ||
         wizardStatus == KycStatus.manualReview;
@@ -117,8 +131,10 @@ class _SubmittedViewState extends ConsumerState<SubmittedView> {
               ),
               const Spacer(),
               AppButton(
-                label: l10n.common_done,
-                onPressed: () => context.fsmGo('/home'),
+                label: isVerified && returnTo != null
+                    ? _continueLabel(context, l10n, flow)
+                    : l10n.common_done,
+                onPressed: () => _handleDone(context, returnTo),
                 isFullWidth: true,
               ),
             ],
@@ -126,6 +142,39 @@ class _SubmittedViewState extends ConsumerState<SubmittedView> {
         ),
       ),
     );
+  }
+
+  void _handleDone(BuildContext context, String? returnTo) {
+    if (returnTo != null) {
+      context.fsmGo(returnTo);
+      return;
+    }
+
+    context.fsmGo('/home');
+  }
+
+  String? _safeReturnTo(KycFlowState flow) {
+    final candidate = (widget.returnTo?.trim().isNotEmpty ?? false)
+        ? widget.returnTo!.trim()
+        : flow.returnTo?.trim();
+    if (candidate == null || !candidate.startsWith('/')) {
+      return null;
+    }
+    return candidate;
+  }
+
+  String _continueLabel(
+    BuildContext context,
+    AppLocalizations l10n,
+    KycFlowState flow,
+  ) {
+    final intent = widget.intent ?? flow.returnIntent;
+    if (intent == 'deposit') {
+      return Localizations.localeOf(context).languageCode == 'fr'
+          ? 'Continuer le dépôt'
+          : 'Continue deposit';
+    }
+    return l10n.common_continue;
   }
 
   Widget _buildStatusAnimation(

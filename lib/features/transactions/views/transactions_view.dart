@@ -495,7 +495,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
             else
               AppButton(
                 label: l10n.transactions_emptyStateAction,
-                onPressed: () => context.fsmGo('/deposit'),
+                onPressed: () => context.fsmGo('/deposit/amount'),
                 icon: Icons.add_circle_outline,
               ),
             const SizedBox(height: AppSpacing.xxxl),

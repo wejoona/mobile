@@ -73,6 +73,23 @@ void main() {
       );
     });
 
+    test('KYC service unwraps API envelope before reading status', () {
+      final serviceSource = File(
+        'lib/services/kyc/kyc_service.dart',
+      ).readAsStringSync();
+      final getStatusBody = RegExp(
+        r'Future<KycStatusResponse> getKycStatus\(\) async \{([\s\S]*?)\n  \}',
+      ).firstMatch(serviceSource)!.group(1)!;
+
+      expect(getStatusBody, contains('apiResponsePayload(response.data)'));
+      expect(
+        getStatusBody,
+        isNot(contains('response.data as Map<String, dynamic>')),
+        reason:
+            'Wrapped API responses must not fall back to pending when the real status is approved.',
+      );
+    });
+
     test('manual review has its own user-facing copy contract', () {
       final statusView = File(
         'lib/features/kyc/views/kyc_status_view.dart',
@@ -121,6 +138,8 @@ void main() {
       expect(submittedView, contains('loadVerificationStatus()'));
       expect(submittedView, contains('kyc_status_approved_title'));
       expect(submittedView, contains('isVerified'));
+      expect(submittedView, contains('_safeReturnTo'));
+      expect(submittedView, contains('Continue deposit'));
     });
 
     test('home refresh reconciles KYC, limits, and notification state', () {
@@ -155,13 +174,48 @@ void main() {
 
       expect(routeSource, contains('durableStatus.isSubmitted'));
       expect(
-        routeSource.indexOf('durableStatus.isSubmitted'),
-        lessThan(routeSource.indexOf('_kycEvidenceRedirect(context, state)')),
+        routeSource,
+        isNot(contains('_kycEvidenceRedirect(context, state)')),
+      );
+      expect(
+        routeSource,
+        contains("return '/kyc';"),
         reason:
-            'A backend submitted/manual-review state is terminal for the user; '
-            'the submitted route must not ask for personal info, documents, or selfie again.',
+            'A stale submitted route should reconcile at status, not restart evidence capture.',
       );
       expect(routeSource, contains("return '/kyc/submitted';"));
+    });
+
+    test('deposit intent survives KYC wizard submission', () {
+      final providerSource = File(
+        'lib/features/kyc/providers/kyc_provider.dart',
+      ).readAsStringSync();
+      final statusView = File(
+        'lib/features/kyc/views/kyc_status_view.dart',
+      ).readAsStringSync();
+      final reviewView = File(
+        'lib/features/kyc/views/review_view.dart',
+      ).readAsStringSync();
+
+      expect(providerSource, contains('returnIntent'));
+      expect(providerSource, contains('returnTo'));
+      expect(statusView, contains('startFlowForIntent'));
+      expect(reviewView, contains('_submittedRoute'));
+      expect(reviewView, contains("'/kyc/submitted?intent="));
+    });
+
+    test('transaction empty-state deposit CTA enters guarded deposit route', () {
+      final transactionsView = File(
+        'lib/features/transactions/views/transactions_view.dart',
+      ).readAsStringSync();
+
+      expect(transactionsView, contains("context.fsmGo('/deposit/amount')"));
+      expect(
+        transactionsView,
+        isNot(contains("context.fsmGo('/deposit')")),
+        reason:
+            'The empty-state CTA should hit the canonical money route so the FSM can redirect unverified users to deposit KYC.',
+      );
     });
 
     test('review submission does not fire a second incomplete KYC submit', () {

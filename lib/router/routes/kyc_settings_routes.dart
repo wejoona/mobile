@@ -111,8 +111,13 @@ List<RouteBase> kycSettingsRoutes() => [
   GoRoute(
     path: '/kyc/submitted',
     redirect: _kycSubmittedRedirect,
-    pageBuilder: (context, state) =>
-        AppPageTransitions.fade(state: state, child: const SubmittedView()),
+    pageBuilder: (context, state) => AppPageTransitions.fade(
+      state: state,
+      child: SubmittedView(
+        intent: state.uri.queryParameters['intent'],
+        returnTo: state.uri.queryParameters['returnTo'],
+      ),
+    ),
   ),
   GoRoute(
     path: '/kyc/upgrade',
@@ -341,9 +346,9 @@ String? _kycSubmittedRedirect(BuildContext context, GoRouterState state) {
     return null;
   }
   if (flow.canSubmit) {
-    return '/kyc/review';
+    return null;
   }
-  return _kycEvidenceRedirect(context, state) ?? '/kyc';
+  return '/kyc';
 }
 
 String? _kycDurableStatusRedirect(

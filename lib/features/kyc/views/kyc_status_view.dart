@@ -35,7 +35,7 @@ class KycStatusView extends ConsumerStatefulWidget {
 class _KycStatusViewState extends ConsumerState<KycStatusView> {
   bool get _isDepositIntent => widget.intent == 'deposit';
 
-  bool get _hasReturnTo => widget.returnTo?.trim().isNotEmpty ?? false;
+  bool get _hasReturnTo => _safeReturnTo() != null;
 
   @override
   void initState() {
@@ -480,7 +480,9 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
       return;
     }
 
-    ref.read(kycProvider.notifier).resetFlow();
+    ref
+        .read(kycProvider.notifier)
+        .startFlowForIntent(intent: widget.intent, returnTo: _safeReturnTo());
     unawaited(context.fsmPush('/kyc/document-type'));
   }
 
@@ -494,13 +496,21 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
   }
 
   void _handleContinueToReturn(BuildContext context) {
-    final returnTo = widget.returnTo?.trim();
+    final returnTo = _safeReturnTo();
     if (returnTo == null || returnTo.isEmpty) {
       _handleContinueToHome(context);
       return;
     }
 
     context.fsmGo(returnTo);
+  }
+
+  String? _safeReturnTo() {
+    final returnTo = widget.returnTo?.trim();
+    if (returnTo == null || !returnTo.startsWith('/')) {
+      return null;
+    }
+    return returnTo;
   }
 
   String _localizedText(

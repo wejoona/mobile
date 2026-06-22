@@ -250,10 +250,8 @@ class KycService {
 
   Future<KycStatusResponse> getKycStatus() async {
     final response = await _dio.get('/kyc/status');
-    final data = response.data as Map<String, dynamic>;
-    // ignore: avoid_dynamic_calls
+    final data = apiResponsePayload(response.data);
     final kycStatus = data['status'] as String? ?? 'pending';
-    // ignore: avoid_dynamic_calls
     final rejectionReason = data['rejectionReason'] as String?;
 
     return KycStatusResponse.fromJson(

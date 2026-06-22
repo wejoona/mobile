@@ -410,8 +410,21 @@ class ReviewView extends ConsumerWidget {
     }
 
     if (context.mounted) {
-      context.fsmGo('/kyc/submitted');
+      final flow = ref.read(kycProvider);
+      context.fsmGo(_submittedRoute(flow));
     }
+  }
+
+  String _submittedRoute(KycFlowState flow) {
+    final intent = flow.returnIntent?.trim();
+    final returnTo = flow.returnTo?.trim();
+    if ((intent == null || intent.isEmpty) ||
+        (returnTo == null || !returnTo.startsWith('/'))) {
+      return '/kyc/submitted';
+    }
+
+    return '/kyc/submitted?intent=${Uri.encodeComponent(intent)}'
+        '&returnTo=${Uri.encodeComponent(returnTo)}';
   }
 
   String _copy(BuildContext context, String en, String fr) {

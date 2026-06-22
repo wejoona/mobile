@@ -83,6 +83,8 @@ class KycFlowState {
   final KycTier? targetTier;
   final Map<String, String> personalInfo;
   final bool kycConsentAccepted;
+  final String? returnIntent;
+  final String? returnTo;
 
   const KycFlowState({
     this.isLoading = false,
@@ -95,6 +97,8 @@ class KycFlowState {
     this.targetTier,
     this.personalInfo = const {},
     this.kycConsentAccepted = false,
+    this.returnIntent,
+    this.returnTo,
   });
 
   bool get hasRequiredPersonalInfo {
@@ -132,6 +136,8 @@ class KycFlowState {
     KycTier? targetTier,
     Map<String, String>? personalInfo,
     bool? kycConsentAccepted,
+    String? returnIntent,
+    String? returnTo,
   }) => KycFlowState(
     isLoading: isLoading ?? this.isLoading,
     error: error,
@@ -143,6 +149,8 @@ class KycFlowState {
     targetTier: targetTier ?? this.targetTier,
     personalInfo: personalInfo ?? this.personalInfo,
     kycConsentAccepted: kycConsentAccepted ?? this.kycConsentAccepted,
+    returnIntent: returnIntent ?? this.returnIntent,
+    returnTo: returnTo ?? this.returnTo,
   );
 }
 
@@ -179,6 +187,10 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
 
   void resetFlow() {
     state = const KycFlowState();
+  }
+
+  void startFlowForIntent({String? intent, String? returnTo}) {
+    state = KycFlowState(returnIntent: intent, returnTo: returnTo);
   }
 
   Future<void> loadVerificationStatus() async {
