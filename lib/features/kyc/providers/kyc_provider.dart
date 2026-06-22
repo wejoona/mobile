@@ -12,6 +12,7 @@ import 'package:usdc_wallet/services/limits/limits_service.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart' as kyc_machine;
+import 'package:usdc_wallet/state/user_state_machine.dart';
 
 /// KYC profile provider — wired to KycService.
 final kycProfileProvider = FutureProvider<KycProfile>((ref) async {
@@ -239,6 +240,9 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
       ref
           .read(kyc_machine.kycStateMachineProvider.notifier)
           .updateFromAuthResponse(data.status.toApiString());
+      ref
+          .read(userStateMachineProvider.notifier)
+          .updateProfile(kycStatus: data.status);
       state = state.copyWith(
         isLoading: false,
         verificationStatus: _mapStatus(profile),

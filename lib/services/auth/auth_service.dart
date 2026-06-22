@@ -290,7 +290,7 @@ class AuthResponse {
       refreshToken: json['refreshToken'] as String?,
       user: User.fromJson(json['user'] as Map<String, dynamic>),
       walletCreated: json['walletCreated'] as bool? ?? false,
-      kycStatus: json['kycStatus'] as String?,
+      kycStatus: (json['kycStatus'] ?? json['kyc_status']) as String?,
       expiresIn: json['expiresIn'] as int? ?? 900, // Default 15 minutes
     );
   }
@@ -321,12 +321,14 @@ class RefreshResponse {
   final String accessToken;
   final String? refreshToken;
   final User? user;
+  final String? kycStatus;
   final int expiresIn; // Access token expiry in seconds
 
   const RefreshResponse({
     required this.accessToken,
     this.refreshToken,
     this.user,
+    this.kycStatus,
     required this.expiresIn,
   });
 
@@ -340,6 +342,7 @@ class RefreshResponse {
       user: payload['user'] != null
           ? User.fromJson(payload['user'] as Map<String, dynamic>)
           : null,
+      kycStatus: (payload['kycStatus'] ?? payload['kyc_status']) as String?,
       expiresIn: payload['expiresIn'] as int? ?? 900, // Default 15 minutes
     );
   }

@@ -1057,12 +1057,13 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
 
       context.showSnack(
         _localizedText(
-          en: 'Checking account permissions. Try again in a moment.',
-          fr: 'Vérification des permissions du compte. Réessayez dans un instant.',
+          en: 'We will verify account permissions before completion.',
+          fr: 'Nous vérifierons les permissions du compte avant de finaliser.',
         ),
         tone: AppSnackTone.info,
         duration: const Duration(seconds: 4),
       );
+      unawaited(context.fsmPush(route));
       return;
     }
 

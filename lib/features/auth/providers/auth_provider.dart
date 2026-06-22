@@ -8,6 +8,7 @@ import 'package:usdc_wallet/features/settings/providers/devices_provider.dart';
 import 'package:usdc_wallet/services/index.dart';
 import 'package:usdc_wallet/services/device/device_registration_service.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
+import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/state/fsm/index.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
@@ -620,11 +621,9 @@ class AuthNotifier extends Notifier<AuthState> {
 
       // Also report KYC status from the auth response to avoid waiting for separate fetch
       // This ensures the FSM knows the KYC state immediately
-      if (response.kycStatus != null) {
-        ref
-            .read(kycStateMachineProvider.notifier)
-            .updateFromAuthResponse(response.kycStatus);
-      }
+      final responseKycStatus = _projectKycStatus(
+        response.kycStatus ?? response.user.kycStatus?.toApiString(),
+      );
 
       // Populate UserStateMachine with profile data from auth response
       // Home screen reads displayName from userStateMachineProvider
@@ -636,6 +635,7 @@ class AuthNotifier extends Notifier<AuthState> {
             email: response.user.email,
             avatarUrl: response.user.avatarUrl,
             avatarThumb: response.user.avatarBase64,
+            kycStatus: responseKycStatus,
           );
 
       // Ensure legacy profile/cache state is fully hydrated without duplicating
@@ -738,11 +738,9 @@ class AuthNotifier extends Notifier<AuthState> {
             phone: phoneValue?.localNumber ?? phone ?? user?.phone ?? '',
           );
 
-      if (kycStatus != null) {
-        ref
-            .read(kycStateMachineProvider.notifier)
-            .updateFromAuthResponse(kycStatus);
-      }
+      final sessionKycStatus = _projectKycStatus(
+        kycStatus ?? user?.kycStatus?.toApiString(),
+      );
 
       if (user != null) {
         ref
@@ -753,6 +751,7 @@ class AuthNotifier extends Notifier<AuthState> {
               email: user.email,
               avatarUrl: user.avatarUrl,
               avatarThumb: user.avatarBase64,
+              kycStatus: sessionKycStatus,
             );
       }
 
@@ -847,6 +846,10 @@ class AuthNotifier extends Notifier<AuthState> {
             phone: phoneValue?.localNumber ?? response.user?.phone ?? '',
           );
 
+      final responseKycStatus = _projectKycStatus(
+        response.kycStatus ?? response.user?.kycStatus?.toApiString(),
+      );
+
       if (response.user != null) {
         ref
             .read(userStateMachineProvider.notifier)
@@ -856,6 +859,7 @@ class AuthNotifier extends Notifier<AuthState> {
               email: response.user!.email,
               avatarUrl: response.user!.avatarUrl,
               avatarThumb: response.user!.avatarBase64,
+              kycStatus: responseKycStatus,
             );
       }
       unawaited(
@@ -885,6 +889,19 @@ class AuthNotifier extends Notifier<AuthState> {
 
   bool _isRefreshRejected(ApiException e) =>
       e.statusCode == 400 || e.statusCode == 401 || e.statusCode == 403;
+
+  KycStatus? _projectKycStatus(String? status) {
+    if (status == null || status.trim().isEmpty) {
+      return null;
+    }
+
+    final parsedStatus = KycStatus.fromString(status);
+    ref.read(kycStateMachineProvider.notifier).updateFromAuthResponse(status);
+    ref
+        .read(userStateMachineProvider.notifier)
+        .updateProfile(kycStatus: parsedStatus);
+    return parsedStatus;
+  }
 
   /// Logout
   Future<void> logout({bool localFirst = true}) async {
