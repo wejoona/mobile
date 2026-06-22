@@ -44,6 +44,8 @@ Use with local API:
 | Verify email | POST | `/user/verify-email` |
 | Email status | GET | `/user/email-status` |
 | Resend email verification | POST | `/user/resend-email-verification` |
+| Active account type | GET | `/user/active-account-type` |
+| Update active account type | PUT | `/user/active-account-type` |
 | Set PIN | POST | `/user/pin/set` |
 | Change PIN | POST | `/user/pin/change` |
 | Verify PIN | POST | `/user/pin/verify` |

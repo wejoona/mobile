@@ -6,13 +6,13 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Business Service - handles business account operations
 class BusinessService {
-  final Dio _dio;
-
   BusinessService(this._dio);
+
+  final Dio _dio;
 
   /// Get current account type
   Future<AccountType> getAccountType() async {
-    final response = await _dio.get('/users/me/account-type');
+    final response = await _dio.get('/user/active-account-type');
     // ignore: avoid_dynamic_calls
     final type = response.data['accountType'] as String;
     return type == 'business' ? AccountType.business : AccountType.personal;
@@ -26,26 +26,32 @@ class BusinessService {
 
   /// Switch account type
   Future<void> switchAccountType(AccountType type) async {
-    await _dio.post('/users/me/account-type', data: {
-      'accountType': type == AccountType.business ? 'business' : 'personal',
-    });
+    await _dio.put(
+      '/user/active-account-type',
+      data: {
+        'accountType': type == AccountType.business ? 'business' : 'personal',
+      },
+    );
   }
 
   /// Create or update business profile
   Future<BusinessProfile> saveBusinessProfile({
     required String businessName,
-    String? registrationNumber,
     required BusinessType businessType,
+    String? registrationNumber,
     String? businessAddress,
     String? taxId,
   }) async {
-    final response = await _dio.post('/business/profile', data: {
-      'businessName': businessName,
-      'registrationNumber': registrationNumber,
-      'businessType': businessType.name,
-      'businessAddress': businessAddress,
-      'taxId': taxId,
-    });
+    final response = await _dio.post(
+      '/business/profile',
+      data: {
+        'businessName': businessName,
+        'registrationNumber': registrationNumber,
+        'businessType': businessType.name,
+        'businessAddress': businessAddress,
+        'taxId': taxId,
+      },
+    );
     return BusinessProfile.fromJson(response.data);
   }
 }
