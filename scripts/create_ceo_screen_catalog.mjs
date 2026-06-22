@@ -58,6 +58,19 @@ function sha256(filePath) {
   return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
 }
 
+function pngDimensions(filePath) {
+  const buffer = fs.readFileSync(filePath);
+  if (buffer.length < 24 || buffer.toString('ascii', 1, 4) !== 'PNG') {
+    return null;
+  }
+
+  return {
+    width: buffer.readUInt32BE(16),
+    height: buffer.readUInt32BE(20),
+    bytes: buffer.length,
+  };
+}
+
 function isNearBlankPng(filePath) {
   try {
     const buffer = fs.readFileSync(filePath);
@@ -148,6 +161,36 @@ const candidateScreenshots = walk(sourceDir)
       !name.includes('auth_entry');
   });
 
+const invalidScreenshots = candidateScreenshots
+  .map((filePath) => ({
+    filePath,
+    dimensions: pngDimensions(filePath),
+  }))
+  .filter(({ dimensions }) =>
+    !dimensions ||
+    dimensions.bytes < 40_000 ||
+    dimensions.width < 600 ||
+    dimensions.height < 1000
+  );
+
+if (invalidScreenshots.length > 0) {
+  console.error(
+    [
+      'Refusing to build catalog because some assets are not full simulator screenshots.',
+      ...invalidScreenshots.slice(0, 12).map(({ filePath, dimensions }) => {
+        const detail = dimensions
+          ? `${dimensions.width}x${dimensions.height}, ${dimensions.bytes} bytes`
+          : 'not a readable PNG';
+        return `- ${path.relative(sourceDir, filePath)} (${detail})`;
+      }),
+      invalidScreenshots.length > 12
+        ? `...and ${invalidScreenshots.length - 12} more`
+        : '',
+    ].filter(Boolean).join('\n'),
+  );
+  process.exit(67);
+}
+
 const hashCounts = new Map();
 for (const filePath of candidateScreenshots) {
   const hash = sha256(filePath);
@@ -173,10 +216,16 @@ const copied = screenshots.map((filePath, index) => {
   const name = path.basename(filePath);
   const safeName = `${String(index + 1).padStart(3, '0')}_${name}`;
   const dest = path.join(outputDir, 'screens', safeName);
+  const dimensions = pngDimensions(filePath);
   fs.copyFileSync(filePath, dest);
   return {
     title: titleFromName(name),
     file: `screens/${safeName}`,
+    source: path.relative(sourceDir, filePath),
+    width: dimensions?.width,
+    height: dimensions?.height,
+    bytes: dimensions?.bytes,
+    sha256: sha256(filePath),
   };
 });
 
@@ -226,6 +275,16 @@ fs.writeFileSync(
     'Open index.html to browse the real app screenshots.',
     '',
   ].join('\n'),
+);
+fs.writeFileSync(
+  path.join(outputDir, 'manifest.json'),
+  `${JSON.stringify({
+    generatedAt: new Date().toISOString(),
+    sourceDir,
+    captureType: 'live simulator framebuffer screenshots',
+    screenCount: copied.length,
+    screens: copied,
+  }, null, 2)}\n`,
 );
 
 console.log(`Created ${copied.length}-screen catalog at ${outputDir}`);
