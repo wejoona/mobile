@@ -215,7 +215,7 @@ class _CompletedDepositCard extends StatelessWidget {
                   label: l10n.deposit_deposited,
                   alignment: Alignment.centerLeft,
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  amount: formatXof(_state.amountXOF ?? response.amount),
+                  amount: _formatSourceAmount(_state, response.amount),
                   color: _colors.textPrimary,
                 ),
               ),
@@ -254,6 +254,14 @@ class _CompletedDepositCard extends StatelessWidget {
       ),
     );
   }
+}
+
+String _formatSourceAmount(DepositState state, double fallbackAmount) {
+  final currency = (state.sourceCurrency ?? 'XOF').toUpperCase();
+  if (currency == 'USD') {
+    return '\$${(state.amountUSD ?? 0).toStringAsFixed(2)}';
+  }
+  return formatXof(state.amountXOF ?? fallbackAmount);
 }
 
 class _AmountColumn extends StatelessWidget {

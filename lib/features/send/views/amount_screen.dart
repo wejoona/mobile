@@ -5,6 +5,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
 import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
+import 'package:usdc_wallet/features/limits/utils/money_flow_limit_errors.dart';
 import 'package:usdc_wallet/features/limits/widgets/limit_warning_banner.dart';
 import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart';
 import 'package:usdc_wallet/features/send/providers/send_provider.dart';
@@ -441,6 +442,13 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
       final limits = limitsState.limits!;
       final hit = limits.limitHitByFor(TransactionLimitOperation.send, amount);
       switch (hit) {
+        case 'manual_review_required':
+        case 'kyc_required':
+          return moneyFlowLimitErrorFor(
+            hit!,
+            limits,
+            TransactionLimitOperation.send,
+          );
         case 'single_transaction':
           return '${localizedSendCopy(context, en: 'Maximum per transfer', fr: 'Maximum par transfert')}: ${formatUsdc(limits.singleTransactionLimit)}';
         case 'daily':

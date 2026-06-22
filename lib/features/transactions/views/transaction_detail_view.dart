@@ -11,6 +11,7 @@ import 'package:usdc_wallet/features/receipts/views/share_receipt_sheet.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/services/transactions/transactions_service.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 final transactionByIdProvider = FutureProvider.family<Transaction, String>((
   ref,
@@ -136,7 +137,7 @@ class TransactionDetailView extends ConsumerWidget {
 
                   // Amount
                   AmountText.fromText(
-                    '${isCredit ? '+' : '-'}\$${transaction.amount.abs().toStringAsFixed(2)}',
+                    '${isCredit ? '+' : '-'}${formatCurrency(transaction.amount.abs(), transaction.currency)}',
                     currencyCode: transaction.currency,
                     size: AmountTextSize.large,
                     color: isCredit ? colors.successText : colors.textPrimary,

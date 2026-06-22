@@ -200,7 +200,7 @@ class _PaymentInstructionsScreenState
           Expanded(
             child: _AmountSummaryColumn(
               label: l10n.deposit_youPay,
-              value: formatXof(state.amountXOF ?? state.response?.amount ?? 0),
+              value: _formatSourceAmount(state),
               valueColor: colors.textPrimary,
               alignEnd: false,
               colors: colors,
@@ -537,6 +537,14 @@ class _PaymentInstructionsScreenState
     ref.read(depositProvider.notifier).goBack();
     context.fsmPop();
   }
+}
+
+String _formatSourceAmount(DepositState state) {
+  final currency = (state.sourceCurrency ?? 'XOF').toUpperCase();
+  if (currency == 'USD') {
+    return '\$${(state.amountUSD ?? 0).toStringAsFixed(2)}';
+  }
+  return formatXof(state.amountXOF ?? state.response?.amount ?? 0);
 }
 
 class _ReferenceRow extends StatelessWidget {

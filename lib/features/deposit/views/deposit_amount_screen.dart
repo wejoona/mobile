@@ -14,6 +14,7 @@ import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
 import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
+import 'package:usdc_wallet/features/limits/utils/money_flow_limit_errors.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 
@@ -442,6 +443,11 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
 
     if (_amountController.text.isEmpty) {
       return null;
+    }
+
+    final limitBlock = _limitBlockError(rate, transactionLimits, amount);
+    if (limitBlock != null) {
+      return limitBlock;
     } else if (amount < limits.$1) {
       return AppLocalizations.of(
         context,
@@ -453,6 +459,48 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
     }
 
     return null;
+  }
+
+  String? _limitBlockError(
+    ExchangeRate rate,
+    TransactionLimits? transactionLimits,
+    double sourceAmount,
+  ) {
+    if (transactionLimits == null) return null;
+    final amountForLimit = _amountInLimitCurrency(
+      rate,
+      transactionLimits,
+      sourceAmount,
+    );
+    final hit = transactionLimits.limitHitByFor(
+      TransactionLimitOperation.deposit,
+      amountForLimit,
+    );
+    if (hit == null) return null;
+    return moneyFlowLimitErrorFor(
+      hit,
+      transactionLimits,
+      TransactionLimitOperation.deposit,
+    );
+  }
+
+  double _amountInLimitCurrency(
+    ExchangeRate rate,
+    TransactionLimits transactionLimits,
+    double sourceAmount,
+  ) {
+    final limitCurrency = transactionLimits.currency.toUpperCase();
+    final sourceCurrency = _currency.toUpperCase();
+    if (limitCurrency == sourceCurrency) return sourceAmount;
+    if ((limitCurrency == 'USDC' || limitCurrency == 'USD') &&
+        sourceCurrency == 'XOF') {
+      return rate.convert(sourceAmount);
+    }
+    if (limitCurrency == 'XOF' &&
+        (sourceCurrency == 'USDC' || sourceCurrency == 'USD')) {
+      return rate.convertBack(sourceAmount);
+    }
+    return sourceAmount;
   }
 
   void _validateAmount(

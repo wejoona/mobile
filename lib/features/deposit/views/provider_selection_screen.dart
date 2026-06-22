@@ -387,6 +387,12 @@ class ProviderSelectionScreen extends ConsumerWidget {
     final response = ref.read(depositProvider).response;
     if (response != null) {
       unawaited(context.fsmPush('/deposit/instructions', extra: response));
+      return;
+    }
+
+    final error = ref.read(depositProvider).error;
+    if (error != null && error.trim().isNotEmpty) {
+      context.showSnack(error, tone: AppSnackTone.error);
     }
   }
 }
