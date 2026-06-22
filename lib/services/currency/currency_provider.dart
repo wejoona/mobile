@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/currency/currency_service.dart';
+import 'package:usdc_wallet/services/fx/fx_service.dart';
 
 /// State for managing currency preferences
 class CurrencyState {
@@ -26,7 +29,8 @@ class CurrencyState {
   }
 
   /// Check if reference currency should be displayed
-  bool get shouldShowReference => showReference && referenceCurrency != ReferenceCurrency.none;
+  bool get shouldShowReference =>
+      showReference && referenceCurrency != ReferenceCurrency.none;
 }
 
 /// Provider for currency service
@@ -41,7 +45,7 @@ class CurrencyNotifier extends Notifier<CurrencyState> {
   @override
   CurrencyState build() {
     _currencyService = ref.watch(currencyServiceProvider);
-    _loadSavedPreferences();
+    unawaited(_loadSavedPreferences());
     return const CurrencyState();
   }
 
@@ -49,10 +53,7 @@ class CurrencyNotifier extends Notifier<CurrencyState> {
   Future<void> _loadSavedPreferences() async {
     final currency = await _currencyService.getSavedReferenceCurrency();
     final enabled = await _currencyService.isReferenceCurrencyEnabled();
-    state = CurrencyState(
-      referenceCurrency: currency,
-      showReference: enabled,
-    );
+    state = CurrencyState(referenceCurrency: currency, showReference: enabled);
   }
 
   /// Set reference currency
@@ -61,10 +62,7 @@ class CurrencyNotifier extends Notifier<CurrencyState> {
 
     final saved = await _currencyService.saveReferenceCurrency(currency);
     if (saved) {
-      state = state.copyWith(
-        referenceCurrency: currency,
-        isLoading: false,
-      );
+      state = state.copyWith(referenceCurrency: currency, isLoading: false);
     } else {
       state = state.copyWith(isLoading: false);
     }
@@ -76,10 +74,7 @@ class CurrencyNotifier extends Notifier<CurrencyState> {
 
     final saved = await _currencyService.setReferenceCurrencyEnabled(show);
     if (saved) {
-      state = state.copyWith(
-        showReference: show,
-        isLoading: false,
-      );
+      state = state.copyWith(showReference: show, isLoading: false);
     } else {
       state = state.copyWith(isLoading: false);
     }
@@ -132,4 +127,36 @@ final showReferenceCurrencyProvider = Provider<bool>((ref) {
 /// Convenience provider for getting reference currency
 final referenceCurrencyProvider = Provider<ReferenceCurrency>((ref) {
   return ref.watch(currencyProvider).referenceCurrency;
+});
+
+final referenceCurrencyPreviewProvider = FutureProvider<String>((ref) async {
+  final state = ref.watch(currencyProvider);
+  final currencyService = ref.watch(currencyServiceProvider);
+
+  if (!state.shouldShowReference) {
+    return '';
+  }
+
+  try {
+    final quote = await ref
+        .watch(fxServiceProvider)
+        .quote(
+          amount: 100,
+          sourceCurrency: 'USDC',
+          targetCurrency: state.referenceCurrency.code,
+        );
+    return currencyService.formatReferenceAmount(
+      quote.targetAmount,
+      state.referenceCurrency,
+    );
+  } on Object {
+    final fallbackAmount = currencyService.convertToReference(
+      100,
+      state.referenceCurrency,
+    );
+    return currencyService.formatReferenceAmount(
+      fallbackAmount,
+      state.referenceCurrency,
+    );
+  }
 });

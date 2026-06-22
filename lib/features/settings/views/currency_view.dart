@@ -1,12 +1,13 @@
 // ignore_for_file: deprecated_member_use
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/services/currency/currency_service.dart';
-import 'package:usdc_wallet/services/currency/currency_provider.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/services/currency/currency_provider.dart';
+import 'package:usdc_wallet/services/currency/currency_service.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class CurrencyView extends ConsumerWidget {
@@ -17,6 +18,7 @@ class CurrencyView extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
     final currencyState = ref.watch(currencyProvider);
+    final referencePreview = ref.watch(referenceCurrencyPreviewProvider);
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -61,7 +63,7 @@ class CurrencyView extends ConsumerWidget {
                     ),
                     child: Center(
                       child: AppText(
-                        '\$',
+                        r'$',
                         variant: AppTextVariant.titleLarge,
                         color: context.colors.textInverse,
                       ),
@@ -119,9 +121,11 @@ class CurrencyView extends ConsumerWidget {
                   Switch(
                     value: currencyState.showReference,
                     onChanged: (value) {
-                      ref
-                          .read(currencyProvider.notifier)
-                          .toggleShowReference(value);
+                      unawaited(
+                        ref
+                            .read(currencyProvider.notifier)
+                            .toggleShowReference(value),
+                      );
                     },
                     activeTrackColor: colors.gold.withValues(alpha: 0.5),
                     activeColor: colors.gold,
@@ -162,9 +166,11 @@ class CurrencyView extends ConsumerWidget {
                             isSelected:
                                 currencyState.referenceCurrency == currency,
                             onTap: () {
-                              ref
-                                  .read(currencyProvider.notifier)
-                                  .setReferenceCurrency(currency);
+                              unawaited(
+                                ref
+                                    .read(currencyProvider.notifier)
+                                    .setReferenceCurrency(currency),
+                              );
                             },
                           ),
                         ),
@@ -194,9 +200,12 @@ class CurrencyView extends ConsumerWidget {
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     AppText(
-                      ref
-                          .read(currencyProvider.notifier)
-                          .getFormattedReference(100),
+                      referencePreview.maybeWhen(
+                        data: (value) => value,
+                        orElse: () => ref
+                            .read(currencyProvider.notifier)
+                            .getFormattedReference(100),
+                      ),
                       variant: AppTextVariant.bodyMedium,
                       color: colors.textSecondary,
                     ),
@@ -264,7 +273,7 @@ class _CurrencyOption extends ConsumerWidget {
                       ),
                       const SizedBox(height: AppSpacing.xxs),
                       AppText(
-                        '1 USDC \u2248 ${currency.symbol} ${_formatRate(currency.approximateRate)}',
+                        _currencySupportLabel(currency),
                         variant: AppTextVariant.bodySmall,
                         color: colors.textSecondary,
                       ),
@@ -282,15 +291,8 @@ class _CurrencyOption extends ConsumerWidget {
     );
   }
 
-  String _formatRate(double rate) {
-    if (rate >= 100) {
-      return rate
-          .toStringAsFixed(0)
-          .replaceAllMapped(
-            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-            (match) => '${match[1]} ',
-          );
-    }
-    return rate.toStringAsFixed(2);
-  }
+  String _currencySupportLabel(ReferenceCurrency currency) =>
+      currency.symbol.isEmpty
+      ? currency.code
+      : '${currency.code} • ${currency.symbol}';
 }
