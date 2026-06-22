@@ -155,6 +155,16 @@ void main() {
       expect(source, isNot(contains("recipient: 'Unknown'")));
     });
 
+    test('receive route uses permission-aware money-flow screen', () {
+      final source = File(
+        'lib/router/routes/card_account_routes.dart',
+      ).readAsStringSync();
+
+      expect(source, contains("path: '/receive'"));
+      expect(source, contains('ReceiveView()'));
+      expect(source, isNot(contains('ReceiveQrScreen()')));
+    });
+
     test('merchant payment receipt uses backend payment status', () {
       final source = File(
         'lib/features/merchant_pay/views/payment_receipt_view.dart',
@@ -208,7 +218,7 @@ List<String> _declaredRoutePaths() {
   return routeSources.expand((file) {
     final source = file.readAsStringSync();
     return RegExp(
-      r"path:\s*'([^']+)'",
+      r"GoRoute\(\s*path:\s*'([^']+)'",
     ).allMatches(source).map((match) => match.group(1)!);
   }).toList();
 }

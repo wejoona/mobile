@@ -12,12 +12,12 @@ import 'package:usdc_wallet/features/pin/models/pin_reset_route_context.dart';
 import 'package:usdc_wallet/features/pin/views/enter_pin_view.dart';
 import 'package:usdc_wallet/features/pin/views/pin_locked_view.dart';
 import 'package:usdc_wallet/features/pin/views/reset_pin_view.dart';
-import 'package:usdc_wallet/features/qr_payment/views/receive_qr_screen.dart';
 import 'package:usdc_wallet/features/qr_payment/views/scan_qr_screen.dart';
 import 'package:usdc_wallet/features/settings/views/change_pin_view.dart';
 import 'package:usdc_wallet/features/settings/views/profile_view.dart';
 import 'package:usdc_wallet/features/transactions/views/export_transactions_view.dart';
 import 'package:usdc_wallet/features/transactions/views/transaction_detail_view.dart';
+import 'package:usdc_wallet/features/wallet/views/receive_view.dart';
 import 'package:usdc_wallet/router/page_transitions.dart';
 
 List<RouteBase> cardAccountRoutes() => [
@@ -71,7 +71,7 @@ List<RouteBase> cardAccountRoutes() => [
     path: '/receive',
     pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
       state: state,
-      child: const ReceiveQrScreen(),
+      child: const ReceiveView(),
     ),
   ),
   GoRoute(path: '/transfer/success', redirect: (_, _) => '/send/result'),
