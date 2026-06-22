@@ -5,6 +5,7 @@ import 'package:usdc_wallet/features/biometric/views/biometric_enrollment_view.d
 import 'package:usdc_wallet/features/biometric/views/biometric_settings_view.dart';
 import 'package:usdc_wallet/features/business/views/business_profile_view.dart';
 import 'package:usdc_wallet/features/business/views/business_setup_view.dart';
+import 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_tier.dart' as kyc_models;
 import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
 import 'package:usdc_wallet/features/kyc/views/document_capture_view.dart';
@@ -328,26 +329,31 @@ String? _kycEvidenceRedirect(BuildContext context, GoRouterState state) {
 }
 
 String? _kycSubmittedRedirect(BuildContext context, GoRouterState state) {
-  final durableRedirect = _kycDurableStatusRedirect(context, state);
-  if (durableRedirect != null) {
-    return durableRedirect;
-  }
-
   final durableState = ProviderScope.containerOf(
     context,
   ).read(kycStateMachineProvider);
-  if (durableState.hasLoaded && durableState.status.isSubmitted) {
-    return null;
+  if (durableState.hasLoaded) {
+    final durableStatus = durableState.status;
+    if (_isKycReviewOrApprovalStatus(durableStatus)) {
+      return null;
+    }
+    return durableStatus.canSubmit ? '/kyc' : null;
   }
 
   final flow = ProviderScope.containerOf(context).read(kycProvider);
   final status = flow.status;
-  if (status.isSubmitted || status.isVerified) {
+  if (_isKycReviewOrApprovalStatus(status)) {
     return null;
   }
-  if (flow.canSubmit) {
+
+  if (flow.verificationStatus == null || flow.isLoading || flow.error != null) {
     return null;
   }
+
+  if (status.canSubmit) {
+    return '/kyc';
+  }
+
   return '/kyc';
 }
 
@@ -423,6 +429,9 @@ String? _kycDurableStatusRedirect(BuildContext context, GoRouterState state) {
 
   return null;
 }
+
+bool _isKycReviewOrApprovalStatus(KycStatus status) =>
+    status.isSubmitted || status.isVerified;
 
 String _kycSubmittedRouteFrom(Uri uri) {
   final intent = uri.queryParameters['intent']?.trim();

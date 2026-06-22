@@ -110,10 +110,8 @@ void main() {
       expect(statusView, contains('KycStatus.manualReview'));
 
       expect(submittedView, contains('kycStateMachineProvider'));
-      expect(
-        submittedView,
-        contains('durableStatus == KycStatus.manualReview'),
-      );
+      expect(submittedView, contains('status == KycStatus.manualReview'));
+      expect(submittedView, contains('_effectiveStatus'));
       expect(submittedView, contains('kyc_status_manualReview_title'));
       expect(submittedView, contains('kyc_info_manualReview_description'));
     });
@@ -156,11 +154,14 @@ void main() {
       expect(submittedView, contains('ConsumerStatefulWidget'));
       expect(submittedView, contains('loadVerificationStatus()'));
       expect(submittedView, contains('kycStateMachineProvider.notifier'));
-      expect(submittedView, contains('durableStatus.isVerified'));
+      expect(submittedView, contains('final durableState'));
+      expect(submittedView, contains('if (durableState.hasLoaded)'));
+      expect(submittedView, contains('return durableState.status;'));
       expect(submittedView, contains('kyc_status_approved_title'));
       expect(submittedView, contains('isVerified'));
       expect(submittedView, contains('_safeReturnTo'));
       expect(submittedView, contains('Continue deposit'));
+      expect(submittedView, contains('_buildReconciliationState'));
     });
 
     test('home refresh reconciles KYC, limits, and notification state', () {
@@ -221,7 +222,8 @@ void main() {
       ).readAsStringSync();
 
       expect(routeSource, contains('durableState.hasLoaded'));
-      expect(routeSource, contains('durableState.status.isSubmitted'));
+      expect(routeSource, contains('_isKycReviewOrApprovalStatus'));
+      expect(routeSource, contains('flow.verificationStatus == null'));
       expect(routeSource, contains('_kycPrerequisiteRedirectForPath'));
       expect(routeSource, contains('flow.hasCompletedLiveness'));
       expect(routeSource, contains("return '/kyc/liveness-instructions';"));
