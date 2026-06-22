@@ -62,6 +62,13 @@ void main() {
         contains('updateFromAuthResponse(data.status.toApiString())'),
       );
       expect(
+        loadStatusBody,
+        contains('clearVerificationStatus: true'),
+        reason:
+            'A KYC refresh must clear stale local wizard status so manual-review '
+            'screens wait for the fresh /kyc/status response after admin review.',
+      );
+      expect(
         loadStatusBody.indexOf('updateFromAuthResponse'),
         lessThan(
           loadStatusBody.indexOf(
@@ -126,6 +133,7 @@ void main() {
       expect(statusView, contains('_isAuthoritativeDurableStatus'));
       expect(statusView, contains('hasAuthoritativeStatus'));
       expect(statusView, contains('await _refreshStatus();'));
+      expect(statusView, contains('if (flowStatus != null)'));
       expect(
         statusView,
         isNot(contains('state.verificationStatus ?? KycStatus.none')),
@@ -141,8 +149,8 @@ void main() {
           ),
         ),
         reason:
-            'Durable API/FSM status must win after admin approval/rejection, '
-            'otherwise stale wizard state can keep users in manual review.',
+            'Status screens must use the centralized effective-status helper, '
+            'not ad-hoc stale wizard fallbacks.',
       );
     });
 
@@ -155,6 +163,7 @@ void main() {
       expect(submittedView, contains('loadVerificationStatus()'));
       expect(submittedView, contains('kycStateMachineProvider.notifier'));
       expect(submittedView, contains('final durableState'));
+      expect(submittedView, contains('flow.verificationStatus != null'));
       expect(submittedView, contains('if (durableState.hasLoaded)'));
       expect(submittedView, contains('return durableState.status;'));
       expect(submittedView, contains('kyc_status_approved_title'));

@@ -150,6 +150,7 @@ class KycFlowState {
     Map<String, String>? personalInfo,
     String? livenessProofId,
     bool clearLivenessProof = false,
+    bool clearVerificationStatus = false,
     bool? kycConsentAccepted,
     String? returnIntent,
     String? returnTo,
@@ -159,8 +160,12 @@ class KycFlowState {
     selectedDocumentType: selectedDocumentType ?? this.selectedDocumentType,
     capturedDocuments: capturedDocuments ?? this.capturedDocuments,
     selfiePath: selfiePath ?? this.selfiePath,
-    verificationStatus: verificationStatus ?? this.verificationStatus,
-    rejectionReason: rejectionReason ?? this.rejectionReason,
+    verificationStatus: clearVerificationStatus
+        ? null
+        : verificationStatus ?? this.verificationStatus,
+    rejectionReason: clearVerificationStatus
+        ? null
+        : rejectionReason ?? this.rejectionReason,
     targetTier: targetTier ?? this.targetTier,
     personalInfo: personalInfo ?? this.personalInfo,
     livenessProofId: clearLivenessProof
@@ -222,7 +227,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
   Future<void> loadVerificationStatus() async {
     final previousStatus = state.verificationStatus;
     ref.invalidate(kycProfileProvider);
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, clearVerificationStatus: true);
     try {
       final service = ref.read(kycServiceProvider);
       final data = await service.getKycStatus(forceRefresh: true);
