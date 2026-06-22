@@ -322,8 +322,10 @@ class DepositNotifier extends Notifier<DepositState> {
 
     try {
       final service = ref.read(depositServiceProvider);
-      final response = await service.getDepositStatus(depositId);
-      final status = response.status;
+      final statusUpdate = await service.getDepositStatus(depositId);
+      final response =
+          state.response?.mergeStatusUpdate(statusUpdate) ?? statusUpdate;
+      final status = statusUpdate.status;
 
       state = state.copyWith(response: response);
 

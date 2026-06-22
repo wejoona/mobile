@@ -139,6 +139,41 @@ class DepositResponse {
     );
   }
 
+  DepositResponse mergeStatusUpdate(DepositResponse update) {
+    final updateHasPaymentInstructions =
+        update.instructions.isNotEmpty ||
+        update.qrCodeData?.isNotEmpty == true ||
+        update.deepLinkUrl?.isNotEmpty == true ||
+        update.token.isNotEmpty;
+
+    return copyWith(
+      transactionId: update.transactionId.isNotEmpty
+          ? update.transactionId
+          : transactionId,
+      depositId: update.depositId.isNotEmpty ? update.depositId : depositId,
+      token: update.token.isNotEmpty ? update.token : token,
+      paymentMethodType: updateHasPaymentInstructions
+          ? update.paymentMethodType
+          : paymentMethodType,
+      instructions: update.instructions.isNotEmpty
+          ? update.instructions
+          : instructions,
+      qrCodeData: update.qrCodeData ?? qrCodeData,
+      deepLinkUrl: update.deepLinkUrl ?? deepLinkUrl,
+      expiresAt: update.expiresAt,
+      status: update.status,
+      amount: update.amount > 0 ? update.amount : amount,
+      currency: update.currency,
+      convertedAmount: update.convertedAmount ?? convertedAmount,
+      convertedCurrency: update.convertedCurrency ?? convertedCurrency,
+      exchangeRate: update.exchangeRate ?? exchangeRate,
+      providerCode: update.providerCode.isNotEmpty
+          ? update.providerCode
+          : providerCode,
+      failureReason: update.failureReason,
+    );
+  }
+
   bool get isExpired => DateTime.now().isAfter(expiresAt);
   bool get isCompleted => status == DepositStatus.completed;
   bool get isFailed =>
