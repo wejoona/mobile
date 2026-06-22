@@ -1096,9 +1096,24 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
           ? null
           : SnackBarAction(
               label: l10n.auth_verify,
-              onPressed: () => unawaited(context.fsmPush('/kyc')),
+              onPressed: () => unawaited(
+                context.fsmPush(
+                  _verificationRouteFor(operation: operation, route: route),
+                ),
+              ),
             ),
     );
+  }
+
+  String _verificationRouteFor({
+    required TransactionLimitOperation operation,
+    required String route,
+  }) {
+    if (operation != TransactionLimitOperation.deposit) {
+      return '/kyc';
+    }
+
+    return '/kyc?intent=deposit&returnTo=${Uri.encodeComponent(route)}';
   }
 
   Widget _buildKycBanner(

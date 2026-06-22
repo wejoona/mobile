@@ -43,8 +43,13 @@ List<RouteBase> kycSettingsRoutes() => [
   // KYC Flow Routes
   GoRoute(
     path: '/kyc',
-    pageBuilder: (context, state) =>
-        AppPageTransitions.fade(state: state, child: const KycStatusView()),
+    pageBuilder: (context, state) => AppPageTransitions.fade(
+      state: state,
+      child: KycStatusView(
+        intent: state.uri.queryParameters['intent'],
+        returnTo: state.uri.queryParameters['returnTo'],
+      ),
+    ),
   ),
   GoRoute(path: '/kyc/start', redirect: _kycStartRedirect),
   GoRoute(

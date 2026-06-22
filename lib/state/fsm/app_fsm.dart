@@ -396,6 +396,13 @@ class AppGuards {
 
     if (contract.requiresKycTier1) {
       if (!state.kyc.canPerform(KycTier.tier1)) {
+        final blockedPath = appRoutePathForContract(route);
+        if (blockedPath.startsWith('/deposit')) {
+          return GuardDenied(
+            _kycIntentRoute(intent: 'deposit', returnTo: route),
+            'KYC verification required for deposit',
+          );
+        }
         return const GuardDenied('/kyc', 'KYC verification required');
       }
     }
@@ -407,6 +414,11 @@ class AppGuards {
     }
 
     return const GuardAllowed();
+  }
+
+  String _kycIntentRoute({required String intent, required String returnTo}) {
+    final encodedReturnTo = Uri.encodeComponent(returnTo);
+    return '/kyc?intent=$intent&returnTo=$encodedReturnTo';
   }
 }
 

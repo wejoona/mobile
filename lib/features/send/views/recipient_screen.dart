@@ -94,13 +94,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
       );
     }
 
-    // Load recent recipients
-    unawaited(
-      Future<void>.microtask(() async {
-        await ref.read(sendMoneyProvider.notifier).loadRecentRecipients();
-        await ref.read(sendMoneyProvider.notifier).loadBalance();
-      }),
-    );
+    unawaited(_loadInitialSendData());
   }
 
   @override
@@ -109,6 +103,21 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     _phoneController.dispose();
     _nameFocusNode.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadInitialSendData() async {
+    await Future<void>.microtask(() {});
+    if (!mounted) {
+      return;
+    }
+
+    final notifier = ref.read(sendMoneyProvider.notifier);
+    await notifier.loadRecentRecipients();
+    if (!mounted) {
+      return;
+    }
+
+    await notifier.loadBalance();
   }
 
   @override
@@ -425,7 +434,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
       builder: (context) => const ContactPickerBottomSheet(),
     );
 
-    if (contact != null) {
+    if (contact != null && mounted) {
       _selectRecipient(
         contact.phone,
         contact.name,
@@ -550,13 +559,14 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
   }
 
   Future<void> _lookupTypedRecipient(String phoneNumber) async {
+    if (!mounted) {
+      return;
+    }
+
     final authState = ref.read(authProvider);
     final userState = ref.read(userStateMachineProvider);
     final myPhone = authState.user?.phone ?? authState.phone ?? userState.phone;
     if (_samePhone(phoneNumber, myPhone)) {
-      return;
-    }
-    if (!mounted) {
       return;
     }
 
