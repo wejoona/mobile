@@ -38,6 +38,7 @@ class _SubmittedViewState extends ConsumerState<SubmittedView> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.invalidate(kycProfileProvider);
+      unawaited(ref.read(kycStateMachineProvider.notifier).fetch());
       unawaited(ref.read(kycProvider.notifier).loadVerificationStatus());
     });
   }
@@ -49,10 +50,13 @@ class _SubmittedViewState extends ConsumerState<SubmittedView> {
     final durableStatus = ref.watch(kycStateMachineProvider).status;
     final flow = ref.watch(kycProvider);
     final wizardStatus = flow.verificationStatus;
-    final status = wizardStatus ?? durableStatus;
+    final status = durableStatus.isVerified
+        ? durableStatus
+        : wizardStatus ?? durableStatus;
     final isManualReview =
-        durableStatus == KycStatus.manualReview ||
-        wizardStatus == KycStatus.manualReview;
+        !status.isVerified &&
+        (durableStatus == KycStatus.manualReview ||
+            wizardStatus == KycStatus.manualReview);
     final isVerified = status.isVerified;
     final returnTo = isVerified ? _safeReturnTo(flow) : null;
 

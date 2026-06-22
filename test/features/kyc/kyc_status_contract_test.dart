@@ -142,6 +142,8 @@ void main() {
 
       expect(submittedView, contains('ConsumerStatefulWidget'));
       expect(submittedView, contains('loadVerificationStatus()'));
+      expect(submittedView, contains('kycStateMachineProvider.notifier'));
+      expect(submittedView, contains('durableStatus.isVerified'));
       expect(submittedView, contains('kyc_status_approved_title'));
       expect(submittedView, contains('isVerified'));
       expect(submittedView, contains('_safeReturnTo'));
