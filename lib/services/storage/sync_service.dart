@@ -92,24 +92,28 @@ class SyncService {
     if (!_cache.isInitialized) return;
 
     final now = DateTime.now();
-    final cached = transactions.map((tx) => CachedTransaction(
-      id: tx.id,
-      walletId: tx.walletId,
-      type: tx.type.name,
-      amount: tx.amount,
-      currency: tx.currency,
-      status: tx.status.name,
-      recipientPhone: tx.recipientPhone,
-      recipientAddress: tx.recipientAddress,
-      description: tx.description,
-      externalReference: tx.externalReference,
-      failureReason: tx.failureReason,
-      fee: tx.fee,
-      createdAt: tx.createdAt,
-      completedAt: tx.completedAt,
-      cachedAt: now,
-      recipientWalletId: tx.recipientWalletId,
-    )).toList();
+    final cached = transactions
+        .map(
+          (tx) => CachedTransaction(
+            id: tx.id,
+            walletId: tx.walletId,
+            type: tx.type.wireName,
+            amount: tx.amount,
+            currency: tx.currency,
+            status: tx.status.name,
+            recipientPhone: tx.recipientPhone,
+            recipientAddress: tx.recipientAddress,
+            description: tx.description,
+            externalReference: tx.externalReference,
+            failureReason: tx.failureReason,
+            fee: tx.fee,
+            createdAt: tx.createdAt,
+            completedAt: tx.completedAt,
+            cachedAt: now,
+            recipientWalletId: tx.recipientWalletId,
+          ),
+        )
+        .toList();
 
     _cache.cacheTransactions(cached);
   }
@@ -162,7 +166,9 @@ class SyncService {
   void _loadCachedUserProfile() {
     final cached = _cache.getCachedUserProfile();
     if (cached == null) return;
-    _log.debug('Cached user profile available: ${cached.firstName} ${cached.lastName}');
+    _log.debug(
+      'Cached user profile available: ${cached.firstName} ${cached.lastName}',
+    );
   }
 
   /// Public accessor for cached user profile (used by UserStateMachine fallback)
@@ -173,29 +179,30 @@ class SyncService {
   /// Convert cached transactions back to domain Transaction entities
   List<Transaction> cachedTransactionsToDomain() {
     final cached = _cache.getCachedTransactions();
-    return cached.map((ct) => Transaction(
-      id: ct.id,
-      walletId: ct.walletId,
-      type: TransactionType.values.firstWhere(
-        (e) => e.name == ct.type,
-        orElse: () => TransactionType.deposit,
-      ),
-      status: TransactionStatus.values.firstWhere(
-        (e) => e.name == ct.status,
-        orElse: () => TransactionStatus.pending,
-      ),
-      amount: ct.amount,
-      currency: ct.currency,
-      fee: ct.fee,
-      description: ct.description,
-      externalReference: ct.externalReference,
-      failureReason: ct.failureReason,
-      recipientPhone: ct.recipientPhone,
-      recipientAddress: ct.recipientAddress,
-      recipientWalletId: ct.recipientWalletId,
-      createdAt: ct.createdAt,
-      completedAt: ct.completedAt,
-    )).toList();
+    return cached
+        .map(
+          (ct) => Transaction(
+            id: ct.id,
+            walletId: ct.walletId,
+            type: parseTransactionType(ct.type),
+            status: TransactionStatus.values.firstWhere(
+              (e) => e.name == ct.status,
+              orElse: () => TransactionStatus.pending,
+            ),
+            amount: ct.amount,
+            currency: ct.currency,
+            fee: ct.fee,
+            description: ct.description,
+            externalReference: ct.externalReference,
+            failureReason: ct.failureReason,
+            recipientPhone: ct.recipientPhone,
+            recipientAddress: ct.recipientAddress,
+            recipientWalletId: ct.recipientWalletId,
+            createdAt: ct.createdAt,
+            completedAt: ct.completedAt,
+          ),
+        )
+        .toList();
   }
 
   /// Clear all caches (on logout)

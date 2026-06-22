@@ -33,12 +33,14 @@ class TransactionFilterChips extends StatelessWidget {
             onTap: () => onTypeChanged(null),
           ),
           const SizedBox(width: 8),
-          ...TransactionType.values.map((type) {
+          ...TransactionType.values.where((type) => type.isFilterable).map((
+            type,
+          ) {
             return Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: _buildChip(
                 context,
-                label: type.name,
+                label: type.displayLabel,
                 isSelected: selectedType == type,
                 onTap: () => onTypeChanged(type),
               ),

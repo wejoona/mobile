@@ -23,6 +23,10 @@ class TransactionListItem extends StatelessWidget {
         return Icons.swap_horiz_rounded;
       case TransactionType.transferExternal:
         return Icons.open_in_new_rounded;
+      case TransactionType.billPayment:
+        return Icons.receipt_long_rounded;
+      case TransactionType.unknown:
+        return Icons.help_outline_rounded;
     }
   }
 
@@ -37,7 +41,7 @@ class TransactionListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
-    final amountPrefix = transaction.isCredit ? '+' : '-';
+    final amountPrefix = transaction.amountSign;
 
     return ListTile(
       onTap: onTap,
@@ -65,7 +69,7 @@ class TransactionListItem extends StatelessWidget {
         size: AmountTextSize.small,
         color: transaction.isCredit ? colors.success : colors.textPrimary,
         semanticLabel:
-            '${transaction.isCredit ? l10n.transactions_transferReceived : l10n.transactions_transferSent} ${formatCurrency(transaction.amount.abs(), transaction.currency)}',
+            '${_typeLabel(l10n)} ${formatCurrency(transaction.amount.abs(), transaction.currency)}',
       ),
     );
   }
@@ -104,6 +108,14 @@ class TransactionListItem extends StatelessWidget {
             : l10n.transactions_transferSent;
       case TransactionType.transferExternal:
         return l10n.transactions_transferSent;
+      case TransactionType.billPayment:
+        return l10n.services_billPayments;
+      case TransactionType.unknown:
+        return transaction.isDebit
+            ? l10n.transactions_transferSent
+            : transaction.isCredit
+            ? l10n.transactions_transferReceived
+            : 'Transaction';
     }
   }
 
@@ -120,6 +132,12 @@ class TransactionListItem extends StatelessWidget {
                 : l10n.transactions_transferSent);
       case TransactionType.transferExternal:
         return l10n.transactions_externalWallet;
+      case TransactionType.billPayment:
+        return l10n.services_billPayments;
+      case TransactionType.unknown:
+        return transaction.reference.isNotEmpty
+            ? transaction.reference
+            : 'Review details';
     }
   }
 }

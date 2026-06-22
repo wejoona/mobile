@@ -886,6 +886,9 @@ class _TransactionGroup extends StatelessWidget {
       case TransactionDisplayType.reward:
         icon = Icons.card_giftcard;
         iconColor = colors.gold;
+      case TransactionDisplayType.neutral:
+        icon = Icons.receipt_long;
+        iconColor = colors.textSecondary;
     }
 
     return Container(
@@ -946,11 +949,14 @@ class _TransactionGroup extends StatelessWidget {
   }
 
   String _formatAmount(double amount, TransactionDisplayType type) {
-    final isPositive =
-        type == TransactionDisplayType.deposit ||
-        type == TransactionDisplayType.transferIn ||
-        type == TransactionDisplayType.reward;
-    final sign = isPositive ? '+' : '-';
+    final sign = switch (type) {
+      TransactionDisplayType.deposit ||
+      TransactionDisplayType.transferIn ||
+      TransactionDisplayType.reward => '+',
+      TransactionDisplayType.withdrawal ||
+      TransactionDisplayType.transferOut => '-',
+      TransactionDisplayType.neutral => '',
+    };
     return '$sign\$${amount.abs().toStringAsFixed(2)}';
   }
 
@@ -965,6 +971,8 @@ class _TransactionGroup extends StatelessWidget {
         return colors.errorText; // Red for withdrawals
       case TransactionDisplayType.transferOut:
         return colors.warningText; // Orange/amber for sent transfers
+      case TransactionDisplayType.neutral:
+        return colors.textSecondary;
     }
   }
 
@@ -988,6 +996,14 @@ class _TransactionGroup extends StatelessWidget {
             : l10n.transactions_transferReceived;
       case TransactionType.transferExternal:
         return l10n.transactions_transferSent;
+      case TransactionType.billPayment:
+        return l10n.services_billPayments;
+      case TransactionType.unknown:
+        return tx.isDebit
+            ? l10n.transactions_transferSent
+            : tx.isCredit
+            ? l10n.transactions_transferReceived
+            : 'Transaction';
     }
   }
 
@@ -1004,6 +1020,10 @@ class _TransactionGroup extends StatelessWidget {
                 : l10n.transactions_fromKoridoUser);
       case TransactionType.transferExternal:
         return l10n.transactions_externalWallet;
+      case TransactionType.billPayment:
+        return l10n.services_billPayments;
+      case TransactionType.unknown:
+        return tx.reference.isNotEmpty ? tx.reference : 'Review details';
     }
   }
 
@@ -1018,7 +1038,12 @@ class _TransactionGroup extends StatelessWidget {
             ? TransactionDisplayType.transferOut
             : TransactionDisplayType.transferIn;
       case TransactionType.transferExternal:
+      case TransactionType.billPayment:
         return TransactionDisplayType.transferOut;
+      case TransactionType.unknown:
+        if (tx.isCredit) return TransactionDisplayType.transferIn;
+        if (tx.isDebit) return TransactionDisplayType.transferOut;
+        return TransactionDisplayType.neutral;
     }
   }
 }

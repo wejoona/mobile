@@ -22,6 +22,7 @@ class InsightsMock {
       // Random transaction type
       final types = [
         TransactionType.withdrawal,
+        TransactionType.billPayment,
         TransactionType.transferExternal,
         TransactionType.transferInternal,
         TransactionType.deposit,
@@ -36,6 +37,10 @@ class InsightsMock {
           amount = 10 + _random.nextDouble() * 200; // $10-$210
           category = 'Bills';
           break;
+        case TransactionType.billPayment:
+          amount = 5 + _random.nextDouble() * 150; // $5-$155
+          category = 'Bill payments';
+          break;
         case TransactionType.transferExternal:
         case TransactionType.transferInternal:
           amount = 5 + _random.nextDouble() * 100; // $5-$105
@@ -45,36 +50,45 @@ class InsightsMock {
           amount = 50 + _random.nextDouble() * 500; // $50-$550
           category = 'Deposits';
           break;
+        case TransactionType.unknown:
+          amount = 5 + _random.nextDouble() * 100; // $5-$105
+          category = 'Other';
+          break;
       }
 
-      final fee = type == TransactionType.withdrawal ? 0.5 + _random.nextDouble() : null;
+      final fee = type == TransactionType.withdrawal
+          ? 0.5 + _random.nextDouble()
+          : null;
 
-      transactions.add(Transaction(
-        id: 'txn_${i}_${DateTime.now().millisecondsSinceEpoch}',
-        walletId: 'wallet_test',
-        type: type,
-        status: TransactionStatus.completed,
-        amount: amount,
-        currency: 'USD',
-        fee: fee,
-        description: _getDescription(type, category),
-        recipientPhone: type != TransactionType.deposit ? _getRecipientPhone() : null,
-        recipientWalletId: type == TransactionType.transferInternal
-            ? 'wallet_${_random.nextInt(10)}'
-            : null,
-        recipientAddress: type == TransactionType.transferExternal
-            ? '0x${_random.nextInt(999999999).toRadixString(16).padLeft(40, '0')}'
-            : null,
-        metadata: category != null // ignore: unnecessary_null_comparison
-            ? {
-                'category': category,
-                'recipientName': _getRecipientName(),
-              }
-            // ignore: dead_code
-            : null,
-        createdAt: createdAt,
-        completedAt: createdAt.add(Duration(minutes: 1 + _random.nextInt(10))),
-      ));
+      transactions.add(
+        Transaction(
+          id: 'txn_${i}_${DateTime.now().millisecondsSinceEpoch}',
+          walletId: 'wallet_test',
+          type: type,
+          status: TransactionStatus.completed,
+          amount: amount,
+          currency: 'USD',
+          fee: fee,
+          description: _getDescription(type, category),
+          recipientPhone: type != TransactionType.deposit
+              ? _getRecipientPhone()
+              : null,
+          recipientWalletId: type == TransactionType.transferInternal
+              ? 'wallet_${_random.nextInt(10)}'
+              : null,
+          recipientAddress: type == TransactionType.transferExternal
+              ? '0x${_random.nextInt(999999999).toRadixString(16).padLeft(40, '0')}'
+              : null,
+          metadata: {
+            'category': category,
+            'recipientName': _getRecipientName(),
+          },
+          createdAt: createdAt,
+          completedAt: createdAt.add(
+            Duration(minutes: 1 + _random.nextInt(10)),
+          ),
+        ),
+      );
     }
 
     // Sort by date descending
@@ -87,12 +101,16 @@ class InsightsMock {
     switch (type) {
       case TransactionType.withdrawal:
         return 'Bill payment';
+      case TransactionType.billPayment:
+        return 'Bill payment';
       case TransactionType.transferExternal:
         return 'External transfer';
       case TransactionType.transferInternal:
         return 'Sent to friend';
       case TransactionType.deposit:
         return 'Mobile money deposit';
+      case TransactionType.unknown:
+        return 'Transaction';
     }
   }
 

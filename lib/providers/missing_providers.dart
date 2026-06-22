@@ -295,6 +295,7 @@ DateTime _periodStart(String period) {
 bool _isSpend(Transaction item) =>
     item.isDebit ||
     item.type == TransactionType.withdrawal ||
+    item.type == TransactionType.billPayment ||
     item.type == TransactionType.transferExternal;
 
 String _categoryForTransaction(Transaction item) {
@@ -305,7 +306,10 @@ String _categoryForTransaction(Transaction item) {
       return 'External transfers';
     case TransactionType.transferInternal:
       return 'Transfers';
+    case TransactionType.billPayment:
+      return 'Bill payments';
     case TransactionType.deposit:
+    case TransactionType.unknown:
       return 'Other spending';
   }
 }

@@ -2151,6 +2151,24 @@ void main() {
         'direction': 'debit',
         'createdAt': '2026-06-04T12:00:00.000Z',
       });
+      final billPayment = wallet_tx.Transaction.fromJson({
+        'id': 'tx_bill',
+        'walletId': 'wallet_1',
+        'type': 'bill_payment',
+        'status': 'completed',
+        'amount': 18,
+        'currency': 'USDC',
+        'createdAt': '2026-06-04T12:00:00.000Z',
+      });
+      final unknown = wallet_tx.Transaction.fromJson({
+        'id': 'tx_unknown',
+        'walletId': 'wallet_1',
+        'type': 'provider_adjustment',
+        'status': 'completed',
+        'amount': 18,
+        'currency': 'USDC',
+        'createdAt': '2026-06-04T12:00:00.000Z',
+      });
 
       expect(sent.type, TransactionType.transferInternal);
       expect(sent.isDebit, isTrue);
@@ -2163,6 +2181,14 @@ void main() {
       expect(deposit.isCredit, isTrue);
       expect(withdrawal.type, TransactionType.withdrawal);
       expect(withdrawal.isDebit, isTrue);
+      expect(billPayment.type, TransactionType.billPayment);
+      expect(billPayment.isDebit, isTrue);
+      expect(billPayment.isCredit, isFalse);
+      expect(billPayment.toJson()['type'], 'bill_payment');
+      expect(unknown.type, TransactionType.unknown);
+      expect(unknown.isDebit, isFalse);
+      expect(unknown.isCredit, isFalse);
+      expect(unknown.toJson()['type'], 'unknown');
     });
 
     test('transaction parser prefers backend decimal money fields', () {

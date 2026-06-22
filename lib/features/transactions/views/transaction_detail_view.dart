@@ -137,7 +137,7 @@ class TransactionDetailView extends ConsumerWidget {
 
                   // Amount
                   AmountText.fromText(
-                    '${isCredit ? '+' : '-'}${formatCurrency(transaction.amount.abs(), transaction.currency)}',
+                    '${transaction.amountSign}${formatCurrency(transaction.amount.abs(), transaction.currency)}',
                     currencyCode: transaction.currency,
                     size: AmountTextSize.large,
                     color: isCredit ? colors.successText : colors.textPrimary,
@@ -430,6 +430,10 @@ class TransactionDetailView extends ConsumerWidget {
         return colors.gold; // Brand accent for Korido-to-Korido transfers
       case TransactionType.transferExternal:
         return colors.warning; // Orange/amber for external transfers
+      case TransactionType.billPayment:
+        return colors.errorText;
+      case TransactionType.unknown:
+        return colors.textSecondary;
     }
   }
 
@@ -482,6 +486,14 @@ class TransactionDetailView extends ConsumerWidget {
             : l10n.transactions_transferSent;
       case TransactionType.transferExternal:
         return l10n.transactions_transferSent;
+      case TransactionType.billPayment:
+        return l10n.services_billPayments;
+      case TransactionType.unknown:
+        return transaction.isDebit
+            ? l10n.transactions_transferSent
+            : transaction.isCredit
+            ? l10n.transactions_transferReceived
+            : 'Transaction';
     }
   }
 }

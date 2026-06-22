@@ -13,6 +13,7 @@ enum TransactionDisplayType {
   transferIn,
   transferOut,
   reward,
+  neutral,
 }
 
 /// Single Transaction Row
@@ -205,6 +206,8 @@ class TransactionRow extends StatelessWidget {
         return Icons.call_made;
       case TransactionDisplayType.reward:
         return Icons.card_giftcard;
+      case TransactionDisplayType.neutral:
+        return Icons.receipt_long;
     }
   }
 
@@ -231,6 +234,8 @@ class TransactionRow extends StatelessWidget {
         return colors.errorText;
       case TransactionDisplayType.transferOut:
         return colors.warningText;
+      case TransactionDisplayType.neutral:
+        return colors.textSecondary;
     }
   }
 
@@ -262,24 +267,28 @@ class TransactionRow extends StatelessWidget {
         return colors.errorText; // Red for outgoing withdrawals
       case TransactionDisplayType.transferOut:
         return colors.warningText; // Orange/amber for sent transfers
+      case TransactionDisplayType.neutral:
+        return colors.textSecondary;
     }
   }
 
   String _formatAmount() {
-    final sign = _isPositive() ? '+' : '-';
+    final sign = _amountSign();
     final absAmount = amount.abs();
     return '$sign${formatCurrency(absAmount, currencyCode)}';
   }
 
-  bool _isPositive() {
+  String _amountSign() {
     switch (type) {
       case TransactionDisplayType.deposit:
       case TransactionDisplayType.transferIn:
       case TransactionDisplayType.reward:
-        return true;
+        return '+';
       case TransactionDisplayType.withdrawal:
       case TransactionDisplayType.transferOut:
-        return false;
+        return '-';
+      case TransactionDisplayType.neutral:
+        return '';
     }
   }
 

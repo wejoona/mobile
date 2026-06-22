@@ -1611,6 +1611,12 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
             : l10n.transactions_transferSent;
       case TransactionType.transferExternal:
         return l10n.transactions_externalWallet;
+      case TransactionType.billPayment:
+        return l10n.services_billPayments;
+      case TransactionType.unknown:
+        return transaction.reference.isNotEmpty
+            ? transaction.reference
+            : 'Review details';
     }
   }
 
@@ -1624,6 +1630,10 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         return l10n.transactions_transferReceived;
       case TransactionType.transferExternal:
         return l10n.transactions_transferSent;
+      case TransactionType.billPayment:
+        return l10n.services_billPayments;
+      case TransactionType.unknown:
+        return 'Transaction';
     }
   }
 
@@ -1638,7 +1648,12 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
             ? TransactionDisplayType.transferIn
             : TransactionDisplayType.transferOut;
       case TransactionType.transferExternal:
+      case TransactionType.billPayment:
         return TransactionDisplayType.transferOut;
+      case TransactionType.unknown:
+        if (transaction.isCredit) return TransactionDisplayType.transferIn;
+        if (transaction.isDebit) return TransactionDisplayType.transferOut;
+        return TransactionDisplayType.neutral;
     }
   }
 }

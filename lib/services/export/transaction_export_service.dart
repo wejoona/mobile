@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:usdc_wallet/domain/entities/transaction.dart';
+import 'package:usdc_wallet/domain/enums/index.dart';
 
 /// Service for exporting transaction history to CSV.
 class TransactionExportService {
@@ -16,12 +17,14 @@ class TransactionExportService {
     // Rows
     for (final tx in transactions) {
       final date = tx.createdAt.toIso8601String();
-      final type = tx.type.name;
+      final type = tx.type.displayLabel;
       final status = tx.status.name;
       final amount = tx.amount.toStringAsFixed(2);
       final currency = tx.currency;
       final fee = tx.fee?.toStringAsFixed(2) ?? '0.00';
-      final recipient = _escapeCsv(tx.recipientPhone ?? tx.recipientAddress ?? '');
+      final recipient = _escapeCsv(
+        tx.recipientPhone ?? tx.recipientAddress ?? '',
+      );
       final description = _escapeCsv(tx.description ?? '');
       final reference = tx.reference;
 
@@ -46,7 +49,7 @@ class TransactionExportService {
       ..writeln('=' * 30)
       ..writeln('Reference: ${tx.reference}')
       ..writeln('Date: ${tx.createdAt}')
-      ..writeln('Type: ${tx.type.name}')
+      ..writeln('Type: ${tx.type.displayLabel}')
       ..writeln('Amount: ${tx.amount} ${tx.currency}')
       ..writeln('Status: ${tx.status.name}');
 

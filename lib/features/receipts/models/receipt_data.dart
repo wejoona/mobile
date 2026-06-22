@@ -70,6 +70,10 @@ class ReceiptData {
         return 'Transfer Received';
       case TransactionType.transferExternal:
         return 'Transfer Sent';
+      case TransactionType.billPayment:
+        return 'Bill payment';
+      case TransactionType.unknown:
+        return 'Transaction';
     }
   }
 
