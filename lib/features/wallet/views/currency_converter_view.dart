@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/services/wallet/wallet_service.dart';
+import 'package:usdc_wallet/services/fx/fx_service.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class CurrencyConverterView extends ConsumerStatefulWidget {
@@ -23,8 +23,9 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
   bool _isLoading = false;
   String? _rateError;
 
-  // Exchange rates fetched from API (rates relative to USD)
+  // Exchange rates fetched from API (rates relative to USD).
   Map<String, double> _exchangeRates = {'USD': 1.0, 'USDC': 1.0};
+  Map<String, FxCurrency> _currencyMetadata = {};
 
   // Initial markets: US/USDC plus Abidjan/UEMOA rails.
   static const List<String> _supportedCurrencies = [
@@ -47,20 +48,30 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
     });
 
     try {
-      final walletService = ref.read(walletServiceProvider);
+      final fxService = ref.read(fxServiceProvider);
+      final currencyMetadata = <String, FxCurrency>{};
+      try {
+        final currencies = await fxService.getSupportedCurrencies();
+        currencyMetadata.addAll({
+          for (final currency in currencies) currency.code: currency,
+        });
+      } catch (_) {
+        // Metadata is helpful for names/decimals, but quote availability is the
+        // source of truth for what the converter can show right now.
+      }
       final rates = <String, double>{'USD': 1.0, 'USDC': 1.0};
 
-      // Fetch rates for each currency relative to USD
+      // Fetch indicative reference rates from the canonical FX API. Wallet
+      // payment quote endpoints are executable money-flow quotes, not display FX.
       for (final currency in _supportedCurrencies) {
         if (currency == 'USD' || currency == 'USDC') continue;
         try {
-          final rate = await walletService.getRate(
+          final quote = await fxService.quote(
             sourceCurrency: 'USD',
             targetCurrency: currency,
             amount: 1.0,
           );
-          // rate.targetAmount is how much of target currency you get for 1 USD
-          rates[currency] = rate.targetAmount;
+          rates[currency] = quote.targetAmount;
         } catch (_) {
           // Skip currencies that fail — may not be supported by backend
         }
@@ -73,6 +84,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
               ? _fromCurrency
               : 'USDC';
           _toCurrency = rates.containsKey(_toCurrency) ? _toCurrency : 'USD';
+          _currencyMetadata = currencyMetadata;
           _isLoading = false;
         });
       }
@@ -86,19 +98,21 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
     }
   }
 
-  Map<String, String> _getCurrencyNames(AppLocalizations l10n) => {
-    'USD': l10n.currency_usd,
-    'USDC': l10n.currency_usdc,
-    'EUR': l10n.currency_eur,
-    'XOF': l10n.currency_xof,
-  };
+  Map<String, String> _getCurrencyNames(AppLocalizations l10n) {
+    final names = {
+      'USD': l10n.currency_usd,
+      'USDC': l10n.currency_usdc,
+      'EUR': l10n.currency_eur,
+      'XOF': l10n.currency_xof,
+    };
 
-  final Map<String, String> _currencySymbols = {
-    'USD': '\$',
-    'USDC': '\$',
-    'EUR': '\u20AC',
-    'XOF': 'F CFA',
-  };
+    for (final entry in _currencyMetadata.entries) {
+      if (entry.value.name.isNotEmpty) {
+        names[entry.key] = entry.value.name;
+      }
+    }
+    return names;
+  }
 
   double get _fromAmount => double.tryParse(_fromController.text) ?? 0;
 
@@ -384,7 +398,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
           ),
           const SizedBox(height: AppSpacing.sm),
           AppText(
-            '${_currencySymbols[currency] ?? ''}${currencyNames[currency] ?? currency}',
+            currencyNames[currency] ?? currency,
             variant: AppTextVariant.bodySmall,
             color: colors.textTertiary,
           ),
@@ -446,7 +460,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
                 hasRate
                     ? l10n.converter_exchangeRate(
                         _fromCurrency,
-                        _formatAmount(rate),
+                        _formatAmountForCurrency(_toCurrency, rate),
                         _toCurrency,
                       )
                     : _localizedText(
@@ -494,7 +508,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
           ),
           child: Center(
             child: AppText(
-              '${_currencySymbols[_fromCurrency] ?? ''}$amount',
+              _formatQuickAmount(amount.toDouble(), _fromCurrency),
               variant: AppTextVariant.labelMedium,
               color: colors.textSecondary,
             ),
@@ -556,7 +570,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
                               en: 'Unavailable',
                               fr: 'Indisponible',
                             )
-                          : '${_currencySymbols[currency] ?? ''}${_formatAmount(usdcRate)}',
+                          : _formatCurrencyAmount(currency, usdcRate),
                       variant: AppTextVariant.labelMedium,
                       color: usdcRate == null
                           ? colors.warningText
@@ -692,6 +706,58 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
     } else {
       return amount.toStringAsFixed(4);
     }
+  }
+
+  String _formatAmountForCurrency(String currency, double amount) {
+    final decimals = _currencyDecimals(currency);
+    if (decimals == 0) {
+      return _formatWholeNumber(amount);
+    }
+    return _formatAmount(amount);
+  }
+
+  String _formatCurrencyAmount(String currency, double amount) {
+    final formatted = _formatAmountForCurrency(currency, amount);
+    switch (currency.toUpperCase()) {
+      case 'USD':
+        return '\$$formatted';
+      case 'EUR':
+        return '\u20AC$formatted';
+      case 'USDC':
+        return '$formatted USDC';
+      case 'XOF':
+        return '$formatted F CFA';
+      default:
+        final symbol = _currencyMetadata[currency.toUpperCase()]?.symbol;
+        if (symbol == null || symbol.isEmpty || symbol == currency) {
+          return '$formatted ${currency.toUpperCase()}';
+        }
+        return '$symbol $formatted';
+    }
+  }
+
+  String _formatQuickAmount(double amount, String currency) {
+    if (currency.toUpperCase() == 'USDC') {
+      return '\$${_formatAmountForCurrency('USD', amount)}';
+    }
+    return _formatCurrencyAmount(currency, amount);
+  }
+
+  int _currencyDecimals(String currency) {
+    final normalized = currency.toUpperCase();
+    return _currencyMetadata[normalized]?.decimals ??
+        switch (normalized) {
+          'XOF' || 'XAF' => 0,
+          _ => 2,
+        };
+  }
+
+  String _formatWholeNumber(double amount) {
+    final value = amount.round().toString();
+    return value.replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (match) => '${match[1]},',
+    );
   }
 }
 
