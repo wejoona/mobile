@@ -97,8 +97,8 @@ class DepositService {
   Future<DepositResponse> initiateMobileMoneyDeposit(
     Map<String, dynamic> data,
   ) async {
-    final provider = data['provider'] ?? data['providerCode'];
-    final channelId = provider ?? data['channelId'];
+    final channelId =
+        data['channelId'] ?? data['providerCode'] ?? data['provider'];
     if (channelId == null || channelId.toString().trim().isEmpty) {
       throw ArgumentError('Deposit channel is required');
     }

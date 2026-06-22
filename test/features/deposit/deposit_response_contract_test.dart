@@ -95,6 +95,10 @@ void main() {
       expect(normalizeDepositChannelId('wave_ci'), 'wave_ci');
       expect(normalizeDepositChannelId('mobile_money'), 'mobile_money');
       expect(
+        normalizeDepositChannelId('payswitch_wave_route_wave_primary_ci'),
+        'payswitch_wave_route_wave_primary_ci',
+      );
+      expect(
         depositChannelIdFromJson({'id': 'us_ach', 'code': 'ACH'}),
         'us_ach',
       );
@@ -104,7 +108,7 @@ void main() {
     test('derives provider branding from PaySwitch-discovered channels', () {
       expect(
         const ProviderData(
-          id: 'payswitch_wave_ci',
+          id: 'payswitch_wave_route_wave_primary_ci',
           name: 'Wave',
           enumProvider: 'wave',
         ).brandKey,
@@ -154,6 +158,39 @@ void main() {
         'phoneNumber': '+2250748805663',
       });
     });
+
+    test(
+      'mobile money helper preserves explicit PaySwitch channel over provider',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'id': 'dep_456',
+            'amount': 25000,
+            'paymentMethodType': 'PUSH',
+            'status': 'INITIATED',
+          }, statusCode: 201);
+        final service = DepositService(dio);
+
+        await service.initiateMobileMoneyDeposit({
+          'amount': 25000,
+          'sourceCurrency': 'XOF',
+          'channelId': 'payswitch_wave_route_wave_primary_ci',
+          'provider': 'wave',
+          'phoneNumber': '+2250748805663',
+          'countryCode': 'CI',
+        });
+
+        final request = dio.requestHistory.single;
+        expect(request.path, '/wallet/deposit');
+        expect(request.data, {
+          'amount': 25000,
+          'sourceCurrency': 'XOF',
+          'channelId': 'payswitch_wave_route_wave_primary_ci',
+          'countryCode': 'CI',
+          'phoneNumber': '+2250748805663',
+        });
+      },
+    );
 
     test('preserves unavailable deposit capability metadata', () async {
       final dio = MockDio()
