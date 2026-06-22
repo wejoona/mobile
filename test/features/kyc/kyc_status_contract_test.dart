@@ -188,6 +188,33 @@ void main() {
       );
     });
 
+    test('settings uses effective API-backed KYC status', () {
+      final settingsSource = File(
+        'lib/features/settings/views/settings_screen.dart',
+      ).readAsStringSync();
+      final userStateSource = File(
+        'lib/state/user_state_machine.dart',
+      ).readAsStringSync();
+      final kycStateSource = File(
+        'lib/state/kyc_state_machine.dart',
+      ).readAsStringSync();
+
+      expect(settingsSource, contains('effectiveKycStatusProvider'));
+      expect(
+        settingsSource,
+        isNot(contains('ref.watch(kycStatusProvider)')),
+        reason:
+            'Settings must not display stale profile KYC status after admin approval.',
+      );
+      expect(userStateSource, contains('effectiveKycStatusProvider'));
+      expect(userStateSource, contains('kycState.hasLoaded'));
+      expect(userStateSource, contains('return kycState.status;'));
+      expect(userStateSource, contains('userStateMachineProvider).kycStatus'));
+      expect(kycStateSource, contains('this.status = KycStatus.none'));
+      expect(kycStateSource, contains('final bool hasLoaded'));
+      expect(kycStateSource, contains('hasLoaded: true'));
+    });
+
     test('submitted review routes cannot redirect back into evidence steps', () {
       final routeSource = File(
         'lib/router/routes/kyc_settings_routes.dart',

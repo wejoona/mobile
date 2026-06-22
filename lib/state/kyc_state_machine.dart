@@ -12,12 +12,14 @@ class KycStateMachineState {
   final String? rejectionReason;
   final bool isLoading;
   final String? error;
+  final bool hasLoaded;
 
   const KycStateMachineState({
-    this.status = KycStatus.pending,
+    this.status = KycStatus.none,
     this.rejectionReason,
     this.isLoading = false,
     this.error,
+    this.hasLoaded = false,
   });
 
   KycStateMachineState copyWith({
@@ -25,12 +27,14 @@ class KycStateMachineState {
     String? rejectionReason,
     bool? isLoading,
     String? error,
+    bool? hasLoaded,
   }) {
     return KycStateMachineState(
       status: status ?? this.status,
       rejectionReason: rejectionReason ?? this.rejectionReason,
       isLoading: isLoading ?? this.isLoading,
       error: error,
+      hasLoaded: hasLoaded ?? this.hasLoaded,
     );
   }
 }
@@ -101,6 +105,7 @@ class KycStateMachine extends Notifier<KycStateMachineState> {
         rejectionReason: response.rejectionReason,
         isLoading: false,
         error: null,
+        hasLoaded: true,
       );
 
       // Sync with FSM: notify KYC status loaded
@@ -118,6 +123,13 @@ class KycStateMachine extends Notifier<KycStateMachineState> {
 
       // If 404 or similar, treat as "none" (no KYC submitted)
       if (e.statusCode == 404) {
+        state = state.copyWith(
+          status: KycStatus.none,
+          rejectionReason: null,
+          isLoading: false,
+          error: null,
+          hasLoaded: true,
+        );
         ref
             .read(appFsmProvider.notifier)
             .onKycStatusLoaded(tier: KycTier.none, status: 'none');
@@ -135,7 +147,7 @@ class KycStateMachine extends Notifier<KycStateMachineState> {
     debugPrint('[KycStateMachine] Updating from auth response: $kycStatus');
 
     final status = KycStatus.fromString(kycStatus);
-    state = state.copyWith(status: status, isLoading: false);
+    state = state.copyWith(status: status, isLoading: false, hasLoaded: true);
 
     // Sync with FSM
     final fsmStatus = _mapToFsmStatus(kycStatus);

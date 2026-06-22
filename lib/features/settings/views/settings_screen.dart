@@ -475,7 +475,7 @@ class _KycTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final kycStatus = ref.watch(kycStatusProvider);
+    final kycStatus = ref.watch(effectiveKycStatusProvider);
     final l10n = AppLocalizations.of(context)!;
 
     String subtitle;
@@ -815,7 +815,7 @@ class _ProfileCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.colors;
     final userState = ref.watch(userStateMachineProvider);
-    final kycStatus = ref.watch(kycStatusProvider);
+    final kycStatus = ref.watch(effectiveKycStatusProvider);
 
     return AppCard(
       variant: AppCardVariant.elevated,

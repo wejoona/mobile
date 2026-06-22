@@ -541,6 +541,14 @@ final kycStatusProvider = Provider<KycStatus>((ref) {
   return ref.watch(userStateMachineProvider).kycStatus;
 });
 
+final effectiveKycStatusProvider = Provider<KycStatus>((ref) {
+  final kycState = ref.watch(kycStateMachineProvider);
+  if (kycState.hasLoaded) {
+    return kycState.status;
+  }
+  return ref.watch(userStateMachineProvider).kycStatus;
+});
+
 final canTransactProvider = Provider<bool>((ref) {
   return ref.watch(userStateMachineProvider).canTransact;
 });
