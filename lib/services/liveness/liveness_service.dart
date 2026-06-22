@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Liveness challenge types
@@ -561,7 +562,7 @@ class LivenessService {
   }) async {
     try {
       final response = await _dio.post(
-        '/kyc/liveness/session',
+        ApiEndpoints.kycLivenessSession,
         data: {'capabilities': capabilities.toJson()},
         options: useRecoveryToken
             ? Options(extra: {ApiRequestExtra.useRecoveryToken: true})
@@ -598,7 +599,7 @@ class LivenessService {
       });
 
       final response = await _dio.post(
-        '/kyc/liveness/challenge',
+        ApiEndpoints.kycLivenessChallenge,
         data: formData,
         options: useRecoveryToken
             ? Options(extra: {ApiRequestExtra.useRecoveryToken: true})
@@ -613,7 +614,7 @@ class LivenessService {
   /// Get liveness status
   Future<LivenessResult?> getLivenessStatus() async {
     try {
-      final response = await _dio.get('/kyc/liveness/status');
+      final response = await _dio.get(ApiEndpoints.kycLivenessStatus);
       final data = apiResponsePayload(response.data);
 
       if (data['status'] == 'NOT_STARTED') return null;

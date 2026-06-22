@@ -234,7 +234,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
       final data = await service.getKycStatus(forceRefresh: true);
       if (!ref.mounted) return;
       final profile = KycProfile.fromJson({
-        'status': data.status.name,
+        'status': data.status.toApiString(),
         'rejectionReason': data.rejectionReason,
       });
       ref

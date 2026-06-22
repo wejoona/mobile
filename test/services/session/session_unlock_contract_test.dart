@@ -487,6 +487,12 @@ void main() {
     expect(pinScreenSource, contains('context.fsmOpenPinReset('));
     expect(pinScreenSource, contains('phone: loginState.phoneValue'));
     expect(
+      _methodBody(pinScreenSource, '_buildLockedView'),
+      contains('onPressed: _openPinReset'),
+      reason:
+          'A PIN lockout must not strand the user on OK -> login; account recovery stays available from the locked state.',
+    );
+    expect(
       pinScreenSource,
       isNot(contains('recoveryAccessToken: loginState.sessionToken')),
       reason:
@@ -1404,9 +1410,9 @@ void main() {
       reason:
           'money-flow liveness must fail closed instead of crashing when a backend challenge token is missing',
     );
-    expect(kycServiceSource, contains("'/kyc/manual-review'"));
+    expect(kycServiceSource, contains('ApiEndpoints.kycManualReview'));
     expect(kycRoutesSource, contains('redirect: _kycEvidenceRedirect'));
-    expect(kycRoutesSource, contains('flow.canSubmit'));
+    expect(kycRoutesSource, contains('!flow.hasCompletedLiveness'));
     expect(kycRoutesSource, contains('!flow.hasRequiredPersonalInfo'));
     expect(kycRoutesSource, contains('flow.selectedDocumentType == null'));
     expect(kycRoutesSource, contains('flow.capturedDocuments.isEmpty'));

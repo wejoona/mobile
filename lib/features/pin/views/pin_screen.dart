@@ -1039,6 +1039,15 @@ class _PinScreenState extends ConsumerState<PinScreen>
                   variant: AppButtonVariant.primary,
                   isFullWidth: true,
                 ),
+                const SizedBox(height: AppSpacing.md),
+                TextButton(
+                  onPressed: _openPinReset,
+                  child: AppText(
+                    l10n.login_forgotPin,
+                    variant: AppTextVariant.bodyMedium,
+                    color: colors.gold,
+                  ),
+                ),
               ],
             ),
           ),

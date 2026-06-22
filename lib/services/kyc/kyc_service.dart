@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/kyc/image_quality_checker.dart';
@@ -201,7 +202,7 @@ class KycService {
     }
 
     // Upload to /kyc/documents
-    final response = await _dio.post('/kyc/documents', data: formData);
+    final response = await _dio.post(ApiEndpoints.kycUpload, data: formData);
 
     final data = apiResponsePayload(response.data);
     final documents = data['documents'] as Map<String, dynamic>;
@@ -231,7 +232,7 @@ class KycService {
     final dateFormat = DateFormat('yyyy-MM-dd');
 
     await _dio.post(
-      '/kyc/submit',
+      ApiEndpoints.kycSubmit,
       data: {
         'firstName': firstName,
         'lastName': lastName,
@@ -249,7 +250,7 @@ class KycService {
 
   Future<KycStatusResponse> getKycStatus({bool forceRefresh = false}) async {
     final response = await _dio.get(
-      '/kyc/status',
+      ApiEndpoints.kycStatus,
       options: forceRefresh ? Options(extra: const {'skipCache': true}) : null,
     );
     final data = apiResponsePayload(response.data);
@@ -269,7 +270,7 @@ class KycService {
     Map<String, dynamic>? metadata,
   }) async {
     final response = await _dio.post(
-      '/kyc/manual-review',
+      ApiEndpoints.kycManualReview,
       data: {
         'reason': reason,
         'featureReason': featureReason,
@@ -309,7 +310,7 @@ class KycService {
       ),
     );
 
-    await _dio.post('/kyc/documents', data: formData);
+    await _dio.post(ApiEndpoints.kycUpload, data: formData);
   }
 
   // ==========================================
@@ -320,7 +321,7 @@ class KycService {
   /// Returns sessionToken + challenge info
   Future<LivenessSessionResponse> createLivenessSession() async {
     final response = await _dio.post(
-      '/kyc/liveness/session',
+      ApiEndpoints.kycLivenessSession,
       data: {
         'capabilities': {
           'supportedCaptureModes': ['photo'],
@@ -349,7 +350,7 @@ class KycService {
 
   /// Get liveness verification status for current user
   Future<LivenessSubmitResponse?> getLivenessStatus() async {
-    final response = await _dio.get('/kyc/liveness/status');
+    final response = await _dio.get(ApiEndpoints.kycLivenessStatus);
     final data = apiResponsePayload(response.data);
     if (data['status'] == 'NOT_STARTED') return null;
     return LivenessSubmitResponse.fromJson(data);
@@ -362,7 +363,7 @@ class KycService {
     String? backImageKey,
   }) async {
     final response = await _dio.post(
-      '/kyc/document/submit',
+      ApiEndpoints.kycDocumentSubmit,
       data: {
         'docType': docType,
         'frontImageKey': frontImageKey,
@@ -374,7 +375,7 @@ class KycService {
 
   /// Get full KYC verification status (doc + liveness + overall)
   Future<FullVerificationStatus> getVerificationStatus() async {
-    final response = await _dio.get('/kyc/verification/status');
+    final response = await _dio.get(ApiEndpoints.kycVerificationStatus);
     return FullVerificationStatus.fromJson(apiResponsePayload(response.data));
   }
 
@@ -413,7 +414,7 @@ class KycService {
       );
     }
 
-    final response = await _dio.post('/kyc/documents', data: formData);
+    final response = await _dio.post(ApiEndpoints.kycUpload, data: formData);
     final responseData = apiResponsePayload(response.data);
     final documents = responseData['documents'] as Map<String, dynamic>;
     final fieldData = documents[documentField] as Map<String, dynamic>;
@@ -483,7 +484,7 @@ class KycService {
     final formData = FormData.fromMap({
       documentField: await MultipartFile.fromFile(filePath),
     });
-    final response = await _dio.post('/kyc/documents', data: formData);
+    final response = await _dio.post(ApiEndpoints.kycUpload, data: formData);
     return apiResponsePayload(response.data);
   }
 

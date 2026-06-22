@@ -109,6 +109,12 @@ abstract final class ApiEndpoints {
   static const kycStatus = '/kyc/status';
   static const kycSubmit = '/kyc/submit';
   static const kycUpload = '/kyc/documents';
+  static const kycManualReview = '/kyc/manual-review';
+  static const kycDocumentSubmit = '/kyc/document/submit';
+  static const kycVerificationStatus = '/kyc/verification/status';
+  static const kycLivenessSession = '/kyc/liveness/session';
+  static const kycLivenessChallenge = '/kyc/liveness/challenge';
+  static const kycLivenessStatus = '/kyc/liveness/status';
 
   // Beneficiaries
   static const beneficiaries = '/beneficiaries';

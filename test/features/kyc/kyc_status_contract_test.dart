@@ -53,6 +53,12 @@ void main() {
       expect(loadStatusBody, contains('rejectionReason: data.rejectionReason'));
       expect(
         loadStatusBody,
+        contains("'status': data.status.toApiString()"),
+        reason:
+            'KYC status refresh must preserve API vocabulary like manual_review instead of enum names like manualReview.',
+      );
+      expect(
+        loadStatusBody,
         contains('kycStateMachineProvider.notifier'),
         reason:
             'KYC status refresh must update the durable FSM source used by redirects.',
