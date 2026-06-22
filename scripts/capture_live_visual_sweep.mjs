@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { mkdirSync, rmSync } from 'node:fs';
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -9,6 +9,7 @@ const screenshotDir = resolve(
   repoRoot,
   'build/screenshots/korido_live_visual_sweep',
 );
+const manifestPath = resolve(screenshotDir, 'capture-manifest.json');
 const deviceId = process.env.KORIDO_SIM_UDID;
 const apiUrl =
   process.env.KORIDO_API_URL ?? 'https://staging-korido-api.joonapay.com/api/v1';
@@ -22,6 +23,9 @@ if (!deviceId) {
 
 rmSync(screenshotDir, { recursive: true, force: true });
 mkdirSync(screenshotDir, { recursive: true });
+
+const captureStartedAt = new Date().toISOString();
+const capturedScreenshots = [];
 
 const flutterArgs = [
   'test',
@@ -56,6 +60,7 @@ child.stderr.on('data', (chunk) => {
 child.on('exit', (code, signal) => {
   processLines(`${stdoutBuffer}\n`);
   processLines(`${stderrBuffer}\n`);
+  writeCaptureManifest({ exitCode: code ?? 1, signal });
   if (signal) {
     process.kill(process.pid, signal);
     return;
@@ -94,5 +99,45 @@ function captureScreenshot(rawName) {
     return;
   }
 
+  capturedScreenshots.push({
+    name: rawName,
+    file: `${safeName}.png`,
+    dimensions: pngDimensions(outputPath),
+    capturedAt: new Date().toISOString(),
+  });
   console.error(`[visual-capture] captured ${safeName}`);
+}
+
+function writeCaptureManifest({ exitCode, signal }) {
+  writeFileSync(
+    manifestPath,
+    `${JSON.stringify({
+      captureType: 'ios-simulator-framebuffer',
+      generator: 'scripts/capture_live_visual_sweep.mjs',
+      source: 'xcrun simctl io screenshot',
+      app: 'korido',
+      deviceId,
+      env,
+      apiUrl,
+      startedAt: captureStartedAt,
+      finishedAt: new Date().toISOString(),
+      exitCode,
+      signal,
+      screenCount: capturedScreenshots.length,
+      screens: capturedScreenshots,
+    }, null, 2)}\n`,
+  );
+}
+
+function pngDimensions(filePath) {
+  const buffer = readFileSync(filePath);
+  if (buffer.length < 24 || buffer.toString('ascii', 1, 4) !== 'PNG') {
+    return null;
+  }
+
+  return {
+    width: buffer.readUInt32BE(16),
+    height: buffer.readUInt32BE(20),
+    bytes: buffer.length,
+  };
 }

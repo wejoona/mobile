@@ -16,6 +16,8 @@ const canonicalLiveSourceDir = path.resolve(
   projectRoot,
   'build/screenshots/korido_live_visual_sweep',
 );
+const requiredCaptureType = 'ios-simulator-framebuffer';
+const requiredCaptureGenerator = 'scripts/capture_live_visual_sweep.mjs';
 
 if (
   sourceDir !== canonicalLiveSourceDir &&
@@ -32,13 +34,55 @@ if (
   process.exit(65);
 }
 
-function walk(dir) {
-  if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-    const filePath = path.join(dir, entry.name);
-    if (entry.isDirectory()) return walk(filePath);
-    return entry.name.endsWith('.png') ? [filePath] : [];
-  });
+function loadCaptureManifest(dir) {
+  const manifestPath = path.join(dir, 'capture-manifest.json');
+  if (!fs.existsSync(manifestPath)) {
+    console.error(
+      [
+        `Refusing screenshot source without a live capture manifest: ${dir}`,
+        'This prevents widget-catalog, golden, or placeholder captures from being published as app screenshots.',
+        'Run `./scripts/codex_mobile.sh ceo-screen-catalog` so the simulator capture step writes capture-manifest.json.',
+      ].join('\n'),
+    );
+    process.exit(68);
+  }
+
+  let manifest;
+  try {
+    manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  } catch (error) {
+    console.error(`Invalid capture manifest at ${manifestPath}: ${error}`);
+    process.exit(68);
+  }
+
+  const problems = [];
+  if (manifest.captureType !== requiredCaptureType) {
+    problems.push(`captureType=${manifest.captureType ?? '<missing>'}`);
+  }
+  if (manifest.generator !== requiredCaptureGenerator) {
+    problems.push(`generator=${manifest.generator ?? '<missing>'}`);
+  }
+  if (manifest.source !== 'xcrun simctl io screenshot') {
+    problems.push(`source=${manifest.source ?? '<missing>'}`);
+  }
+  if (manifest.exitCode !== 0) {
+    problems.push(`exitCode=${manifest.exitCode ?? '<missing>'}`);
+  }
+  if (!Array.isArray(manifest.screens) || manifest.screens.length === 0) {
+    problems.push('screens=<empty>');
+  }
+
+  if (problems.length > 0) {
+    console.error(
+      [
+        `Refusing unverified screenshot source: ${dir}`,
+        ...problems.map((problem) => `- ${problem}`),
+      ].join('\n'),
+    );
+    process.exit(69);
+  }
+
+  return manifest;
 }
 
 function titleFromName(fileName) {
@@ -153,7 +197,33 @@ function paeth(left, up, upLeft) {
   return upLeft;
 }
 
-const candidateScreenshots = walk(sourceDir)
+const captureManifest = loadCaptureManifest(sourceDir);
+const manifestScreenshots = captureManifest.screens
+  .map((screen) => ({
+    file: typeof screen.file === 'string' ? screen.file : '',
+    name: typeof screen.name === 'string' ? screen.name : '',
+  }))
+  .filter(({ file }) => file.endsWith('.png'))
+  .map(({ file }) => path.join(sourceDir, file));
+
+const missingManifestScreenshots = manifestScreenshots.filter(
+  (filePath) => !fs.existsSync(filePath),
+);
+if (missingManifestScreenshots.length > 0) {
+  console.error(
+    [
+      'Refusing to build catalog because the live capture manifest references missing screenshots.',
+      ...missingManifestScreenshots.slice(0, 12).map((filePath) =>
+        `- ${path.relative(sourceDir, filePath)}`),
+      missingManifestScreenshots.length > 12
+        ? `...and ${missingManifestScreenshots.length - 12} more`
+        : '',
+    ].filter(Boolean).join('\n'),
+  );
+  process.exit(70);
+}
+
+const candidateScreenshots = manifestScreenshots
   .filter((filePath) => {
     const name = path.basename(filePath).toLowerCase();
     return !name.includes('placeholder') &&
@@ -288,8 +358,9 @@ const html = [
   '<body>',
   '<header>',
   '<h1>Korido Screen Catalog</h1>',
-  `<p>${copied.length} direct simulator screenshots captured from the live API visual sweep. Images are displayed at phone logical size; click any screen to inspect the raw PNG.</p>`,
+  `<p>${copied.length} verified simulator framebuffer screenshots captured from the live API visual sweep. Images are displayed at phone logical size; click any screen to inspect the raw PNG.</p>`,
   `<p class="meta">Source: ${sourceDir}</p>`,
+  `<p class="meta">Capture: ${captureManifest.source} · ${captureManifest.deviceId} · ${captureManifest.env}</p>`,
   '</header>',
   `<main class="grid">${cards}</main>`,
   '</body>',
@@ -303,7 +374,8 @@ fs.writeFileSync(
     'Korido Screen Catalog',
     `Source: ${sourceDir}`,
     `Screens: ${copied.length}`,
-    'Capture type: live simulator framebuffer screenshots',
+    `Capture type: ${captureManifest.captureType}`,
+    `Capture source: ${captureManifest.source}`,
     'Open index.html to browse the real app screenshots.',
     '',
   ].join('\n'),
@@ -313,7 +385,7 @@ fs.writeFileSync(
   `${JSON.stringify({
     generatedAt: new Date().toISOString(),
     sourceDir,
-    captureType: 'live simulator framebuffer screenshots',
+    capture: captureManifest,
     screenCount: copied.length,
     screens: copied,
   }, null, 2)}\n`,
