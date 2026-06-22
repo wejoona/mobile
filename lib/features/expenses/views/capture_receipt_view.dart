@@ -1,20 +1,21 @@
+import 'dart:async';
 import 'dart:io';
-import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/design/components/primitives/app_input.dart';
 import 'package:usdc_wallet/design/components/primitives/app_select.dart';
-import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/domain/entities/expense.dart';
 import 'package:usdc_wallet/features/expenses/providers/expenses_provider.dart';
 import 'package:usdc_wallet/features/expenses/services/expenses_service.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 class CaptureReceiptView extends ConsumerStatefulWidget {
@@ -29,6 +30,8 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
   final ImagePicker _picker = ImagePicker();
 
   File? _capturedImage;
+  bool _isInitializingCamera = true;
+  bool _cameraUnavailable = false;
   bool _isProcessing = false;
   bool _showEditForm = false;
 
@@ -43,14 +46,26 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
   @override
   void initState() {
     super.initState();
-    _initializeCamera();
+    unawaited(_initializeCamera());
   }
 
   Future<void> _initializeCamera() async {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _isInitializingCamera = true;
+      _cameraUnavailable = false;
+    });
+
     try {
       final cameras = await availableCameras();
-      if (cameras.isEmpty) return;
+      if (cameras.isEmpty) {
+        _markCameraUnavailable();
+        return;
+      }
 
+      await _cameraController?.dispose();
       _cameraController = CameraController(
         cameras.first,
         ResolutionPreset.high,
@@ -58,17 +73,42 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
       );
 
       await _cameraController!.initialize();
-      if (mounted) setState(() {});
-    } catch (e) {
-      AppLogger(
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _isInitializingCamera = false;
+        _cameraUnavailable = false;
+      });
+    } on CameraException catch (e) {
+      const AppLogger(
         'Error initializing camera',
       ).error('Error initializing camera', e);
+      _markCameraUnavailable();
+    } on Object catch (e) {
+      const AppLogger(
+        'Error initializing camera',
+      ).error('Error initializing camera', e);
+      _markCameraUnavailable();
     }
+  }
+
+  void _markCameraUnavailable() {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _isInitializingCamera = false;
+      _cameraUnavailable = true;
+    });
   }
 
   @override
   void dispose() {
-    _cameraController?.dispose();
+    final cameraController = _cameraController;
+    if (cameraController != null) {
+      unawaited(cameraController.dispose());
+    }
     _amountController.dispose();
     _vendorController.dispose();
     _descriptionController.dispose();
@@ -96,8 +136,12 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
         ),
         backgroundColor: Colors.transparent,
       ),
-      body: _cameraController == null || !_cameraController!.value.isInitialized
-          ? const Center(child: CircularProgressIndicator())
+      body: _cameraUnavailable
+          ? _buildCameraUnavailable(context, l10n)
+          : _isInitializingCamera ||
+                _cameraController == null ||
+                !_cameraController!.value.isInitialized
+          ? _buildCameraLoading(context, l10n)
           : Stack(
               children: [
                 CameraPreview(_cameraController!),
@@ -107,229 +151,297 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
     );
   }
 
-  Widget _buildCameraOverlay(BuildContext context, AppLocalizations l10n) {
-    return Column(
-      children: [
-        const Spacer(),
-        Padding(
-          padding: EdgeInsets.all(AppSpacing.lg),
+  Widget _buildCameraLoading(BuildContext context, AppLocalizations l10n) =>
+      Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(color: context.colors.gold),
+            const SizedBox(height: AppSpacing.lg),
+            AppText(
+              l10n.qr_initializingCamera,
+              style: AppTypography.bodyMedium.copyWith(
+                color: context.colors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      );
+
+  Widget _buildCameraUnavailable(BuildContext context, AppLocalizations l10n) =>
+      SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Icon(
+                Icons.no_photography_outlined,
+                size: 80,
+                color: context.colors.textSecondary,
+              ),
+              const SizedBox(height: AppSpacing.lg),
               AppText(
-                l10n.expenses_positionReceipt,
-                style: AppTypography.bodyMedium.copyWith(color: Colors.white),
+                l10n.kyc_camera_unavailable,
+                style: AppTypography.headlineSmall,
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: AppSpacing.xl),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildCameraButton(
-                    icon: Icons.photo_library,
-                    onTap: _pickFromGallery,
-                  ),
-                  _buildCameraButton(
-                    icon: Icons.camera,
-                    onTap: _capturePhoto,
-                    isPrimary: true,
-                  ),
-                  const SizedBox(width: 64), // Placeholder for symmetry
-                ],
+              const SizedBox(height: AppSpacing.sm),
+              AppText(
+                l10n.kyc_camera_unavailable_description,
+                style: AppTypography.bodyMedium.copyWith(
+                  color: context.colors.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              AppButton(
+                label: l10n.kyc_chooseFromGallery,
+                onPressed: _pickFromGallery,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              AppButton(
+                label: l10n.expenses_addManually,
+                onPressed: () => setState(() => _showEditForm = true),
+                variant: AppButtonVariant.secondary,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              AppButton(
+                label: l10n.common_retry,
+                onPressed: () => unawaited(_initializeCamera()),
+                variant: AppButtonVariant.ghost,
               ),
             ],
           ),
         ),
-        SizedBox(height: AppSpacing.xl),
-      ],
-    );
-  }
+      );
+
+  Widget _buildCameraOverlay(BuildContext context, AppLocalizations l10n) =>
+      Column(
+        children: [
+          const Spacer(),
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Column(
+              children: [
+                AppText(
+                  l10n.expenses_positionReceipt,
+                  style: AppTypography.bodyMedium.copyWith(color: Colors.white),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildCameraButton(
+                      icon: Icons.photo_library,
+                      onTap: _pickFromGallery,
+                    ),
+                    _buildCameraButton(
+                      icon: Icons.camera,
+                      onTap: _capturePhoto,
+                      isPrimary: true,
+                    ),
+                    const SizedBox(width: 64), // Placeholder for symmetry
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+        ],
+      );
 
   Widget _buildCameraButton({
     required IconData icon,
     required VoidCallback onTap,
     bool isPrimary = false,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: isPrimary ? 72 : 56,
-        height: isPrimary ? 72 : 56,
-        decoration: BoxDecoration(
-          color: isPrimary
-              ? context.colors.gold
-              : Colors.white.withValues(alpha: 0.3),
-          shape: BoxShape.circle,
-          border: isPrimary ? Border.all(color: Colors.white, width: 4) : null,
-        ),
-        child: Icon(
-          icon,
-          color: isPrimary ? Colors.black : Colors.white,
-          size: isPrimary ? 32 : 24,
-        ),
+  }) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      width: isPrimary ? 72 : 56,
+      height: isPrimary ? 72 : 56,
+      decoration: BoxDecoration(
+        color: isPrimary
+            ? context.colors.gold
+            : Colors.white.withValues(alpha: 0.3),
+        shape: BoxShape.circle,
+        border: isPrimary ? Border.all(color: Colors.white, width: 4) : null,
       ),
-    );
-  }
+      child: Icon(
+        icon,
+        color: isPrimary ? Colors.black : Colors.white,
+        size: isPrimary ? 32 : 24,
+      ),
+    ),
+  );
 
-  Widget _buildPreview(BuildContext context, AppLocalizations l10n) {
-    return Scaffold(
-      backgroundColor: context.colors.canvas,
-      appBar: AppBar(
-        title: AppText(
-          l10n.expenses_receiptPreview,
-          style: AppTypography.headlineSmall,
-        ),
-        backgroundColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => setState(() {
-            _capturedImage = null;
-            _isProcessing = false;
-          }),
-        ),
+  Widget _buildPreview(BuildContext context, AppLocalizations l10n) => Scaffold(
+    backgroundColor: context.colors.canvas,
+    appBar: AppBar(
+      title: AppText(
+        l10n.expenses_receiptPreview,
+        style: AppTypography.headlineSmall,
       ),
-      body: _isProcessing
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const CircularProgressIndicator(),
-                  SizedBox(height: AppSpacing.lg),
-                  AppText(
-                    l10n.expenses_processingReceipt,
-                    style: AppTypography.bodyLarge,
-                  ),
-                ],
-              ),
-            )
-          : Column(
+      backgroundColor: Colors.transparent,
+      leading: IconButton(
+        icon: const Icon(Icons.close),
+        onPressed: () => setState(() {
+          _capturedImage = null;
+          _isProcessing = false;
+        }),
+      ),
+    ),
+    body: _isProcessing
+        ? Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Expanded(child: Center(child: Image.file(_capturedImage!))),
-                Padding(
-                  padding: EdgeInsets.all(AppSpacing.md),
-                  child: Column(
-                    children: [
-                      AppButton(
-                        label: l10n.expenses_confirmAndEdit,
-                        onPressed: _showEditFormWithData,
-                      ),
-                      SizedBox(height: AppSpacing.sm),
-                      AppButton(
-                        label: l10n.expenses_retake,
-                        onPressed: () => setState(() {
-                          _capturedImage = null;
-                          _isProcessing = false;
-                        }),
-                        variant: AppButtonVariant.secondary,
-                      ),
-                    ],
-                  ),
+                const CircularProgressIndicator(),
+                const SizedBox(height: AppSpacing.lg),
+                AppText(
+                  l10n.expenses_processingReceipt,
+                  style: AppTypography.bodyLarge,
                 ),
               ],
             ),
-    );
-  }
-
-  Widget _buildEditForm(BuildContext context, AppLocalizations l10n) {
-    return Scaffold(
-      backgroundColor: context.colors.canvas,
-      appBar: AppBar(
-        title: AppText(
-          l10n.expenses_confirmDetails,
-          style: AppTypography.headlineSmall,
-        ),
-        backgroundColor: Colors.transparent,
-      ),
-      body: SafeArea(
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            padding: EdgeInsets.all(AppSpacing.md),
+          )
+        : Column(
             children: [
-              if (_capturedImage != null) ...[
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                  child: Image.file(
-                    _capturedImage!,
-                    height: 200,
-                    fit: BoxFit.cover,
-                  ),
+              Expanded(child: Center(child: Image.file(_capturedImage!))),
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: Column(
+                  children: [
+                    AppButton(
+                      label: l10n.expenses_confirmAndEdit,
+                      onPressed: _showEditFormWithData,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    AppButton(
+                      label: l10n.expenses_retake,
+                      onPressed: () => setState(() {
+                        _capturedImage = null;
+                        _isProcessing = false;
+                      }),
+                      variant: AppButtonVariant.secondary,
+                    ),
+                  ],
                 ),
-                SizedBox(height: AppSpacing.lg),
-              ],
-              AppSelect(
-                label: l10n.expenses_category,
-                value: _selectedCategory,
-                items: ExpenseCategory.all.map((category) {
-                  return AppSelectItem(
-                    value: category,
-                    label: _getCategoryLabel(l10n, category),
-                    icon: _getCategoryIcon(category),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => _selectedCategory = value);
-                  }
-                },
-              ),
-              SizedBox(height: AppSpacing.md),
-              AppInput(
-                label: l10n.expenses_amount,
-                controller: _amountController,
-                keyboardType: TextInputType.number,
-                prefix: const Text('XOF '),
-                validator: (value) {
-                  if (value?.isEmpty ?? true) {
-                    return l10n.expenses_errorAmountRequired;
-                  }
-                  if (double.tryParse(value!) == null) {
-                    return l10n.expenses_errorInvalidAmount;
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: AppSpacing.md),
-              AppInput(
-                label: l10n.expenses_vendor,
-                controller: _vendorController,
-              ),
-              SizedBox(height: AppSpacing.md),
-              AppInput(
-                label: l10n.expenses_date,
-                readOnly: true,
-                controller: TextEditingController(
-                  text: DateFormat('MMMM dd, yyyy').format(_selectedDate),
-                ),
-                suffixIcon: Icons.calendar_today,
-                onTap: () => _selectDate(context),
-              ),
-              SizedBox(height: AppSpacing.md),
-              AppInput(
-                label: l10n.expenses_description,
-                controller: _descriptionController,
-                maxLines: 3,
-              ),
-              SizedBox(height: AppSpacing.xl),
-              AppButton(
-                label: l10n.expenses_saveExpense,
-                onPressed: _handleSaveExpense,
-                isLoading: _isProcessing,
               ),
             ],
           ),
+  );
+
+  Widget _buildEditForm(BuildContext context, AppLocalizations l10n) =>
+      Scaffold(
+        backgroundColor: context.colors.canvas,
+        appBar: AppBar(
+          title: AppText(
+            l10n.expenses_confirmDetails,
+            style: AppTypography.headlineSmall,
+          ),
+          backgroundColor: Colors.transparent,
         ),
-      ),
-    );
-  }
+        body: SafeArea(
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              children: [
+                if (_capturedImage != null) ...[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                    child: Image.file(
+                      _capturedImage!,
+                      height: 200,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                ],
+                AppSelect(
+                  label: l10n.expenses_category,
+                  value: _selectedCategory,
+                  items: ExpenseCategory.all
+                      .map(
+                        (category) => AppSelectItem(
+                          value: category,
+                          label: _getCategoryLabel(l10n, category),
+                          icon: _getCategoryIcon(category),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _selectedCategory = value);
+                    }
+                  },
+                ),
+                const SizedBox(height: AppSpacing.md),
+                AppInput(
+                  label: l10n.expenses_amount,
+                  controller: _amountController,
+                  keyboardType: TextInputType.number,
+                  prefix: const Text('XOF '),
+                  validator: (value) {
+                    if (value?.isEmpty ?? true) {
+                      return l10n.expenses_errorAmountRequired;
+                    }
+                    if (double.tryParse(value!) == null) {
+                      return l10n.expenses_errorInvalidAmount;
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: AppSpacing.md),
+                AppInput(
+                  label: l10n.expenses_vendor,
+                  controller: _vendorController,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                AppInput(
+                  label: l10n.expenses_date,
+                  readOnly: true,
+                  controller: TextEditingController(
+                    text: DateFormat('MMMM dd, yyyy').format(_selectedDate),
+                  ),
+                  suffixIcon: Icons.calendar_today,
+                  onTap: () => _selectDate(context),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                AppInput(
+                  label: l10n.expenses_description,
+                  controller: _descriptionController,
+                  maxLines: 3,
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                AppButton(
+                  label: l10n.expenses_saveExpense,
+                  onPressed: _handleSaveExpense,
+                  isLoading: _isProcessing,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
 
   Future<void> _capturePhoto() async {
     try {
-      final image = await _cameraController!.takePicture();
+      final controller = _cameraController;
+      if (controller == null || !controller.value.isInitialized) {
+        _markCameraUnavailable();
+        return;
+      }
+      final image = await controller.takePicture();
       setState(() {
         _capturedImage = File(image.path);
       });
-    } catch (e) {
-      AppLogger('Error capturing photo').error('Error capturing photo', e);
+    } on Object catch (e) {
+      const AppLogger(
+        'Error capturing photo',
+      ).error('Error capturing photo', e);
     }
   }
 
@@ -341,16 +453,14 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
           _capturedImage = File(image.path);
         });
       }
-    } catch (e) {
-      AppLogger(
+    } on Object catch (e) {
+      const AppLogger(
         'Error picking from gallery',
       ).error('Error picking from gallery', e);
     }
   }
 
-  void _showEditFormWithData() {
-    setState(() => _showEditForm = true);
-  }
+  void _showEditFormWithData() => setState(() => _showEditForm = true);
 
   Future<void> _selectDate(BuildContext context) async {
     final picked = await showDatePicker(
@@ -358,19 +468,16 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
       initialDate: _selectedDate,
       firstDate: DateTime.now().subtract(const Duration(days: 365)),
       lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.dark(
-              primary: context.colors.gold,
-              onPrimary: context.colors.canvas,
-              surface: context.colors.elevated,
-              onSurface: Colors.white,
-            ),
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: ColorScheme.dark(
+            primary: context.colors.gold,
+            onPrimary: context.colors.canvas,
+            surface: context.colors.elevated,
           ),
-          child: child!,
-        );
-      },
+        ),
+        child: child!,
+      ),
     );
 
     if (picked != null && picked != _selectedDate) {
@@ -379,13 +486,17 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
   }
 
   Future<void> _handleSaveExpense() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
     setState(() => _isProcessing = true);
 
     try {
       final amount = double.tryParse(_amountController.text);
-      if (amount == null || amount <= 0) return;
+      if (amount == null || amount <= 0) {
+        return;
+      }
 
       final expense = Expense(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -415,7 +526,7 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
           ),
         );
       }
-    } catch (e) {
+    } on Object {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
