@@ -7,6 +7,7 @@ import 'package:usdc_wallet/features/limits/utils/money_flow_limit_errors.dart';
 import 'package:usdc_wallet/features/send_external/models/external_transfer_request.dart';
 import 'package:usdc_wallet/features/send_external/services/external_transfer_service.dart';
 import 'package:usdc_wallet/services/app_review/app_review_service.dart';
+import 'package:usdc_wallet/services/limits/limits_service.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/realtime/realtime_service.dart';
 import 'package:usdc_wallet/services/wallet/wallet_service.dart';
@@ -229,6 +230,12 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
 
     if (state.isSubmitting) return false;
 
+    final limitError = await _verifyExternalSendLimitsBeforeSubmission();
+    if (limitError != null) {
+      state = state.copyWith(error: limitError);
+      return false;
+    }
+
     state = state.copyWith(isLoading: true, isSubmitting: true, error: null);
     try {
       final service = ref.read(externalTransferServiceProvider);
@@ -270,6 +277,31 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
         error: moneyFlowError?.message ?? e.toString(),
       );
       return false;
+    }
+  }
+
+  Future<String?> _verifyExternalSendLimitsBeforeSubmission() async {
+    final amount = state.amount;
+    if (amount == null || amount <= 0) {
+      return 'Invalid transfer details';
+    }
+
+    try {
+      final limits = await ref.read(limitsServiceProvider).getLimits();
+      final limitHit = limits.limitHitByFor(
+        TransactionLimitOperation.send,
+        amount,
+      );
+      if (limitHit == null) {
+        return null;
+      }
+      return moneyFlowLimitErrorFor(
+        limitHit,
+        limits,
+        TransactionLimitOperation.send,
+      );
+    } catch (_) {
+      return 'Unable to verify transfer limits. Please try again.';
     }
   }
 

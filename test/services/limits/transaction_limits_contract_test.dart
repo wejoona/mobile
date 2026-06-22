@@ -40,6 +40,22 @@ void main() {
       expect(source, contains('TransactionLimitOperation.send'));
     });
 
+    test('external transfer verifies live limits before transfer API call', () {
+      final source = File(
+        'lib/features/send_external/providers/external_transfer_provider.dart',
+      ).readAsStringSync();
+
+      expect(source, contains('limitsServiceProvider'));
+      expect(source, contains('_verifyExternalSendLimitsBeforeSubmission'));
+      expect(
+        source.indexOf('_verifyExternalSendLimitsBeforeSubmission()'),
+        lessThan(source.indexOf('service.sendExternal(')),
+      );
+      expect(source, contains('limitHitByFor('));
+      expect(source, contains('TransactionLimitOperation.send'));
+      expect(source, contains('moneyFlowLimitErrorFor('));
+    });
+
     test('send confirmation fails closed when risk check is unavailable', () {
       final source = File(
         'lib/features/send/views/confirm_screen.dart',
