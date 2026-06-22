@@ -220,7 +220,8 @@ void main() {
         'lib/router/routes/kyc_settings_routes.dart',
       ).readAsStringSync();
 
-      expect(routeSource, contains('durableStatus.isSubmitted'));
+      expect(routeSource, contains('durableState.hasLoaded'));
+      expect(routeSource, contains('durableState.status.isSubmitted'));
       expect(routeSource, contains('_kycPrerequisiteRedirectForPath'));
       expect(routeSource, contains('flow.hasCompletedLiveness'));
       expect(routeSource, contains("return '/kyc/liveness-instructions';"));

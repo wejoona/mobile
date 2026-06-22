@@ -92,4 +92,4 @@ class LoginState {
 }
 
 /// Login flow steps
-enum LoginStep { phone, otp, pin, biometric, success }
+enum LoginStep { phone, otp, pin, needsPinSetup, biometric, success }

@@ -74,7 +74,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
     final status = _effectiveStatus(state, durableState);
     final hasAuthoritativeStatus =
         state.verificationStatus != null ||
-        _isAuthoritativeDurableStatus(durableState.status);
+        _isAuthoritativeDurableStatus(durableState);
     final shouldWaitForBackend =
         !hasAuthoritativeStatus &&
         state.error == null &&
@@ -464,10 +464,10 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
     }
 
     final latestFlowStatus = ref.read(kycProvider).verificationStatus;
-    final latestDurableStatus = ref.read(kycStateMachineProvider).status;
+    final latestDurableState = ref.read(kycStateMachineProvider);
     final status = _effectiveStatusFromValues(
       latestFlowStatus,
-      latestDurableStatus,
+      latestDurableState,
     );
 
     if (!status.canSubmit) {
@@ -495,28 +495,30 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
   KycStatus _effectiveStatus(
     KycFlowState flowState,
     KycStateMachineState durableState,
-  ) => _effectiveStatusFromValues(
-    flowState.verificationStatus,
-    durableState.status,
-  );
+  ) => _effectiveStatusFromValues(flowState.verificationStatus, durableState);
 
   KycStatus _effectiveStatusFromValues(
     KycStatus? flowStatus,
-    KycStatus durableStatus,
+    KycStateMachineState durableState,
   ) {
-    if (_isAuthoritativeDurableStatus(durableStatus)) {
-      return durableStatus;
+    if (_isAuthoritativeDurableStatus(durableState)) {
+      return durableState.status;
     }
 
-    return flowStatus ?? durableStatus;
+    return flowStatus ?? durableState.status;
   }
 
-  bool _isAuthoritativeDurableStatus(KycStatus status) =>
-      status.isNone ||
-      status.isSubmitted ||
-      status.isVerified ||
-      status.isRejected ||
-      status.needsAdditionalInfo;
+  bool _isAuthoritativeDurableStatus(KycStateMachineState durableState) {
+    if (!durableState.hasLoaded) {
+      return false;
+    }
+    final status = durableState.status;
+    return status.isNone ||
+        status.isSubmitted ||
+        status.isVerified ||
+        status.isRejected ||
+        status.needsAdditionalInfo;
+  }
 
   void _handleContinueToHome(BuildContext context) {
     context.fsmGo('/home');

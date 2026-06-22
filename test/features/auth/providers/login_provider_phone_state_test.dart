@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
@@ -161,6 +163,21 @@ void main() {
         container.read(loginProvider).error,
         'Unable to log in. Please check your details and try again.',
       );
+    });
+
+    test('OTP login sends accounts without PIN to first PIN setup', () {
+      final providerSource = File(
+        'lib/features/auth/providers/login_provider.dart',
+      ).readAsStringSync();
+      final viewSource = File(
+        'lib/features/auth/views/login_otp_view.dart',
+      ).readAsStringSync();
+
+      expect(providerSource, contains('response.user.hasPin'));
+      expect(providerSource, contains('LoginStep.needsPinSetup'));
+      expect(providerSource, contains("analyticsMethod: 'otp_pin_setup'"));
+      expect(viewSource, contains('LoginStep.needsPinSetup'));
+      expect(viewSource, contains("context.fsmGo('/signup/set-pin')"));
     });
   });
 }

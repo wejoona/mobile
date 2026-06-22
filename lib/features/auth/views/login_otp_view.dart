@@ -170,6 +170,8 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
               ? '/login/pin'
               : '/login/pin?returnTo=${Uri.encodeComponent(returnTo)}';
           context.fsmGo(pinRoute);
+        } else if (state.currentStep == LoginStep.needsPinSetup) {
+          context.fsmGo('/signup/set-pin');
         } else if (state.error != null) {
           setState(() {
             _hasError = true;

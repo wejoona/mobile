@@ -333,10 +333,10 @@ String? _kycSubmittedRedirect(BuildContext context, GoRouterState state) {
     return durableRedirect;
   }
 
-  final durableStatus = ProviderScope.containerOf(
+  final durableState = ProviderScope.containerOf(
     context,
-  ).read(kycStateMachineProvider).status;
-  if (durableStatus.isSubmitted) {
+  ).read(kycStateMachineProvider);
+  if (durableState.hasLoaded && durableState.status.isSubmitted) {
     return null;
   }
 
@@ -403,9 +403,13 @@ String? _kycPrerequisiteRedirectForPath(String path, KycFlowState flow) {
 
 String? _kycDurableStatusRedirect(BuildContext context, GoRouterState state) {
   final currentPath = state.uri.path;
-  final status = ProviderScope.containerOf(
+  final durableState = ProviderScope.containerOf(
     context,
-  ).read(kycStateMachineProvider).status;
+  ).read(kycStateMachineProvider);
+  if (!durableState.hasLoaded) {
+    return null;
+  }
+  final status = durableState.status;
 
   if (status.isSubmitted) {
     return currentPath == '/kyc/submitted'

@@ -56,13 +56,13 @@ class SessionsNotifier extends Notifier<SessionsState> {
     try {
       final sessions = await repository.getSessions();
 
-      final currentSession = _resolveCurrentSession(sessions);
+      final currentSessionId = _resolveCurrentSessionId(sessions);
 
       state = state.copyWith(
         isLoading: false,
         sessions: sessions,
-        currentSessionId: currentSession?.id,
-        clearCurrentSessionId: currentSession == null,
+        currentSessionId: currentSessionId,
+        clearCurrentSessionId: currentSessionId == null,
         requiresUnlock: false,
       );
     } on ApiException catch (e) {
@@ -73,12 +73,12 @@ class SessionsNotifier extends Notifier<SessionsState> {
       if (e.statusCode == 401 && await _refreshAuthForRetry()) {
         try {
           final sessions = await repository.getSessions();
-          final currentSession = _resolveCurrentSession(sessions);
+          final currentSessionId = _resolveCurrentSessionId(sessions);
           state = state.copyWith(
             isLoading: false,
             sessions: sessions,
-            currentSessionId: currentSession?.id,
-            clearCurrentSessionId: currentSession == null,
+            currentSessionId: currentSessionId,
+            clearCurrentSessionId: currentSessionId == null,
             error: null,
             requiresUnlock: false,
           );
@@ -265,7 +265,7 @@ class SessionsNotifier extends Notifier<SessionsState> {
     return false;
   }
 
-  Session? _resolveCurrentSession(List<Session> sessions) {
+  String? _resolveCurrentSessionId(List<Session> sessions) {
     if (sessions.isEmpty) {
       return null;
     }
@@ -275,14 +275,12 @@ class SessionsNotifier extends Notifier<SessionsState> {
     if (currentDeviceId != null && currentDeviceId.isNotEmpty) {
       for (final session in sessions) {
         if (session.deviceId == currentDeviceId) {
-          return session;
+          return session.id;
         }
       }
     }
 
-    return sessions.reduce(
-      (a, b) => a.lastActivityAt.isAfter(b.lastActivityAt) ? a : b,
-    );
+    return null;
   }
 }
 

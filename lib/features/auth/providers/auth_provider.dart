@@ -677,6 +677,7 @@ class AuthNotifier extends Notifier<AuthState> {
     String? countryCode,
     String? kycStatus,
     int? expiresIn,
+    String analyticsMethod = 'otp_pin',
   }) async {
     try {
       await _storage.write(key: StorageKeys.accessToken, value: accessToken);
@@ -762,7 +763,7 @@ class AuthNotifier extends Notifier<AuthState> {
       );
       unawaited(ref.read(realtimeServiceProvider).start());
 
-      _analytics.trackLogin(method: 'otp_pin');
+      _analytics.trackLogin(method: analyticsMethod);
       if (user != null) {
         _analytics.setUserProperties(userId: user.id);
       }

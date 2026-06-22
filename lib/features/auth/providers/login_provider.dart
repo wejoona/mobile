@@ -155,10 +155,11 @@ class LoginNotifier extends Notifier<LoginState> {
         countryCode: phoneValue.apiCountryCode,
         otp: state.otp!,
       );
+      final hasPin = response.user.hasPin;
 
       state = state.copyWith(
         isLoading: false,
-        currentStep: LoginStep.pin,
+        currentStep: hasPin ? LoginStep.pin : LoginStep.needsPinSetup,
         sessionToken: response.accessToken,
         refreshToken: response.refreshToken,
         sessionExpiresIn: response.expiresIn,
@@ -167,6 +168,28 @@ class LoginNotifier extends Notifier<LoginState> {
       );
 
       _resendTimer?.cancel();
+
+      if (!hasPin) {
+        final completed = await ref
+            .read(authProvider.notifier)
+            .completePinLogin(
+              accessToken: response.accessToken,
+              refreshToken: response.refreshToken,
+              user: response.user,
+              phone: response.user.phone,
+              countryCode: response.user.countryCode,
+              kycStatus: response.kycStatus,
+              expiresIn: response.expiresIn,
+              analyticsMethod: 'otp_pin_setup',
+            );
+        if (!completed) {
+          state = state.copyWith(
+            isLoading: false,
+            currentStep: LoginStep.otp,
+            error: 'Unable to start PIN setup. Please try again.',
+          );
+        }
+      }
     } on ApiException catch (e) {
       final retryAfterSeconds = _otpRetryAfterSeconds(e);
       if (retryAfterSeconds != null) {

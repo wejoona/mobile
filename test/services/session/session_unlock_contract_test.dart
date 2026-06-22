@@ -741,6 +741,21 @@ void main() {
     );
   });
 
+  test('active sessions do not guess current session from last activity', () {
+    final source = File(
+      'lib/features/settings/providers/sessions_provider.dart',
+    ).readAsStringSync();
+
+    expect(source, contains('_resolveCurrentSessionId'));
+    expect(source, contains('session.deviceId == currentDeviceId'));
+    expect(
+      source,
+      isNot(contains('lastActivityAt.isAfter')),
+      reason:
+          'The security screen must only hide revoke for an explicit current-device match.',
+    );
+  });
+
   test('pay link login preserves return intent through OTP and PIN', () {
     final payLinkSource = File(
       'lib/features/payment_links/views/pay_link_view.dart',
