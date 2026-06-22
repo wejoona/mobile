@@ -124,6 +124,8 @@ void main() {
       ).readAsStringSync();
 
       expect(statusView, contains('kycStateMachineProvider'));
+      expect(statusView, contains('_effectiveStatus'));
+      expect(statusView, contains('_isAuthoritativeDurableStatus'));
       expect(statusView, contains('hasAuthoritativeStatus'));
       expect(statusView, contains('await _refreshStatus();'));
       expect(
@@ -132,6 +134,17 @@ void main() {
         reason:
             'A null flow status means the backend status is still unknown; '
             'falling back to none lets approved users restart KYC.',
+      );
+      expect(
+        statusView,
+        isNot(
+          contains(
+            'final status = state.verificationStatus ?? durableState.status',
+          ),
+        ),
+        reason:
+            'Durable API/FSM status must win after admin approval/rejection, '
+            'otherwise stale wizard state can keep users in manual review.',
       );
     });
 

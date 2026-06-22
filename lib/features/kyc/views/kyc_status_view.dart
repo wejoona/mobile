@@ -71,14 +71,10 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
     KycStateMachineState durableState,
   ) {
     final colors = context.colors;
-    final status = state.verificationStatus ?? durableState.status;
+    final status = _effectiveStatus(state, durableState);
     final hasAuthoritativeStatus =
         state.verificationStatus != null ||
-        durableState.status.isNone ||
-        durableState.status.isSubmitted ||
-        durableState.status.isVerified ||
-        durableState.status.isRejected ||
-        durableState.status.needsAdditionalInfo;
+        _isAuthoritativeDurableStatus(durableState.status);
     final shouldWaitForBackend =
         !hasAuthoritativeStatus &&
         state.error == null &&
@@ -469,7 +465,10 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
 
     final latestFlowStatus = ref.read(kycProvider).verificationStatus;
     final latestDurableStatus = ref.read(kycStateMachineProvider).status;
-    final status = latestFlowStatus ?? latestDurableStatus;
+    final status = _effectiveStatusFromValues(
+      latestFlowStatus,
+      latestDurableStatus,
+    );
 
     if (!status.canSubmit) {
       if (status.isVerified && _hasReturnTo) {
@@ -492,6 +491,32 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
     ref.invalidate(kycProfileProvider);
     await ref.read(kycProvider.notifier).loadVerificationStatus();
   }
+
+  KycStatus _effectiveStatus(
+    KycFlowState flowState,
+    KycStateMachineState durableState,
+  ) => _effectiveStatusFromValues(
+    flowState.verificationStatus,
+    durableState.status,
+  );
+
+  KycStatus _effectiveStatusFromValues(
+    KycStatus? flowStatus,
+    KycStatus durableStatus,
+  ) {
+    if (_isAuthoritativeDurableStatus(durableStatus)) {
+      return durableStatus;
+    }
+
+    return flowStatus ?? durableStatus;
+  }
+
+  bool _isAuthoritativeDurableStatus(KycStatus status) =>
+      status.isNone ||
+      status.isSubmitted ||
+      status.isVerified ||
+      status.isRejected ||
+      status.needsAdditionalInfo;
 
   void _handleContinueToHome(BuildContext context) {
     context.fsmGo('/home');
