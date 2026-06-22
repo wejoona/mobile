@@ -15,6 +15,7 @@ import 'package:usdc_wallet/features/qr_payment/views/receive_qr_screen.dart';
 import 'package:usdc_wallet/features/qr_payment/views/scan_qr_screen.dart';
 import 'package:usdc_wallet/features/settings/views/change_pin_view.dart';
 import 'package:usdc_wallet/features/settings/views/profile_view.dart';
+import 'package:usdc_wallet/features/transactions/views/export_transactions_view.dart';
 import 'package:usdc_wallet/features/transactions/views/transaction_detail_view.dart';
 import 'package:usdc_wallet/router/page_transitions.dart';
 
@@ -79,6 +80,13 @@ List<RouteBase> cardAccountRoutes() => [
     pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
       state: state,
       child: const NotificationsView(),
+    ),
+  ),
+  GoRoute(
+    path: '/transactions/export',
+    pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+      state: state,
+      child: const ExportTransactionsView(),
     ),
   ),
   GoRoute(

@@ -6,7 +6,6 @@ import 'package:usdc_wallet/features/insights/views/insights_view.dart';
 import 'package:usdc_wallet/features/payment_links/views/create_link_view.dart';
 import 'package:usdc_wallet/features/recurring_transfers/views/recurring_transfers_list_view.dart';
 import 'package:usdc_wallet/features/savings_pots/views/pots_list_view.dart';
-import 'package:usdc_wallet/features/transactions/views/export_transactions_view.dart';
 import 'package:usdc_wallet/features/wallet/views/analytics_view.dart';
 import 'package:usdc_wallet/features/wallet/views/budget_view.dart';
 import 'package:usdc_wallet/features/wallet/views/buy_airtime_view.dart';
@@ -74,13 +73,6 @@ List<RouteBase> featureOverviewRoutes() => [
     pageBuilder: (context, state) => AppPageTransitions.fade(
       state: state,
       child: const CurrencyConverterView(),
-    ),
-  ),
-  GoRoute(
-    path: '/transactions/export',
-    pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
-      state: state,
-      child: const ExportTransactionsView(),
     ),
   ),
   GoRoute(
