@@ -94,5 +94,75 @@ void main() {
       expect(submittedView, contains('kyc_status_manualReview_title'));
       expect(submittedView, contains('kyc_info_manualReview_description'));
     });
+
+    test('KYC status screen waits for API-backed status before restart', () {
+      final statusView = File(
+        'lib/features/kyc/views/kyc_status_view.dart',
+      ).readAsStringSync();
+
+      expect(statusView, contains('kycStateMachineProvider'));
+      expect(statusView, contains('hasAuthoritativeStatus'));
+      expect(statusView, contains('await _refreshStatus();'));
+      expect(
+        statusView,
+        isNot(contains('state.verificationStatus ?? KycStatus.none')),
+        reason:
+            'A null flow status means the backend status is still unknown; '
+            'falling back to none lets approved users restart KYC.',
+      );
+    });
+
+    test('submitted/manual review screen reconciles after admin approval', () {
+      final submittedView = File(
+        'lib/features/kyc/views/submitted_view.dart',
+      ).readAsStringSync();
+
+      expect(submittedView, contains('ConsumerStatefulWidget'));
+      expect(submittedView, contains('loadVerificationStatus()'));
+      expect(submittedView, contains('kyc_status_approved_title'));
+      expect(submittedView, contains('isVerified'));
+    });
+
+    test('home refresh reconciles KYC and notification state', () {
+      final homeView = File(
+        'lib/features/wallet/views/wallet_home_screen.dart',
+      ).readAsStringSync();
+
+      expect(homeView, contains('_refreshKycForHome()'));
+      expect(homeView, contains('_refreshNotificationsForHome()'));
+      expect(homeView, contains('updateProfile(kycStatus: kyc.status)'));
+      expect(homeView, contains('refreshUnreadNotificationCountProvider'));
+    });
+
+    test('submitted review routes cannot redirect back into evidence steps', () {
+      final routeSource = File(
+        'lib/router/routes/kyc_settings_routes.dart',
+      ).readAsStringSync();
+
+      expect(routeSource, contains('durableStatus.isSubmitted'));
+      expect(
+        routeSource.indexOf('durableStatus.isSubmitted'),
+        lessThan(routeSource.indexOf('_kycEvidenceRedirect(context, state)')),
+        reason:
+            'A backend submitted/manual-review state is terminal for the user; '
+            'the submitted route must not ask for personal info, documents, or selfie again.',
+      );
+      expect(routeSource, contains("return '/kyc/submitted';"));
+    });
+
+    test('review submission does not fire a second incomplete KYC submit', () {
+      final reviewSource = File(
+        'lib/features/kyc/views/review_view.dart',
+      ).readAsStringSync();
+
+      expect(reviewSource, contains('submitKyc()'));
+      expect(
+        reviewSource,
+        isNot(contains('submitDocumentForVerification')),
+        reason:
+            'The real KYC submit already uploads evidence and personal data. '
+            'A second best-effort submit with only personalInfo creates false errors.',
+      );
+    });
   });
 }

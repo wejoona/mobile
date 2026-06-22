@@ -293,6 +293,9 @@ String? _kycEvidenceRedirect(BuildContext context, GoRouterState state) {
   }
 
   final flow = ProviderScope.containerOf(context).read(kycProvider);
+  if (flow.status.isSubmitted) {
+    return '/kyc/submitted';
+  }
   if (flow.canSubmit) {
     return null;
   }
@@ -318,6 +321,13 @@ String? _kycSubmittedRedirect(BuildContext context, GoRouterState state) {
   );
   if (durableRedirect != null) {
     return durableRedirect;
+  }
+
+  final durableStatus = ProviderScope.containerOf(
+    context,
+  ).read(kycStateMachineProvider).status;
+  if (durableStatus.isSubmitted) {
+    return null;
   }
 
   final flow = ProviderScope.containerOf(context).read(kycProvider);

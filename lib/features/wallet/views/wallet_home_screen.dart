@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,14 +14,18 @@ import 'package:usdc_wallet/design/utils/responsive_layout.dart';
 import 'package:usdc_wallet/domain/entities/limit.dart';
 import 'package:usdc_wallet/domain/entities/transaction.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
+import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
 import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
 import 'package:usdc_wallet/features/limits/widgets/limit_warning_banner.dart';
 import 'package:usdc_wallet/features/notifications/providers/notification_count_provider.dart';
+import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart'
+    as notification_feed;
 import 'package:usdc_wallet/features/wallet/widgets/cached_data_chip.dart';
 import 'package:usdc_wallet/features/wallet/widgets/wallet_home_actions.dart';
 import 'package:usdc_wallet/features/wallet/widgets/wallet_home_status_widgets.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/currency/currency_provider.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/utils/context_extensions.dart';
 import 'package:usdc_wallet/utils/logger.dart';
@@ -1046,19 +1049,18 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     }
 
     final reason = permissions?.blockReason?.trim();
+    final reviewRequired = permissions?.reviewRequired ?? false;
     final message = reason != null && reason.isNotEmpty
         ? reason
-        : permissions?.reviewRequired == true
+        : reviewRequired
         ? l10n.moneyFlow_reviewRequiredMessage
         : l10n.moneyFlow_verificationRequiredMessage;
 
     context.showSnack(
       message,
-      tone: permissions?.reviewRequired == true
-          ? AppSnackTone.info
-          : AppSnackTone.warning,
+      tone: reviewRequired ? AppSnackTone.info : AppSnackTone.warning,
       duration: const Duration(seconds: 4),
-      action: permissions?.reviewRequired == true
+      action: reviewRequired
           ? null
           : SnackBarAction(
               label: l10n.auth_verify,
@@ -1279,9 +1281,13 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     final results = await Future.wait<bool>([
       _refreshWalletForHome(),
       _refreshTransactionsForHome(),
+      _refreshKycForHome(),
+      _refreshNotificationsForHome(),
     ]);
     final walletRefreshCompleted = results.first;
-    final transactionsRefreshCompleted = results.last;
+    final transactionsRefreshCompleted = results[1];
+    final kycRefreshCompleted = results[2];
+    final notificationsRefreshCompleted = results[3];
 
     if (!mounted) {
       return;
@@ -1300,12 +1306,30 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         transactions.status == TransactionListStatus.refreshing ||
         transactions.status == TransactionListStatus.error ||
         transactions.isCached;
+    final accountUpdatesNeedAttention =
+        !kycRefreshCompleted || !notificationsRefreshCompleted;
 
-    if (balanceNeedsAttention && historyNeedsAttention) {
+    if (balanceNeedsAttention &&
+        historyNeedsAttention &&
+        accountUpdatesNeedAttention) {
       context.showSnack(
         _localizedText(
           en: 'Sync is still catching up. Showing the last known wallet activity.',
-          fr: "La synchronisation continue. Dernière activité connue affichée.",
+          fr: 'La synchronisation continue. Dernière activité connue affichée.',
+        ),
+        tone: AppSnackTone.warning,
+        duration: const Duration(seconds: 4),
+      );
+      return;
+    }
+
+    if (accountUpdatesNeedAttention &&
+        !balanceNeedsAttention &&
+        !historyNeedsAttention) {
+      context.showSnack(
+        _localizedText(
+          en: 'Account updates are still syncing. Please try again shortly.',
+          fr: 'Les mises à jour du compte se synchronisent. Réessayez bientôt.',
         ),
         tone: AppSnackTone.warning,
         duration: const Duration(seconds: 4),
@@ -1345,6 +1369,48 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
       _localizedText(en: 'Balance updated', fr: 'Solde mis à jour'),
       tone: AppSnackTone.success,
     );
+  }
+
+  Future<bool> _refreshKycForHome() async {
+    try {
+      ref.invalidate(kycProfileProvider);
+      await ref
+          .read(kycStateMachineProvider.notifier)
+          .fetch()
+          .timeout(const Duration(seconds: 8));
+      final kyc = ref.read(kycStateMachineProvider);
+      ref
+          .read(userStateMachineProvider.notifier)
+          .updateProfile(kycStatus: kyc.status);
+      return kyc.error == null;
+    } on Object catch (error, stackTrace) {
+      _logger.error(
+        'Home KYC refresh did not complete cleanly',
+        error,
+        stackTrace,
+      );
+      return false;
+    }
+  }
+
+  Future<bool> _refreshNotificationsForHome() async {
+    try {
+      ref
+        ..invalidate(notification_feed.notificationsProvider)
+        ..invalidate(notification_feed.unreadNotificationCountProvider);
+      await Future.wait<Object?>([
+        ref.refresh(notification_feed.notificationsProvider.future),
+        ref.read(refreshUnreadNotificationCountProvider)(),
+      ]).timeout(const Duration(seconds: 8));
+      return true;
+    } on Object catch (error, stackTrace) {
+      _logger.error(
+        'Home notification refresh did not complete cleanly',
+        error,
+        stackTrace,
+      );
+      return false;
+    }
   }
 
   Future<bool> _refreshWalletForHome() async {

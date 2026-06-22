@@ -341,16 +341,6 @@ class ReviewView extends ConsumerWidget {
       return;
     }
 
-    // Also submit document for VerifyHQ verification (best-effort)
-    try {
-      await ref.read(kycProvider.notifier).submitDocumentForVerification();
-    } catch (_) {
-      // Don't block the flow if verification submission fails
-      debugPrint(
-        '[KYC Review] Document verification submission failed (non-blocking)',
-      );
-    }
-
     if (context.mounted) {
       context.fsmGo('/kyc/submitted');
     }
