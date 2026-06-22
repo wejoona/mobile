@@ -734,6 +734,10 @@ class KoridoFlowDriver {
 
   bool hasAnyText(List<String> candidates) => findText(candidates) != null;
 
+  bool hasActiveLoadingIndicator() =>
+      find.byType(CircularProgressIndicator).evaluate().isNotEmpty ||
+      find.byType(RefreshProgressIndicator).evaluate().isNotEmpty;
+
   void expectNoAuthOrUnexpectedError() {
     final visible = visibleTextSnapshot().toLowerCase();
     expect(visible.contains('401'), isFalse);

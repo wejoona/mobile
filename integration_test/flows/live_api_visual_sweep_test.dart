@@ -376,6 +376,7 @@ Future<void> _waitForSurface(
       final hasUnexpectedError =
           visible.contains('unexpected error') ||
           visible.contains('erreur inattendue');
+      final isLoading = driver.hasActiveLoadingIndicator();
       final isLaunchOnly =
           visible == 'korido' ||
           (visible.startsWith('korido') && visible.split('|').length <= 2);
@@ -383,11 +384,12 @@ Future<void> _waitForSurface(
       return route.startsWith(surface.route) &&
           !hasErrorChrome &&
           !hasUnexpectedError &&
+          !isLoading &&
           !isLaunchOnly &&
           visible.trim().isNotEmpty;
     },
     reason: 'visual surface ${surface.name} at ${surface.route}',
-    timeout: const Duration(seconds: 4),
+    timeout: const Duration(seconds: 12),
   );
 
   driver.expectNoAuthOrUnexpectedError();
