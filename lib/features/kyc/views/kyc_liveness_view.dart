@@ -57,6 +57,7 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
     switch (decision) {
       case LivenessDecision.autoApprove:
         // High score — auto-approve, proceed to review
+        ref.read(kycProvider.notifier).setLivenessProof(result.stepUpProofId);
         setState(() => _isComplete = true);
         _navigationTimer = Timer(const Duration(seconds: 2), () {
           if (mounted) {
@@ -354,7 +355,7 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
   }
 
   Future<void> _submitKycEvidenceForManualReview() async {
-    await ref.read(kycProvider.notifier).submitKyc();
+    await ref.read(kycProvider.notifier).submitKyc(requireLivenessProof: false);
     final flowState = ref.read(kycProvider);
     if (flowState.error?.isNotEmpty ?? false) {
       throw StateError(flowState.error!);

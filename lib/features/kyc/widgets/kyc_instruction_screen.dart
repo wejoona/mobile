@@ -13,6 +13,8 @@ class KycInstructionScreen extends StatelessWidget {
   final String buttonLabel;
   final VoidCallback onContinue;
   final VoidCallback? onBack;
+  final Widget? extraContent;
+  final bool canContinue;
 
   const KycInstructionScreen({
     super.key,
@@ -23,6 +25,8 @@ class KycInstructionScreen extends StatelessWidget {
     required this.buttonLabel,
     required this.onContinue,
     this.onBack,
+    this.extraContent,
+    this.canContinue = true,
   });
 
   @override
@@ -83,6 +87,10 @@ class KycInstructionScreen extends StatelessWidget {
                         (instruction) =>
                             _buildInstructionRow(context, instruction, colors),
                       ),
+                      if (extraContent != null) ...[
+                        const SizedBox(height: AppSpacing.lg),
+                        extraContent!,
+                      ],
                     ],
                   ),
                 ),
@@ -91,7 +99,7 @@ class KycInstructionScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.lg),
               AppButton(
                 label: buttonLabel,
-                onPressed: onContinue,
+                onPressed: canContinue ? onContinue : null,
                 isFullWidth: true,
               ),
               const SizedBox(height: AppSpacing.md),

@@ -84,6 +84,7 @@ class KycFlowState {
   final String? rejectionReason;
   final KycTier? targetTier;
   final Map<String, String> personalInfo;
+  final String? livenessProofId;
   final bool kycConsentAccepted;
   final String? returnIntent;
   final String? returnTo;
@@ -98,6 +99,7 @@ class KycFlowState {
     this.rejectionReason,
     this.targetTier,
     this.personalInfo = const {},
+    this.livenessProofId,
     this.kycConsentAccepted = false,
     this.returnIntent,
     this.returnTo,
@@ -116,12 +118,21 @@ class KycFlowState {
     );
   }
 
-  bool get canSubmit =>
+  bool get hasIdentityEvidenceForLiveness =>
       selectedDocumentType != null &&
       capturedDocuments.isNotEmpty &&
       selfiePath != null &&
-      hasRequiredPersonalInfo &&
-      kycConsentAccepted;
+      hasRequiredPersonalInfo;
+
+  bool get hasCompletedLiveness => livenessProofId?.trim().isNotEmpty ?? false;
+
+  bool get canEnterReview =>
+      hasIdentityEvidenceForLiveness && hasCompletedLiveness;
+
+  bool get canSubmitForManualReview =>
+      hasIdentityEvidenceForLiveness && kycConsentAccepted;
+
+  bool get canSubmit => canEnterReview && kycConsentAccepted;
 
   bool get canStartVerification => status.canSubmit;
 
@@ -137,6 +148,8 @@ class KycFlowState {
     String? rejectionReason,
     KycTier? targetTier,
     Map<String, String>? personalInfo,
+    String? livenessProofId,
+    bool clearLivenessProof = false,
     bool? kycConsentAccepted,
     String? returnIntent,
     String? returnTo,
@@ -150,6 +163,9 @@ class KycFlowState {
     rejectionReason: rejectionReason ?? this.rejectionReason,
     targetTier: targetTier ?? this.targetTier,
     personalInfo: personalInfo ?? this.personalInfo,
+    livenessProofId: clearLivenessProof
+        ? null
+        : livenessProofId ?? this.livenessProofId,
     kycConsentAccepted: kycConsentAccepted ?? this.kycConsentAccepted,
     returnIntent: returnIntent ?? this.returnIntent,
     returnTo: returnTo ?? this.returnTo,
@@ -166,15 +182,22 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
   }
 
   void selectDocumentType(DocumentType type) {
-    state = state.copyWith(selectedDocumentType: type);
+    state = state.copyWith(
+      selectedDocumentType: type,
+      clearLivenessProof: true,
+    );
   }
 
   void setPersonalInfo(Map<String, String> info) {
-    state = state.copyWith(personalInfo: info);
+    state = state.copyWith(personalInfo: info, clearLivenessProof: true);
   }
 
   void setSelfie(String path) {
-    state = state.copyWith(selfiePath: path);
+    state = state.copyWith(selfiePath: path, clearLivenessProof: true);
+  }
+
+  void setLivenessProof(String proofId) {
+    state = state.copyWith(livenessProofId: proofId);
   }
 
   void setKycConsentAccepted({required bool accepted}) {
@@ -184,6 +207,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
   void addDocument(KycDocument document) {
     state = state.copyWith(
       capturedDocuments: [...state.capturedDocuments, document],
+      clearLivenessProof: true,
     );
   }
 
@@ -222,11 +246,15 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
     }
   }
 
-  Future<void> submitKyc() async {
-    if (!state.canSubmit) {
+  Future<void> submitKyc({bool requireLivenessProof = true}) async {
+    final canSubmit = requireLivenessProof
+        ? state.canSubmit
+        : state.canSubmitForManualReview;
+    if (!canSubmit) {
       state = state.copyWith(
-        error:
-            'Complete your personal information, ID document, selfie, and KYC consent before submitting.',
+        error: requireLivenessProof
+            ? 'Complete your personal information, ID document, selfie, liveness check, and KYC consent before submitting.'
+            : 'Complete your personal information, ID document, selfie, and KYC consent before manual review.',
       );
       return;
     }

@@ -289,8 +289,15 @@ List<RouteBase> kycSettingsRoutes() => [
 String? _kycStartRedirect(BuildContext context, GoRouterState state) =>
     _kycDurableStatusRedirect(context, state) ?? '/kyc/document-type';
 
-String? _kycWizardRedirect(BuildContext context, GoRouterState state) =>
-    _kycDurableStatusRedirect(context, state);
+String? _kycWizardRedirect(BuildContext context, GoRouterState state) {
+  final durableRedirect = _kycDurableStatusRedirect(context, state);
+  if (durableRedirect != null) {
+    return durableRedirect;
+  }
+
+  final flow = ProviderScope.containerOf(context).read(kycProvider);
+  return _kycPrerequisiteRedirectForPath(state.uri.path, flow);
+}
 
 String? _kycEvidenceRedirect(BuildContext context, GoRouterState state) {
   final durableRedirect = _kycDurableStatusRedirect(context, state);
@@ -302,14 +309,11 @@ String? _kycEvidenceRedirect(BuildContext context, GoRouterState state) {
   if (flow.status.isSubmitted) {
     return '/kyc/submitted';
   }
-  if (flow.canSubmit) {
-    return null;
+  if (flow.selectedDocumentType == null) {
+    return '/kyc/document-type';
   }
   if (!flow.hasRequiredPersonalInfo) {
     return '/kyc/personal-info';
-  }
-  if (flow.selectedDocumentType == null) {
-    return '/kyc/document-type';
   }
   if (flow.capturedDocuments.isEmpty) {
     return '/kyc/document-capture';
@@ -317,7 +321,10 @@ String? _kycEvidenceRedirect(BuildContext context, GoRouterState state) {
   if (flow.selfiePath == null) {
     return '/kyc/selfie';
   }
-  return '/kyc/review';
+  if (flow.canEnterReview) {
+    return '/kyc/review';
+  }
+  return null;
 }
 
 String? _kycSubmittedRedirect(BuildContext context, GoRouterState state) {
@@ -342,6 +349,56 @@ String? _kycSubmittedRedirect(BuildContext context, GoRouterState state) {
     return null;
   }
   return '/kyc';
+}
+
+String? _kycPrerequisiteRedirectForPath(String path, KycFlowState flow) {
+  switch (path) {
+    case '/kyc/document-type':
+      return null;
+    case '/kyc/personal-info':
+      if (flow.selectedDocumentType == null) {
+        return '/kyc/document-type';
+      }
+      return null;
+    case '/kyc/document-capture':
+      if (flow.selectedDocumentType == null) {
+        return '/kyc/document-type';
+      }
+      if (!flow.hasRequiredPersonalInfo) {
+        return '/kyc/personal-info';
+      }
+      return null;
+    case '/kyc/selfie':
+      if (flow.selectedDocumentType == null) {
+        return '/kyc/document-type';
+      }
+      if (!flow.hasRequiredPersonalInfo) {
+        return '/kyc/personal-info';
+      }
+      if (flow.capturedDocuments.isEmpty) {
+        return '/kyc/document-capture';
+      }
+      return null;
+    case '/kyc/review':
+      if (flow.selectedDocumentType == null) {
+        return '/kyc/document-type';
+      }
+      if (!flow.hasRequiredPersonalInfo) {
+        return '/kyc/personal-info';
+      }
+      if (flow.capturedDocuments.isEmpty) {
+        return '/kyc/document-capture';
+      }
+      if (flow.selfiePath == null) {
+        return '/kyc/selfie';
+      }
+      if (!flow.hasCompletedLiveness) {
+        return '/kyc/liveness-instructions';
+      }
+      return null;
+    default:
+      return null;
+  }
 }
 
 String? _kycDurableStatusRedirect(BuildContext context, GoRouterState state) {

@@ -194,6 +194,9 @@ void main() {
       ).readAsStringSync();
 
       expect(routeSource, contains('durableStatus.isSubmitted'));
+      expect(routeSource, contains('_kycPrerequisiteRedirectForPath'));
+      expect(routeSource, contains('flow.hasCompletedLiveness'));
+      expect(routeSource, contains("return '/kyc/liveness-instructions';"));
       expect(
         routeSource,
         isNot(contains('_kycEvidenceRedirect(context, state)')),
@@ -207,6 +210,44 @@ void main() {
       expect(routeSource, contains("return '/kyc/submitted';"));
       expect(routeSource, contains('_kycSubmittedRouteFrom(state.uri)'));
       expect(routeSource, contains("'returnTo': returnTo"));
+    });
+
+    test('KYC liveness is mandatory before review and final submit', () {
+      final providerSource = File(
+        'lib/features/kyc/providers/kyc_provider.dart',
+      ).readAsStringSync();
+      final livenessSource = File(
+        'lib/features/kyc/views/kyc_liveness_view.dart',
+      ).readAsStringSync();
+      final livenessInstructionsSource = File(
+        'lib/features/kyc/views/kyc_liveness_instructions_view.dart',
+      ).readAsStringSync();
+      final routeSource = File(
+        'lib/router/routes/kyc_settings_routes.dart',
+      ).readAsStringSync();
+
+      expect(providerSource, contains('livenessProofId'));
+      expect(providerSource, contains('clearLivenessProof'));
+      expect(providerSource, contains('hasIdentityEvidenceForLiveness'));
+      expect(providerSource, contains('hasCompletedLiveness'));
+      expect(providerSource, contains('canEnterReview'));
+      expect(providerSource, contains('canSubmitForManualReview'));
+      expect(providerSource, contains('canEnterReview && kycConsentAccepted'));
+      expect(
+        livenessSource,
+        contains('setLivenessProof(result.stepUpProofId)'),
+      );
+      expect(
+        livenessSource,
+        contains('submitKyc(requireLivenessProof: false)'),
+      );
+      expect(livenessInstructionsSource, contains('setKycConsentAccepted'));
+      expect(
+        livenessInstructionsSource,
+        contains('Identity verification consent'),
+      );
+      expect(routeSource, contains('!flow.hasCompletedLiveness'));
+      expect(routeSource, contains("return '/kyc/liveness-instructions';"));
     });
 
     test('deposit intent survives KYC wizard submission', () {
@@ -269,7 +310,7 @@ void main() {
 
       expect(providerSource, contains('kycConsentAccepted'));
       expect(providerSource, contains('grantRequiredKycConsents()'));
-      expect(providerSource, contains('hasRequiredPersonalInfo &&'));
+      expect(providerSource, contains('canEnterReview && kycConsentAccepted'));
       expect(reviewSource, contains('Identity verification consent'));
       expect(reviewSource, contains('setKycConsentAccepted'));
       expect(serviceSource, contains("'/consent/grant'"));
