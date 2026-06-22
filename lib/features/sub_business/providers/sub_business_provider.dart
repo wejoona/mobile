@@ -3,29 +3,36 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/sub_business/models/sub_business.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
+const _unset = Object();
+
 /// State for sub-business management
 class SubBusinessState {
   final bool isLoading;
   final String? error;
+  final bool requiresBusinessProfile;
   final List<SubBusiness> subBusinesses;
   final Map<String, List<StaffMember>> staffBySubBusiness;
 
   const SubBusinessState({
     this.isLoading = false,
     this.error,
+    this.requiresBusinessProfile = false,
     this.subBusinesses = const [],
     this.staffBySubBusiness = const {},
   });
 
   SubBusinessState copyWith({
     bool? isLoading,
-    String? error,
+    Object? error = _unset,
+    bool? requiresBusinessProfile,
     List<SubBusiness>? subBusinesses,
     Map<String, List<StaffMember>>? staffBySubBusiness,
   }) {
     return SubBusinessState(
       isLoading: isLoading ?? this.isLoading,
-      error: error,
+      error: identical(error, _unset) ? this.error : error as String?,
+      requiresBusinessProfile:
+          requiresBusinessProfile ?? this.requiresBusinessProfile,
       subBusinesses: subBusinesses ?? this.subBusinesses,
       staffBySubBusiness: staffBySubBusiness ?? this.staffBySubBusiness,
     );
@@ -51,9 +58,33 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
       final subBusinesses = data
           .map((json) => SubBusiness.fromJson(_asStringMap(json)))
           .toList();
-      state = state.copyWith(isLoading: false, subBusinesses: subBusinesses);
+      state = state.copyWith(
+        isLoading: false,
+        error: null,
+        requiresBusinessProfile: false,
+        subBusinesses: subBusinesses,
+      );
+    } on DioException catch (e) {
+      if (_requiresBusinessProfile(e)) {
+        state = state.copyWith(
+          isLoading: false,
+          error: null,
+          requiresBusinessProfile: true,
+          subBusinesses: const [],
+        );
+        return;
+      }
+      state = state.copyWith(
+        isLoading: false,
+        requiresBusinessProfile: false,
+        error: _readDioMessage(e),
+      );
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        requiresBusinessProfile: false,
+        error: e.toString(),
+      );
     }
   }
 
@@ -391,6 +422,13 @@ String _backendSubBusinessType(SubBusinessType type) {
 bool _isMissingEndpoint(DioException e) {
   final statusCode = e.response?.statusCode;
   return statusCode == 404 || statusCode == 405;
+}
+
+bool _requiresBusinessProfile(DioException e) {
+  if (e.response?.statusCode != 404) return false;
+  final message = _readDioMessage(e).toLowerCase();
+  return message.contains('business profile') ||
+      message.contains('create a business profile');
 }
 
 String _readDioMessage(DioException e) {
