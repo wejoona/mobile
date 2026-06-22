@@ -83,6 +83,8 @@ Avatar URL handling: the API may return absolute URLs, `/user/avatar/...`, `user
 | Initiate deposit | POST | `/wallet/deposit` |
 | Deposit status | GET | `/wallet/deposit/:id` |
 | Exchange rate | GET | `/wallet/exchange-rate` |
+| FX currencies | GET | `/fx/currencies` |
+| Indicative FX quote | GET | `/fx/quote?amount=100&sourceCurrency=USDC&targetCurrency=XOF` |
 | Internal transfer | POST | `/wallet/transfer/internal` |
 | External transfer | POST | `/wallet/transfer/external` |
 | Estimate external fee | GET | `/wallet/transfer/external/estimate-fee` |

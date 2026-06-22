@@ -43,6 +43,10 @@ abstract final class ApiEndpoints {
   static String walletDepositTransactionStatus(String depositId) =>
       '/wallet/transactions/deposit/$depositId/status';
 
+  // FX lookup
+  static const fxCurrencies = '/fx/currencies';
+  static const fxQuote = '/fx/quote';
+
   // Transfers
   static const transfersSend = '/wallet/transfer/internal';
   static const transfersEstimateFee = '/wallet/transfer/external/estimate-fee';
