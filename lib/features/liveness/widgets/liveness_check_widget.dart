@@ -139,6 +139,13 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
       return;
     }
 
+    final cameraPermissionReady = await _prepareCameraPermissionForSession(
+      trustSystemSettings: trustSystemSettings,
+    );
+    if (!mounted || !cameraPermissionReady) {
+      return;
+    }
+
     final sessionReady = await _createSession();
     if (!mounted || !sessionReady) {
       return;
@@ -153,6 +160,19 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget>
         _statusMessage = 'Follow the liveness challenge';
       });
     }
+  }
+
+  Future<bool> _prepareCameraPermissionForSession({
+    required bool trustSystemSettings,
+  }) async {
+    if (trustSystemSettings) {
+      final latestStatus = await ph.Permission.camera.status;
+      _systemCameraAccessGranted =
+          latestStatus.isGranted || latestStatus.isLimited;
+      return true;
+    }
+
+    return _ensureCameraPermission();
   }
 
   Future<bool> _initializeCamera({bool trustSystemSettings = false}) async {

@@ -959,11 +959,18 @@ void main() {
       reason:
           'account recovery liveness rate limits must become manual review so a locked user is not stranded in retry-only state',
     );
+    expect(livenessSource, contains('_prepareCameraPermissionForSession'));
+    expect(
+      livenessStartBody.indexOf('await _prepareCameraPermissionForSession('),
+      lessThan(livenessStartBody.indexOf('await _createSession()')),
+      reason:
+          'do not consume a backend liveness session while the user is still stuck in camera permission setup',
+    );
     expect(
       livenessStartBody.indexOf('await _createSession()'),
       lessThan(livenessStartBody.indexOf('await _initializeCamera(')),
       reason:
-          'do not request camera permission when the provider cannot create a usable liveness session',
+          'challenge negotiation should still happen before the camera preview starts',
     );
     expect(
       livenessSource,
