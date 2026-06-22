@@ -9,6 +9,7 @@ import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
 import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
+import 'package:usdc_wallet/features/kyc/utils/kyc_return_route.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart';
@@ -49,11 +50,11 @@ class _SubmittedViewState extends ConsumerState<SubmittedView> {
     final flow = ref.watch(kycProvider);
     final wizardStatus = flow.verificationStatus;
     final status = wizardStatus ?? durableStatus;
-    final returnTo = _safeReturnTo(flow);
     final isManualReview =
         durableStatus == KycStatus.manualReview ||
         wizardStatus == KycStatus.manualReview;
     final isVerified = status.isVerified;
+    final returnTo = isVerified ? _safeReturnTo(flow) : null;
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -160,7 +161,10 @@ class _SubmittedViewState extends ConsumerState<SubmittedView> {
     if (candidate == null || !candidate.startsWith('/')) {
       return null;
     }
-    return candidate;
+    return safeKycReturnRoute(
+      raw: candidate,
+      intent: widget.intent ?? flow.returnIntent,
+    );
   }
 
   String _continueLabel(

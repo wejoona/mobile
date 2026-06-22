@@ -10,6 +10,7 @@ import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
 import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
+import 'package:usdc_wallet/features/kyc/utils/kyc_return_route.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart';
@@ -510,7 +511,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
     if (returnTo == null || !returnTo.startsWith('/')) {
       return null;
     }
-    return returnTo;
+    return safeKycReturnRoute(raw: returnTo, intent: widget.intent);
   }
 
   String _localizedText(

@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/components/primitives/app_card.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
+import 'package:usdc_wallet/features/kyc/utils/kyc_return_route.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
@@ -417,9 +418,8 @@ class ReviewView extends ConsumerWidget {
 
   String _submittedRoute(KycFlowState flow) {
     final intent = flow.returnIntent?.trim();
-    final returnTo = flow.returnTo?.trim();
-    if ((intent == null || intent.isEmpty) ||
-        (returnTo == null || !returnTo.startsWith('/'))) {
+    final returnTo = safeKycReturnRoute(raw: flow.returnTo, intent: intent);
+    if ((intent == null || intent.isEmpty) || returnTo == null) {
       return '/kyc/submitted';
     }
 
