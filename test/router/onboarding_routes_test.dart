@@ -299,94 +299,125 @@ void main() {
       );
     });
 
-    testWidgets(
-      'authenticated signup context cannot bypass required setup to home',
-      (tester) async {
-        await tester.binding.setSurfaceSize(const Size(430, 932));
-        addTearDown(() => tester.binding.setSurfaceSize(null));
+    testWidgets('stale signup context off signup routes cannot hijack setup', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(430, 932));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
 
-        Future<String> initialRouteFor({
-          required User user,
-          required SignupFlowState signupState,
-        }) async {
-          SharedPreferences.setMockInitialValues({});
-          final sharedPreferences = await SharedPreferences.getInstance();
-          final container = buildContainer(
-            sharedPreferences: sharedPreferences,
-            authenticatedUser: user,
-            signupState: signupState,
-          );
-          addTearDown(container.dispose);
-          final router = container.read(routerProvider);
+      Future<String> initialRouteFor({
+        required User user,
+        required SignupFlowState signupState,
+      }) async {
+        SharedPreferences.setMockInitialValues({});
+        final sharedPreferences = await SharedPreferences.getInstance();
+        final container = buildContainer(
+          sharedPreferences: sharedPreferences,
+          authenticatedUser: user,
+          signupState: signupState,
+        );
+        addTearDown(container.dispose);
+        final router = container.read(routerProvider);
 
-          await tester.pumpWidget(
-            UncontrolledProviderScope(
-              container: container,
-              child: MaterialApp.router(
-                routerConfig: router,
-                localizationsDelegates: const [
-                  AppLocalizations.delegate,
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate,
-                ],
-                supportedLocales: AppLocalizations.supportedLocales,
-                theme: TestTheme.darkTheme,
-              ),
-            ),
-          );
-
-          await tester.pump();
-          await tester.pump(const Duration(milliseconds: 300));
-          final path = router.routeInformationProvider.value.uri.path;
-          await tester.pumpWidget(const SizedBox.shrink());
-          await tester.pump();
-          return path;
-        }
-
-        expect(
-          await initialRouteFor(
-            user: testUser(),
-            signupState: const SignupFlowState(
-              isLoading: false,
-              phoneNumber: '0748805663',
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp.router(
+              routerConfig: router,
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: AppLocalizations.supportedLocales,
+              theme: TestTheme.darkTheme,
             ),
           ),
-          '/signup/profile',
         );
 
-        expect(
-          await initialRouteFor(
-            user: testUser(firstName: 'Ben', lastName: 'Ouattara'),
-            signupState: const SignupFlowState(
-              isLoading: false,
-              phoneNumber: '0748805663',
-              firstName: 'Ben',
-              lastName: 'Ouattara',
-            ),
-          ),
-          '/signup/set-pin',
-        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        final path = router.routeInformationProvider.value.uri.path;
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump();
+        return path;
+      }
 
-        expect(
-          await initialRouteFor(
-            user: testUser(
-              firstName: 'Ben',
-              lastName: 'Ouattara',
-              hasPin: true,
-            ),
-            signupState: const SignupFlowState(
-              isLoading: false,
-              phoneNumber: '0748805663',
-              firstName: 'Ben',
-              lastName: 'Ouattara',
-              pin: '123456',
-            ),
+      expect(
+        await initialRouteFor(
+          user: testUser(),
+          signupState: const SignupFlowState(
+            isLoading: false,
+            phoneNumber: '0748805663',
           ),
-          '/signup/kyc-prompt',
-        );
-      },
-    );
+        ),
+        '/profile-complete',
+      );
+
+      expect(
+        await initialRouteFor(
+          user: testUser(firstName: 'Ben', lastName: 'Ouattara'),
+          signupState: const SignupFlowState(
+            isLoading: false,
+            phoneNumber: '0748805663',
+            firstName: 'Ben',
+            lastName: 'Ouattara',
+          ),
+        ),
+        '/signup/set-pin',
+      );
+
+      final staleCompleteSignupRoute = await initialRouteFor(
+        user: testUser(firstName: 'Ben', lastName: 'Ouattara', hasPin: true),
+        signupState: const SignupFlowState(
+          isLoading: false,
+          phoneNumber: '0748805663',
+          firstName: 'Ben',
+          lastName: 'Ouattara',
+          pin: '123456',
+        ),
+      );
+
+      expect(
+        staleCompleteSignupRoute,
+        isNot('/signup/kyc-prompt'),
+        reason:
+            'A stale signup provider must not reopen signup KYC after durable user setup is already complete.',
+      );
+      expect(
+        staleCompleteSignupRoute.startsWith('/signup/'),
+        isFalse,
+        reason:
+            'Signup-local form state is only authoritative while the current route is inside signup.',
+      );
+    });
+
+    test('signup setup state is trusted only while inside signup routes', () {
+      final source = File('lib/router/app_redirector.dart').readAsStringSync();
+      final setupBody = _methodBody(source, 'String? _nextRequiredSetupRoute');
+
+      expect(
+        setupBody,
+        contains('final trustSignupSetupState ='),
+        reason:
+            'Local signup form state must have an explicit trust boundary before it can satisfy setup guards.',
+      );
+      expect(
+        setupBody,
+        contains('inSignupRoute && _hasActiveSignupContext(signupState)'),
+      );
+      expect(
+        setupBody,
+        contains(
+          '(trustSignupSetupState && _hasNonBlank(signupState.firstName))',
+        ),
+      );
+      expect(
+        setupBody,
+        contains('(trustSignupSetupState && _hasNonBlank(signupState.pin))'),
+      );
+    });
 
     test('signup setup redirect runs before auth dead-end cleanup', () {
       final source = File('lib/router/app_redirector.dart').readAsStringSync();
@@ -431,7 +462,10 @@ void main() {
       expect(routeSource, contains("return currentPath == '/kyc/submitted'"));
       expect(routeSource, contains("return '/kyc/review';"));
       expect(providerSource, contains('_refreshBackendStatusAfterSubmission'));
-      expect(providerSource, contains('service.getKycStatus()'));
+      expect(
+        providerSource,
+        contains('service.getKycStatus(forceRefresh: true)'),
+      );
       expect(providerSource, contains('updateFromAuthResponse'));
       expect(
         providerSource,
@@ -653,7 +687,21 @@ String _methodBody(String source, String methodName) {
   final signatureIndex = source.indexOf(methodName);
   expect(signatureIndex, greaterThanOrEqualTo(0));
 
-  final bodyStart = source.indexOf('{', signatureIndex);
+  var bodyStart = -1;
+  var parenDepth = 0;
+  var sawOpenParen = false;
+  for (var index = signatureIndex; index < source.length; index += 1) {
+    final char = source[index];
+    if (char == '(') {
+      parenDepth += 1;
+      sawOpenParen = true;
+    } else if (char == ')' && sawOpenParen) {
+      parenDepth -= 1;
+    } else if (char == '{' && (!sawOpenParen || parenDepth == 0)) {
+      bodyStart = index;
+      break;
+    }
+  }
   expect(bodyStart, greaterThanOrEqualTo(0));
 
   var depth = 0;

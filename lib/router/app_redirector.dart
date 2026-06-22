@@ -425,24 +425,25 @@ String? _nextRequiredSetupRoute({
   required UserState userState,
   required SignupFlowState signupState,
 }) {
-  final inSignupFlow =
-      _isSignupRoute(location) ||
-      _isLegacySignupRoute(location) ||
-      _hasActiveSignupContext(signupState);
+  final inSignupRoute =
+      _isSignupRoute(location) || _isLegacySignupRoute(location);
+  final trustSignupSetupState =
+      inSignupRoute && _hasActiveSignupContext(signupState);
 
   final hasProfileName =
       _hasNonBlank(authState.user?.firstName) ||
       _hasNonBlank(userState.firstName) ||
-      _hasNonBlank(signupState.firstName);
+      (trustSignupSetupState && _hasNonBlank(signupState.firstName));
   if (!hasProfileName) {
     if (location == '/signup/profile' || location == '/profile-complete') {
       return null;
     }
-    return inSignupFlow ? '/signup/profile' : '/profile-complete';
+    return inSignupRoute ? '/signup/profile' : '/profile-complete';
   }
 
   final hasPin =
-      (authState.user?.hasPin ?? false) || _hasNonBlank(signupState.pin);
+      (authState.user?.hasPin ?? false) ||
+      (trustSignupSetupState && _hasNonBlank(signupState.pin));
   if (!hasPin) {
     if (location == '/signup/set-pin') {
       return null;
@@ -450,7 +451,7 @@ String? _nextRequiredSetupRoute({
     return '/signup/set-pin';
   }
 
-  if (inSignupFlow &&
+  if (inSignupRoute &&
       !signupState.isComplete &&
       location != '/signup/kyc-prompt' &&
       location != '/signup/success' &&
