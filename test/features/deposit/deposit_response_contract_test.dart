@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/deposit/models/deposit_request.dart';
 import 'package:usdc_wallet/features/deposit/models/deposit_response.dart';
 import 'package:usdc_wallet/features/deposit/models/mobile_money_provider.dart';
+import 'package:usdc_wallet/features/deposit/models/provider_data.dart';
 import 'package:usdc_wallet/domain/entities/wallet.dart';
 import 'package:usdc_wallet/services/deposit/deposit_service.dart';
 
@@ -98,6 +99,29 @@ void main() {
         'us_ach',
       );
       expect(depositChannelIdFromJson({'code': 'OMCI'}), 'orange_money_ci');
+    });
+
+    test('derives provider branding from PaySwitch-discovered channels', () {
+      expect(
+        const ProviderData(
+          id: 'payswitch_wave_ci',
+          name: 'Wave',
+          enumProvider: 'wave',
+        ).brandKey,
+        'wave',
+      );
+      expect(
+        const ProviderData(
+          id: 'payswitch_orange_money_ci',
+          name: 'Mobile money',
+          enumProvider: 'orange',
+        ).brandKey,
+        'orange_money',
+      );
+      expect(
+        const ProviderData(id: 'us_ach', name: 'ACH transfer').brandKey,
+        'ach',
+      );
     });
 
     test('deposit service sends canonical backend initiate payload', () async {

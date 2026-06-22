@@ -479,28 +479,20 @@ class _ProviderTile extends StatelessWidget {
   }
 
   Color _getProviderColor() {
-    switch (provider.id.toUpperCase()) {
-      case 'ORANGE_MONEY_CI':
-      case 'OMCI':
-      case 'ORANGE_MONEY':
+    switch (provider.brandKey) {
+      case 'orange_money':
         return const Color(0xFFFF6B35);
-      case 'MTN_MOMO_CI':
-      case 'MTNCI':
-      case 'MTN_MOMO':
+      case 'mtn_momo':
         return const Color(0xFFFFCB05);
-      case 'MOOV_MONEY_CI':
-      case 'MOOVCI':
-      case 'MOOV_MONEY':
+      case 'moov_money':
         return const Color(0xFF0066CC);
-      case 'WAVE_CI':
-      case 'WAVECI':
-      case 'WAVE':
+      case 'wave':
         return const Color(0xFF4A148C);
-      case 'US_CARD':
+      case 'card':
         return const Color(0xFF2563EB);
-      case 'US_ACH':
+      case 'ach':
         return const Color(0xFF047857);
-      case 'USDC_CRYPTO':
+      case 'crypto':
         return const Color(0xFF2775CA);
       default:
         return colors.gold;
