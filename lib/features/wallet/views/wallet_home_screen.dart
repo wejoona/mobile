@@ -1059,14 +1059,14 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
       context.showSnack(
         hasError
             ? _localizedText(
-                en: 'Account permissions could not be loaded. Refresh and try again.',
-                fr: 'Les permissions du compte ne sont pas disponibles. Actualisez puis réessayez.',
+                en: 'Opening now. We will verify account permissions before completion.',
+                fr: 'Ouverture en cours. Les permissions seront vérifiées avant la validation.',
               )
             : _localizedText(
-                en: 'Checking your account permissions. Try again in a moment.',
-                fr: 'Vérification des permissions du compte. Réessayez dans un instant.',
+                en: 'Opening now while account permissions sync.',
+                fr: 'Ouverture en cours pendant la synchronisation des permissions.',
               ),
-        tone: hasError ? AppSnackTone.warning : AppSnackTone.info,
+        tone: AppSnackTone.info,
         duration: const Duration(seconds: 4),
         action: hasError
             ? SnackBarAction(
@@ -1076,6 +1076,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
               )
             : null,
       );
+      unawaited(context.fsmPush(route));
       return;
     }
 

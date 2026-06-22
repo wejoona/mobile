@@ -86,13 +86,17 @@ class SignupSuccessView extends ConsumerWidget {
                     ),
                     SizedBox(height: AppSpacing.md),
                     AppText(
-                      l10n.onboarding_success_walletCreated,
+                      _copy(context, en: 'Account ready', fr: 'Compte prêt'),
                       style: AppTypography.titleMedium,
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: AppSpacing.sm),
                     AppText(
-                      l10n.onboarding_success_walletMessage,
+                      _copy(
+                        context,
+                        en: 'Your Korido account is active. Wallet setup will finish automatically when you enter the app.',
+                        fr: 'Votre compte Korido est actif. La configuration du portefeuille se terminera automatiquement dans l’application.',
+                      ),
                       style: AppTypography.bodySmall.copyWith(
                         color: context.colors.textSecondary,
                       ),
@@ -118,5 +122,10 @@ class SignupSuccessView extends ConsumerWidget {
   void _handleContinue(BuildContext context, WidgetRef ref) {
     ref.read(signupFlowProvider.notifier).completeSignupFlow();
     context.fsmEnterAuthenticatedApp();
+  }
+
+  String _copy(BuildContext context, {required String en, required String fr}) {
+    final locale = Localizations.localeOf(context);
+    return locale.languageCode == 'fr' ? fr : en;
   }
 }

@@ -82,6 +82,7 @@ class KycFlowState {
   final String? rejectionReason;
   final KycTier? targetTier;
   final Map<String, String> personalInfo;
+  final bool kycConsentAccepted;
 
   const KycFlowState({
     this.isLoading = false,
@@ -93,6 +94,7 @@ class KycFlowState {
     this.rejectionReason,
     this.targetTier,
     this.personalInfo = const {},
+    this.kycConsentAccepted = false,
   });
 
   bool get hasRequiredPersonalInfo {
@@ -112,7 +114,8 @@ class KycFlowState {
       selectedDocumentType != null &&
       capturedDocuments.isNotEmpty &&
       selfiePath != null &&
-      hasRequiredPersonalInfo;
+      hasRequiredPersonalInfo &&
+      kycConsentAccepted;
 
   bool get canStartVerification => status.canSubmit;
 
@@ -128,6 +131,7 @@ class KycFlowState {
     String? rejectionReason,
     KycTier? targetTier,
     Map<String, String>? personalInfo,
+    bool? kycConsentAccepted,
   }) => KycFlowState(
     isLoading: isLoading ?? this.isLoading,
     error: error,
@@ -138,6 +142,7 @@ class KycFlowState {
     rejectionReason: rejectionReason ?? this.rejectionReason,
     targetTier: targetTier ?? this.targetTier,
     personalInfo: personalInfo ?? this.personalInfo,
+    kycConsentAccepted: kycConsentAccepted ?? this.kycConsentAccepted,
   );
 }
 
@@ -160,6 +165,10 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
 
   void setSelfie(String path) {
     state = state.copyWith(selfiePath: path);
+  }
+
+  void setKycConsentAccepted({required bool accepted}) {
+    state = state.copyWith(kycConsentAccepted: accepted, error: null);
   }
 
   void addDocument(KycDocument document) {
@@ -200,7 +209,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
     if (!state.canSubmit) {
       state = state.copyWith(
         error:
-            'Complete your personal information, ID document, and selfie before submitting.',
+            'Complete your personal information, ID document, selfie, and KYC consent before submitting.',
       );
       return;
     }
@@ -210,6 +219,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
     analytics.trackKycStarted();
     try {
       final service = ref.read(kycServiceProvider);
+      await service.grantRequiredKycConsents();
       // Include documents and selfie — not just personalInfo
       final documentPaths = state.capturedDocuments
           .map((doc) => doc.imagePath)

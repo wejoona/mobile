@@ -3219,7 +3219,7 @@ void main() {
         'lib/services/realtime/realtime_service.dart',
       ).readAsStringSync();
       final refreshAfterTransactionBody = RegExp(
-        r'void refreshAfterTransaction\(\) \{([\s\S]*?)\n  // ── WebSocket ──',
+        r'void refreshAfterTransaction\(\) \{([\s\S]*?)\n  // ── Socket\.IO ──',
       ).firstMatch(realtimeSource)!.group(1)!;
       final invalidateRecipientProvidersBody = RegExp(
         r'void _invalidateRecipientProviders\(\) \{([\s\S]*?)\n  \}',

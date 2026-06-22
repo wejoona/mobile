@@ -8,9 +8,54 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/kyc/image_quality_checker.dart';
 
 class KycService {
+  KycService(this._dio);
+
   final Dio _dio;
 
-  KycService(this._dio);
+  static const List<String> kycRequiredConsentTypes = [
+    'kyc_data_processing',
+    'kyc_data_sharing',
+    'privacy_policy',
+    'terms_of_service',
+    'aml_screening',
+  ];
+
+  Future<bool> hasRequiredKycConsents() async {
+    final response = await _dio.get('/consent/status');
+    final data = apiResponsePayload(response.data);
+    final consents = data['consents'];
+    if (data['kycReady'] == true) {
+      return true;
+    }
+    if (consents is! List) {
+      return false;
+    }
+
+    final granted = <String>{};
+    for (final item in consents) {
+      if (item is Map && item['granted'] == true) {
+        final consentType = item['consentType']?.toString();
+        if (consentType != null) {
+          granted.add(consentType);
+        }
+      }
+    }
+
+    return kycRequiredConsentTypes.every(granted.contains);
+  }
+
+  Future<void> grantRequiredKycConsents({
+    String version = 'korido-mobile-kyc-v1',
+  }) async {
+    await Future.wait(
+      kycRequiredConsentTypes.map(
+        (consentType) => _dio.post(
+          '/consent/grant',
+          data: {'consentType': consentType, 'version': version},
+        ),
+      ),
+    );
+  }
 
   /// Submit KYC following the two-step backend flow:
   /// 1. Upload documents to /kyc/documents → get S3 keys

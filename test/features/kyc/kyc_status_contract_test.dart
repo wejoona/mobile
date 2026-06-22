@@ -142,9 +142,9 @@ void main() {
       );
       expect(
         homeView,
-        contains('Account permissions could not be loaded'),
+        contains('We will verify account permissions before completion'),
         reason:
-            'Unknown limits should be shown as a sync/retry state, not as a false verification failure.',
+            'Unknown limits should not create a one-tap dead end; backend writers still enforce permissions before completion.',
       );
     });
 
@@ -177,6 +177,34 @@ void main() {
             'The real KYC submit already uploads evidence and personal data. '
             'A second best-effort submit with only personalInfo creates false errors.',
       );
+    });
+
+    test('KYC review requires explicit backend consent before submit', () {
+      final providerSource = File(
+        'lib/features/kyc/providers/kyc_provider.dart',
+      ).readAsStringSync();
+      final reviewSource = File(
+        'lib/features/kyc/views/review_view.dart',
+      ).readAsStringSync();
+      final serviceSource = File(
+        'lib/services/kyc/kyc_service.dart',
+      ).readAsStringSync();
+
+      expect(providerSource, contains('kycConsentAccepted'));
+      expect(providerSource, contains('grantRequiredKycConsents()'));
+      expect(providerSource, contains('hasRequiredPersonalInfo &&'));
+      expect(reviewSource, contains('Identity verification consent'));
+      expect(reviewSource, contains('setKycConsentAccepted'));
+      expect(serviceSource, contains("'/consent/grant'"));
+      for (final consentType in [
+        'kyc_data_processing',
+        'kyc_data_sharing',
+        'privacy_policy',
+        'terms_of_service',
+        'aml_screening',
+      ]) {
+        expect(serviceSource, contains("'$consentType'"));
+      }
     });
   });
 }
