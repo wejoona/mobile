@@ -4,6 +4,7 @@ import 'package:usdc_wallet/features/cards/views/card_detail_view.dart';
 import 'package:usdc_wallet/features/cards/views/card_settings_view.dart';
 import 'package:usdc_wallet/features/cards/views/card_transactions_view.dart';
 import 'package:usdc_wallet/features/cards/views/request_card_view.dart';
+import 'package:usdc_wallet/features/deposit/models/deposit_response.dart';
 import 'package:usdc_wallet/features/deposit/views/payment_instructions_screen.dart';
 import 'package:usdc_wallet/features/kyc/views/kyc_status_view.dart';
 import 'package:usdc_wallet/features/notifications/views/notifications_view.dart';
@@ -103,10 +104,14 @@ List<RouteBase> cardAccountRoutes() => [
   ),
   GoRoute(
     path: '/deposit/instructions',
-    pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
-      state: state,
-      child: const PaymentInstructionsScreen(),
-    ),
+    pageBuilder: (context, state) {
+      final extra = state.extra;
+      final initialResponse = extra is DepositResponse ? extra : null;
+      return AppPageTransitions.verticalSlide(
+        state: state,
+        child: PaymentInstructionsScreen(initialResponse: initialResponse),
+      );
+    },
   ),
   GoRoute(
     path: '/settings/profile',

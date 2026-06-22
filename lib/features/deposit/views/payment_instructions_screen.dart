@@ -22,7 +22,10 @@ import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 /// - PUSH flow: Shows "Approve the payment on your phone" + waiting spinner + auto-polls status
 /// - QR_LINK flow: Shows QR code + "Open in Wave" deep link button + auto-polls status
 class PaymentInstructionsScreen extends ConsumerStatefulWidget {
-  const PaymentInstructionsScreen({super.key});
+  const PaymentInstructionsScreen({super.key, DepositResponse? initialResponse})
+    : _initialResponse = initialResponse;
+
+  final DepositResponse? _initialResponse;
 
   @override
   ConsumerState<PaymentInstructionsScreen> createState() =>
@@ -34,7 +37,19 @@ class _PaymentInstructionsScreenState
   @override
   void initState() {
     super.initState();
-    // Polling starts in DepositNotifier after /wallet/deposit.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final response = widget._initialResponse;
+      if (response == null) {
+        return;
+      }
+      final currentId = ref.read(depositProvider).activeDepositId;
+      final incomingId = response.transactionId.isNotEmpty
+          ? response.transactionId
+          : response.depositId;
+      if (currentId != incomingId) {
+        ref.read(depositProvider.notifier).hydrateFromResponse(response);
+      }
+    });
   }
 
   @override
@@ -42,7 +57,7 @@ class _PaymentInstructionsScreenState
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
     final state = ref.watch(depositProvider);
-    final response = state.response;
+    final response = state.response ?? widget._initialResponse;
 
     ref.listen<DepositState>(depositProvider, (previous, current) {
       final isNewError =
@@ -56,18 +71,30 @@ class _PaymentInstructionsScreenState
           (current.step == DepositFlowStep.completed ||
               current.step == DepositFlowStep.failed);
       if (didReachTerminalStep) {
-        context.fsmPush('/deposit/status');
+        unawaited(context.fsmPush('/deposit/status'));
       }
     });
 
     if (response == null) {
       return Scaffold(
         backgroundColor: colors.canvas,
-        body: Center(
-          child: AppText(
-            l10n.deposit_noDepositData,
-            variant: AppTextVariant.bodyMedium,
-            color: colors.textSecondary,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          title: AppText(
+            l10n.deposit_payment,
+            variant: AppTextVariant.titleLarge,
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () =>
+                context.fsmSafePop(fallbackRoute: '/deposit/amount'),
+          ),
+        ),
+        body: SafeArea(
+          child: _DepositInstructionsRecovery(
+            title: l10n.deposit_noDepositData,
+            primaryLabel: l10n.deposit_amount,
+            onPrimary: () => context.fsmGo('/deposit/amount'),
           ),
         ),
       );
@@ -97,7 +124,7 @@ class _PaymentInstructionsScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      _buildAmountCard(state, colors, l10n),
+                      _buildAmountCard(state, response, colors, l10n),
                       const SizedBox(height: AppSpacing.xl),
 
                       if (response.instructions.isNotEmpty) ...[
@@ -137,7 +164,7 @@ class _PaymentInstructionsScreenState
 
               // Action button (only for OTP flow)
               if (response.paymentMethodType.requiresOtp)
-                _buildActionButton(state, colors, l10n),
+                _buildActionButton(state, response, colors, l10n),
             ],
           ),
         ),
@@ -190,6 +217,7 @@ class _PaymentInstructionsScreenState
 
   Widget _buildAmountCard(
     DepositState state,
+    DepositResponse response,
     ThemeColors colors,
     AppLocalizations l10n,
   ) {
@@ -200,7 +228,7 @@ class _PaymentInstructionsScreenState
           Expanded(
             child: _AmountSummaryColumn(
               label: l10n.deposit_youPay,
-              value: _formatSourceAmount(state),
+              value: _formatSourceAmount(state, response),
               valueColor: colors.textPrimary,
               alignEnd: false,
               colors: colors,
@@ -213,7 +241,7 @@ class _PaymentInstructionsScreenState
             child: _AmountSummaryColumn(
               label: l10n.deposit_youReceive,
               value: formatUsdc(
-                state.amountUSD ?? state.response?.convertedAmount ?? 0,
+                state.amountUSD ?? response.convertedAmount ?? 0,
               ),
               valueColor: colors.gold,
               alignEnd: true,
@@ -233,11 +261,11 @@ class _PaymentInstructionsScreenState
   ) {
     switch (response.paymentMethodType) {
       case PaymentMethodType.otp:
-        return _buildOtpContent(state, colors, l10n);
+        return _buildOtpContent(response, colors, l10n);
       case PaymentMethodType.push:
-        return _buildPushContent(state, response, colors, l10n);
+        return _buildPushContent(response, colors, l10n);
       case PaymentMethodType.qrLink:
-        return _buildQrLinkContent(state, response, colors, l10n);
+        return _buildQrLinkContent(response, colors, l10n);
       case PaymentMethodType.card:
         return _buildStaticInstructionContent(
           colors,
@@ -264,7 +292,7 @@ class _PaymentInstructionsScreenState
 
   /// OTP flow: provider action happens outside Korido; mobile checks status.
   Widget _buildOtpContent(
-    DepositState state,
+    DepositResponse response,
     ThemeColors colors,
     AppLocalizations l10n,
   ) {
@@ -278,8 +306,8 @@ class _PaymentInstructionsScreenState
               Icon(Icons.dialpad, size: 48, color: colors.gold),
               const SizedBox(height: AppSpacing.md),
               AppText(
-                state.response?.instructions.isNotEmpty == true
-                    ? state.response!.instructions
+                response.instructions.isNotEmpty
+                    ? response.instructions
                     : l10n.deposit_dialUSSD,
                 variant: AppTextVariant.titleMedium,
                 color: colors.textPrimary,
@@ -295,7 +323,6 @@ class _PaymentInstructionsScreenState
 
   /// PUSH flow: Shows "Approve the payment on your phone" + waiting spinner + auto-polls status
   Widget _buildPushContent(
-    DepositState state,
     DepositResponse response,
     ThemeColors colors,
     AppLocalizations l10n,
@@ -346,7 +373,6 @@ class _PaymentInstructionsScreenState
 
   /// QR_LINK flow: Shows QR code + provider deep link button + auto-polls status
   Widget _buildQrLinkContent(
-    DepositState state,
     DepositResponse response,
     ThemeColors colors,
     AppLocalizations l10n,
@@ -462,13 +488,16 @@ class _PaymentInstructionsScreenState
 
   Widget _buildActionButton(
     DepositState state,
+    DepositResponse response,
     ThemeColors colors,
     AppLocalizations l10n,
   ) {
     final canCheckStatus =
         state.response?.transactionId.isNotEmpty == true ||
         state.response?.depositId.isNotEmpty == true ||
-        state.result?.id.isNotEmpty == true;
+        state.result?.id.isNotEmpty == true ||
+        response.transactionId.isNotEmpty ||
+        response.depositId.isNotEmpty;
 
     return AppButton(
       label: l10n.deposit_completedPayment,
@@ -539,12 +568,58 @@ class _PaymentInstructionsScreenState
   }
 }
 
-String _formatSourceAmount(DepositState state) {
+String _formatSourceAmount(DepositState state, DepositResponse response) {
   final currency = (state.sourceCurrency ?? 'XOF').toUpperCase();
-  if (currency == 'USD') {
-    return '\$${(state.amountUSD ?? 0).toStringAsFixed(2)}';
+  if (currency == 'USD' || currency == 'USDC') {
+    return '\$${(state.amountUSD ?? response.amount).toStringAsFixed(2)}';
   }
-  return formatXof(state.amountXOF ?? state.response?.amount ?? 0);
+  return formatXof(state.amountXOF ?? response.amount);
+}
+
+class _DepositInstructionsRecovery extends StatelessWidget {
+  const _DepositInstructionsRecovery({
+    required String title,
+    required String primaryLabel,
+    required VoidCallback onPrimary,
+  }) : _title = title,
+       _primaryLabel = primaryLabel,
+       _onPrimary = onPrimary;
+
+  final String _title;
+  final String _primaryLabel;
+  final VoidCallback _onPrimary;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.screenPadding),
+      child: Center(
+        child: AppCard(
+          variant: AppCardVariant.flat,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.receipt_long_outlined, size: 48, color: colors.gold),
+              const SizedBox(height: AppSpacing.lg),
+              AppText(
+                _title,
+                variant: AppTextVariant.titleMedium,
+                color: colors.textPrimary,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              AppButton(
+                label: _primaryLabel,
+                onPressed: _onPrimary,
+                isFullWidth: true,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _ReferenceRow extends StatelessWidget {

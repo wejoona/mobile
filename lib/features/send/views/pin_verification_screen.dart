@@ -45,6 +45,36 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(sendMoneyProvider);
 
+    if (!state.canProceedToConfirm) {
+      final recoveryRoute = _sendDraftRecoveryRoute(state);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) {
+          context.fsmGo(recoveryRoute);
+        }
+      });
+      return Scaffold(
+        backgroundColor: context.colors.canvas,
+        body: SafeArea(
+          child: _MissingSendAuthorizationState(
+            title: localizedSendCopy(
+              context,
+              en: 'Transfer details needed',
+              fr: 'Détails du transfert requis',
+            ),
+            body: localizedSendCopy(
+              context,
+              en: 'Choose a recipient and amount before confirming with PIN.',
+              fr: 'Choisissez un destinataire et un montant avant de confirmer avec le PIN.',
+            ),
+            actionLabel: state.recipient == null
+                ? l10n.send_selectRecipient
+                : l10n.send_enterAmount,
+            onAction: () => context.fsmGo(recoveryRoute),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: context.colors.canvas,
       appBar: AppBar(
@@ -379,5 +409,68 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
     );
     ref.read(sendMoneyProvider.notifier).clearError();
     return true;
+  }
+}
+
+String _sendDraftRecoveryRoute(SendMoneyState state) {
+  if (state.recipient == null) {
+    return '/send';
+  }
+  return '/send/amount';
+}
+
+class _MissingSendAuthorizationState extends StatelessWidget {
+  const _MissingSendAuthorizationState({
+    required String title,
+    required String body,
+    required String actionLabel,
+    required VoidCallback onAction,
+  }) : _title = title,
+       _body = body,
+       _actionLabel = actionLabel,
+       _onAction = onAction;
+
+  final String _title;
+  final String _body;
+  final String _actionLabel;
+  final VoidCallback _onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.screenPadding),
+      child: Center(
+        child: AppCard(
+          variant: AppCardVariant.flat,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.lock_outline, size: 48, color: colors.gold),
+              const SizedBox(height: AppSpacing.lg),
+              AppText(
+                _title,
+                variant: AppTextVariant.titleMedium,
+                color: colors.textPrimary,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              AppText(
+                _body,
+                variant: AppTextVariant.bodyMedium,
+                color: colors.textSecondary,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              AppButton(
+                label: _actionLabel,
+                onPressed: _onAction,
+                isFullWidth: true,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

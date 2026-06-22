@@ -61,6 +61,32 @@ class DepositState {
     this.step = DepositFlowStep.selectProvider,
   });
 
+  double? get sourceAmount {
+    final currency = (sourceCurrency ?? 'XOF').toUpperCase();
+    if (currency == 'USD' || currency == 'USDC') {
+      return amountUSD;
+    }
+    return amountXOF ?? amount;
+  }
+
+  bool get hasSourceAmount => (sourceAmount ?? 0) > 0;
+
+  String? get activeDepositId {
+    final resultId = result?.id.trim();
+    if (resultId != null && resultId.isNotEmpty) {
+      return resultId;
+    }
+    final transactionId = response?.transactionId.trim();
+    if (transactionId != null && transactionId.isNotEmpty) {
+      return transactionId;
+    }
+    final depositId = response?.depositId.trim();
+    if (depositId != null && depositId.isNotEmpty) {
+      return depositId;
+    }
+    return null;
+  }
+
   DepositState copyWith({
     bool? isLoading,
     String? error,
@@ -198,9 +224,7 @@ class DepositNotifier extends Notifier<DepositState> {
 
   Future<void> initiate() async {
     final sourceCurrency = state.sourceCurrency ?? 'XOF';
-    final sourceAmount = sourceCurrency == 'USD'
-        ? state.amountUSD
-        : state.amountXOF ?? state.amount;
+    final sourceAmount = state.sourceAmount;
     final providerCode =
         state.selectedProviderCode ??
         (state.selectedMethod == null
@@ -211,7 +235,20 @@ class DepositNotifier extends Notifier<DepositState> {
     final phoneNumber =
         userState.phone ?? authState.phone ?? authState.user?.phone;
 
-    if (sourceAmount == null || providerCode == null) return;
+    if (sourceAmount == null || sourceAmount <= 0) {
+      state = state.copyWith(
+        error: 'Enter a deposit amount before choosing a payment method.',
+        step: DepositFlowStep.enterAmount,
+      );
+      return;
+    }
+    if (providerCode == null || providerCode.isEmpty) {
+      state = state.copyWith(
+        error: 'Choose a payment method before starting the deposit.',
+        step: DepositFlowStep.selectProvider,
+      );
+      return;
+    }
     final requiresPhone = _providerRequiresPhone(
       providerCode,
       state.selectedProviderMethodType,
@@ -361,9 +398,46 @@ class DepositNotifier extends Notifier<DepositState> {
   }
 
   Future<void> checkStatus() async {
-    final depositId = state.result?.id;
-    if (depositId == null) return;
+    final depositId = state.activeDepositId;
+    if (depositId == null) {
+      state = state.copyWith(
+        error: 'No active deposit was found. Please start a new deposit.',
+        step: DepositFlowStep.failed,
+      );
+      return;
+    }
     await _pollStatus(depositId);
+  }
+
+  void hydrateFromResponse(DepositResponse response) {
+    final result = DepositResult.fromResponse(response);
+    final currency = response.currency.toUpperCase();
+    final isUsd = currency == 'USD' || currency == 'USDC';
+    final step = response.isCompleted
+        ? DepositFlowStep.completed
+        : response.isFailed
+        ? DepositFlowStep.failed
+        : DepositFlowStep.processing;
+
+    state = state.copyWith(
+      result: result,
+      response: response,
+      amount: isUsd
+          ? response.convertedAmount ?? response.amount
+          : response.amount,
+      amountXOF: isUsd ? state.amountXOF : response.amount,
+      amountUSD: isUsd ? response.amount : response.convertedAmount,
+      selectedProviderCode: response.providerCode.isNotEmpty
+          ? response.providerCode
+          : state.selectedProviderCode,
+      selectedProviderMethodType: response.paymentMethodType.value,
+      sourceCurrency: isUsd ? 'USD' : currency,
+      step: step,
+    );
+
+    if (response.isPending && result.id.isNotEmpty) {
+      _startPolling(result.id);
+    }
   }
 
   void reset() {

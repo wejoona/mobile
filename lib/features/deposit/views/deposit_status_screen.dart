@@ -18,6 +18,22 @@ class DepositStatusScreen extends ConsumerWidget {
     final colors = context.colors;
     final state = ref.watch(depositProvider);
     final response = state.response;
+    final hasActiveDeposit = state.activeDepositId != null || response != null;
+
+    if (!hasActiveDeposit && state.step != DepositFlowStep.failed) {
+      return Scaffold(
+        backgroundColor: colors.canvas,
+        body: SafeArea(
+          child: _MissingDepositStatus(
+            l10n: l10n,
+            colors: colors,
+            onStartDeposit: () => _handleTryAgain(ref, context),
+            onGoHome: () => _handleGoHome(ref, context),
+          ),
+        ),
+      );
+    }
+
     final status = _getDepositStatus(state);
 
     return Scaffold(
@@ -368,6 +384,58 @@ class _ProcessingDepositCard extends StatelessWidget {
           ),
         ),
       ],
+    ),
+  );
+}
+
+class _MissingDepositStatus extends StatelessWidget {
+  const _MissingDepositStatus({
+    required AppLocalizations l10n,
+    required ThemeColors colors,
+    required VoidCallback onStartDeposit,
+    required VoidCallback onGoHome,
+  }) : _l10n = l10n,
+       _colors = colors,
+       _onStartDeposit = onStartDeposit,
+       _onGoHome = onGoHome;
+
+  final AppLocalizations _l10n;
+  final ThemeColors _colors;
+  final VoidCallback _onStartDeposit;
+  final VoidCallback _onGoHome;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.all(AppSpacing.screenPadding),
+    child: Center(
+      child: AppCard(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.receipt_long_outlined, size: 56, color: _colors.gold),
+            const SizedBox(height: AppSpacing.lg),
+            AppText(
+              _l10n.deposit_noDepositData,
+              variant: AppTextVariant.titleMedium,
+              color: _colors.textPrimary,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            AppButton(
+              label: _l10n.deposit_amount,
+              onPressed: _onStartDeposit,
+              isFullWidth: true,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            AppButton(
+              label: _l10n.action_backToHome,
+              variant: AppButtonVariant.secondary,
+              onPressed: _onGoHome,
+              isFullWidth: true,
+            ),
+          ],
+        ),
+      ),
     ),
   );
 }

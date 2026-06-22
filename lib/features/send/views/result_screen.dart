@@ -54,6 +54,9 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
 
   void _triggerResultHaptic() {
     final state = ref.read(sendMoneyProvider);
+    if (state.result == null) {
+      return;
+    }
     final isSuccess =
         state.result != null && state.result!.status == 'completed';
 
@@ -84,6 +87,30 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(sendMoneyProvider);
     final colors = context.colors;
+
+    if (state.result == null) {
+      return Scaffold(
+        backgroundColor: colors.canvas,
+        body: SafeArea(
+          child: _MissingTransferResultState(
+            title: localizedSendCopy(
+              context,
+              en: 'Transfer details unavailable',
+              fr: 'Détails du transfert indisponibles',
+            ),
+            body: localizedSendCopy(
+              context,
+              en: 'Start a new transfer so Korido can confirm the recipient, amount, and final status.',
+              fr: 'Démarrez un nouveau transfert afin que Korido confirme le destinataire, le montant et le statut final.',
+            ),
+            primaryLabel: l10n.send_title,
+            secondaryLabel: l10n.action_backToHome,
+            onPrimary: _handleStartNewTransfer,
+            onSecondary: _handleDone,
+          ),
+        ),
+      );
+    }
 
     final isSuccess =
         state.result != null && state.result!.status == 'completed';
@@ -421,5 +448,79 @@ ${l10n.appName}
     ref.read(sendMoneyProvider.notifier).reset();
     // Navigate to home
     context.fsmGo('/home');
+  }
+
+  void _handleStartNewTransfer() {
+    ref.read(sendMoneyProvider.notifier).reset();
+    context.fsmGo('/send');
+  }
+}
+
+class _MissingTransferResultState extends StatelessWidget {
+  const _MissingTransferResultState({
+    required String title,
+    required String body,
+    required String primaryLabel,
+    required String secondaryLabel,
+    required VoidCallback onPrimary,
+    required VoidCallback onSecondary,
+  }) : _title = title,
+       _body = body,
+       _primaryLabel = primaryLabel,
+       _secondaryLabel = secondaryLabel,
+       _onPrimary = onPrimary,
+       _onSecondary = onSecondary;
+
+  final String _title;
+  final String _body;
+  final String _primaryLabel;
+  final String _secondaryLabel;
+  final VoidCallback _onPrimary;
+  final VoidCallback _onSecondary;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.screenPadding),
+      child: Center(
+        child: AppCard(
+          variant: AppCardVariant.flat,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.receipt_long_outlined, size: 48, color: colors.gold),
+              const SizedBox(height: AppSpacing.lg),
+              AppText(
+                _title,
+                variant: AppTextVariant.titleMedium,
+                color: colors.textPrimary,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              AppText(
+                _body,
+                variant: AppTextVariant.bodyMedium,
+                color: colors.textSecondary,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              AppButton(
+                label: _primaryLabel,
+                onPressed: _onPrimary,
+                isFullWidth: true,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              AppButton(
+                label: _secondaryLabel,
+                variant: AppButtonVariant.secondary,
+                onPressed: _onSecondary,
+                isFullWidth: true,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

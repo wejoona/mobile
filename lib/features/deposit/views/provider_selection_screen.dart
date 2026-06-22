@@ -33,6 +33,29 @@ class ProviderSelectionScreen extends ConsumerWidget {
     final availabilityAsync = ref.watch(depositProvidersAvailabilityProvider);
     final country = _effectiveCountry(ref);
 
+    if (!depositState.hasSourceAmount) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!context.mounted) {
+          return;
+        }
+        context.showSnack(
+          l10n.deposit_noDepositData,
+          tone: AppSnackTone.warning,
+        );
+        context.fsmGo('/deposit/amount');
+      });
+      return Scaffold(
+        backgroundColor: colors.canvas,
+        body: SafeArea(
+          child: _DepositRouteRecovery(
+            title: l10n.deposit_noDepositData,
+            actionLabel: l10n.deposit_amount,
+            onAction: () => context.fsmGo('/deposit/amount'),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: colors.canvas,
       appBar: AppBar(
@@ -50,71 +73,69 @@ class ProviderSelectionScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Amount Summary Card
-              if (_hasSourceAmount(depositState)) ...[
-                AppCard(
-                  variant: AppCardVariant.flat,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            AppText(
-                              '${l10n.deposit_amount} · ${country.code}',
-                              variant: AppTextVariant.bodySmall,
-                              color: colors.textSecondary,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: AppSpacing.xxs),
-                            Align(
+              AppCard(
+                variant: AppCardVariant.flat,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppText(
+                            '${l10n.deposit_amount} · ${country.code}',
+                            variant: AppTextVariant.bodySmall,
+                            color: colors.textSecondary,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: AppSpacing.xxs),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
                               alignment: Alignment.centerLeft,
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                alignment: Alignment.centerLeft,
-                                child: AmountText.fromText(
-                                  _formatSourceAmount(depositState),
-                                  size: AmountTextSize.small,
-                                  color: colors.textPrimary,
-                                ),
+                              child: AmountText.fromText(
+                                _formatSourceAmount(depositState),
+                                size: AmountTextSize.small,
+                                color: colors.textPrimary,
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: AppSpacing.lg),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            AppText(
-                              l10n.deposit_youWillReceive,
-                              variant: AppTextVariant.bodySmall,
-                              color: colors.textSecondary,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: AppSpacing.xxs),
-                            Align(
+                    ),
+                    const SizedBox(width: AppSpacing.lg),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          AppText(
+                            l10n.deposit_youWillReceive,
+                            variant: AppTextVariant.bodySmall,
+                            color: colors.textSecondary,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: AppSpacing.xxs),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
                               alignment: Alignment.centerRight,
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                alignment: Alignment.centerRight,
-                                child: AmountText.fromText(
-                                  formatUsdc(depositState.amountUSD ?? 0),
-                                  size: AmountTextSize.small,
-                                  color: colors.gold,
-                                ),
+                              child: AmountText.fromText(
+                                formatUsdc(depositState.amountUSD ?? 0),
+                                size: AmountTextSize.small,
+                                color: colors.gold,
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: AppSpacing.xl),
-              ],
+              ),
+              const SizedBox(height: AppSpacing.xl),
 
               // Title
               AppText(
@@ -566,14 +587,6 @@ String _formatSourceAmount(DepositState depositState) {
   return formatXof(depositState.amountXOF ?? 0);
 }
 
-bool _hasSourceAmount(DepositState depositState) {
-  final currency = depositState.sourceCurrency ?? 'XOF';
-  if (currency == 'USD') {
-    return (depositState.amountUSD ?? 0) > 0;
-  }
-  return (depositState.amountXOF ?? 0) > 0;
-}
-
 String _humanizeCapabilityReason(String reason) {
   return reason.replaceAll('_', ' ');
 }
@@ -584,4 +597,54 @@ CountryConfig _effectiveCountry(WidgetRef ref) {
     userStateMachineProvider.select((state) => state.countryCode),
   );
   return SupportedCountries.findByCode(userCountryCode) ?? selectedCountry;
+}
+
+class _DepositRouteRecovery extends StatelessWidget {
+  const _DepositRouteRecovery({
+    required String title,
+    required String actionLabel,
+    required VoidCallback onAction,
+  }) : _title = title,
+       _actionLabel = actionLabel,
+       _onAction = onAction;
+
+  final String _title;
+  final String _actionLabel;
+  final VoidCallback _onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.screenPadding),
+      child: Center(
+        child: AppCard(
+          variant: AppCardVariant.flat,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.account_balance_wallet_outlined,
+                size: 48,
+                color: colors.gold,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              AppText(
+                _title,
+                variant: AppTextVariant.titleMedium,
+                color: colors.textPrimary,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              AppButton(
+                label: _actionLabel,
+                onPressed: _onAction,
+                isFullWidth: true,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
