@@ -297,6 +297,11 @@ String? _kycWizardRedirect(BuildContext context, GoRouterState state) {
   }
 
   final flow = ProviderScope.containerOf(context).read(kycProvider);
+  final statusRedirect = _kycFlowStatusRedirect(state.uri, flow.status);
+  if (statusRedirect != null) {
+    return statusRedirect;
+  }
+
   return _kycPrerequisiteRedirectForPath(state.uri.path, flow);
 }
 
@@ -307,8 +312,9 @@ String? _kycEvidenceRedirect(BuildContext context, GoRouterState state) {
   }
 
   final flow = ProviderScope.containerOf(context).read(kycProvider);
-  if (flow.status.isSubmitted) {
-    return '/kyc/submitted';
+  final statusRedirect = _kycFlowStatusRedirect(state.uri, flow.status);
+  if (statusRedirect != null) {
+    return statusRedirect;
   }
   if (flow.selectedDocumentType == null) {
     return '/kyc/document-type';
@@ -414,6 +420,22 @@ String? _kycDurableStatusRedirect(BuildContext context, GoRouterState state) {
 
 bool _isKycReviewOrApprovalStatus(KycStatus status) =>
     status.isSubmitted || status.isVerified;
+
+String? _kycFlowStatusRedirect(Uri uri, KycStatus status) {
+  if (!_isKycReviewOrApprovalStatus(status)) {
+    return null;
+  }
+
+  if (uri.path == '/kyc/submitted') {
+    return null;
+  }
+
+  if (status.isVerified) {
+    return '/kyc';
+  }
+
+  return _kycSubmittedRouteFrom(uri);
+}
 
 String _kycSubmittedRouteFrom(Uri uri) {
   final intent = uri.queryParameters['intent']?.trim();

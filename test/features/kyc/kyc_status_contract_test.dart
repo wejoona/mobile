@@ -257,7 +257,10 @@ void main() {
             'A verified KYC update must let /kyc/submitted preserve intent/returnTo so users can continue the deposit they started.',
       );
       expect(routeSource, contains('return null;'));
-      expect(routeSource, contains("return '/kyc/submitted';"));
+      expect(
+        routeSource,
+        contains('_kycFlowStatusRedirect(state.uri, flow.status)'),
+      );
       expect(routeSource, contains('_kycSubmittedRouteFrom(state.uri)'));
       expect(routeSource, contains("'returnTo': returnTo"));
     });
