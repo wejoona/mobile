@@ -611,6 +611,57 @@ void main() {
       },
     );
 
+    testWidgets(
+      'signup OTP success advances into signup setup instead of home',
+      (tester) async {
+        await tester.binding.setSurfaceSize(const Size(430, 932));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+
+        SharedPreferences.setMockInitialValues({});
+        final sharedPreferences = await SharedPreferences.getInstance();
+        final container = buildContainer(
+          sharedPreferences: sharedPreferences,
+          authenticatedUser: testUser(),
+          signupState: const SignupFlowState(
+            isLoading: false,
+            phoneNumber: '0748805663',
+            countryCode: 'CI',
+            dialCode: '+225',
+            otp: '123456',
+          ),
+        );
+        addTearDown(container.dispose);
+        final router = container.read(routerProvider);
+
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp.router(
+              routerConfig: router,
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: AppLocalizations.supportedLocales,
+              theme: TestTheme.darkTheme,
+            ),
+          ),
+        );
+
+        await tester.pump();
+        router.go('/signup/verify-phone');
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+
+        expect(
+          router.routeInformationProvider.value.uri.path,
+          '/signup/profile',
+        );
+      },
+    );
+
     testWidgets('locked route guard follows route contract allowWhenLocked', (
       tester,
     ) async {

@@ -320,9 +320,20 @@ bool _hasLoginOtpContext(LoginState state) {
 
 bool _hasSignupOtpContext(SignupFlowState state, auth.AuthState authState) {
   final hasPhone =
-      (state.phoneNumber?.trim().isNotEmpty ?? false) ||
-      (authState.phone?.trim().isNotEmpty ?? false);
-  return hasPhone && authState.status == auth.AuthStatus.otpSent;
+      _hasNonBlank(state.phoneNumber) || _hasNonBlank(authState.phone);
+  if (!hasPhone) {
+    return false;
+  }
+
+  if (authState.status == auth.AuthStatus.otpSent ||
+      authState.status == auth.AuthStatus.loading ||
+      authState.status == auth.AuthStatus.error) {
+    return true;
+  }
+
+  return authState.isAuthenticated &&
+      !state.isComplete &&
+      _hasActiveSignupContext(state);
 }
 
 bool _hasLegacyOtpContext(auth.AuthState state) {
