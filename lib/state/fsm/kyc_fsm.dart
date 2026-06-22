@@ -659,6 +659,9 @@ class KycFsm extends FsmDefinition<KycState, KycEvent> {
   }
 
   TransitionResult<KycState> _handlePending(KycPending state, KycEvent event) {
+    if (event is KycStatusLoaded) {
+      return _stateFromLoadedStatus(event);
+    }
     if (event is KycApproved) {
       return TransitionSuccess(
         KycVerified(
@@ -775,6 +778,9 @@ class KycFsm extends FsmDefinition<KycState, KycEvent> {
     KycManualReview state,
     KycEvent event,
   ) {
+    if (event is KycStatusLoaded) {
+      return _stateFromLoadedStatus(event);
+    }
     if (event is KycManualReviewCompleted) {
       return TransitionSuccess(
         KycVerified(

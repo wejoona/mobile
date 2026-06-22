@@ -333,6 +333,28 @@ void main() {
       final success = result as TransitionSuccess<KycState>;
       expect(success.newState, isA<KycLoading>());
     });
+
+    test('should reconcile approved status loaded while pending', () {
+      final state = KycPending(
+        targetTier: KycTier.tier1,
+        submittedAt: DateTime.now(),
+      );
+      final verifiedAt = DateTime.now();
+      final event = KycStatusLoaded(
+        tier: KycTier.tier1,
+        status: 'verified',
+        verifiedAt: verifiedAt,
+      );
+
+      final result = fsm.handle(state, event);
+
+      expect(result, isA<TransitionSuccess<KycState>>());
+      final success = result as TransitionSuccess<KycState>;
+      expect(success.newState, isA<KycVerified>());
+      final verified = success.newState as KycVerified;
+      expect(verified.tier, equals(KycTier.tier1));
+      expect(verified.verifiedAt, equals(verifiedAt));
+    });
   });
 
   group('KycFsm - Manual Review Transitions', () {
@@ -385,6 +407,29 @@ void main() {
       expect(result, isA<TransitionSuccess<KycState>>());
       final success = result as TransitionSuccess<KycState>;
       expect(success.newState, isA<KycLoading>());
+    });
+
+    test('should reconcile approved status loaded while in manual review', () {
+      final state = KycManualReview(
+        targetTier: KycTier.tier1,
+        reason: 'Under review',
+        reviewStartedAt: DateTime.now(),
+      );
+      final verifiedAt = DateTime.now();
+      final event = KycStatusLoaded(
+        tier: KycTier.tier1,
+        status: 'verified',
+        verifiedAt: verifiedAt,
+      );
+
+      final result = fsm.handle(state, event);
+
+      expect(result, isA<TransitionSuccess<KycState>>());
+      final success = result as TransitionSuccess<KycState>;
+      expect(success.newState, isA<KycVerified>());
+      final verified = success.newState as KycVerified;
+      expect(verified.tier, equals(KycTier.tier1));
+      expect(verified.verifiedAt, equals(verifiedAt));
     });
   });
 
