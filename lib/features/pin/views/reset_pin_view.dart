@@ -76,6 +76,9 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   String? _manualReviewResolutionDueAt;
   String? _manualReviewReason;
   String? _lastManualReviewReason;
+  int _manualReviewRetryCountdown = 0;
+  String? _manualReviewCooldownReason;
+  Timer? _manualReviewRetryTimer;
   bool _manualReviewCreating = false;
   bool _manualReviewPinQueued = false;
   bool _manualReviewPinApplied = false;
@@ -92,6 +95,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   @override
   void dispose() {
     _otpResendTimer?.cancel();
+    _manualReviewRetryTimer?.cancel();
     _otpController.dispose();
     _phoneController.dispose();
     super.dispose();
@@ -165,6 +169,8 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   }
 
   bool get _isOtpResendCoolingDown => _otpResendCountdown > 0;
+
+  bool get _isManualReviewRetryCoolingDown => _manualReviewRetryCountdown > 0;
 
   Widget _buildRequestOtpStep(AppLocalizations l10n) {
     final sendOtpLabel = _isOtpResendCoolingDown
@@ -392,6 +398,9 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   }
 
   Widget _buildManualReviewStep(AppLocalizations l10n) {
+    final retryLabel = _isManualReviewRetryCoolingDown
+        ? 'Try again in ${formatVerificationCooldownDuration(_manualReviewRetryCountdown)}'
+        : 'Retry manual review';
     final title = _manualReviewCreating
         ? 'Starting manual review'
         : _manualReviewCreationFailed
@@ -476,7 +485,9 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
               ? Icons.wifi_off_rounded
               : Icons.schedule_rounded,
           title: _manualReviewCreationFailed
-              ? 'This request is not queued yet. Please retry when your connection is available.'
+              ? _isManualReviewRetryCoolingDown
+                    ? _manualReviewCooldownMessage(l10n)
+                    : 'This request is not queued yet. Please retry when your connection is available.'
               : _manualReviewCreating
               ? 'Sending secure recovery request...'
               : _manualReviewSlaLabel ??
@@ -514,12 +525,12 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         const SizedBox(height: AppSpacing.xxxl),
         AppButton(
           label: _manualReviewCreationFailed
-              ? 'Retry manual review'
+              ? retryLabel
               : _manualReviewCreating
               ? 'Starting review...'
               : 'Return to sign in',
           onPressed: _manualReviewCreationFailed
-              ? _retryManualReview
+              ? (_isManualReviewRetryCoolingDown ? null : _retryManualReview)
               : _manualReviewCreating
               ? null
               : _returnToSignInFromManualReview,
@@ -821,6 +832,45 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     });
   }
 
+  void _startManualReviewRetryCooldown(int seconds, {String? reason}) {
+    _manualReviewRetryTimer?.cancel();
+    final normalizedSeconds = seconds <= 0
+        ? 0
+        : normalizeVerificationCooldownSeconds(seconds);
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _manualReviewRetryCountdown = normalizedSeconds;
+      _manualReviewCooldownReason = normalizedSeconds > 0 ? reason : null;
+    });
+    if (normalizedSeconds == 0) {
+      return;
+    }
+
+    _manualReviewRetryTimer = Timer.periodic(const Duration(seconds: 1), (
+      timer,
+    ) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
+      if (_manualReviewRetryCountdown <= 1) {
+        timer.cancel();
+        setState(() {
+          _manualReviewRetryCountdown = 0;
+          _manualReviewCooldownReason = null;
+        });
+        return;
+      }
+
+      setState(() => _manualReviewRetryCountdown -= 1);
+    });
+  }
+
   String _cooldownMessage(
     AppLocalizations l10n,
     int seconds, {
@@ -831,6 +881,15 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       seconds: waitSeconds,
       reason: reason,
       formatWait: l10n.login_resendIn,
+    );
+  }
+
+  String _manualReviewCooldownMessage(AppLocalizations l10n) {
+    return verificationCooldownMessage(
+      seconds: _manualReviewRetryCountdown,
+      reason: _manualReviewCooldownReason,
+      formatWait: (seconds) =>
+          'Try again in ${formatVerificationCooldownDuration(seconds)}',
     );
   }
 
@@ -1413,7 +1472,16 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         _isLoading = false;
         _transitionTo(_PinRecoveryStep.manualReview);
       });
-    } on DioException {
+    } on DioException catch (e) {
+      final apiError = ApiException.fromDioError(e);
+      final retryAfterSeconds =
+          apiError.resendAvailableIn ?? apiError.retryAfterSeconds;
+      if (retryAfterSeconds != null) {
+        _startManualReviewRetryCooldown(
+          retryAfterSeconds,
+          reason: verificationCooldownReason(apiError.data),
+        );
+      }
       if (!mounted) return;
       setState(() {
         _markManualReviewCreationFailed(reason);
@@ -1512,6 +1580,9 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     StepUpReviewSla? reviewSla,
     String? fallbackSlaLabel,
   }) {
+    _manualReviewRetryTimer?.cancel();
+    _manualReviewRetryCountdown = 0;
+    _manualReviewCooldownReason = null;
     _manualReviewStatus = 'creating_manual_review';
     _manualReviewCreating = true;
     _manualReviewCreationFailed = false;
@@ -1539,6 +1610,10 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   }
 
   void _retryManualReview() {
+    if (_isManualReviewRetryCoolingDown) {
+      return;
+    }
+
     final pendingPinHash = _pendingNewPinHash;
     if (pendingPinHash == null) {
       setState(() {

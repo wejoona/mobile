@@ -1248,6 +1248,20 @@ void main() {
       reason:
           'PIN recovery cooldown copy must use the backend cooldownReason instead of treating every 429 as a reusable OTP',
     );
+    expect(resetSource, contains('_manualReviewRetryCountdown'));
+    expect(resetSource, contains('_startManualReviewRetryCooldown'));
+    expect(reviewBody, contains('ApiException.fromDioError(e)'));
+    expect(
+      reviewBody,
+      contains('apiError.resendAvailableIn ?? apiError.retryAfterSeconds'),
+      reason:
+          'manual-review staging throttles must disable retry instead of letting users hammer recovery endpoints',
+    );
+    expect(
+      resetSource,
+      contains('_isManualReviewRetryCoolingDown ? null : _retryManualReview'),
+    );
+    expect(resetSource, contains('_manualReviewCooldownMessage'));
     expect(
       verificationCooldownSource,
       contains('Too many verification requests.'),
