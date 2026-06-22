@@ -28,8 +28,20 @@ class ApiConfiguration {
     return _devUrl;
   }
 
-  /// WebSocket URL for real-time updates.
-  static String get wsUrl => baseUrl.replaceFirst('http', 'ws');
+  /// Socket.IO namespace URL for real-time updates.
+  ///
+  /// The API base URL includes `/api/v1`, but the NestJS Socket.IO gateway is
+  /// mounted at the host-level `/ws` namespace.
+  static String get wsUrl {
+    final uri = Uri.parse(baseUrl);
+    return Uri(
+      scheme: uri.scheme,
+      userInfo: uri.userInfo,
+      host: uri.host,
+      port: uri.hasPort ? uri.port : 0,
+      path: '/ws',
+    ).toString();
+  }
 
   /// Request timeout in milliseconds.
   static const int connectTimeout = 15000;
