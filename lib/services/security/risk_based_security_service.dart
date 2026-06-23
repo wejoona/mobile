@@ -219,23 +219,19 @@ class RiskBasedSecurityService {
       }
 
       throw Exception('Failed to evaluate transaction risk');
+    } on DioException catch (e) {
+      AppLogger(
+        'Transaction risk evaluation unavailable',
+      ).error('Transaction risk evaluation unavailable', e);
+      throw RiskEvaluationUnavailableException(
+        'Security risk check is unavailable. Please try again.',
+      );
     } catch (e) {
       AppLogger(
-        'Transaction risk evaluation failed, routing to manual review',
-      ).error(
-        'Transaction risk evaluation failed, routing to manual review',
-        e,
-      );
-      return StepUpDecision(
-        flow: RiskFlow.red,
-        riskScore: 100,
-        riskLevel: 'critical',
-        stepUpRequired: true,
-        stepUpType: StepUpType.manualReview,
-        reason:
-            'Security risk service is unavailable. This money movement needs manual review before it can continue.',
-        factors: ['risk_service_unavailable', 'transaction_risk_unavailable'],
-        expiresAt: DateTime.now().add(const Duration(minutes: 5)),
+        'Transaction risk evaluation failed',
+      ).error('Transaction risk evaluation failed', e);
+      throw RiskEvaluationUnavailableException(
+        'Security risk check is unavailable. Please try again.',
       );
     }
   }
@@ -569,6 +565,15 @@ class ComplianceBlockedException implements Exception {
 class ManualReviewRequiredException implements Exception {
   final String message;
   ManualReviewRequiredException(this.message);
+
+  @override
+  String toString() => message;
+}
+
+/// Exception when a transaction risk decision could not be obtained.
+class RiskEvaluationUnavailableException implements Exception {
+  final String message;
+  RiskEvaluationUnavailableException(this.message);
 
   @override
   String toString() => message;

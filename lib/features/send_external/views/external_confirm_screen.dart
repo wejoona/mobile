@@ -421,18 +421,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
       if (decision.stepUpType == StepUpType.manualReview) {
         if (mounted) {
           unawaited(HapticFeedback.heavyImpact());
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                localizedSendCopy(
-                  context,
-                  en: 'This external transfer needs manual review before it can continue.',
-                  fr: 'Ce transfert externe nécessite une revue manuelle avant de continuer.',
-                ),
-              ),
-              backgroundColor: context.colors.error,
-            ),
-          );
+          await RiskStepUpDialog.show(context, decision: decision);
         }
         return (canProceed: false, stepUpToken: null);
       }
