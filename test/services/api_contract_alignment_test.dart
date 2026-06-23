@@ -1529,6 +1529,34 @@ void main() {
       );
     });
 
+    test('push preferences require OS permission and device registration', () {
+      final settingsSource = File(
+        'lib/features/settings/views/notification_settings_view.dart',
+      ).readAsStringSync();
+      final permissionProviderSource = File(
+        'lib/features/notifications/providers/notification_permission_provider.dart',
+      ).readAsStringSync();
+
+      expect(settingsSource, contains('notificationPermissionProvider'));
+      expect(settingsSource, contains("_handlePushToggle"));
+      expect(
+        settingsSource,
+        contains("context.fsmPush('/notifications/permission')"),
+      );
+      expect(
+        settingsSource,
+        contains('permission.isEnabled'),
+        reason:
+            'Push settings must not present enabled push preferences before the OS/device-token permission path succeeds.',
+      );
+      expect(
+        permissionProviderSource,
+        contains('registerWithBackend()'),
+        reason:
+            'The permission screen must register the device token before settings can treat push as available.',
+      );
+    });
+
     test('feature subscriptions include feature and source context', () async {
       final dio = MockDio()
         ..queueResponse({
