@@ -75,6 +75,21 @@ void main() {
     expect(logoutAllDevices, contains('_clearLocalSessionAfterLogoutAll'));
   });
 
+  test('active sessions cannot revoke until current session is resolved', () {
+    final providerSource = File(
+      'lib/features/settings/providers/sessions_provider.dart',
+    ).readAsStringSync();
+    final screenSource = File(
+      'lib/features/settings/views/sessions_screen.dart',
+    ).readAsStringSync();
+
+    expect(providerSource, contains('currentSessionResolved'));
+    expect(providerSource, contains('!state.currentSessionResolved'));
+    expect(providerSource, contains('session.deviceId == currentDeviceId'));
+    expect(screenSource, contains('canRevokeSession'));
+    expect(screenSource, contains('canRevokeSession && !isCurrentSession'));
+  });
+
   test('devices waits for auth before reading and preserves unlock state', () {
     final source = File(
       'lib/features/settings/providers/devices_provider.dart',
