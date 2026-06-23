@@ -104,40 +104,44 @@ usage() {
 Korido mobile command wrapper
 
 Usage:
-  ./scripts/codex_mobile.sh help
-  ./scripts/codex_mobile.sh doctor
-  ./scripts/codex_mobile.sh pub-get
-  ./scripts/codex_mobile.sh devices
-  ./scripts/codex_mobile.sh sim-boot
-  ./scripts/codex_mobile.sh sim-enable-keyboard
-  ./scripts/codex_mobile.sh sim-clean
-  ./scripts/codex_mobile.sh sim-screenshot [path]
-  ./scripts/codex_mobile.sh sim-install
-  ./scripts/codex_mobile.sh device-install
-  ./scripts/codex_mobile.sh live-crawl
-  ./scripts/codex_mobile.sh live-login
-  ./scripts/codex_mobile.sh live-visual
-  ./scripts/codex_mobile.sh live-visual-capture
-  ./scripts/codex_mobile.sh ceo-screen-catalog [--from-existing [source output]]
-  ./scripts/codex_mobile.sh live-secondary
-  ./scripts/codex_mobile.sh live-e2e-wallet
-  ./scripts/codex_mobile.sh live-e2e-auth
-  ./scripts/codex_mobile.sh live-e2e-core
-  ./scripts/codex_mobile.sh analyze
-  ./scripts/codex_mobile.sh analyze-gate
-  ./scripts/codex_mobile.sh test-auth
-  ./scripts/codex_mobile.sh test-routes
-  ./scripts/codex_mobile.sh test-state
-  ./scripts/codex_mobile.sh test-money
-  ./scripts/codex_mobile.sh test-profile
-  ./scripts/codex_mobile.sh test-design
-  ./scripts/codex_mobile.sh test-settings
-  ./scripts/codex_mobile.sh analyze-settings
-  ./scripts/codex_mobile.sh codemagic-tests
-  ./scripts/codex_mobile.sh preflight
-  ./scripts/codex_mobile.sh build-ios-sim
-  ./scripts/codex_mobile.sh build-android-debug
-  ./scripts/codex_mobile.sh test <flutter-test-args...>
+  env bash scripts/codex_mobile.sh help
+  env bash scripts/codex_mobile.sh doctor
+  env bash scripts/codex_mobile.sh pub-get
+  env bash scripts/codex_mobile.sh devices
+  env bash scripts/codex_mobile.sh sim-boot
+  env bash scripts/codex_mobile.sh sim-enable-keyboard
+  env bash scripts/codex_mobile.sh sim-clean
+  env bash scripts/codex_mobile.sh sim-screenshot [path]
+  env bash scripts/codex_mobile.sh sim-install
+  env bash scripts/codex_mobile.sh device-install
+  env bash scripts/codex_mobile.sh live-crawl
+  env bash scripts/codex_mobile.sh live-login
+  env bash scripts/codex_mobile.sh live-visual
+  env bash scripts/codex_mobile.sh live-visual-capture
+  env bash scripts/codex_mobile.sh ceo-screen-catalog [--from-existing [source output]]
+  env bash scripts/codex_mobile.sh live-secondary
+  env bash scripts/codex_mobile.sh live-e2e-wallet
+  env bash scripts/codex_mobile.sh live-e2e-auth
+  env bash scripts/codex_mobile.sh live-e2e-core
+  env bash scripts/codex_mobile.sh analyze
+  env bash scripts/codex_mobile.sh analyze-gate
+  env bash scripts/codex_mobile.sh test-auth
+  env bash scripts/codex_mobile.sh test-routes
+  env bash scripts/codex_mobile.sh test-state
+  env bash scripts/codex_mobile.sh test-money
+  env bash scripts/codex_mobile.sh test-profile
+  env bash scripts/codex_mobile.sh test-design
+  env bash scripts/codex_mobile.sh test-settings
+  env bash scripts/codex_mobile.sh analyze-settings
+  env bash scripts/codex_mobile.sh codemagic-firebase-check
+  env bash scripts/codex_mobile.sh codemagic-firebase-upload
+  env bash scripts/codex_mobile.sh codemagic-builds
+  env bash scripts/codex_mobile.sh codemagic-actions <build-id>
+  env bash scripts/codex_mobile.sh codemagic-tests
+  env bash scripts/codex_mobile.sh preflight
+  env bash scripts/codex_mobile.sh build-ios-sim
+  env bash scripts/codex_mobile.sh build-android-debug
+  env bash scripts/codex_mobile.sh test <flutter-test-args...>
 
 Defaults:
   DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer
@@ -226,6 +230,194 @@ run_codemagic_tests() {
     ! -path '*/snapshots/*' \
     | sort > .dart_tool/codex_flutter_tests.txt
   xargs -n 40 flutter test < .dart_tool/codex_flutter_tests.txt
+}
+
+read_codemagic_token() {
+  if [ -n "${CODEMAGIC_API_TOKEN:-}" ]; then
+    printf '%s' "${CODEMAGIC_API_TOKEN}"
+    return
+  fi
+
+  if [ -t 0 ]; then
+    printf 'Codemagic API token: ' >&2
+    stty -echo
+    IFS= read -r token
+    stty echo
+    printf '\n' >&2
+  else
+    IFS= read -r token
+  fi
+
+  if [ -z "${token:-}" ]; then
+    echo "Codemagic API token is required." >&2
+    exit 64
+  fi
+
+  printf '%s' "${token}"
+}
+
+codemagic_api() {
+  local method="$1"
+  local path="$2"
+  local token="$3"
+  local data_file="${4:-}"
+
+  if [ -n "${data_file}" ]; then
+    curl -sS \
+      -X "${method}" \
+      -H "x-auth-token: ${token}" \
+      -H "Content-Type: application/json" \
+      -d @"${data_file}" \
+      "https://codemagic.io${path}"
+  else
+    curl -sS \
+      -X "${method}" \
+      -H "x-auth-token: ${token}" \
+      "https://codemagic.io${path}"
+  fi
+}
+
+run_codemagic_firebase_check() {
+  local ios_config="${FIREBASE_IOS_PLIST:-/Users/macbook/Downloads/GoogleService-Info.plist}"
+  local android_config="${FIREBASE_ANDROID_JSON:-/Users/macbook/Downloads/google-services.json}"
+  local temp_root
+  local had_xtrace=false
+
+  case "$-" in
+    *x*)
+      had_xtrace=true
+      set +x
+      ;;
+  esac
+
+  temp_root="$(mktemp -d "${TMPDIR:-/tmp}/korido-firebase-check.XXXXXX")"
+  mkdir -p "${temp_root}/scripts"
+  cp scripts/ensure_firebase_config.sh "${temp_root}/scripts/ensure_firebase_config.sh"
+
+  (
+    cd "${temp_root}"
+    FIREBASE_IOS_PLIST_BASE64="$(base64 < "${ios_config}" | tr -d '\n')" \
+      FIREBASE_ANDROID_JSON_BASE64="$(base64 < "${android_config}" | tr -d '\n')" \
+      REQUIRE_REAL_FIREBASE_CONFIG=true \
+      bash scripts/ensure_firebase_config.sh
+
+    ios_bundle="$(plutil -extract BUNDLE_ID raw -o - ios/Runner/GoogleService-Info.plist)"
+    android_package="$(python3 -c "import json; d=json.load(open('android/app/google-services.json')); print(d['client'][0]['client_info']['android_client_info']['package_name'])")"
+
+    echo "iOS bundle: ${ios_bundle}"
+    echo "Android package: ${android_package}"
+  )
+
+  if [ "${had_xtrace}" = true ]; then
+    set -x
+  fi
+}
+
+codemagic_group_id() {
+  local token="$1"
+  local app_id="${CODEMAGIC_APP_ID:-6a2c0018a82f6f396a172d16}"
+  local group_name="${CODEMAGIC_VARIABLE_GROUP:-google_play_credentials}"
+
+  codemagic_api GET "/api/v3/apps/${app_id}/variable-groups?page_size=100" "${token}" \
+    | GROUP_NAME="${group_name}" python3 -c "import json,os,sys; data=json.load(sys.stdin).get('data', []); matches=[item['id'] for item in data if item.get('name')==os.environ['GROUP_NAME']]; print(matches[0] if matches else '')"
+}
+
+codemagic_variable_id() {
+  local token="$1"
+  local group_id="$2"
+  local variable_name="$3"
+
+  codemagic_api GET "/api/v3/variable-groups/${group_id}/variables?page_size=100&search=${variable_name}" "${token}" \
+    | VARIABLE_NAME="${variable_name}" python3 -c "import json,os,sys; data=json.load(sys.stdin).get('data', []); matches=[item['id'] for item in data if item.get('name')==os.environ['VARIABLE_NAME']]; print(matches[0] if matches else '')"
+}
+
+codemagic_upsert_secure_variable() {
+  local token="$1"
+  local group_id="$2"
+  local variable_name="$3"
+  local variable_value="$4"
+  local variable_id
+  local payload
+
+  variable_id="$(codemagic_variable_id "${token}" "${group_id}" "${variable_name}")"
+  payload="$(mktemp "${TMPDIR:-/tmp}/korido-codemagic-var.XXXXXX.json")"
+
+  if [ -n "${variable_id}" ]; then
+    VARIABLE_NAME="${variable_name}" VARIABLE_VALUE="${variable_value}" \
+      python3 -c "import json,os; print(json.dumps({'name': os.environ['VARIABLE_NAME'], 'value': os.environ['VARIABLE_VALUE'], 'secure': True}))" \
+      > "${payload}"
+    codemagic_api PATCH "/api/v3/variable-groups/${group_id}/variables/${variable_id}" "${token}" "${payload}" >/dev/null
+    echo "Updated ${variable_name} as secure Codemagic variable."
+  else
+    VARIABLE_NAME="${variable_name}" VARIABLE_VALUE="${variable_value}" \
+      python3 -c "import json,os; print(json.dumps({'secure': True, 'variables': [{'name': os.environ['VARIABLE_NAME'], 'value': os.environ['VARIABLE_VALUE']}]}))" \
+      > "${payload}"
+    codemagic_api POST "/api/v3/variable-groups/${group_id}/variables" "${token}" "${payload}" >/dev/null
+    echo "Created ${variable_name} as secure Codemagic variable."
+  fi
+
+  rm -f "${payload}"
+}
+
+run_codemagic_firebase_upload() {
+  local ios_config="${FIREBASE_IOS_PLIST:-/Users/macbook/Downloads/GoogleService-Info.plist}"
+  local android_config="${FIREBASE_ANDROID_JSON:-/Users/macbook/Downloads/google-services.json}"
+  local token
+  local group_id
+  local ios_value
+  local android_value
+  local had_xtrace=false
+
+  run_codemagic_firebase_check
+
+  case "$-" in
+    *x*)
+      had_xtrace=true
+      set +x
+      ;;
+  esac
+
+  token="$(read_codemagic_token)"
+  group_id="$(codemagic_group_id "${token}")"
+  if [ -z "${group_id}" ]; then
+    echo "Could not find Codemagic variable group ${CODEMAGIC_VARIABLE_GROUP:-google_play_credentials}." >&2
+    exit 66
+  fi
+
+  ios_value="$(base64 < "${ios_config}" | tr -d '\n')"
+  android_value="$(base64 < "${android_config}" | tr -d '\n')"
+
+  codemagic_upsert_secure_variable "${token}" "${group_id}" "FIREBASE_IOS_PLIST_BASE64" "${ios_value}"
+  codemagic_upsert_secure_variable "${token}" "${group_id}" "FIREBASE_ANDROID_JSON_BASE64" "${android_value}"
+
+  if [ "${had_xtrace}" = true ]; then
+    set -x
+  fi
+}
+
+run_codemagic_builds() {
+  local token
+  local team_id="${CODEMAGIC_TEAM_ID:-6a2bf92fcdcc3cc5baf1e63d}"
+  local app_id="${CODEMAGIC_APP_ID:-6a2c0018a82f6f396a172d16}"
+  local branch="${CODEMAGIC_BRANCH:-staging}"
+
+  token="$(read_codemagic_token)"
+  codemagic_api GET "/api/v3/teams/${team_id}/builds?app_id=${app_id}&branch=${branch}&page_size=10" "${token}" \
+    | python3 -c "import json,sys; data=json.load(sys.stdin).get('data', []); [print(f\"{b['id']} #{b.get('index')} {b.get('status')} {b.get('branch')} {b.get('workflow',{}).get('id')} {b.get('created_at')}\") for b in data]"
+}
+
+run_codemagic_actions() {
+  local build_id="${1:-}"
+  local token
+
+  if [ -z "${build_id}" ]; then
+    echo "Usage: ./scripts/codex_mobile.sh codemagic-actions <build-id>" >&2
+    exit 64
+  fi
+
+  token="$(read_codemagic_token)"
+  codemagic_api GET "/api/v3/builds/${build_id}/actions?page_size=100" "${token}" \
+    | python3 -c "import json,sys; data=json.load(sys.stdin).get('data', []); [print(f\"{a['name']} :: {a.get('status')}\") for a in data]"
 }
 
 run_live_e2e() {
@@ -404,6 +596,18 @@ case "${command}" in
       lib/features/settings/views/security_view.dart \
       test/features/settings/settings_contract_test.dart \
       "$@"
+    ;;
+  codemagic-firebase-check)
+    run_codemagic_firebase_check
+    ;;
+  codemagic-firebase-upload)
+    run_codemagic_firebase_upload
+    ;;
+  codemagic-builds)
+    run_codemagic_builds
+    ;;
+  codemagic-actions)
+    run_codemagic_actions "$@"
     ;;
   codemagic-tests)
     run_codemagic_tests
