@@ -1068,14 +1068,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         final refreshedPermissions = refreshed?.permissions;
         if (refreshedPermissions != null &&
             refreshedPermissions.can(operation)) {
-          context.showSnack(
-            _localizedText(
-              en: 'Checking account permissions complete. Tap again to continue.',
-              fr: 'Permissions du compte confirmees. Appuyez a nouveau pour continuer.',
-            ),
-            tone: AppSnackTone.info,
-            duration: const Duration(seconds: 4),
-          );
+          unawaited(context.fsmPush(route));
           return;
         }
 
@@ -1093,12 +1086,13 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
 
       context.showSnack(
         _localizedText(
-          en: 'Checking account permissions. Try again in a moment.',
-          fr: 'Verification des permissions du compte. Reessayez dans un instant.',
+          en: 'We will verify account permissions before completion.',
+          fr: 'Nous verifierons les permissions du compte avant la finalisation.',
         ),
         tone: AppSnackTone.info,
         duration: const Duration(seconds: 4),
       );
+      unawaited(context.fsmPush(route));
       return;
     }
 
