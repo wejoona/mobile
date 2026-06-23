@@ -1035,6 +1035,20 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
       ),
     ),
     WalletQuickActionData(
+      icon: Icons.south_west_rounded,
+      label: l10n.navigation_withdraw,
+      route: '/withdraw',
+      onTap: () => unawaited(
+        _openMoneyFlow(
+          context,
+          ref,
+          l10n,
+          operation: TransactionLimitOperation.withdraw,
+          route: '/withdraw',
+        ),
+      ),
+    ),
+    WalletQuickActionData(
       icon: Icons.history_rounded,
       label: l10n.home_quickAction_history,
       route: '/transactions',
@@ -1086,13 +1100,12 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
 
       context.showSnack(
         _localizedText(
-          en: 'We will verify account permissions before completion.',
-          fr: 'Nous verifierons les permissions du compte avant la finalisation.',
+          en: 'Checking account permissions failed. Please try again.',
+          fr: 'La verification des permissions a echoue. Veuillez reessayer.',
         ),
-        tone: AppSnackTone.info,
+        tone: AppSnackTone.warning,
         duration: const Duration(seconds: 4),
       );
-      unawaited(context.fsmPush(route));
       return;
     }
 
