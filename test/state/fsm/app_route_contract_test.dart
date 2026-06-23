@@ -41,6 +41,21 @@ void main() {
       expect(setupKyc.isSetupRoute, isTrue);
     });
 
+    test('notification routes are explicit authenticated settings routes', () {
+      final feed = appRouteContractFor('/notifications');
+      final permission = appRouteContractFor('/notifications/permission');
+      final preferences = appRouteContractFor('/notifications/preferences');
+
+      expect(feed.role, AppRouteRole.authenticatedShell);
+      expect(feed.requiresAuth, isTrue);
+
+      for (final contract in [permission, preferences]) {
+        expect(contract.role, AppRouteRole.settingsStep);
+        expect(contract.role, isNot(AppRouteRole.unknown));
+        expect(contract.requiresAuth, isTrue);
+      }
+    });
+
     test('signup consent is separate from the phone entry screen', () {
       final signup = appRouteContractFor('/signup');
       final consent = appRouteContractFor('/signup/legal-consent');

@@ -693,6 +693,16 @@ const appRouteContracts = <AppRouteContract>[
     capabilities: {AppRouteCapability.requiresAuth},
   ),
   AppRouteContract(
+    pattern: '/notifications/permission',
+    role: AppRouteRole.settingsStep,
+    capabilities: {AppRouteCapability.requiresAuth},
+  ),
+  AppRouteContract(
+    pattern: '/notifications/preferences',
+    role: AppRouteRole.settingsStep,
+    capabilities: {AppRouteCapability.requiresAuth},
+  ),
+  AppRouteContract(
     pattern: '/settings',
     role: AppRouteRole.authenticatedShell,
     prefix: true,
