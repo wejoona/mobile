@@ -212,6 +212,33 @@ void main() {
       expect(source, contains("route: '/withdraw'"));
     });
 
+    test('home manual-review blocks route to durable KYC status', () {
+      final source = File(
+        'lib/features/wallet/views/wallet_home_screen.dart',
+      ).readAsStringSync();
+      final blockedFlowBody = source.substring(
+        source.indexOf('void _showBlockedMoneyFlow('),
+        source.indexOf('String _manualReviewRouteFor('),
+      );
+
+      expect(source, contains('reviewRequired'));
+      expect(source, contains('_manualReviewRouteFor('));
+      expect(source, contains("return '/kyc/submitted?intent="));
+      expect(
+        blockedFlowBody.indexOf('if (reviewRequired)'),
+        lessThan(blockedFlowBody.indexOf('context.showSnack(')),
+        reason:
+            'manual-review money-flow blocks must not become transient snackbars with no forward route.',
+      );
+      expect(
+        blockedFlowBody.substring(
+          blockedFlowBody.indexOf('if (reviewRequired)'),
+          blockedFlowBody.indexOf('context.showSnack('),
+        ),
+        contains('context.fsmPush('),
+      );
+    });
+
     test(
       'withdraw submissions verify live limits before cash-out API call',
       () {

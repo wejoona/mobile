@@ -1134,21 +1134,37 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         ? l10n.moneyFlow_reviewRequiredMessage
         : l10n.moneyFlow_verificationRequiredMessage;
 
+    if (reviewRequired) {
+      unawaited(
+        context.fsmPush(
+          _manualReviewRouteFor(operation: operation, route: route),
+        ),
+      );
+      return;
+    }
+
     context.showSnack(
       message,
-      tone: reviewRequired ? AppSnackTone.info : AppSnackTone.warning,
+      tone: AppSnackTone.warning,
       duration: const Duration(seconds: 4),
-      action: reviewRequired
-          ? null
-          : SnackBarAction(
-              label: l10n.auth_verify,
-              onPressed: () => unawaited(
-                context.fsmPush(
-                  _verificationRouteFor(operation: operation, route: route),
-                ),
-              ),
-            ),
+      action: SnackBarAction(
+        label: l10n.auth_verify,
+        onPressed: () => unawaited(
+          context.fsmPush(
+            _verificationRouteFor(operation: operation, route: route),
+          ),
+        ),
+      ),
     );
+  }
+
+  String _manualReviewRouteFor({
+    required TransactionLimitOperation operation,
+    required String route,
+  }) {
+    final intent = Uri.encodeComponent(operation.name);
+    final returnTo = Uri.encodeComponent(route);
+    return '/kyc/submitted?intent=$intent&returnTo=$returnTo';
   }
 
   String _verificationRouteFor({
