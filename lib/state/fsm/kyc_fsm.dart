@@ -772,7 +772,7 @@ class KycFsm extends FsmDefinition<KycState, KycEvent> {
           targetTier: state.previousTier,
           currentStep: KycStep.documentCapture, // Start from documents
         ),
-        effects: [const NavigateEffect('/kyc/renew')],
+        effects: [const NavigateEffect('/kyc/document-type')],
       );
     }
     if (event is KycFetch) {

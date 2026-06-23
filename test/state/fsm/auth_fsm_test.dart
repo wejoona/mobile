@@ -26,7 +26,10 @@ void main() {
       expect(result, isA<TransitionSuccess<AuthState>>());
       final success = result as TransitionSuccess<AuthState>;
       expect(success.newState, isA<AuthSubmitting>());
-      expect((success.newState as AuthSubmitting).phone, equals('+22512345678'));
+      expect(
+        (success.newState as AuthSubmitting).phone,
+        equals('+22512345678'),
+      );
       expect(success.effects, isNotNull);
       expect(success.effects!.length, equals(1));
       expect(success.effects![0], isA<FetchEffect>());
@@ -71,7 +74,10 @@ void main() {
       expect(result, isA<TransitionSuccess<AuthState>>());
       final success = result as TransitionSuccess<AuthState>;
       expect(success.newState, isA<AuthOtpExpired>());
-      expect((success.newState as AuthOtpExpired).phone, equals('+22512345678'));
+      expect(
+        (success.newState as AuthOtpExpired).phone,
+        equals('+22512345678'),
+      );
       expect(success.effects, isNotNull);
       expect(success.effects!.any((e) => e is NotifyEffect), isTrue);
     });
@@ -85,7 +91,10 @@ void main() {
       expect(result, isA<TransitionSuccess<AuthState>>());
       final success = result as TransitionSuccess<AuthState>;
       expect(success.newState, isA<AuthSubmitting>());
-      expect((success.newState as AuthSubmitting).phone, equals('+22512345678'));
+      expect(
+        (success.newState as AuthSubmitting).phone,
+        equals('+22512345678'),
+      );
     });
 
     test('should transition from otpExpired to submitting on new login', () {
@@ -97,7 +106,10 @@ void main() {
       expect(result, isA<TransitionSuccess<AuthState>>());
       final success = result as TransitionSuccess<AuthState>;
       expect(success.newState, isA<AuthSubmitting>());
-      expect((success.newState as AuthSubmitting).phone, equals('+22587654321'));
+      expect(
+        (success.newState as AuthSubmitting).phone,
+        equals('+22587654321'),
+      );
     });
   });
 
@@ -170,64 +182,73 @@ void main() {
       expect(refreshing.phone, equals('+22512345678'));
     });
 
-    test('should transition from tokenRefreshing to authenticated on success', () {
-      const state = AuthTokenRefreshing(
-        userId: 'user123',
-        phone: '+22512345678',
-      );
-      const event = AuthTokenRefreshed(
-        accessToken: 'new_token',
-        refreshToken: 'new_refresh',
-      );
+    test(
+      'should transition from tokenRefreshing to authenticated on success',
+      () {
+        const state = AuthTokenRefreshing(
+          userId: 'user123',
+          phone: '+22512345678',
+        );
+        const event = AuthTokenRefreshed(
+          accessToken: 'new_token',
+          refreshToken: 'new_refresh',
+        );
 
-      final result = fsm.handle(state, event);
+        final result = fsm.handle(state, event);
 
-      expect(result, isA<TransitionSuccess<AuthState>>());
-      final success = result as TransitionSuccess<AuthState>;
-      expect(success.newState, isA<AuthAuthenticated>());
-      final authenticated = success.newState as AuthAuthenticated;
-      expect(authenticated.accessToken, equals('new_token'));
-      expect(authenticated.refreshToken, equals('new_refresh'));
-    });
+        expect(result, isA<TransitionSuccess<AuthState>>());
+        final success = result as TransitionSuccess<AuthState>;
+        expect(success.newState, isA<AuthAuthenticated>());
+        final authenticated = success.newState as AuthAuthenticated;
+        expect(authenticated.accessToken, equals('new_token'));
+        expect(authenticated.refreshToken, equals('new_refresh'));
+      },
+    );
 
-    test('should transition from tokenRefreshing to unauthenticated on failure', () {
-      const state = AuthTokenRefreshing(
-        userId: 'user123',
-        phone: '+22512345678',
-      );
-      const event = AuthFailed(message: 'Refresh token expired');
+    test(
+      'should transition from tokenRefreshing to unauthenticated on failure',
+      () {
+        const state = AuthTokenRefreshing(
+          userId: 'user123',
+          phone: '+22512345678',
+        );
+        const event = AuthFailed(message: 'Refresh token expired');
 
-      final result = fsm.handle(state, event);
+        final result = fsm.handle(state, event);
 
-      expect(result, isA<TransitionSuccess<AuthState>>());
-      final success = result as TransitionSuccess<AuthState>;
-      expect(success.newState, isA<AuthUnauthenticated>());
-      expect(success.effects, isNotNull);
-      expect(success.effects!.any((e) => e is ClearEffect), isTrue);
-      expect(success.effects!.any((e) => e is NavigateEffect), isTrue);
-    });
+        expect(result, isA<TransitionSuccess<AuthState>>());
+        final success = result as TransitionSuccess<AuthState>;
+        expect(success.newState, isA<AuthUnauthenticated>());
+        expect(success.effects, isNotNull);
+        expect(success.effects!.any((e) => e is ClearEffect), isTrue);
+        expect(success.effects!.any((e) => e is NavigateEffect), isTrue);
+      },
+    );
   });
 
   group('AuthFsm - Account Locked', () {
-    test('should transition from submitting to locked on too many attempts', () {
-      const state = AuthSubmitting(phone: '+22512345678');
-      const event = AuthAccountLocked(
-        lockDuration: Duration(minutes: 15),
-        reason: 'Too many failed attempts',
-      );
+    test(
+      'should transition from submitting to locked on too many attempts',
+      () {
+        const state = AuthSubmitting(phone: '+22512345678');
+        const event = AuthAccountLocked(
+          lockDuration: Duration(minutes: 15),
+          reason: 'Too many failed attempts',
+        );
 
-      final result = fsm.handle(state, event);
+        final result = fsm.handle(state, event);
 
-      expect(result, isA<TransitionSuccess<AuthState>>());
-      final success = result as TransitionSuccess<AuthState>;
-      expect(success.newState, isA<AuthLocked>());
-      final locked = success.newState as AuthLocked;
-      expect(locked.phone, equals('+22512345678'));
-      expect(locked.lockDuration, equals(const Duration(minutes: 15)));
-      expect(locked.reason, equals('Too many failed attempts'));
-      expect(success.effects, isNotNull);
-      expect(success.effects!.any((e) => e is NotifyEffect), isTrue);
-    });
+        expect(result, isA<TransitionSuccess<AuthState>>());
+        final success = result as TransitionSuccess<AuthState>;
+        expect(success.newState, isA<AuthLocked>());
+        final locked = success.newState as AuthLocked;
+        expect(locked.phone, equals('+22512345678'));
+        expect(locked.lockDuration, equals(const Duration(minutes: 15)));
+        expect(locked.reason, equals('Too many failed attempts'));
+        expect(success.effects, isNotNull);
+        expect(success.effects!.any((e) => e is NotifyEffect), isTrue);
+      },
+    );
 
     test('should allow login from locked state after unlock time', () {
       final lockedAt = DateTime.now().subtract(const Duration(minutes: 16));
@@ -310,6 +331,8 @@ void main() {
       expect(suspended.isPermanent, isTrue);
       expect(success.effects, isNotNull);
       expect(success.effects!.any((e) => e is NavigateEffect), isTrue);
+      final navigation = success.effects!.whereType<NavigateEffect>().single;
+      expect(navigation.route, '/auth-suspended');
     });
 
     test('suspended state should be mostly terminal', () {
@@ -337,7 +360,10 @@ void main() {
       expect(result, isA<TransitionSuccess<AuthState>>());
       final success = result as TransitionSuccess<AuthState>;
       expect(success.newState, isA<AuthSubmitting>());
-      expect((success.newState as AuthSubmitting).phone, equals('+22512345678'));
+      expect(
+        (success.newState as AuthSubmitting).phone,
+        equals('+22512345678'),
+      );
     });
   });
 
@@ -414,7 +440,10 @@ void main() {
     });
 
     test('tokenRefreshing state should be transitioning', () {
-      const state = AuthTokenRefreshing(userId: 'user123', phone: '+22512345678');
+      const state = AuthTokenRefreshing(
+        userId: 'user123',
+        phone: '+22512345678',
+      );
       expect(state.isTransitioning, isTrue);
     });
 

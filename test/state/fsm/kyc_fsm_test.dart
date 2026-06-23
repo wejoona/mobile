@@ -518,6 +518,8 @@ void main() {
       final inProgress = success.newState as KycInProgress;
       expect(inProgress.targetTier, equals(KycTier.tier1));
       expect(inProgress.currentStep, equals(KycStep.documentCapture));
+      final navigation = success.effects!.whereType<NavigateEffect>().single;
+      expect(navigation.route, '/kyc/document-type');
     });
 
     test('should allow refresh from expired state', () {
