@@ -270,12 +270,12 @@ class _SubmittedViewState extends ConsumerState<SubmittedView> {
     KycFlowState flow,
     KycStateMachineState durableState,
   ) {
-    if (flow.verificationStatus != null) {
-      return flow.verificationStatus!;
-    }
-
     if (durableState.hasLoaded) {
       return durableState.status;
+    }
+
+    if (flow.verificationStatus != null) {
+      return flow.verificationStatus!;
     }
 
     return durableState.status;

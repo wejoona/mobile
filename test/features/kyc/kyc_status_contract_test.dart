@@ -141,6 +141,12 @@ void main() {
       expect(statusView, contains('await _refreshStatus();'));
       expect(statusView, contains('if (flowStatus != null)'));
       expect(
+        statusView.indexOf('if (_isAuthoritativeDurableStatus(durableState))'),
+        lessThan(statusView.indexOf('if (flowStatus != null)')),
+        reason:
+            'A fresh API-backed durable KYC status must override stale wizard state after admin review.',
+      );
+      expect(
         statusView,
         isNot(contains('state.verificationStatus ?? KycStatus.none')),
         reason:
@@ -172,6 +178,12 @@ void main() {
       expect(submittedView, contains('flow.verificationStatus != null'));
       expect(submittedView, contains('if (durableState.hasLoaded)'));
       expect(submittedView, contains('return durableState.status;'));
+      expect(
+        submittedView.indexOf('if (durableState.hasLoaded)'),
+        lessThan(submittedView.indexOf('if (flow.verificationStatus != null)')),
+        reason:
+            'Submitted/manual-review screens must let fresh API-backed KYC state beat stale local flow state.',
+      );
       expect(submittedView, contains('kyc_status_approved_title'));
       expect(submittedView, contains('isVerified'));
       expect(submittedView, contains('_safeReturnTo'));
@@ -201,6 +213,28 @@ void main() {
         contains('We will verify account permissions before completion'),
         reason:
             'Unknown limits should not create a one-tap dead end; backend writers still enforce permissions before completion.',
+      );
+    });
+
+    test('realtime polling refreshes both KYC state holders', () {
+      final realtimeSource = File(
+        'lib/services/realtime/realtime_service.dart',
+      ).readAsStringSync();
+      final pullAllBody = RegExp(
+        r'void pullAll\(\) \{([\s\S]*?)\n  \}',
+      ).firstMatch(realtimeSource)!.group(1)!;
+      final refreshKycBody = RegExp(
+        r'void _refreshKycState\(\) \{([\s\S]*?)\n  \}',
+      ).firstMatch(realtimeSource)!.group(1)!;
+
+      expect(pullAllBody, contains('_refreshKycState()'));
+      expect(
+        refreshKycBody,
+        contains('kycProvider.notifier).loadVerificationStatus()'),
+      );
+      expect(
+        refreshKycBody,
+        contains('kycStateMachineProvider.notifier).fetch()'),
       );
     });
 

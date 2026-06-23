@@ -81,6 +81,7 @@ class RealtimeService {
       _invalidateRecipientProviders();
       unawaited(_ref.read(walletStateMachineProvider.notifier).refresh());
       unawaited(_ref.read(transactionStateMachineProvider.notifier).refresh());
+      _refreshKycState();
     } on Object catch (_) {}
   }
 
@@ -326,6 +327,7 @@ class RealtimeService {
 
   void _refreshKycState() {
     _ref.invalidate(kycProfileProvider);
+    unawaited(_ref.read(kycProvider.notifier).loadVerificationStatus());
     unawaited(_ref.read(kycStateMachineProvider.notifier).fetch());
     _refreshNotificationSurfaces();
   }

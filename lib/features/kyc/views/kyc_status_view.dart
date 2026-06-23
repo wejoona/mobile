@@ -501,12 +501,12 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
     KycStatus? flowStatus,
     KycStateMachineState durableState,
   ) {
-    if (flowStatus != null) {
-      return flowStatus;
-    }
-
     if (_isAuthoritativeDurableStatus(durableState)) {
       return durableState.status;
+    }
+
+    if (flowStatus != null) {
+      return flowStatus;
     }
 
     return durableState.status;
