@@ -1369,7 +1369,15 @@ void main() {
       final source = File(
         'lib/services/notifications/push_notification_service.dart',
       ).readAsStringSync();
+      final deviceSyncIndex = source.indexOf('_syncDevicePushToken(');
+      final legacySyncIndex = source.indexOf(
+        '_registerLegacyNotificationToken(',
+      );
 
+      expect(deviceSyncIndex, isNonNegative);
+      expect(legacySyncIndex, isNonNegative);
+      expect(deviceSyncIndex, lessThan(legacySyncIndex));
+      expect(source, contains('updateFcmToken('));
       expect(source, contains('registerFcmToken('));
       expect(source, contains('removeFcmToken('));
       expect(source, isNot(contains("'/notifications/push/token'")));
