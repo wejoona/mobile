@@ -168,19 +168,20 @@ class PushNotificationService {
 
     try {
       final fingerprint = await _safeFingerprint();
-      await _notificationsService.registerFcmToken(
-        token: _currentToken!,
-        platform: Platform.isIOS ? 'ios' : 'android',
-        deviceId: fingerprint?.deviceId,
-        deviceName: _displayDeviceName(fingerprint),
-        appVersion: fingerprint?.appVersion,
-        osVersion: fingerprint?.osVersion ?? Platform.operatingSystemVersion,
+      final deviceTokenSynced = await _syncDevicePushToken(
+        fingerprint,
+        _currentToken!,
       );
-      await _syncDevicePushToken(fingerprint, _currentToken!);
+      final legacyTokenSynced = await _registerLegacyNotificationToken(
+        fingerprint,
+        _currentToken!,
+      );
 
-      _logger.info('FCM token registered with backend');
-      return true;
-    } on DioException catch (e) {
+      if (deviceTokenSynced) {
+        _logger.info('FCM token registered with device backend');
+      }
+      return deviceTokenSynced || legacyTokenSynced;
+    } on Object catch (e) {
       _logger.error('Failed to register FCM token', e);
       return false;
     }
@@ -314,13 +315,33 @@ class PushNotificationService {
     return parts.isEmpty ? null : parts.join(' ');
   }
 
-  Future<void> _syncDevicePushToken(
+  Future<bool> _registerLegacyNotificationToken(
+    DeviceFingerprint? fingerprint,
+    String token,
+  ) async {
+    try {
+      await _notificationsService.registerFcmToken(
+        token: token,
+        platform: Platform.isIOS ? 'ios' : 'android',
+        deviceId: fingerprint?.deviceId,
+        deviceName: _displayDeviceName(fingerprint),
+        appVersion: fingerprint?.appVersion,
+        osVersion: fingerprint?.osVersion ?? Platform.operatingSystemVersion,
+      );
+      return true;
+    } on Object catch (error) {
+      _logger.warn('Legacy notification token registration skipped', error);
+      return false;
+    }
+  }
+
+  Future<bool> _syncDevicePushToken(
     DeviceFingerprint? fingerprint,
     String token,
   ) async {
     final deviceId = fingerprint?.deviceId;
     if (deviceId == null || deviceId.trim().isEmpty) {
-      return;
+      return false;
     }
 
     try {
@@ -328,8 +349,10 @@ class PushNotificationService {
         deviceIdentifier: deviceId,
         fcmToken: token,
       );
-    } on DioException catch (error) {
+      return true;
+    } on Object catch (error) {
       _logger.warn('Device FCM token sync failed', error);
+      return false;
     }
   }
 
