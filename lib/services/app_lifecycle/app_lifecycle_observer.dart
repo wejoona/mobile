@@ -67,6 +67,9 @@ class AppLifecycleObserver extends WidgetsBindingObserver {
   void _startLockTimer() {
     _lockTimer?.cancel();
     final settings = _ref.read(securitySettingsProvider);
+    if (!settings.isLoaded) {
+      return;
+    }
     if (!settings.pinOnAppOpen) {
       return;
     }
@@ -82,6 +85,11 @@ class AppLifecycleObserver extends WidgetsBindingObserver {
   }
 
   void _triggerAutoLock() {
+    final settings = _ref.read(securitySettingsProvider);
+    if (!settings.isLoaded || !settings.pinOnAppOpen) {
+      return;
+    }
+
     // Only lock if authenticated
     final appState = _ref.read(appFsmProvider);
     if (!appState.isAuthenticated) return;

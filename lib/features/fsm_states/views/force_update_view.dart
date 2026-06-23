@@ -85,8 +85,7 @@ class ForceUpdateView extends ConsumerWidget {
         configuredUrl ?? (Platform.isIOS ? _appStoreUrl : _playStoreUrl);
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-      return true;
+      return launchUrl(uri, mode: LaunchMode.externalApplication);
     }
     return false;
   }

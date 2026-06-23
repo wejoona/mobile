@@ -239,6 +239,9 @@ class SessionService extends Notifier<SessionState> {
     // biometric prompts, etc. which briefly send the app to background.
     _backgroundLockTimer?.cancel();
     final settings = ref.read(securitySettingsProvider);
+    if (!settings.isLoaded) {
+      return;
+    }
     if (!settings.pinOnAppOpen) {
       return;
     }
@@ -267,7 +270,8 @@ class SessionService extends Notifier<SessionState> {
       final backgroundDuration = DateTime.now().difference(wasInBackground);
       final settings = ref.read(securitySettingsProvider);
 
-      if (settings.pinOnAppOpen &&
+      if (settings.isLoaded &&
+          settings.pinOnAppOpen &&
           backgroundDuration >= Duration(minutes: settings.autoLockMinutes)) {
         // Been in background too long (>5 min), lock session (NOT expire/logout)
         lockSession();

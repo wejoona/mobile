@@ -144,7 +144,9 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
           value == 'kyc_status_updated' ||
           value == 'kyc.status_updated' ||
           value == 'kyc_approved' ||
-          value == 'kyc.approved',
+          value == 'kyc.approved' ||
+          value == 'kyc_rejected' ||
+          value == 'kyc.rejected',
     );
   }
 

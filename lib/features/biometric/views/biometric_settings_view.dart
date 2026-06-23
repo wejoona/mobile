@@ -57,7 +57,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
             _buildBiometricToggle(l10n),
             const SizedBox(height: AppSpacing.xxl),
 
-            // Use Cases
+            // Applied Security
             if (settings.isBiometricEnabled) ...[
               AppText(
                 l10n.biometric_settings_use_cases,
@@ -76,50 +76,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
                     .setRequireForAppUnlock(value: value),
               ),
               const SizedBox(height: AppSpacing.sm),
-              _buildUseCaseToggle(
-                l10n: l10n,
-                icon: Icons.send,
-                title: l10n.biometric_settings_transactions_title,
-                subtitle: l10n.biometric_settings_transactions_subtitle,
-                value: settings.requireForTransactions,
-                onChanged: (value) => ref
-                    .read(biometricSettingsProvider.notifier)
-                    .setRequireForTransactions(value: value),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              _buildUseCaseToggle(
-                l10n: l10n,
-                icon: Icons.settings,
-                title: l10n.biometric_settings_sensitive_title,
-                subtitle: l10n.biometric_settings_sensitive_subtitle,
-                value: settings.requireForSensitiveSettings,
-                onChanged: (value) => ref
-                    .read(biometricSettingsProvider.notifier)
-                    .setRequireForSensitiveSettings(value: value),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              _buildUseCaseToggle(
-                l10n: l10n,
-                icon: Icons.visibility,
-                title: l10n.biometric_settings_view_balance_title,
-                subtitle: l10n.biometric_settings_view_balance_subtitle,
-                value: settings.requireForViewBalance,
-                onChanged: (value) => ref
-                    .read(biometricSettingsProvider.notifier)
-                    .setRequireForViewBalance(value: value),
-              ),
-              const SizedBox(height: AppSpacing.xxl),
-
-              // Advanced Settings
-              AppText(
-                l10n.biometric_settings_advanced,
-                variant: AppTextVariant.titleMedium,
-                color: context.colors.textPrimary,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _buildTimeoutSelector(l10n, settings),
-              const SizedBox(height: AppSpacing.sm),
-              _buildHighValueThreshold(l10n, settings),
+              _buildPolicyNote(),
               const SizedBox(height: AppSpacing.xxl),
 
               // Actions
@@ -432,6 +389,49 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
     ),
   );
 
+  Widget _buildPolicyNote() => AppCard(
+    variant: AppCardVariant.subtle,
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: context.colors.info.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
+          child: Icon(
+            Icons.shield_outlined,
+            color: context.colors.info,
+            size: 22,
+          ),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppText(
+                AppLocalizations.of(
+                  context,
+                )!.security_requirePinForTransactions,
+                variant: AppTextVariant.labelMedium,
+                color: context.colors.textPrimary,
+              ),
+              const SizedBox(height: AppSpacing.xxs),
+              AppText(
+                AppLocalizations.of(context)!.security_requirePinSubtitle,
+                variant: AppTextVariant.bodySmall,
+                color: context.colors.textSecondary,
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+
   Widget _buildLoadingToggle(AppLocalizations l10n) => AppCard(
     variant: AppCardVariant.subtle,
     child: Row(
@@ -483,101 +483,6 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
           ),
         ),
       ],
-    ),
-  );
-
-  Widget _buildTimeoutSelector(
-    AppLocalizations l10n,
-    BiometricSettings settings,
-  ) => InkWell(
-    onTap: () => _showTimeoutSelector(l10n, settings),
-    borderRadius: BorderRadius.circular(AppRadius.md),
-    child: AppCard(
-      variant: AppCardVariant.subtle,
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: context.colors.gold.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppRadius.md),
-            ),
-            child: Icon(Icons.timer, color: context.colors.gold, size: 22),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppText(
-                  l10n.biometric_settings_timeout_title,
-                  variant: AppTextVariant.labelMedium,
-                  color: context.colors.textPrimary,
-                ),
-                AppText(
-                  _getTimeoutDescription(
-                    settings.biometricTimeoutMinutes,
-                    l10n,
-                  ),
-                  variant: AppTextVariant.bodySmall,
-                  color: context.colors.textSecondary,
-                ),
-              ],
-            ),
-          ),
-          Icon(Icons.chevron_right, color: context.colors.textSecondary),
-        ],
-      ),
-    ),
-  );
-
-  Widget _buildHighValueThreshold(
-    AppLocalizations l10n,
-    BiometricSettings settings,
-  ) => InkWell(
-    onTap: () => _showThresholdSelector(l10n, settings),
-    borderRadius: BorderRadius.circular(AppRadius.md),
-    child: AppCard(
-      variant: AppCardVariant.subtle,
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: context.colors.gold.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppRadius.md),
-            ),
-            child: Icon(
-              Icons.attach_money,
-              color: context.colors.gold,
-              size: 22,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppText(
-                  l10n.biometric_settings_high_value_title,
-                  variant: AppTextVariant.labelMedium,
-                  color: context.colors.textPrimary,
-                ),
-                AppText(
-                  l10n.biometric_settings_high_value_subtitle(
-                    settings.highValueThreshold.toStringAsFixed(0),
-                  ),
-                  variant: AppTextVariant.bodySmall,
-                  color: context.colors.textSecondary,
-                ),
-              ],
-            ),
-          ),
-          Icon(Icons.chevron_right, color: context.colors.textSecondary),
-        ],
-      ),
     ),
   );
 
@@ -689,20 +594,6 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
     }
   }
 
-  String _getTimeoutDescription(int minutes, AppLocalizations l10n) {
-    if (minutes == 0) {
-      return l10n.biometric_settings_timeout_immediate;
-    } else if (minutes == 5) {
-      return l10n.biometric_settings_timeout_5min;
-    } else if (minutes == 15) {
-      return l10n.biometric_settings_timeout_15min;
-    } else if (minutes == 30) {
-      return l10n.biometric_settings_timeout_30min;
-    } else {
-      return l10n.biometric_settings_timeout_custom(minutes.toString());
-    }
-  }
-
   // Event Handlers
 
   Future<void> _handleBiometricToggle(bool value, AppLocalizations l10n) async {
@@ -751,118 +642,6 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
         await biometricService.disableBiometric();
         _refreshBiometricEnrollmentState();
       }
-    }
-  }
-
-  Future<void> _showTimeoutSelector(
-    AppLocalizations l10n,
-    BiometricSettings settings,
-  ) async {
-    final timeouts = [0, 5, 15, 30];
-    final selected = await showDialog<int>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: context.colors.container,
-        title: AppText(
-          l10n.biometric_settings_timeout_select_title,
-          variant: AppTextVariant.titleMedium,
-          color: context.colors.textPrimary,
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: timeouts
-              .map(
-                (timeout) => InkWell(
-                  onTap: () => Navigator.pop(context, timeout),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.sm,
-                    ),
-                    child: Row(
-                      children: [
-                        Radio<int>(
-                          value: timeout,
-                          groupValue: settings.biometricTimeoutMinutes,
-                          onChanged: (value) => Navigator.pop(context, value),
-                          activeColor: context.colors.gold,
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: AppText(
-                            _getTimeoutDescription(timeout, l10n),
-                            color: context.colors.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              )
-              .toList(),
-        ),
-      ),
-    );
-
-    if (selected != null) {
-      await ref
-          .read(biometricSettingsProvider.notifier)
-          .setBiometricTimeout(selected);
-    }
-  }
-
-  Future<void> _showThresholdSelector(
-    AppLocalizations l10n,
-    BiometricSettings settings,
-  ) async {
-    final thresholds = [100.0, 500.0, 1000.0, 5000.0];
-    final selected = await showDialog<double>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: context.colors.container,
-        title: AppText(
-          l10n.biometric_settings_threshold_select_title,
-          variant: AppTextVariant.titleMedium,
-          color: context.colors.textPrimary,
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: thresholds
-              .map(
-                (threshold) => InkWell(
-                  onTap: () => Navigator.pop(context, threshold),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.sm,
-                    ),
-                    child: Row(
-                      children: [
-                        Radio<double>(
-                          value: threshold,
-                          groupValue: settings.highValueThreshold,
-                          onChanged: (value) => Navigator.pop(context, value),
-                          activeColor: context.colors.gold,
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: AppText(
-                            '\$${threshold.toStringAsFixed(0)}',
-                            color: context.colors.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              )
-              .toList(),
-        ),
-      ),
-    );
-
-    if (selected != null) {
-      await ref
-          .read(biometricSettingsProvider.notifier)
-          .setHighValueThreshold(selected);
     }
   }
 

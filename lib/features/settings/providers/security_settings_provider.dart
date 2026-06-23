@@ -7,21 +7,25 @@ class SecuritySettings {
   final bool screenshotProtection;
   final bool pinOnAppOpen;
   final int autoLockMinutes;
+  final bool isLoaded;
 
   const SecuritySettings({
     this.screenshotProtection = true,
     this.pinOnAppOpen = true,
     this.autoLockMinutes = 5,
+    this.isLoaded = false,
   });
 
   SecuritySettings copyWith({
     bool? screenshotProtection,
     bool? pinOnAppOpen,
     int? autoLockMinutes,
+    bool? isLoaded,
   }) => SecuritySettings(
     screenshotProtection: screenshotProtection ?? this.screenshotProtection,
     pinOnAppOpen: pinOnAppOpen ?? this.pinOnAppOpen,
     autoLockMinutes: autoLockMinutes ?? this.autoLockMinutes,
+    isLoaded: isLoaded ?? this.isLoaded,
   );
 }
 
@@ -48,8 +52,11 @@ class SecuritySettingsNotifier extends Notifier<SecuritySettings> {
         screenshotProtection: screenshotApplied && screenshotProtection,
         pinOnAppOpen: pinOnOpen != 'false',
         autoLockMinutes: int.tryParse(autoLock ?? '5') ?? 5,
+        isLoaded: true,
       );
-    } catch (_) {}
+    } catch (_) {
+      state = state.copyWith(isLoaded: true);
+    }
   }
 
   Future<bool> setScreenshotProtection(bool value) async {
@@ -69,12 +76,12 @@ class SecuritySettingsNotifier extends Notifier<SecuritySettings> {
   }
 
   Future<void> setPinOnAppOpen(bool value) async {
-    state = state.copyWith(pinOnAppOpen: value);
+    state = state.copyWith(pinOnAppOpen: value, isLoaded: true);
     await _save('security_pin_open', value.toString());
   }
 
   Future<void> setAutoLock(int minutes) async {
-    state = state.copyWith(autoLockMinutes: minutes);
+    state = state.copyWith(autoLockMinutes: minutes, isLoaded: true);
     await _save('security_auto_lock', minutes.toString());
   }
 

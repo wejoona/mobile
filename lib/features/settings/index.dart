@@ -18,7 +18,6 @@ export 'package:usdc_wallet/features/settings/views/delete_account_view.dart';
 export 'package:usdc_wallet/features/settings/views/devices_screen.dart';
 export 'package:usdc_wallet/features/settings/views/export_data_view.dart';
 export 'package:usdc_wallet/features/settings/views/help_view.dart';
-export 'package:usdc_wallet/features/settings/views/kyc_view.dart';
 export 'package:usdc_wallet/features/settings/views/language_view.dart';
 export 'package:usdc_wallet/features/settings/views/limits_view.dart';
 export 'package:usdc_wallet/features/settings/views/notification_settings_view.dart';

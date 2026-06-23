@@ -217,9 +217,9 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               l10n: l10n,
               colors: colors,
               icon: Icons.history,
-              title: l10n.security_loginHistory,
-              subtitle: l10n.security_loginHistorySubtitle,
-              onTap: () => _showLoginHistory(),
+              title: l10n.security_activeSessions,
+              subtitle: l10n.security_activeSessionsSubtitle,
+              onTap: _showSessionActivity,
             ),
             const SizedBox(height: AppSpacing.sm),
             _buildSecurityOption(
@@ -974,7 +974,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
     );
   }
 
-  void _showLoginHistory() {
+  void _showSessionActivity() {
     final l10n = AppLocalizations.of(context)!;
 
     // Trigger loading sessions
@@ -1005,7 +1005,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     AppText(
-                      l10n.security_loginHistoryTitle,
+                      l10n.settings_activeSessions,
                       variant: AppTextVariant.titleMedium,
                     ),
                     const SizedBox(height: AppSpacing.lg),
@@ -1028,7 +1028,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                       Expanded(
                         child: Center(
                           child: AppText(
-                            'Aucun historique de connexion disponible.',
+                            l10n.sessions_noActiveSessionsDesc,
                             variant: AppTextVariant.bodyMedium,
                             color: colors.textSecondary,
                             textAlign: TextAlign.center,
@@ -1049,9 +1049,9 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                               location:
                                   session.location ??
                                   session.ipAddress ??
-                                  'Inconnu',
+                                  l10n.sessions_unknownLocation,
                               time: _formatSessionTime(session.lastActivityAt),
-                              success: session.isActive,
+                              isActive: session.isActive,
                             );
                           },
                         ),
@@ -1083,7 +1083,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
     required String time,
     required String device,
     required String location,
-    required bool success,
+    required bool isActive,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
@@ -1095,14 +1095,16 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: success
+                color: isActive
                     ? context.colors.success.withValues(alpha: 0.1)
-                    : context.colors.error.withValues(alpha: 0.1),
+                    : context.colors.textSecondary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                success ? Icons.check : Icons.close,
-                color: success ? context.colors.success : context.colors.error,
+                isActive ? Icons.check : Icons.schedule,
+                color: isActive
+                    ? context.colors.success
+                    : context.colors.textSecondary,
                 size: 20,
               ),
             ),
@@ -1121,9 +1123,11 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               ),
             ),
             AppText(
-              success ? l10n.security_loginSuccess : l10n.security_loginFailed,
+              isActive
+                  ? l10n.biometric_settings_active
+                  : l10n.biometric_settings_inactive,
               variant: AppTextVariant.labelSmall,
-              color: success ? context.colors.success : context.colors.error,
+              color: isActive ? context.colors.success : colors.textSecondary,
             ),
           ],
         ),
