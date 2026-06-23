@@ -1,13 +1,15 @@
-import 'package:usdc_wallet/core/utils/formatters.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
+
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/features/send_external/providers/external_transfer_provider.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/core/utils/formatters.dart';
 import 'package:usdc_wallet/features/send_external/models/external_transfer_request.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/features/send_external/providers/external_transfer_provider.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class ExternalAmountScreen extends ConsumerStatefulWidget {
@@ -24,6 +26,12 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    unawaited(Future.microtask(_loadBalanceIfNeeded));
+  }
+
+  @override
   void dispose() {
     _amountController.dispose();
     super.dispose();
@@ -36,7 +44,11 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
 
     if (!state.hasValidAddress) {
       // Navigate back if no address
-      Future.microtask(() => context.fsmGo('/send-external'));
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          context.fsmGo('/send-external');
+        }
+      });
       return const SizedBox.shrink();
     }
 
@@ -109,13 +121,37 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                           ),
                         ),
                         const SizedBox(width: AppSpacing.sm),
-                        AmountText.fromText(
-                          '\$${Formatters.formatCurrency(state.availableBalance)}',
-                          size: AmountTextSize.small,
-                          color: context.colors.gold,
-                        ),
+                        _buildBalanceValue(state),
                       ],
                     ),
+                    if (!state.hasVerifiedBalance && !state.isBalanceLoading)
+                      Padding(
+                        padding: const EdgeInsets.only(top: AppSpacing.sm),
+                        child: AppCard(
+                          variant: AppCardVariant.subtle,
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.warning_amber_rounded,
+                                color: context.colors.warningText,
+                                size: 18,
+                              ),
+                              const SizedBox(width: AppSpacing.sm),
+                              Expanded(
+                                child: AppText(
+                                  state.balanceError ??
+                                      _externalAmountCopy(
+                                        en: 'Available balance could not be verified. Please go back and try again.',
+                                        fr: 'Le solde disponible n’a pas pu etre verifie. Revenez en arriere puis reessayez.',
+                                      ),
+                                  variant: AppTextVariant.bodySmall,
+                                  color: context.colors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     SizedBox(height: AppSpacing.lg),
 
                     // Amount input
@@ -140,7 +176,9 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                         ),
                       ],
                       suffix: TextButton(
-                        onPressed: _setMaxAmount,
+                        onPressed: state.hasVerifiedBalance
+                            ? _setMaxAmount
+                            : null,
                         child: AppText(
                           l10n.send_max,
                           variant: AppTextVariant.labelMedium,
@@ -377,6 +415,40 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
     return '${address.substring(0, 10)}...${address.substring(address.length - 8)}';
   }
 
+  void _loadBalanceIfNeeded() {
+    final state = ref.read(externalTransferProvider);
+    if (!state.hasVerifiedBalance && !state.isBalanceLoading) {
+      unawaited(ref.read(externalTransferProvider.notifier).loadBalance());
+    }
+  }
+
+  Widget _buildBalanceValue(ExternalTransferState state) {
+    if (state.isBalanceLoading) {
+      return SizedBox(
+        width: 18,
+        height: 18,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          color: context.colors.gold,
+        ),
+      );
+    }
+
+    if (!state.hasVerifiedBalance) {
+      return AppText(
+        _externalAmountCopy(en: 'Unavailable', fr: 'Indisponible'),
+        variant: AppTextVariant.labelMedium,
+        color: context.colors.warningText,
+      );
+    }
+
+    return AmountText.fromText(
+      '\$${Formatters.formatCurrency(state.availableBalance)}',
+      size: AmountTextSize.small,
+      color: context.colors.gold,
+    );
+  }
+
   String? _validateAmount(String? value) {
     final l10n = AppLocalizations.of(context)!;
     if (value == null || value.isEmpty) {
@@ -387,6 +459,12 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
       return l10n.error_amountInvalid;
     }
     final state = ref.read(externalTransferProvider);
+    if (!state.hasVerifiedBalance) {
+      return _externalAmountCopy(
+        en: 'Available balance could not be verified. Please try again.',
+        fr: 'Le solde disponible n’a pas pu etre verifie. Reessayez.',
+      );
+    }
     if (state.total > state.availableBalance) {
       return l10n.error_insufficientBalance;
     }
@@ -402,6 +480,9 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
 
   void _setMaxAmount() {
     final state = ref.read(externalTransferProvider);
+    if (!state.hasVerifiedBalance) {
+      return;
+    }
     // Max amount is balance minus estimated fee
     final maxAmount = (state.availableBalance - state.estimatedFee).clamp(
       0.0,
@@ -419,10 +500,14 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
     setState(() => _isLoading = true);
     try {
       if (mounted) {
-        context.fsmPush('/send-external/confirm');
+        await context.fsmPush('/send-external/confirm');
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  String _externalAmountCopy({required String en, required String fr}) {
+    return Localizations.localeOf(context).languageCode == 'fr' ? fr : en;
   }
 }

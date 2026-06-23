@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/realtime/realtime_service.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
 import 'package:usdc_wallet/services/limits/limits_service.dart';
@@ -24,6 +25,7 @@ enum DepositFlowStep {
   enterAmount,
   instructions,
   processing,
+  statusUnknown,
   completed,
   failed,
 }
@@ -218,6 +220,7 @@ class DepositNotifier extends Notifier<DepositState> {
       case DepositFlowStep.instructions:
         state = state.copyWith(step: DepositFlowStep.enterAmount);
       case DepositFlowStep.processing:
+      case DepositFlowStep.statusUnknown:
         // Cancel polling when user navigates back from processing
         _pollingTimer?.cancel();
         state = state.copyWith(step: DepositFlowStep.enterAmount);
@@ -307,7 +310,7 @@ class DepositNotifier extends Notifier<DepositState> {
       );
       state = state.copyWith(
         isLoading: false,
-        error: moneyFlowError?.message ?? e.toString(),
+        error: moneyFlowError?.message ?? _friendlyDepositError(e),
         step: DepositFlowStep.failed,
       );
       ref
@@ -361,7 +364,7 @@ class DepositNotifier extends Notifier<DepositState> {
       state = state.copyWith(
         error:
             'Deposit status check timed out. Please check your transaction history.',
-        step: DepositFlowStep.failed,
+        step: DepositFlowStep.statusUnknown,
       );
       return;
     }
@@ -571,6 +574,19 @@ class DepositNotifier extends Notifier<DepositState> {
   static bool _providerRequiresPhone(String providerCode, String? methodType) {
     return depositChannelRequiresPhone(providerCode, methodType);
   }
+}
+
+String _friendlyDepositError(Object error) {
+  if (error is DioException) {
+    return ApiException.fromDioError(error).message;
+  }
+  if (error is ApiException) {
+    return error.message;
+  }
+  if (error is ArgumentError) {
+    return error.message?.toString() ?? 'Please check the deposit details.';
+  }
+  return 'Deposit could not be started. Please try again.';
 }
 
 final depositProvider = NotifierProvider<DepositNotifier, DepositState>(

@@ -163,8 +163,9 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
       debugPrint('[DocumentCapture] Gallery pick error: $e');
       debugPrint('[DocumentCapture] Stack: $stack');
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Impossible de sélectionner l'image : $e")),
+          SnackBar(content: Text(l10n.kyc_camera_unavailable_description)),
         );
       }
     }

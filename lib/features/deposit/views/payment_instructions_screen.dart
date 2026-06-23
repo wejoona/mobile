@@ -62,14 +62,17 @@ class _PaymentInstructionsScreenState
     ref.listen<DepositState>(depositProvider, (previous, current) {
       final isNewError =
           current.error != null && current.error != previous?.error;
-      if (isNewError && current.step != DepositFlowStep.failed) {
+      if (isNewError &&
+          current.step != DepositFlowStep.failed &&
+          current.step != DepositFlowStep.statusUnknown) {
         _showErrorDialog(context, current.error!, colors, l10n);
       }
 
       final didReachTerminalStep =
           current.step != previous?.step &&
           (current.step == DepositFlowStep.completed ||
-              current.step == DepositFlowStep.failed);
+              current.step == DepositFlowStep.failed ||
+              current.step == DepositFlowStep.statusUnknown);
       if (didReachTerminalStep) {
         unawaited(context.fsmPush('/deposit/status'));
       }

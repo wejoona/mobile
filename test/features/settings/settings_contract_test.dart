@@ -104,6 +104,24 @@ void main() {
     expect(source, contains('error.statusCode == 401'));
   });
 
+  test('devices fail closed when current device cannot be resolved', () {
+    final providerSource = File(
+      'lib/features/settings/providers/devices_provider.dart',
+    ).readAsStringSync();
+    final screenSource = File(
+      'lib/features/settings/views/devices_screen.dart',
+    ).readAsStringSync();
+
+    expect(providerSource, contains('currentDeviceResolved'));
+    expect(providerSource, contains('Current device could not be resolved'));
+    expect(screenSource, contains('currentDeviceResolved'));
+    expect(screenSource, contains('_UnresolvedCurrentDeviceCard'));
+    expect(
+      screenSource,
+      contains("'/session-locked?returnTo=/settings/devices'"),
+    );
+  });
+
   test('device actions preserve auth state on security failures', () {
     final source = File(
       'lib/features/settings/providers/devices_provider.dart',

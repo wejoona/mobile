@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/kyc_profile.dart';
 import 'package:usdc_wallet/features/kyc/models/document_type.dart';
@@ -11,6 +12,7 @@ import 'package:usdc_wallet/services/kyc/kyc_service.dart';
 import 'package:usdc_wallet/services/limits/limits_service.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart' as kyc_machine;
 import 'package:usdc_wallet/state/user_state_machine.dart';
 
@@ -251,7 +253,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
       _refreshNotificationFeedIfStatusChanged(previousStatus, data.status);
     } catch (e) {
       if (!ref.mounted) return;
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: _friendlyKycError(e));
     }
   }
 
@@ -299,7 +301,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
       analytics.trackKycCompleted(success: true);
     } catch (e) {
       if (!ref.mounted) return;
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: _friendlyKycError(e));
       analytics.trackKycCompleted(success: false);
     }
   }
@@ -322,7 +324,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
       await _refreshBackendStatusAfterSubmission(service);
     } catch (e) {
       if (!ref.mounted) return;
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: _friendlyKycError(e));
     }
   }
 
@@ -342,7 +344,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
       await _refreshBackendStatusAfterSubmission(service);
     } catch (e) {
       if (!ref.mounted) return;
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: _friendlyKycError(e));
     }
   }
 
@@ -355,7 +357,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
       state = state.copyWith(isLoading: false);
     } catch (e) {
       if (!ref.mounted) return;
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: _friendlyKycError(e));
     }
   }
 
@@ -401,6 +403,20 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
       ..invalidate(notification_feed.notificationsProvider)
       ..invalidate(notification_feed.unreadNotificationCountProvider);
   }
+}
+
+String _friendlyKycError(Object error) {
+  if (error is DioException) {
+    return ApiException.fromDioError(error).message;
+  }
+  if (error is ApiException) {
+    return error.message;
+  }
+  if (error is ArgumentError) {
+    return error.message?.toString() ??
+        'Please complete the required verification details.';
+  }
+  return 'Verification could not be submitted. Please try again.';
 }
 
 /// Main KYC flow provider.

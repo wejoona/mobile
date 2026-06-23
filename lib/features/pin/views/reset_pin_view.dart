@@ -1560,13 +1560,8 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         _manualReviewStatus == 'rejected' ||
         _manualReviewStatus == 'expired' ||
         _manualReviewStatus == 'closed';
-    final hasActiveReviewTicket =
-        _manualReviewTicketId != null &&
-        _manualReviewTicketId!.isNotEmpty &&
-        !isTerminalReviewStatus;
     _manualReviewPinQueued =
-        !_manualReviewPinApplied &&
-        (data['hasPendingPinReset'] == true || hasActiveReviewTicket);
+        data['hasPendingPinReset'] == true && !_manualReviewPinApplied;
     _manualReviewCreating = false;
     _manualReviewCreationFailed =
         !_manualReviewPinQueued &&

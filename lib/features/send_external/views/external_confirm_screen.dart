@@ -633,7 +633,7 @@ class _PinVerificationDialogState extends State<_PinVerificationDialog> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = e.toString();
+          _error = 'PIN verification failed. Please try again.';
           _isVerifying = false;
           _pinController.clear();
         });

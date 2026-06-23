@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:usdc_wallet/core/utils/idempotency.dart';
@@ -7,6 +8,7 @@ import 'package:usdc_wallet/features/limits/utils/money_flow_limit_errors.dart';
 import 'package:usdc_wallet/features/send_external/models/external_transfer_request.dart';
 import 'package:usdc_wallet/features/send_external/services/external_transfer_service.dart';
 import 'package:usdc_wallet/services/app_review/app_review_service.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/limits/limits_service.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/realtime/realtime_service.dart';
@@ -22,6 +24,9 @@ class ExternalTransferState {
   final NetworkOption selectedNetwork;
   final double estimatedFee;
   final double availableBalance;
+  final bool isBalanceLoading;
+  final bool hasVerifiedBalance;
+  final String? balanceError;
   final ExternalTransferResult? result;
   final bool isEstimatingFee;
   final String? pinToken;
@@ -38,6 +43,9 @@ class ExternalTransferState {
     this.selectedNetwork = NetworkOption.polygon,
     this.estimatedFee = 0.0,
     this.availableBalance = 0.0,
+    this.isBalanceLoading = false,
+    this.hasVerifiedBalance = false,
+    this.balanceError,
     this.result,
     this.isEstimatingFee = false,
     this.pinToken,
@@ -52,11 +60,12 @@ class ExternalTransferState {
   bool get canProceedToAmount => hasValidAddress;
 
   bool get canProceedToConfirm =>
-      hasValidAddress && amount != null && amount! > 0;
+      hasValidAddress && amount != null && amount! > 0 && hasVerifiedBalance;
 
   double get total => (amount ?? 0) + estimatedFee;
 
-  bool get hasSufficientBalance => availableBalance >= total;
+  bool get hasSufficientBalance =>
+      hasVerifiedBalance && availableBalance >= total;
 
   ExternalTransferState copyWith({
     bool? isLoading,
@@ -67,6 +76,10 @@ class ExternalTransferState {
     NetworkOption? selectedNetwork,
     double? estimatedFee,
     double? availableBalance,
+    bool? isBalanceLoading,
+    bool? hasVerifiedBalance,
+    String? balanceError,
+    bool clearBalanceError = false,
     ExternalTransferResult? result,
     bool? isEstimatingFee,
     String? pinToken,
@@ -84,6 +97,11 @@ class ExternalTransferState {
       selectedNetwork: selectedNetwork ?? this.selectedNetwork,
       estimatedFee: estimatedFee ?? this.estimatedFee,
       availableBalance: availableBalance ?? this.availableBalance,
+      isBalanceLoading: isBalanceLoading ?? this.isBalanceLoading,
+      hasVerifiedBalance: hasVerifiedBalance ?? this.hasVerifiedBalance,
+      balanceError: clearBalanceError
+          ? null
+          : balanceError ?? this.balanceError,
       result: result ?? this.result,
       isEstimatingFee: isEstimatingFee ?? this.isEstimatingFee,
       pinToken: pinToken ?? this.pinToken,
@@ -107,6 +125,11 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
 
   /// Load available balance
   Future<void> loadBalance() async {
+    state = state.copyWith(
+      isBalanceLoading: true,
+      hasVerifiedBalance: false,
+      clearBalanceError: true,
+    );
     try {
       final walletService = ref.read(walletServiceProvider);
       final wallet = await walletService.getBalance();
@@ -120,9 +143,18 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
           total: 0.0,
         ),
       );
-      state = state.copyWith(availableBalance: usdcBalance.available);
+      state = state.copyWith(
+        availableBalance: usdcBalance.available,
+        isBalanceLoading: false,
+        hasVerifiedBalance: true,
+        clearBalanceError: true,
+      );
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(
+        isBalanceLoading: false,
+        hasVerifiedBalance: false,
+        balanceError: _friendlyExternalBalanceError(e),
+      );
     }
   }
 
@@ -206,7 +238,10 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
       );
       return false;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        error: _friendlyExternalSendError(e),
+      );
       return false;
     }
   }
@@ -214,7 +249,11 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
   /// Execute external transfer. Requires verifyPin() to have been called first.
   Future<bool> executeTransfer() async {
     if (!state.canProceedToConfirm) {
-      state = state.copyWith(error: 'Invalid transfer details');
+      state = state.copyWith(
+        error: state.hasVerifiedBalance
+            ? 'Invalid transfer details'
+            : 'Available balance could not be verified. Please try again.',
+      );
       return false;
     }
 
@@ -274,7 +313,7 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
       state = state.copyWith(
         isLoading: false,
         isSubmitting: false,
-        error: moneyFlowError?.message ?? e.toString(),
+        error: moneyFlowError?.message ?? _friendlyExternalSendError(e),
       );
       return false;
     }
@@ -328,6 +367,26 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
   void clearError() {
     state = state.clearError();
   }
+}
+
+String _friendlyExternalSendError(Object error) {
+  if (error is DioException) {
+    return ApiException.fromDioError(error).message;
+  }
+  if (error is ApiException) {
+    return error.message;
+  }
+  return 'External transfer could not be completed. Please try again.';
+}
+
+String _friendlyExternalBalanceError(Object error) {
+  if (error is DioException) {
+    return ApiException.fromDioError(error).message;
+  }
+  if (error is ApiException) {
+    return error.message;
+  }
+  return 'Available balance could not be verified. Please try again.';
 }
 
 /// External Transfer Provider

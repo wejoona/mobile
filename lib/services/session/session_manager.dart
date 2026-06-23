@@ -268,7 +268,26 @@ class _SessionManagerState extends ConsumerState<SessionManager>
       return;
     }
 
-    _go('/session-locked');
+    final returnTo = _currentRouteForLock();
+    final encodedReturnTo = Uri.encodeComponent(returnTo);
+    const lockRoute = '/session-locked';
+    _go('$lockRoute?returnTo=$encodedReturnTo');
+  }
+
+  String _currentRouteForLock() {
+    try {
+      final router = ref.read(routerProvider);
+      final uri = router.routeInformationProvider.value.uri;
+      final location = uri.toString();
+      if (location.isNotEmpty && !location.startsWith('/session-locked')) {
+        return location;
+      }
+    } catch (error) {
+      AppLogger(
+        'SessionManager',
+      ).warning('Could not resolve current route for session lock', error);
+    }
+    return '/home';
   }
 
   void _go(String location) {

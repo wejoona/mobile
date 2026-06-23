@@ -7,6 +7,7 @@ import 'package:usdc_wallet/features/auth/providers/session_provider.dart';
 import 'package:usdc_wallet/features/settings/providers/devices_provider.dart';
 import 'package:usdc_wallet/services/device/device_registration_service.dart';
 import 'package:usdc_wallet/services/index.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 import 'package:usdc_wallet/utils/verification_cooldown.dart';
 
@@ -35,6 +36,7 @@ class LoginNotifier extends Notifier<LoginState> {
 
   FlutterSecureStorage get _storage => ref.read(secureStorageProvider);
   AuthService get _authService => ref.read(authServiceProvider);
+  AppFsmNotifier get _appFsm => ref.read(appFsmProvider.notifier);
 
   /// Load remembered phone number
   Future<void> _loadRememberedPhone() async {
@@ -93,6 +95,7 @@ class LoginNotifier extends Notifier<LoginState> {
     }
 
     state = state.copyWith(isLoading: true, error: null);
+    _appFsm.login(phoneValue.localNumber, phoneValue.apiCountryCode);
 
     try {
       // Call login API
@@ -112,6 +115,7 @@ class LoginNotifier extends Notifier<LoginState> {
       }
 
       state = state.copyWith(isLoading: false, currentStep: LoginStep.otp);
+      _appFsm.onOtpReceived(expiresIn: response.expiresIn);
 
       _startResendCountdown(response.resendAvailableIn);
     } catch (e) {
@@ -127,6 +131,7 @@ class LoginNotifier extends Notifier<LoginState> {
           retryAfterSeconds: retryAfterSeconds,
         ),
       );
+      _appFsm.onAuthFailed(state.error ?? 'Unable to send verification code');
     }
   }
 
@@ -148,6 +153,7 @@ class LoginNotifier extends Notifier<LoginState> {
     }
 
     state = state.copyWith(isLoading: true, error: null);
+    _appFsm.verifyOtp(state.otp!);
 
     try {
       final response = await _authService.verifyOtp(
@@ -188,6 +194,7 @@ class LoginNotifier extends Notifier<LoginState> {
             currentStep: LoginStep.otp,
             error: 'Unable to start PIN setup. Please try again.',
           );
+          _appFsm.onAuthFailed(state.error!);
         }
       }
     } on ApiException catch (e) {
@@ -201,6 +208,7 @@ class LoginNotifier extends Notifier<LoginState> {
             ? _verificationCooldownMessage(retryAfterSeconds, error: e)
             : 'Invalid code, try again',
       );
+      _appFsm.onAuthFailed(state.error ?? 'Invalid code, try again');
       if (retryAfterSeconds == null) {
         // Clear OTP after wrong-code errors, but keep it visible during cooldown.
         Future.delayed(const Duration(milliseconds: 500), () {
@@ -212,6 +220,7 @@ class LoginNotifier extends Notifier<LoginState> {
         isLoading: false,
         error: 'Invalid code, try again',
       );
+      _appFsm.onAuthFailed(state.error ?? 'Invalid code, try again');
       Future.delayed(const Duration(milliseconds: 500), () {
         state = state.copyWith(otp: '');
       });
@@ -228,6 +237,7 @@ class LoginNotifier extends Notifier<LoginState> {
     }
 
     state = state.copyWith(isLoading: true, error: null);
+    _appFsm.login(phoneValue.localNumber, phoneValue.apiCountryCode);
 
     try {
       final response = await _authService.login(
@@ -235,6 +245,7 @@ class LoginNotifier extends Notifier<LoginState> {
         countryCode: phoneValue.apiCountryCode,
       );
       state = state.copyWith(isLoading: false);
+      _appFsm.onOtpReceived(expiresIn: response.expiresIn);
       _startResendCountdown(response.resendAvailableIn);
     } catch (e) {
       final retryAfterSeconds = _otpRetryAfterSeconds(e);
@@ -249,6 +260,7 @@ class LoginNotifier extends Notifier<LoginState> {
           retryAfterSeconds: retryAfterSeconds,
         ),
       );
+      _appFsm.onAuthFailed(state.error ?? 'Unable to resend code');
     }
   }
 

@@ -15,6 +15,7 @@ import 'package:usdc_wallet/domain/entities/limit.dart';
 import 'package:usdc_wallet/domain/entities/transaction.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
+import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
 import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
 import 'package:usdc_wallet/features/limits/widgets/limit_warning_banner.dart';
 import 'package:usdc_wallet/features/notifications/providers/notification_count_provider.dart';
@@ -995,36 +996,42 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
       icon: Icons.send_rounded,
       label: l10n.home_quickAction_send,
       route: '/send',
-      onTap: () => _openMoneyFlow(
-        context,
-        ref,
-        l10n,
-        operation: TransactionLimitOperation.send,
-        route: '/send',
+      onTap: () => unawaited(
+        _openMoneyFlow(
+          context,
+          ref,
+          l10n,
+          operation: TransactionLimitOperation.send,
+          route: '/send',
+        ),
       ),
     ),
     WalletQuickActionData(
       icon: Icons.qr_code_2_rounded,
       label: l10n.home_quickAction_receive,
       route: '/receive',
-      onTap: () => _openMoneyFlow(
-        context,
-        ref,
-        l10n,
-        operation: TransactionLimitOperation.receive,
-        route: '/receive',
+      onTap: () => unawaited(
+        _openMoneyFlow(
+          context,
+          ref,
+          l10n,
+          operation: TransactionLimitOperation.receive,
+          route: '/receive',
+        ),
       ),
     ),
     WalletQuickActionData(
       icon: Icons.add_circle_outline_rounded,
       label: l10n.home_quickAction_deposit,
       route: '/deposit/amount',
-      onTap: () => _openMoneyFlow(
-        context,
-        ref,
-        l10n,
-        operation: TransactionLimitOperation.deposit,
-        route: '/deposit/amount',
+      onTap: () => unawaited(
+        _openMoneyFlow(
+          context,
+          ref,
+          l10n,
+          operation: TransactionLimitOperation.deposit,
+          route: '/deposit/amount',
+        ),
       ),
     ),
     WalletQuickActionData(
@@ -1034,13 +1041,13 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     ),
   ];
 
-  void _openMoneyFlow(
+  Future<void> _openMoneyFlow(
     BuildContext context,
     WidgetRef ref,
     AppLocalizations l10n, {
     required TransactionLimitOperation operation,
     required String route,
-  }) {
+  }) async {
     final limitsState = ref.read(limitsProvider);
     final limits = limitsState.limits;
     final permissions = limits?.permissions;
@@ -1052,13 +1059,42 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
 
     if (limits == null) {
       if (!limitsState.isLoading) {
-        unawaited(ref.read(limitsProvider.notifier).fetchLimits());
+        await ref.read(limitsProvider.notifier).fetchLimits();
+        if (!context.mounted) {
+          return;
+        }
+
+        final refreshed = ref.read(limitsProvider).limits;
+        final refreshedPermissions = refreshed?.permissions;
+        if (refreshedPermissions != null &&
+            refreshedPermissions.can(operation)) {
+          context.showSnack(
+            _localizedText(
+              en: 'Checking account permissions complete. Tap again to continue.',
+              fr: 'Permissions du compte confirmees. Appuyez a nouveau pour continuer.',
+            ),
+            tone: AppSnackTone.info,
+            duration: const Duration(seconds: 4),
+          );
+          return;
+        }
+
+        if (refreshed != null) {
+          _showBlockedMoneyFlow(
+            context,
+            l10n,
+            refreshed.permissions,
+            operation: operation,
+            route: route,
+          );
+          return;
+        }
       }
 
       context.showSnack(
         _localizedText(
-          en: 'Checking account permissions. Please try again in a moment.',
-          fr: 'Vérification des permissions du compte. Réessayez dans un instant.',
+          en: 'Checking account permissions. Try again in a moment.',
+          fr: 'Verification des permissions du compte. Reessayez dans un instant.',
         ),
         tone: AppSnackTone.info,
         duration: const Duration(seconds: 4),
@@ -1066,6 +1102,22 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
       return;
     }
 
+    _showBlockedMoneyFlow(
+      context,
+      l10n,
+      permissions,
+      operation: operation,
+      route: route,
+    );
+  }
+
+  void _showBlockedMoneyFlow(
+    BuildContext context,
+    AppLocalizations l10n,
+    MoneyFlowPermissions? permissions, {
+    required TransactionLimitOperation operation,
+    required String route,
+  }) {
     final reason = permissions?.blockReason?.trim();
     final reviewRequired = permissions?.reviewRequired ?? false;
     final message = reason != null && reason.isNotEmpty

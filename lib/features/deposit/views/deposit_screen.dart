@@ -13,7 +13,7 @@ import 'package:usdc_wallet/features/deposit/views/provider_selection_screen.dar
 /// 2. enterAmount → DepositAmountScreen
 /// 3. instructions → PaymentInstructionsScreen (adapts to OTP/PUSH/QR)
 /// 4. processing → Processing overlay on instructions
-/// 5. completed / failed → DepositStatusScreen
+/// 5. completed / failed / statusUnknown → DepositStatusScreen
 class DepositScreen extends ConsumerWidget {
   const DepositScreen({super.key});
 
@@ -22,8 +22,10 @@ class DepositScreen extends ConsumerWidget {
     final step = ref.watch(depositProvider.select((s) => s.step));
 
     return PopScope(
-      canPop: step == DepositFlowStep.selectProvider ||
+      canPop:
+          step == DepositFlowStep.selectProvider ||
           step == DepositFlowStep.completed ||
+          step == DepositFlowStep.statusUnknown ||
           step == DepositFlowStep.failed,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) {
@@ -46,6 +48,7 @@ class DepositScreen extends ConsumerWidget {
       case DepositFlowStep.instructions:
       case DepositFlowStep.processing:
         return const PaymentInstructionsScreen(key: ValueKey('instructions'));
+      case DepositFlowStep.statusUnknown:
       case DepositFlowStep.completed:
       case DepositFlowStep.failed:
         return const DepositStatusScreen(key: ValueKey('status'));

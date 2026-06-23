@@ -101,9 +101,12 @@ class DevicesScreen extends ConsumerWidget {
     final devices = state.devices;
     final localId = ref.watch(localDeviceIdProvider).value ?? '';
     final currentDevice = _currentDevice(devices, localId);
-    final otherDevices = devices
-        .where((device) => !_isThisDevice(device, localId))
-        .toList(growable: false);
+    final currentDeviceResolved = currentDevice != null;
+    final otherDevices = currentDeviceResolved
+        ? devices
+              .where((device) => !_isThisDevice(device, localId))
+              .toList(growable: false)
+        : const <Device>[];
 
     return ListView(
       padding: const EdgeInsets.symmetric(
@@ -120,7 +123,9 @@ class DevicesScreen extends ConsumerWidget {
         const SizedBox(height: AppSpacing.sm),
         _CurrentDeviceCard(device: currentDevice),
         const SizedBox(height: AppSpacing.xl),
-        if (otherDevices.isNotEmpty) ...[
+        if (devices.isNotEmpty && !currentDeviceResolved) ...[
+          _UnresolvedCurrentDeviceCard(l10n: l10n),
+        ] else if (otherDevices.isNotEmpty) ...[
           _SectionHeader(title: l10n.settings_otherDevices),
           const SizedBox(height: AppSpacing.sm),
           ...otherDevices.map(
@@ -250,7 +255,8 @@ class DevicesScreen extends ConsumerWidget {
             const SizedBox(height: AppSpacing.xl),
             AppButton(
               label: l10n.auth_tapToUnlock,
-              onPressed: () => context.fsmGo('/session-locked'),
+              onPressed: () =>
+                  context.fsmGo('/session-locked?returnTo=/settings/devices'),
               variant: AppButtonVariant.primary,
             ),
           ],
@@ -360,6 +366,56 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
+class _UnresolvedCurrentDeviceCard extends StatelessWidget {
+  const _UnresolvedCurrentDeviceCard({required this.l10n});
+
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return AppCard(
+      variant: AppCardVariant.flat,
+      borderRadius: AppRadius.lg,
+      backgroundColor: colors.warningBg,
+      borderColor: colors.warning.withValues(alpha: 0.24),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.verified_user_outlined, color: colors.warningText),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  _localizedDeviceCopy(
+                    context,
+                    en: 'Device identity needs confirmation',
+                    fr: 'Identité de l’appareil à confirmer',
+                  ),
+                  variant: AppTextVariant.labelLarge,
+                  color: colors.textPrimary,
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                AppText(
+                  _localizedDeviceCopy(
+                    context,
+                    en: 'Korido could not safely match this phone with the device list, so remote sign-out actions are paused.',
+                    fr: 'Korido ne peut pas associer cet appareil à la liste avec certitude. Les actions de déconnexion distante sont suspendues.',
+                  ),
+                  variant: AppTextVariant.bodySmall,
+                  color: colors.textSecondary,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _CurrentDeviceCard extends ConsumerWidget {
   const _CurrentDeviceCard({required this.device});
 
@@ -449,6 +505,14 @@ class _CurrentDeviceCard extends ConsumerWidget {
       ),
     );
   }
+}
+
+String _localizedDeviceCopy(
+  BuildContext context, {
+  required String en,
+  required String fr,
+}) {
+  return Localizations.localeOf(context).languageCode == 'fr' ? fr : en;
 }
 
 class _OtherDeviceCard extends ConsumerWidget {

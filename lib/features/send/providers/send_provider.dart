@@ -31,6 +31,9 @@ class SendMoneyState {
   final TransferResult? result;
   final List<RecentRecipient> recentRecipients;
   final double availableBalance;
+  final bool isBalanceLoading;
+  final bool hasVerifiedBalance;
+  final String? balanceError;
   final double fee;
   final String? pinToken;
   final String? idempotencyKey;
@@ -47,6 +50,9 @@ class SendMoneyState {
     this.result,
     this.recentRecipients = const [],
     this.availableBalance = 0.0,
+    this.isBalanceLoading = false,
+    this.hasVerifiedBalance = false,
+    this.balanceError,
     this.fee = 0.0,
     this.pinToken,
     this.idempotencyKey,
@@ -71,6 +77,10 @@ class SendMoneyState {
     TransferResult? result,
     List<RecentRecipient>? recentRecipients,
     double? availableBalance,
+    bool? isBalanceLoading,
+    bool? hasVerifiedBalance,
+    String? balanceError,
+    bool clearBalanceError = false,
     double? fee,
     String? pinToken,
     String? idempotencyKey,
@@ -88,6 +98,11 @@ class SendMoneyState {
       result: result ?? this.result,
       recentRecipients: recentRecipients ?? this.recentRecipients,
       availableBalance: availableBalance ?? this.availableBalance,
+      isBalanceLoading: isBalanceLoading ?? this.isBalanceLoading,
+      hasVerifiedBalance: hasVerifiedBalance ?? this.hasVerifiedBalance,
+      balanceError: clearBalanceError
+          ? null
+          : balanceError ?? this.balanceError,
       fee: fee ?? this.fee,
       pinToken: pinToken ?? this.pinToken,
       idempotencyKey: idempotencyKey ?? this.idempotencyKey,
@@ -111,12 +126,26 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
 
   /// Load available balance
   Future<void> loadBalance() async {
+    state = state.copyWith(
+      isBalanceLoading: true,
+      hasVerifiedBalance: false,
+      clearBalanceError: true,
+    );
     try {
       final walletService = ref.read(walletServiceProvider);
       final balance = await walletService.getBalance();
-      state = state.copyWith(availableBalance: balance.availableBalance);
+      state = state.copyWith(
+        isBalanceLoading: false,
+        hasVerifiedBalance: true,
+        availableBalance: balance.availableBalance,
+        clearBalanceError: true,
+      );
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(
+        isBalanceLoading: false,
+        hasVerifiedBalance: false,
+        balanceError: e.toString(),
+      );
     }
   }
 
@@ -348,7 +377,7 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       );
       return false;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: _friendlySendError(e));
       return false;
     }
   }
@@ -389,6 +418,12 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
     if (!state.canProceedToConfirm) {
       state = state.copyWith(error: 'Invalid transfer details');
       await hapticService.error();
+      return false;
+    }
+
+    if (!state.hasVerifiedBalance) {
+      state = state.copyWith(error: 'balance_unverified');
+      await hapticService.warning();
       return false;
     }
 
@@ -479,7 +514,7 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       state = state.copyWith(
         isLoading: false,
         isSubmitting: false,
-        error: moneyFlowError?.message ?? e.toString(),
+        error: moneyFlowError?.message ?? _friendlySendError(e),
       );
       await hapticService.error();
       return false;
@@ -708,6 +743,16 @@ DateTime? _parseDate(Object? value) {
   if (value is DateTime) return value;
   if (value is String && value.isNotEmpty) return DateTime.tryParse(value);
   return null;
+}
+
+String _friendlySendError(Object error) {
+  if (error is DioException) {
+    return ApiException.fromDioError(error).message;
+  }
+  if (error is ApiException) {
+    return error.message;
+  }
+  return 'Transfer could not be completed. Please try again.';
 }
 
 /// Send Money Provider

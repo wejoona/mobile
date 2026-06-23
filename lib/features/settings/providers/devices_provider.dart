@@ -118,6 +118,15 @@ class DeviceActions {
 
   Future<void> revokeOtherDevices(List<Device> devices, String localId) async {
     await _runDeviceAction(() async {
+      final currentDeviceResolved = devices.any(
+        (device) =>
+            device.isCurrent ||
+            (localId.isNotEmpty && device.deviceIdentifier == localId),
+      );
+      if (!currentDeviceResolved) {
+        throw StateError('Current device could not be resolved.');
+      }
+
       for (final device in devices) {
         final isCurrent =
             device.isCurrent ||
