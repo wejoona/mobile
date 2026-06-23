@@ -145,6 +145,10 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     switch (_selectedMethod!) {
       case WithdrawMethod.mobileMoney:
         final country = _effectiveCountry(ref);
+        if (_hasWithdrawalOptionsFailure(country) ||
+            _isWithdrawalOptionsLoading(country)) {
+          return false;
+        }
         if (!_hasMobileMoneyOptions(country)) return true;
         final localDigits = _localPhoneDigits(country);
         return country.isValidLength(localDigits) &&
@@ -168,6 +172,14 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
         requestedFeature: _selectedMethod!.name,
         country: selectedCountry,
       );
+      return;
+    }
+    if (_selectedMethod == WithdrawMethod.mobileMoney &&
+        _hasWithdrawalOptionsFailure(selectedCountry, watch: false)) {
+      return;
+    }
+    if (_selectedMethod == WithdrawMethod.mobileMoney &&
+        _isWithdrawalOptionsLoading(selectedCountry, watch: false)) {
       return;
     }
     if (_selectedMethod == WithdrawMethod.mobileMoney &&
@@ -525,26 +537,59 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     if (method == null) return false;
     if (method == WithdrawMethod.crypto) return false;
     if (method != WithdrawMethod.mobileMoney) return true;
+    if (_hasWithdrawalOptionsFailure(_effectiveCountry(ref), watch: false)) {
+      return false;
+    }
+    if (_isWithdrawalOptionsLoading(_effectiveCountry(ref), watch: false)) {
+      return false;
+    }
     return !_hasMobileMoneyOptions(_effectiveCountry(ref), watch: false);
+  }
+
+  AsyncValue<List<withdraw_api.WithdrawalOption>> _withdrawalOptionsState(
+    CountryConfig country, {
+    bool watch = true,
+  }) {
+    final provider = withdraw_api.withdrawalOptionsProvider(country.code);
+    return watch ? ref.watch(provider) : ref.read(provider);
   }
 
   List<withdraw_api.WithdrawalOption> _mobileMoneyOptions(
     CountryConfig country, {
     bool watch = true,
   }) {
-    final asyncOptions = watch
-        ? ref.watch(withdraw_api.withdrawalOptionsProvider(country.code))
-        : ref.read(withdraw_api.withdrawalOptionsProvider(country.code));
-    return asyncOptions.maybeWhen(
-      data: (options) => options
-          .where((option) => option.isMobileMoney && option.enabled)
-          .toList(growable: false),
-      orElse: () => const [],
-    );
+    final options = _withdrawalOptionsState(country, watch: watch).value ?? [];
+    return options
+        .where((option) => option.isMobileMoney && option.enabled)
+        .toList(growable: false);
   }
 
   bool _hasMobileMoneyOptions(CountryConfig country, {bool watch = true}) {
     return _mobileMoneyOptions(country, watch: watch).isNotEmpty;
+  }
+
+  bool _hasWithdrawalOptionsFailure(
+    CountryConfig country, {
+    bool watch = true,
+  }) {
+    final asyncOptions = _withdrawalOptionsState(country, watch: watch);
+    return asyncOptions.hasError && !asyncOptions.hasValue;
+  }
+
+  bool _isWithdrawalOptionsLoading(CountryConfig country, {bool watch = true}) {
+    final asyncOptions = _withdrawalOptionsState(country, watch: watch);
+    return asyncOptions.isLoading && !asyncOptions.hasValue;
+  }
+
+  Object? _withdrawalOptionsError(CountryConfig country, {bool watch = true}) {
+    final asyncOptions = _withdrawalOptionsState(country, watch: watch);
+    return asyncOptions.hasError && !asyncOptions.hasValue
+        ? asyncOptions.error
+        : null;
+  }
+
+  void _retryWithdrawalOptions(CountryConfig country) {
+    ref.invalidate(withdraw_api.withdrawalOptionsProvider(country.code));
   }
 
   Future<void> _subscribeToWithdrawalAvailability({
@@ -862,7 +907,8 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     final optionsState = ref.watch(
       withdraw_api.withdrawalOptionsProvider(selectedCountry.code),
     );
-    final isLoadingOptions = optionsState.isLoading;
+    final optionsError = _withdrawalOptionsError(selectedCountry);
+    final isLoadingOptions = optionsState.isLoading && !optionsState.hasValue;
     final mobileMoneyOptions = _mobileMoneyOptions(selectedCountry);
     final isMobileMoneyAvailable = mobileMoneyOptions.isNotEmpty;
     final optionNames = mobileMoneyOptions
@@ -914,7 +960,10 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
                   variant: AppInputVariant.phone,
                   hint: selectedCountry.phoneFormat ?? '07 00 00 00 00',
                   keyboardType: TextInputType.phone,
-                  enabled: isMobileMoneyAvailable && !isLoadingOptions,
+                  enabled:
+                      isMobileMoneyAvailable &&
+                      !isLoadingOptions &&
+                      optionsError == null,
                   onChanged: (_) {
                     setState(() {});
                     _refreshWithdrawalQuotePreview();
@@ -923,7 +972,16 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
               ),
             ],
           ),
-          if (isLoadingOptions) ...[
+          if (optionsError != null) ...[
+            const SizedBox(height: AppSpacing.md),
+            _WithdrawalOptionsError(
+              colors: colors,
+              message: AppLocalizations.of(
+                context,
+              )!.common_errorFormat(optionsError.toString()),
+              onRetry: () => _retryWithdrawalOptions(selectedCountry),
+            ),
+          ] else if (isLoadingOptions) ...[
             const SizedBox(height: AppSpacing.md),
             AppText(
               'Checking available withdrawal rails...',
@@ -1097,6 +1155,62 @@ class _MethodCard extends StatelessWidget {
               Icon(Icons.check_circle, color: context.colors.gold),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _WithdrawalOptionsError extends StatelessWidget {
+  const _WithdrawalOptionsError({
+    required this.colors,
+    required this.message,
+    required this.onRetry,
+  });
+
+  final ThemeColors colors;
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: colors.error.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: colors.error.withValues(alpha: 0.25)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.error_outline, color: colors.error, size: 20),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: AppText(
+                  AppLocalizations.of(context)!.common_error,
+                  variant: AppTextVariant.labelLarge,
+                  color: colors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          AppText(
+            message,
+            variant: AppTextVariant.bodySmall,
+            color: colors.textSecondary,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          AppButton(
+            label: AppLocalizations.of(context)!.action_retry,
+            onPressed: onRetry,
+            icon: Icons.refresh,
+            variant: AppButtonVariant.secondary,
+          ),
+        ],
       ),
     );
   }
