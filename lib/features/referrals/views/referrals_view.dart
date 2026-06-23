@@ -110,6 +110,15 @@ class ReferralsView extends ConsumerWidget {
 
               const SizedBox(height: AppSpacing.xxl),
 
+              if (referralAsync.hasError) ...[
+                _ReferralErrorCard(
+                  colors: colors,
+                  message: _referralErrorMessage(l10n, referralAsync.error!),
+                  onRetry: () => ref.invalidate(referralProvider),
+                ),
+                const SizedBox(height: AppSpacing.xxl),
+              ],
+
               // Referral Code Card
               AppCard(
                 variant: AppCardVariant.elevated,
@@ -349,6 +358,12 @@ class ReferralsView extends ConsumerWidget {
     );
   }
 
+  String _referralErrorMessage(AppLocalizations l10n, Object error) {
+    final raw = error.toString().replaceFirst(RegExp(r'^Exception:\s*'), '');
+    final compact = raw.length > 160 ? '${raw.substring(0, 157)}...' : raw;
+    return l10n.referrals_error(compact);
+  }
+
   void _copyCode(BuildContext context, String code) {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
@@ -458,6 +473,67 @@ class ReferralsView extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+class _ReferralErrorCard extends StatelessWidget {
+  const _ReferralErrorCard({
+    required this.colors,
+    required this.message,
+    required this.onRetry,
+  });
+
+  final ThemeColors colors;
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) => AppCard(
+    variant: AppCardVariant.elevated,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: colors.error.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(AppRadius.md),
+              ),
+              child: Icon(Icons.error_outline, color: colors.error),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: AppText(
+                AppLocalizations.of(context)!.common_error,
+                variant: AppTextVariant.titleMedium,
+                color: colors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+        AppText(message, color: colors.textSecondary),
+        const SizedBox(height: AppSpacing.lg),
+        AppButton(
+          label: AppLocalizations.of(context)!.action_retry,
+          onPressed: onRetry,
+          icon: Icons.refresh,
+          variant: AppButtonVariant.secondary,
+        ),
+      ],
+    ),
+  );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ThemeColors>('colors', colors))
+      ..add(StringProperty('message', message))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onRetry', onRetry));
   }
 }
 
