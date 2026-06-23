@@ -38,38 +38,42 @@ class TransactionDetailRouteView extends ConsumerWidget {
 
     return transactionAsync.when(
       data: (transaction) => TransactionDetailView(transaction: transaction),
-      loading: () => Scaffold(
-        backgroundColor: colors.canvas,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          title: AppText(
-            AppLocalizations.of(context)!.transactionDetails_title,
-            variant: AppTextVariant.titleLarge,
-          ),
-        ),
-        body: const Center(child: CircularProgressIndicator()),
-      ),
-      error: (error, _) => Scaffold(
-        backgroundColor: colors.canvas,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          title: AppText(
-            AppLocalizations.of(context)!.transactionDetails_title,
-            variant: AppTextVariant.titleLarge,
-          ),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(AppSpacing.screenPadding),
-          child: Center(
-            child: AppText(
-              error.toString(),
-              variant: AppTextVariant.bodyMedium,
-              color: colors.error,
-              textAlign: TextAlign.center,
+      loading: () => initialTransaction != null
+          ? TransactionDetailView(transaction: initialTransaction!)
+          : Scaffold(
+              backgroundColor: colors.canvas,
+              appBar: AppBar(
+                backgroundColor: Colors.transparent,
+                title: AppText(
+                  AppLocalizations.of(context)!.transactionDetails_title,
+                  variant: AppTextVariant.titleLarge,
+                ),
+              ),
+              body: const Center(child: CircularProgressIndicator()),
             ),
-          ),
-        ),
-      ),
+      error: (error, _) => initialTransaction != null
+          ? TransactionDetailView(transaction: initialTransaction!)
+          : Scaffold(
+              backgroundColor: colors.canvas,
+              appBar: AppBar(
+                backgroundColor: Colors.transparent,
+                title: AppText(
+                  AppLocalizations.of(context)!.transactionDetails_title,
+                  variant: AppTextVariant.titleLarge,
+                ),
+              ),
+              body: Padding(
+                padding: const EdgeInsets.all(AppSpacing.screenPadding),
+                child: Center(
+                  child: AppText(
+                    error.toString(),
+                    variant: AppTextVariant.bodyMedium,
+                    color: colors.error,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
     );
   }
 }
