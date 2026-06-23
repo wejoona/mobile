@@ -280,17 +280,9 @@ class ConfirmScreen extends ConsumerWidget {
                       if (decision.stepUpType == StepUpType.manualReview) {
                         if (!context.mounted) return;
                         HapticFeedback.heavyImpact();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              localizedSendCopy(
-                                context,
-                                en: 'This transfer needs manual review before it can continue.',
-                                fr: 'Ce transfert nécessite une revue manuelle avant de continuer.',
-                              ),
-                            ),
-                            backgroundColor: context.colors.error,
-                          ),
+                        await RiskStepUpDialog.show(
+                          context,
+                          decision: decision,
                         );
                         return;
                       }
