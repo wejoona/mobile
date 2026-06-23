@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdc_wallet/core/constants/preference_keys.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
+import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/auth/auth_service.dart';
 import 'package:usdc_wallet/services/legal/legal_documents_service.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
@@ -32,6 +34,7 @@ class SignupFlowState {
   final String? email;
   final int otpResendCountdown;
   final String? sessionToken;
+  final bool requiresLoginPin;
 
   const SignupFlowState({
     this.currentPage = 0,
@@ -48,6 +51,7 @@ class SignupFlowState {
     this.email,
     this.otpResendCountdown = 0,
     this.sessionToken,
+    this.requiresLoginPin = false,
   });
 
   SignupFlowState copyWith({
@@ -65,6 +69,7 @@ class SignupFlowState {
     String? email,
     int? otpResendCountdown,
     String? sessionToken,
+    bool? requiresLoginPin,
     bool clearError = false,
   }) => SignupFlowState(
     currentPage: currentPage ?? this.currentPage,
@@ -81,6 +86,7 @@ class SignupFlowState {
     email: email ?? this.email,
     otpResendCountdown: otpResendCountdown ?? this.otpResendCountdown,
     sessionToken: sessionToken ?? this.sessionToken,
+    requiresLoginPin: requiresLoginPin ?? this.requiresLoginPin,
   );
 }
 
@@ -194,17 +200,58 @@ class SignupFlowNotifier extends Notifier<SignupFlowState> {
       return;
     }
 
-    state = state.copyWith(otp: code, isLoading: true, clearError: true);
-
-    try {
-      final verified = await ref
-          .read(auth.authProvider.notifier)
-          .verifyOtp(code);
-      final authState = ref.read(auth.authProvider);
+    final phoneValue = _phoneValue(state.phoneNumber);
+    if (phoneValue == null) {
       state = state.copyWith(
         isLoading: false,
-        error: verified ? null : authState.error ?? 'Unable to verify code',
-        clearError: verified,
+        error: 'Phone number is required',
+      );
+      return;
+    }
+
+    state = state.copyWith(
+      otp: code,
+      isLoading: true,
+      requiresLoginPin: false,
+      clearError: true,
+    );
+
+    try {
+      final response = await ref
+          .read(authServiceProvider)
+          .verifyOtp(
+            phone: phoneValue.apiPhone,
+            countryCode: phoneValue.apiCountryCode,
+            otp: code,
+          );
+
+      if (response.user.hasPin) {
+        ref.read(loginProvider.notifier).stageVerifiedOtpSession(response);
+        state = state.copyWith(
+          isLoading: false,
+          requiresLoginPin: true,
+          clearError: true,
+        );
+        return;
+      }
+
+      final completed = await ref
+          .read(auth.authProvider.notifier)
+          .completePinLogin(
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken,
+            user: response.user,
+            phone: response.user.phone,
+            countryCode: response.user.countryCode,
+            kycStatus: response.kycStatus,
+            expiresIn: response.expiresIn,
+            analyticsMethod: 'signup_otp_pin_setup',
+          );
+
+      state = state.copyWith(
+        isLoading: false,
+        error: completed ? null : 'Unable to start account setup',
+        clearError: completed,
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, error: _messageFrom(e));

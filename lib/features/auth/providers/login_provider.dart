@@ -140,6 +140,39 @@ class LoginNotifier extends Notifier<LoginState> {
     state = state.copyWith(otp: otp, error: null);
   }
 
+  /// Stage an already verified OTP response without authenticating the app.
+  ///
+  /// Signup can discover an existing account. In that case the user still must
+  /// pass the canonical login PIN gate before tokens become an active session.
+  void stageVerifiedOtpSession(AuthResponse response) {
+    final phoneValue = PhoneNumberValue.tryFromAny(
+      phoneNumber: response.user.phone,
+      countryCode: response.user.countryCode,
+    );
+    final stagedState = phoneValue == null
+        ? state.copyWith(
+            phoneNumber: response.user.phone,
+            dialCode: response.user.countryCode,
+          )
+        : state.withPhoneValue(phoneValue);
+
+    state = stagedState.copyWith(
+      isLoading: false,
+      error: null,
+      currentStep: response.user.hasPin
+          ? LoginStep.pin
+          : LoginStep.needsPinSetup,
+      sessionToken: response.accessToken,
+      refreshToken: response.refreshToken,
+      sessionExpiresIn: response.expiresIn,
+      user: response.user,
+      kycStatus: response.kycStatus,
+      pinAttempts: 0,
+      isLocked: false,
+    );
+    _resendTimer?.cancel();
+  }
+
   /// Verify OTP
   Future<void> verifyOtp() async {
     if (state.otp == null || state.otp!.length != 6) {
