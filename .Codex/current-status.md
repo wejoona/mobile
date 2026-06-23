@@ -1,11 +1,11 @@
 # Mobile Current Status
 
-Last updated: 2026-06-19 02:22 GMT
+Last updated: 2026-06-23 GMT
 
 ## Standing
 
 - Active branch: `develop`, tracking `origin/develop`.
-- Latest pushed mobile code/build commit: `c807f5e8 style: enlarge security number pad`.
+- Latest pushed mobile code/build commit: `d93058f8 fix: guard secondary kyc routes`.
 - Latest pushed API commit: `954f7ffc fix: carry deposit country into initiation`.
 - Latest pushed dashboard commit: `0ba72f1 fix: stabilize dashboard support gates`.
 - Repo status should be clean unless a new slice is in progress.
@@ -24,6 +24,7 @@ Last updated: 2026-06-19 02:22 GMT
 - Transaction history fake/stale data concern: closed on current `develop`. Full History and home transaction refresh use `/wallet/transactions`; the duplicate feature-local transaction parser was removed so the domain `Transaction`/`TransactionPage` models are the only mobile transaction parser. Focused transaction state/API alignment tests and backend transaction controller e2e passed on 2026-06-19.
 - Login OTP no-feedback report: closed on current `develop`. `/login/otp` shows the full-screen `OtpVerificationOverlay` with "Code accepted. Securing your session..." while verification/PIN handoff runs, holds it for at least 1.6 seconds, then routes to `/login/pin`. Focused login interaction tests passed on 2026-06-19.
 - Signup/onboarding file-ownership confusion: closed on current `develop`. Account-creation screens now live under `features/signup/views` with `Signup*` class names, signup steps use the generic design-system `FlowStepProgress`, and `features/onboarding` keeps the product tutorial/post-login onboarding surfaces. Focused auth/router tests passed on 2026-06-19.
+- KYC secondary route loops: closed on current `develop`. `/kyc/address`, `/kyc/video`, and `/kyc/additional-docs` now use the KYC wizard redirect, have explicit route contracts, and cannot bypass document/personal/selfie prerequisites into submitted/evidence loops. Focused route-contract and KYC status contract tests passed; committed as `d93058f8`.
 
 ## Verified Recently
 
@@ -80,7 +81,7 @@ Last updated: 2026-06-19 02:22 GMT
 ## Known Watch Items
 
 - `staging-korido-api.joonapay.com` resolves publicly through system DNS, Cloudflare DNS, and Google DNS.
-- Staging candidate is not ready until remaining returning-user login/PIN, physical-device crash, and money-flow edge smokes pass with the current API URL.
+- Staging candidate is not ready until the remaining KYC/backoffice approval state, PIN recovery pending/manual-review flow, notification/dispatch ownership, wallet receive endpoint, and money-flow edge smokes are closed with the current API URL.
 - Non-golden Flutter tests now pass locally using Codemagic's 40-file batch pattern.
 - Android release bundle passes locally using Codemagic's direct Gradle path.
 - Xcode tooling is visible again. Global `xcode-select` currently points to `/Applications/Xcode.app` 26.5; `/Applications/Xcode-beta.app` 27.0 is installed and should be used for beta iOS 27 checks via `DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer` unless the user wants the global selector changed.
@@ -92,7 +93,9 @@ Last updated: 2026-06-19 02:22 GMT
 
 Immediate next development slice:
 
-- Run returning-user login/PIN and first-home smoke on the iPhone 17 simulator with `0748805663` and OTP `123456`; keep TestFlight/staging promotion paused until manual feedback or a stable-candidate decision.
+- Fix canonical notification/dispatch ownership and user-visible KYC/PIN recovery state before broad visual sweeps.
+- Add or align the wallet receive contract so the mobile receive screen does not rely on mocks.
+- Preserve return context across KYC submitted/manual-review states where the user started from a gated money flow.
 
 Before promoting to `staging`, finish release-build checks locally without consuming a TestFlight build:
 
