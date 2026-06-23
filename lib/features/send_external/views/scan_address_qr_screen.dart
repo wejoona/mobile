@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/merchant_pay/widgets/qr_scanner_widget.dart';
 import 'package:usdc_wallet/features/send_external/services/external_transfer_service.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Screen for scanning QR codes containing wallet addresses
 class ScanAddressQrScreen extends ConsumerWidget {
@@ -18,7 +18,8 @@ class ScanAddressQrScreen extends ConsumerWidget {
       backgroundColor: context.colors.canvas,
       body: QrScannerWidget(
         title: l10n.sendExternal_scanQr,
-        subtitle: 'Positionnez le code QR de l\'adresse du portefeuille dans le cadre',
+        subtitle:
+            'Positionnez le code QR de l\'adresse du portefeuille dans le cadre',
         onScan: (qrData) => _handleScan(context, ref, qrData),
         onError: () => _handleError(context),
       ),
@@ -31,10 +32,13 @@ class ScanAddressQrScreen extends ConsumerWidget {
 
     if (address != null) {
       // Valid address found - return it
-      context.pop(address);
+      context.fsmPop(address);
     } else {
       // Invalid QR code - show error
-      _showError(context, 'Code QR invalide. Adresse de portefeuille non valide.');
+      _showError(
+        context,
+        'Code QR invalide. Adresse de portefeuille non valide.',
+      );
       // Allow rescanning
       Future.delayed(const Duration(seconds: 2), () {
         if (context.mounted) {

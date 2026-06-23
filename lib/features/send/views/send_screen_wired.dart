@@ -7,6 +7,7 @@ import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Fully wired send money screen.
 class SendScreenWired extends ConsumerStatefulWidget {
@@ -64,7 +65,8 @@ class _SendScreenWiredState extends ConsumerState<SendScreenWired> {
                 ),
               ),
               keyboardType: TextInputType.phone,
-              onChanged: (v) => ref.read(sendMoneyProvider.notifier).setRecipient(v),
+              onChanged: (v) =>
+                  ref.read(sendMoneyProvider.notifier).setRecipient(v),
             ),
             const SizedBox(height: AppSpacing.md),
 
@@ -77,7 +79,9 @@ class _SendScreenWiredState extends ConsumerState<SendScreenWired> {
                 prefixIcon: const Icon(Icons.attach_money),
                 suffixText: 'USDC',
               ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               onChanged: (v) {
                 final amount = double.tryParse(v);
                 if (amount != null) {
@@ -106,21 +110,29 @@ class _SendScreenWiredState extends ConsumerState<SendScreenWired> {
 
             // Fee estimate
             if (_amountController.text.isNotEmpty)
-              Consumer(builder: (context, ref, _) {
-                final amount = double.tryParse(_amountController.text) ?? 0;
-                final feeAsync = ref.watch(sendFeeProvider(amount));
-                return feeAsync.when(
-                  data: (fee) => Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('${AppStrings.fee}:', style: Theme.of(context).textTheme.bodySmall),
-                      Text('\$${fee.fee.toStringAsFixed(4)}', style: Theme.of(context).textTheme.bodySmall),
-                    ],
-                  ),
-                  loading: () => const SizedBox.shrink(),
-                  error: (_, __) => const SizedBox.shrink(),
-                );
-              }),
+              Consumer(
+                builder: (context, ref, _) {
+                  final amount = double.tryParse(_amountController.text) ?? 0;
+                  final feeAsync = ref.watch(sendFeeProvider(amount));
+                  return feeAsync.when(
+                    data: (fee) => Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${AppStrings.fee}:',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        Text(
+                          '\$${fee.fee.toStringAsFixed(4)}',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, __) => const SizedBox.shrink(),
+                  );
+                },
+              ),
 
             const Spacer(),
 
@@ -128,19 +140,26 @@ class _SendScreenWiredState extends ConsumerState<SendScreenWired> {
             if (sendState.error != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: Text(sendState.error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                child: Text(
+                  sendState.error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
               ),
 
             // Submit
             AppButton(
               label: AppStrings.send,
               isLoading: sendState.isLoading,
-              onPressed: sendState.isLoading ? null : () async {
-                final success = await ref.read(sendMoneyProvider.notifier).executeTransfer();
-                if (success && context.mounted) {
-                  Navigator.pushReplacementNamed(context, '/transfer-success');
-                }
-              },
+              onPressed: sendState.isLoading
+                  ? null
+                  : () async {
+                      final success = await ref
+                          .read(sendMoneyProvider.notifier)
+                          .executeTransfer();
+                      if (success && context.mounted) {
+                        context.fsmGo('/send/result');
+                      }
+                    },
             ),
           ],
         ),

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/onboarding/providers/onboarding_progress_provider.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Prompt encouraging first deposit
 class FirstDepositPrompt extends ConsumerWidget {
@@ -111,7 +111,7 @@ class FirstDepositPrompt extends ConsumerWidget {
               ref
                   .read(onboardingProgressProvider.notifier)
                   .dismissPrompt('deposit_prompt');
-              context.push('/deposit');
+              context.fsmPush('/deposit');
             },
             variant: AppButtonVariant.secondary,
             isFullWidth: true,

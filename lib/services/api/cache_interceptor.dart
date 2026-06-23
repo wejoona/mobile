@@ -16,12 +16,22 @@ class CachedResponse {
 /// Caches GET requests to reduce network calls and improve performance
 class CacheInterceptor extends Interceptor {
   static const int _maxEntries = 128;
+  static const String skipCacheExtraKey = 'skipCache';
   final Map<String, CachedResponse> _cache = {};
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     // Only cache eligible GET requests
     if (options.method != 'GET' || !_isCacheablePath(options.path)) {
+      return handler.next(options);
+    }
+
+    if (_shouldSkipCacheRead(options)) {
+      if (kDebugMode) {
+        AppLogger(
+          'Debug',
+        ).debug('[CacheInterceptor] Cache BYPASS: ${options.path}');
+      }
       return handler.next(options);
     }
 
@@ -90,7 +100,8 @@ class CacheInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     // On error, try to return stale cache if available
-    if (err.requestOptions.method == 'GET') {
+    if (err.requestOptions.method == 'GET' &&
+        !_shouldSkipCacheRead(err.requestOptions)) {
       final key = _generateKey(err.requestOptions);
       final cached = _cache[key];
 
@@ -124,11 +135,13 @@ class CacheInterceptor extends Interceptor {
 
   /// Generate cache key from request options
   String _generateKey(RequestOptions options) {
-    final queryString = options.queryParameters.entries
-        .map((e) => '${e.key}=${e.value}')
-        .join('&');
+    final queryString = options.queryParameters.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+    final queryKey = queryString.map((e) => '${e.key}=${e.value}').join('&');
 
-    return '${options.method}:${options.path}${queryString.isNotEmpty ? '?$queryString' : ''}';
+    final authKey = _authorizationCacheKey(options.headers['Authorization']);
+
+    return '${options.method}:${options.path}${queryKey.isNotEmpty ? '?$queryKey' : ''}$authKey';
   }
 
   /// Get Time-To-Live (TTL) for different endpoints
@@ -136,7 +149,7 @@ class CacheInterceptor extends Interceptor {
   Duration getTTL(String path) {
     // Wallet balance is financial state. Fetch it fresh and let the offline
     // cache layer show explicit stale indicators when the network is down.
-    if (path == '/wallet' || path.contains('/wallet/balance')) {
+    if (path == '/wallet') {
       return Duration.zero;
     }
 
@@ -214,6 +227,39 @@ class CacheInterceptor extends Interceptor {
   }
 
   bool _isCacheablePath(String path) => getTTL(path) > Duration.zero;
+
+  bool _shouldSkipCacheRead(RequestOptions options) {
+    if (options.extra[skipCacheExtraKey] == true) {
+      return true;
+    }
+
+    final cacheControl = options.headers['Cache-Control']?.toString();
+    return cacheControl != null &&
+        cacheControl
+            .toLowerCase()
+            .split(',')
+            .map((e) => e.trim())
+            .any(
+              (directive) => directive == 'no-cache' || directive == 'no-store',
+            );
+  }
+
+  String _authorizationCacheKey(Object? authorization) {
+    final token = authorization?.toString().trim();
+    if (token == null || token.isEmpty) {
+      return '';
+    }
+    return '#auth:${_stableTokenFingerprint(token)}';
+  }
+
+  String _stableTokenFingerprint(String value) {
+    var hash = 0x811c9dc5;
+    for (final codeUnit in value.codeUnits) {
+      hash ^= codeUnit;
+      hash = (hash * 0x01000193) & 0xffffffff;
+    }
+    return hash.toRadixString(16);
+  }
 
   void _evictExpired() {
     _cache.removeWhere((_, cached) => cached.isExpired);

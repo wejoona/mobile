@@ -2040,6 +2040,18 @@ abstract class AppLocalizations {
   /// **'Your documents are being reviewed. This usually takes 1-2 business days.'**
   String get kyc_status_submitted_description;
 
+  /// Manual review KYC status title
+  ///
+  /// In en, this message translates to:
+  /// **'Manual Review Needed'**
+  String get kyc_status_manualReview_title;
+
+  /// Manual review KYC status description
+  ///
+  /// In en, this message translates to:
+  /// **'A Korido reviewer is checking your identity evidence. You can keep using eligible features while we complete the review.'**
+  String get kyc_status_manualReview_description;
+
   /// Approved status title
   ///
   /// In en, this message translates to:
@@ -2117,6 +2129,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Verification usually takes 1-2 business days'**
   String get kyc_info_time_description;
+
+  /// Manual review info card title
+  ///
+  /// In en, this message translates to:
+  /// **'Human Review'**
+  String get kyc_info_manualReview_title;
+
+  /// Manual review info card description
+  ///
+  /// In en, this message translates to:
+  /// **'If automated checks cannot safely decide, a reviewer completes the decision instead of leaving you blocked.'**
+  String get kyc_info_manualReview_description;
 
   /// Documents info title
   ///
@@ -3245,6 +3269,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Confirm your new PIN'**
   String get pin_confirmNewPin;
+
+  /// Temporary PIN reset screen description before entering a new PIN
+  ///
+  /// In en, this message translates to:
+  /// **'Your temporary PIN worked. Choose your own new PIN to continue.'**
+  String get pin_temporaryReset_chooseNewDescription;
+
+  /// Temporary PIN reset screen description before confirming a new PIN
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm the new PIN you want to use for Korido.'**
+  String get pin_temporaryReset_confirmNewDescription;
+
+  /// Error shown when backend accepts a temporary PIN without returning a reset token
+  ///
+  /// In en, this message translates to:
+  /// **'Temporary PIN accepted, but the reset session was missing. Ask support to issue a new temporary PIN.'**
+  String get pin_temporaryReset_missingSession;
+
+  /// Error shown when temporary PIN reset token or login session has expired
+  ///
+  /// In en, this message translates to:
+  /// **'This reset session expired. Please sign in again.'**
+  String get pin_temporaryReset_expiredSession;
+
+  /// Temporary PIN reset confirmation mismatch error
+  ///
+  /// In en, this message translates to:
+  /// **'The PINs do not match. Confirm it again.'**
+  String get pin_temporaryReset_mismatch;
+
+  /// Generic error shown when temporary PIN reset completion fails
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to set the new PIN.'**
+  String get pin_temporaryReset_setFailed;
 
   /// PIN requirements section title
   ///
@@ -14387,6 +14447,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Complete identity verification to use this action.'**
   String get moneyFlow_verificationRequiredMessage;
+
+  /// Title for the blocking mobile app update screen
+  ///
+  /// In en, this message translates to:
+  /// **'Update required'**
+  String get forceUpdate_title;
+
+  /// Fallback message for the blocking mobile app update screen
+  ///
+  /// In en, this message translates to:
+  /// **'A newer version of Korido is required to keep your wallet secure.'**
+  String get forceUpdate_defaultMessage;
+
+  /// Minimum app version required to continue
+  ///
+  /// In en, this message translates to:
+  /// **'Required version: {version}'**
+  String forceUpdate_requiredVersion(String version);
+
+  /// Button label that opens the app store
+  ///
+  /// In en, this message translates to:
+  /// **'Update Korido'**
+  String get forceUpdate_button;
 }
 
 class _AppLocalizationsDelegate

@@ -1,9 +1,9 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
@@ -54,7 +54,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.textPrimary),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
       ),
       body: SingleChildScrollView(

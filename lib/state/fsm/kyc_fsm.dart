@@ -340,7 +340,7 @@ class KycStatusLoaded extends KycEvent {
   });
 
   final KycTier tier;
-  final String status; // none, pending, verified, rejected
+  final String status; // none, pending, submitted, verified, rejected
   final String? rejectionReason;
   final DateTime? verifiedAt;
 
@@ -557,6 +557,9 @@ class KycFsm extends FsmDefinition<KycState, KycEvent> {
   TransitionResult<KycState> _stateFromLoadedStatus(KycStatusLoaded event) =>
       switch (event.status) {
         'none' => const TransitionSuccess(KycNone()),
+        'submitted' => TransitionSuccess(
+          KycPending(targetTier: event.tier, submittedAt: DateTime.now()),
+        ),
         'pending' => TransitionSuccess(
           KycPending(targetTier: event.tier, submittedAt: DateTime.now()),
         ),
@@ -656,6 +659,9 @@ class KycFsm extends FsmDefinition<KycState, KycEvent> {
   }
 
   TransitionResult<KycState> _handlePending(KycPending state, KycEvent event) {
+    if (event is KycStatusLoaded) {
+      return _stateFromLoadedStatus(event);
+    }
     if (event is KycApproved) {
       return TransitionSuccess(
         KycVerified(
@@ -772,6 +778,9 @@ class KycFsm extends FsmDefinition<KycState, KycEvent> {
     KycManualReview state,
     KycEvent event,
   ) {
+    if (event is KycStatusLoaded) {
+      return _stateFromLoadedStatus(event);
+    }
     if (event is KycManualReviewCompleted) {
       return TransitionSuccess(
         KycVerified(

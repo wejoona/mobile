@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
@@ -17,6 +16,7 @@ import 'package:usdc_wallet/features/qr_payment/widgets/qr_display.dart';
 import 'package:usdc_wallet/features/merchant_pay/widgets/qr_scanner_widget.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class ScanView extends ConsumerStatefulWidget {
   const ScanView({super.key});
@@ -60,7 +60,7 @@ class _ScanViewState extends ConsumerState<ScanView>
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.textPrimary),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
         bottom: TabBar(
           controller: _tabController,
@@ -97,16 +97,16 @@ class _ScanViewState extends ConsumerState<ScanView>
       final address = uri.queryParameters['address'];
 
       if (phone != null && phone.isNotEmpty) {
-        context.push('/send', extra: {'phone': phone});
+        context.fsmPush('/send', extra: {'phone': phone});
       } else if (address != null && address.isNotEmpty) {
-        context.push('/send', extra: {'address': address});
+        context.fsmPush('/send', extra: {'address': address});
       }
     } else if (qrData.startsWith('+')) {
       // Phone number QR
-      context.push('/send', extra: {'phone': qrData});
+      context.fsmPush('/send', extra: {'phone': qrData});
     } else if (qrData.startsWith('0x') && qrData.length >= 20) {
       // Wallet address QR
-      context.push('/send', extra: {'address': qrData});
+      context.fsmPush('/send', extra: {'address': qrData});
     } else {
       // Invalid QR
       ScaffoldMessenger.of(context).showSnackBar(

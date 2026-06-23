@@ -2,7 +2,6 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/typography.dart';
@@ -14,6 +13,7 @@ import 'package:usdc_wallet/features/expenses/providers/expenses_provider.dart';
 import 'package:usdc_wallet/features/expenses/services/expenses_service.dart';
 import 'package:usdc_wallet/domain/entities/expense.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class AddExpenseView extends ConsumerStatefulWidget {
   const AddExpenseView({super.key});
@@ -177,7 +177,7 @@ class _AddExpenseViewState extends ConsumerState<AddExpenseView> {
       ref.invalidate(expensesProvider);
 
       if (mounted) {
-        context.pop();
+        context.fsmPop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(

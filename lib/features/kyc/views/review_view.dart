@@ -1,14 +1,14 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/design/components/primitives/app_card.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
+import 'package:usdc_wallet/features/kyc/utils/kyc_return_route.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class ReviewView extends ConsumerWidget {
   const ReviewView({super.key});
@@ -124,6 +124,8 @@ class ReviewView extends ConsumerWidget {
                         ),
                         onAction: () => _handleEditSelfie(context),
                       ),
+                    const SizedBox(height: AppSpacing.xxl),
+                    _buildKycConsentCard(context, ref, state),
                   ],
                 ),
               ),
@@ -148,7 +150,8 @@ class ReviewView extends ConsumerWidget {
     final completedCount =
         (state.capturedDocuments.isNotEmpty ? 1 : 0) +
         (state.selfiePath != null ? 1 : 0) +
-        (state.hasRequiredPersonalInfo ? 1 : 0);
+        (state.hasRequiredPersonalInfo ? 1 : 0) +
+        (state.kycConsentAccepted ? 1 : 0);
     final isReady = state.canSubmit;
 
     return AppCard(
@@ -198,8 +201,8 @@ class ReviewView extends ConsumerWidget {
                         )
                       : _copy(
                           context,
-                          '$completedCount of 3 required items are ready.',
-                          '$completedCount élément(s) sur 3 sont prêts.',
+                          '$completedCount of 4 required items are ready.',
+                          '$completedCount élément(s) sur 4 sont prêts.',
                         ),
                   variant: AppTextVariant.bodyMedium,
                   color: colors.textSecondary,
@@ -208,6 +211,72 @@ class ReviewView extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildKycConsentCard(
+    BuildContext context,
+    WidgetRef ref,
+    KycFlowState state,
+  ) {
+    final colors = context.colors;
+    final accepted = state.kycConsentAccepted;
+
+    return AppCard(
+      variant: AppCardVariant.flat,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      borderColor: accepted ? colors.borderGold : colors.borderSubtle,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        onTap: state.isLoading
+            ? null
+            : () => ref
+                  .read(kycProvider.notifier)
+                  .setKycConsentAccepted(accepted: !accepted),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Checkbox(
+              value: accepted,
+              activeColor: colors.gold,
+              checkColor: colors.onGold,
+              side: BorderSide(color: colors.border),
+              onChanged: state.isLoading
+                  ? null
+                  : (value) => ref
+                        .read(kycProvider.notifier)
+                        .setKycConsentAccepted(accepted: value ?? false),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(
+                    _copy(
+                      context,
+                      'Identity verification consent',
+                      'Consentement de vérification d’identité',
+                    ),
+                    variant: AppTextVariant.bodyLarge,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  AppText(
+                    _copy(
+                      context,
+                      'I agree that Korido may process my identity data, share it with verification providers, and run AML/sanctions screening for account verification.',
+                      'J’autorise Korido à traiter mes données d’identité, les partager avec ses prestataires de vérification, et effectuer les contrôles AML/sanctions nécessaires.',
+                    ),
+                    variant: AppTextVariant.bodySmall,
+                    color: colors.textSecondary,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -316,12 +385,12 @@ class ReviewView extends ConsumerWidget {
 
   void _handleEditDocument(BuildContext context, int index) {
     // Remove the document and go back to capture screen
-    context.go('/kyc/document-capture');
+    context.fsmGo('/kyc/document-capture');
   }
 
   void _handleEditSelfie(BuildContext context) {
     // Go back to selfie screen
-    context.go('/kyc/selfie');
+    context.fsmGo('/kyc/selfie');
   }
 
   Future<void> _handleSubmit(BuildContext context, WidgetRef ref) async {
@@ -341,19 +410,21 @@ class ReviewView extends ConsumerWidget {
       return;
     }
 
-    // Also submit document for VerifyHQ verification (best-effort)
-    try {
-      await ref.read(kycProvider.notifier).submitDocumentForVerification();
-    } catch (_) {
-      // Don't block the flow if verification submission fails
-      debugPrint(
-        '[KYC Review] Document verification submission failed (non-blocking)',
-      );
+    if (context.mounted) {
+      final flow = ref.read(kycProvider);
+      context.fsmGo(_submittedRoute(flow));
+    }
+  }
+
+  String _submittedRoute(KycFlowState flow) {
+    final intent = flow.returnIntent?.trim();
+    final returnTo = safeKycReturnRoute(raw: flow.returnTo, intent: intent);
+    if ((intent == null || intent.isEmpty) || returnTo == null) {
+      return '/kyc/submitted';
     }
 
-    if (context.mounted) {
-      context.go('/kyc/submitted');
-    }
+    return '/kyc/submitted?intent=${Uri.encodeComponent(intent)}'
+        '&returnTo=${Uri.encodeComponent(returnTo)}';
   }
 
   String _copy(BuildContext context, String en, String fr) {

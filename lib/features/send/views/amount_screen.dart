@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
 import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
+import 'package:usdc_wallet/features/limits/utils/money_flow_limit_errors.dart';
 import 'package:usdc_wallet/features/limits/widgets/limit_warning_banner.dart';
 import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart';
 import 'package:usdc_wallet/features/send/providers/send_provider.dart';
 import 'package:usdc_wallet/features/send/widgets/send_flow_visuals.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class AmountScreen extends ConsumerStatefulWidget {
   const AmountScreen({super.key});
@@ -30,7 +31,13 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => ref.read(limitsProvider.notifier).fetchLimits());
+    Future.microtask(() {
+      ref.read(limitsProvider.notifier).fetchLimits();
+      final sendState = ref.read(sendMoneyProvider);
+      if (!sendState.hasVerifiedBalance && !sendState.isBalanceLoading) {
+        ref.read(sendMoneyProvider.notifier).loadBalance();
+      }
+    });
   }
 
   @override
@@ -49,7 +56,7 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
 
     if (state.recipient == null) {
       // Navigate back if no recipient
-      Future.microtask(() => context.go('/send'));
+      Future.microtask(() => context.fsmGo('/send'));
       return const SizedBox.shrink();
     }
 
@@ -175,15 +182,39 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                             ),
                           ),
                           const SizedBox(width: AppSpacing.md),
-                          AmountText.fromText(
-                            formatUsdc(state.availableBalance),
-                            size: AmountTextSize.small,
-                            color: colors.textPrimary,
-                          ),
+                          state.isBalanceLoading
+                              ? SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: colors.gold,
+                                  ),
+                                )
+                              : AmountText.fromText(
+                                  _balanceStatusText(context, state),
+                                  size: AmountTextSize.small,
+                                  color: _balanceStatusColor(colors, state),
+                                ),
                         ],
                       ),
                     ),
                     const SizedBox(height: AppSpacing.md),
+
+                    if (!state.isBalanceLoading &&
+                        !state.hasVerifiedBalance) ...[
+                      SendCallout(
+                        icon: Icons.sync_problem_rounded,
+                        title: localizedSendCopy(
+                          context,
+                          en: 'Balance not verified',
+                          fr: 'Solde non vérifié',
+                        ),
+                        body: _balanceUnavailableMessage(context, state),
+                        tone: SendCalloutTone.warning,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                    ],
 
                     SendCallout(
                       icon: Icons.verified_outlined,
@@ -271,7 +302,9 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                             ],
                             onChanged: _updateDraftAmount,
                             suffix: TextButton(
-                              onPressed: _setMaxAmount,
+                              onPressed: state.hasVerifiedBalance
+                                  ? _setMaxAmount
+                                  : null,
                               child: AppText(
                                 localizedSendCopy(
                                   context,
@@ -346,7 +379,7 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                   label: l10n.action_continue,
                   icon: Icons.arrow_forward_rounded,
                   iconPosition: IconPosition.right,
-                  onPressed: _handleContinue,
+                  onPressed: state.hasVerifiedBalance ? _handleContinue : null,
                   isLoading: _isLoading,
                   isFullWidth: true,
                 ),
@@ -431,6 +464,13 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
     }
 
     final state = ref.read(sendMoneyProvider);
+    if (!state.hasVerifiedBalance) {
+      return localizedSendCopy(
+        context,
+        en: 'Korido could not verify your available balance. Refresh and try again.',
+        fr: 'Korido ne peut pas vérifier votre solde disponible. Actualisez puis réessayez.',
+      );
+    }
     if (amount > state.availableBalance) {
       return l10n.error_insufficientBalance;
     }
@@ -441,6 +481,13 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
       final limits = limitsState.limits!;
       final hit = limits.limitHitByFor(TransactionLimitOperation.send, amount);
       switch (hit) {
+        case 'manual_review_required':
+        case 'kyc_required':
+          return moneyFlowLimitErrorFor(
+            hit!,
+            limits,
+            TransactionLimitOperation.send,
+          );
         case 'single_transaction':
           return '${localizedSendCopy(context, en: 'Maximum per transfer', fr: 'Maximum par transfert')}: ${formatUsdc(limits.singleTransactionLimit)}';
         case 'daily':
@@ -463,6 +510,9 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
 
   void _setMaxAmount() {
     final state = ref.read(sendMoneyProvider);
+    if (!state.hasVerifiedBalance) {
+      return;
+    }
     final limits = ref.read(limitsProvider).limits;
     final maxAmount = limits == null
         ? state.availableBalance
@@ -476,6 +526,10 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
   }
 
   Future<void> _handleContinue() async {
+    final state = ref.read(sendMoneyProvider);
+    if (!state.hasVerifiedBalance) {
+      return;
+    }
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
@@ -489,10 +543,40 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
       ref.read(sendMoneyProvider.notifier).setNote(note);
 
       if (mounted) {
-        context.push('/send/confirm');
+        context.fsmPush('/send/confirm');
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  String _balanceStatusText(BuildContext context, SendMoneyState state) {
+    if (state.hasVerifiedBalance) {
+      return formatUsdc(state.availableBalance);
+    }
+    return localizedSendCopy(context, en: 'Unavailable', fr: 'Indisponible');
+  }
+
+  Color _balanceStatusColor(ThemeColors colors, SendMoneyState state) {
+    return state.hasVerifiedBalance ? colors.textPrimary : colors.warningText;
+  }
+
+  String _balanceUnavailableMessage(
+    BuildContext context,
+    SendMoneyState state,
+  ) {
+    final error = state.balanceError?.trim();
+    if (error != null && error.isNotEmpty) {
+      return localizedSendCopy(
+        context,
+        en: 'We could not confirm your wallet balance. You can retry from the previous screen or pull to refresh on Home.',
+        fr: 'Nous ne pouvons pas confirmer le solde de votre wallet. Réessayez depuis l’écran précédent ou actualisez l’accueil.',
+      );
+    }
+    return localizedSendCopy(
+      context,
+      en: 'Checking your wallet balance before continuing.',
+      fr: 'Vérification du solde du wallet avant de continuer.',
+    );
   }
 }

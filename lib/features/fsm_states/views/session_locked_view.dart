@@ -2,17 +2,17 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
+import 'package:usdc_wallet/features/pin/models/pin_reset_route_context.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
-import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Lock screen — same design as OTP/login screens.
 /// Uses the design system PinDots + PinPad for consistency.
@@ -54,7 +54,10 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView>
 
   Future<void> _checkBiometric() async {
     final biometricService = ref.read(biometricServiceProvider);
-    final isEnabled = await biometricService.isBiometricEnabled();
+    final userId = await _currentBiometricUserId();
+    final isEnabled =
+        userId != null &&
+        await biometricService.isBiometricEnabled(userId: userId);
     final isAvailable = await biometricService.isAvailable();
     final type = await biometricService.getAvailableType();
 
@@ -83,7 +86,7 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView>
       _restoreUnlockControls();
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) {
         if (!completion.isCompleted) {
           completion.complete();
@@ -92,10 +95,17 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView>
       }
 
       try {
-        ref.read(authProvider.notifier).unlock();
-        ref.read(sessionServiceProvider.notifier).unlockSession();
-        ref.read(appFsmProvider.notifier).unlockSession();
-        context.enterAuthenticatedApp();
+        final unlocked = await ref
+            .read(authProvider.notifier)
+            .unlockWithServerValidation();
+        if (!mounted) {
+          return;
+        }
+        if (!unlocked) {
+          _restoreUnlockControls();
+          return;
+        }
+        context.fsmEnterAuthenticatedApp();
       } on Object {
         if (mounted) {
           _restoreUnlockControls();
@@ -125,7 +135,7 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView>
       await ref.read(authProvider.notifier).clearLocalSession();
     }
     if (mounted) {
-      context.go('/login');
+      context.fsmGo('/login');
     }
   }
 
@@ -287,7 +297,7 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView>
 
                         // Forgot PIN
                         TextButton(
-                          onPressed: () => context.push('/pin/reset'),
+                          onPressed: _openPinReset,
                           child: AppText(
                             l10n.pin_forgotPin,
                             variant: AppTextVariant.bodyMedium,
@@ -335,6 +345,18 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView>
   Future<void> _handleBiometric() async {
     final biometricService = ref.read(biometricServiceProvider);
     final l10n = AppLocalizations.of(context)!;
+    final userId = await _currentBiometricUserId();
+    if (userId == null ||
+        !await biometricService.isBiometricEnabled(userId: userId)) {
+      if (mounted) {
+        setState(() {
+          _biometricEnabled = false;
+          _biometricAvailable = false;
+        });
+      }
+      return;
+    }
+
     final result = await biometricService.authenticate(
       localizedReason: l10n.session_unlockReason,
     );
@@ -342,6 +364,30 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView>
     if (mounted && result.success) {
       unawaited(_unlock());
     }
+  }
+
+  Future<String?> _currentBiometricUserId() async {
+    final authUserId = ref.read(authProvider).user?.id.trim();
+    if (authUserId != null && authUserId.isNotEmpty) {
+      return authUserId;
+    }
+    final storedUserId = await ref
+        .read(secureStorageProvider)
+        .read(key: StorageKeys.userId);
+    final normalized = storedUserId?.trim();
+    return normalized == null || normalized.isEmpty ? null : normalized;
+  }
+
+  void _openPinReset() {
+    final authState = ref.read(authProvider);
+    final phone = PhoneNumberValue.tryFromAny(
+      phoneNumber: authState.user?.phone ?? authState.phone,
+      countryCode: authState.user?.countryCode ?? authState.countryCode,
+    );
+
+    context.fsmOpenPinReset(
+      extra: PinResetRouteContext.fromOptionalPhoneValue(phone: phone),
+    );
   }
 
   bool get _shouldShowBiometricUnlock =>

@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
@@ -28,13 +28,7 @@ class RoutePlaceholderPage extends StatelessWidget {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/home');
-            }
-          },
+          onPressed: () => context.fsmSafePop(fallbackRoute: '/home'),
         ),
       ),
       body: SafeArea(
@@ -73,14 +67,8 @@ class RoutePlaceholderPage extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.xxl),
                 AppButton(
-                  label: context.canPop() ? 'Go back' : 'Go home',
-                  onPressed: () {
-                    if (context.canPop()) {
-                      context.pop();
-                    } else {
-                      context.go('/home');
-                    }
-                  },
+                  label: 'Go back',
+                  onPressed: () => context.fsmSafePop(fallbackRoute: '/home'),
                 ),
               ],
             ),
@@ -144,22 +132,22 @@ class FsmStatePlaceholder extends ConsumerWidget {
                 onPressed: () {
                   // Navigate based on the action.
                   if (actionLabel == 'Get New OTP') {
-                    context.go('/login');
+                    context.fsmGo('/login');
                   } else if (actionLabel == 'Contact Support') {
-                    unawaited(context.push('/settings/help'));
+                    unawaited(context.fsmPush('/settings/help'));
                   } else if (actionLabel == 'Unlock') {
-                    context.go('/login/pin');
+                    context.fsmGo('/login/pin');
                   } else if (actionLabel == 'Verify') {
                     // Trigger biometric verification.
-                    context.pop();
+                    context.fsmPop();
                   } else if (actionLabel == 'Verify Device') {
-                    context.go('/login/otp');
+                    context.fsmGo('/login/otp');
                   } else if (actionLabel == 'End Other Session') {
-                    context.go('/settings/sessions');
+                    context.fsmGo('/settings/sessions');
                   } else if (actionLabel == 'View Status') {
-                    context.go('/settings');
+                    context.fsmGo('/settings');
                   } else if (actionLabel == 'Renew KYC') {
-                    unawaited(context.push('/kyc'));
+                    unawaited(context.fsmPush('/kyc'));
                   } else if (actionLabel == 'Create Wallet') {
                     // Trigger wallet creation.
                     unawaited(
@@ -168,7 +156,7 @@ class FsmStatePlaceholder extends ConsumerWidget {
                           .createWallet()
                           .then((_) {
                             if (context.mounted) {
-                              context.go('/home');
+                              context.fsmGo('/home');
                             }
                           }),
                     );

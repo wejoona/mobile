@@ -7,11 +7,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/app_version/mobile_version_policy_service.dart';
 import '../helpers/test_utils.dart';
 
 final _authInterceptorTestProvider = Provider<AuthInterceptor>(
   AuthInterceptor.new,
 );
+
+class _RecordingVersionPolicyController extends MobileVersionPolicyController {
+  static final reasons = <String>[];
+
+  @override
+  MobileVersionPolicyState build() => const MobileVersionPolicyState();
+
+  @override
+  Future<MobileVersionPolicy?> check({
+    String reason = 'startup',
+    bool force = false,
+  }) async {
+    reasons.add(reason);
+    return state.policy;
+  }
+}
 
 class _DeviceBlacklistedAdapter implements HttpClientAdapter {
   const _DeviceBlacklistedAdapter({this.nestedEnvelope = false});
@@ -51,6 +68,59 @@ class _DeviceBlacklistedAdapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
+class _UpgradeRequiredAdapter implements HttpClientAdapter {
+  const _UpgradeRequiredAdapter();
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    return ResponseBody.fromString(
+      jsonEncode({
+        'statusCode': 426,
+        'message': 'Upgrade required',
+        'error': 'UPGRADE_REQUIRED',
+      }),
+      426,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
+
+class _RecordingStatusAdapter implements HttpClientAdapter {
+  _RecordingStatusAdapter({this.statusCode = 200});
+
+  final int statusCode;
+  final requests = <RequestOptions>[];
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    requests.add(options);
+
+    return ResponseBody.fromString(
+      jsonEncode({'success': statusCode < 400}),
+      statusCode,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
+
 void main() {
   late MockSecureStorage mockStorage;
 
@@ -58,6 +128,7 @@ void main() {
 
   setUp(() {
     mockStorage = MockSecureStorage();
+    _RecordingVersionPolicyController.reasons.clear();
   });
 
   tearDown(() {
@@ -65,6 +136,274 @@ void main() {
   });
 
   group('AuthInterceptor session invalidation', () {
+    test('uses scoped recovery token for account recovery endpoints', () async {
+      final container = ProviderContainer(
+        overrides: [secureStorageProvider.overrideWithValue(mockStorage)],
+      );
+      addTearDown(container.dispose);
+
+      await mockStorage.write(
+        key: StorageKeys.recoveryAccessToken,
+        value: 'recovery.access',
+      );
+      await mockStorage.write(
+        key: StorageKeys.recoveryAccessTokenScope,
+        value: 'pin_reset',
+      );
+
+      final adapter = _RecordingStatusAdapter();
+      final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
+        ..httpClientAdapter = adapter
+        ..interceptors.add(container.read(_authInterceptorTestProvider));
+
+      await dio.post('/user/pin/reset');
+
+      expect(
+        adapter.requests.single.headers['Authorization'],
+        'Bearer recovery.access',
+      );
+    });
+
+    test('keeps recovery OTP request and verification public', () async {
+      final container = ProviderContainer(
+        overrides: [secureStorageProvider.overrideWithValue(mockStorage)],
+      );
+      addTearDown(container.dispose);
+
+      await mockStorage.write(
+        key: StorageKeys.accessToken,
+        value: 'active.access',
+      );
+      await mockStorage.write(
+        key: StorageKeys.recoveryAccessToken,
+        value: 'recovery.access',
+      );
+
+      final adapter = _RecordingStatusAdapter();
+      final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
+        ..httpClientAdapter = adapter
+        ..interceptors.add(container.read(_authInterceptorTestProvider));
+
+      await dio.post('/auth/recovery/request-otp');
+      await dio.post('/auth/recovery/verify-otp');
+
+      expect(adapter.requests, hasLength(2));
+      for (final request in adapter.requests) {
+        expect(request.headers['Authorization'], isNull);
+      }
+    });
+
+    test(
+      'explicit recovery scope wins over active access token for liveness',
+      () async {
+        final container = ProviderContainer(
+          overrides: [secureStorageProvider.overrideWithValue(mockStorage)],
+        );
+        addTearDown(container.dispose);
+
+        await mockStorage.write(
+          key: StorageKeys.accessToken,
+          value: 'active.access',
+        );
+        await mockStorage.write(
+          key: StorageKeys.recoveryAccessToken,
+          value: 'recovery.access',
+        );
+        await mockStorage.write(
+          key: StorageKeys.recoveryAccessTokenScope,
+          value: 'pin_reset',
+        );
+
+        final adapter = _RecordingStatusAdapter();
+        final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
+          ..httpClientAdapter = adapter
+          ..interceptors.add(container.read(_authInterceptorTestProvider));
+
+        await dio.post(
+          '/kyc/liveness/session',
+          options: Options(extra: {ApiRequestExtra.useRecoveryToken: true}),
+        );
+
+        expect(
+          adapter.requests.single.headers['Authorization'],
+          'Bearer recovery.access',
+        );
+      },
+    );
+
+    test(
+      'normal liveness keeps active access token when recovery is not scoped',
+      () async {
+        final container = ProviderContainer(
+          overrides: [secureStorageProvider.overrideWithValue(mockStorage)],
+        );
+        addTearDown(container.dispose);
+
+        await mockStorage.write(
+          key: StorageKeys.accessToken,
+          value: 'active.access',
+        );
+        await mockStorage.write(
+          key: StorageKeys.recoveryAccessToken,
+          value: 'recovery.access',
+        );
+        await mockStorage.write(
+          key: StorageKeys.recoveryAccessTokenScope,
+          value: 'pin_reset',
+        );
+
+        final adapter = _RecordingStatusAdapter();
+        final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
+          ..httpClientAdapter = adapter
+          ..interceptors.add(container.read(_authInterceptorTestProvider));
+
+        await dio.post('/kyc/liveness/session');
+
+        expect(
+          adapter.requests.single.headers['Authorization'],
+          'Bearer active.access',
+        );
+      },
+    );
+
+    test(
+      'does not use recovery token for normal authenticated endpoints',
+      () async {
+        final container = ProviderContainer(
+          overrides: [secureStorageProvider.overrideWithValue(mockStorage)],
+        );
+        addTearDown(container.dispose);
+
+        await mockStorage.write(
+          key: StorageKeys.recoveryAccessToken,
+          value: 'recovery.access',
+        );
+        await mockStorage.write(
+          key: StorageKeys.recoveryAccessTokenScope,
+          value: 'pin_reset',
+        );
+
+        final adapter = _RecordingStatusAdapter();
+        final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
+          ..httpClientAdapter = adapter
+          ..interceptors.add(container.read(_authInterceptorTestProvider));
+
+        await dio.get('/wallet');
+
+        expect(adapter.requests.single.headers['Authorization'], isNull);
+      },
+    );
+
+    test(
+      'does not use recovery token for generic support ticket routes',
+      () async {
+        final container = ProviderContainer(
+          overrides: [secureStorageProvider.overrideWithValue(mockStorage)],
+        );
+        addTearDown(container.dispose);
+
+        await mockStorage.write(
+          key: StorageKeys.recoveryAccessToken,
+          value: 'recovery.access',
+        );
+        await mockStorage.write(
+          key: StorageKeys.recoveryAccessTokenScope,
+          value: 'pin_reset',
+        );
+
+        final adapter = _RecordingStatusAdapter();
+        final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
+          ..httpClientAdapter = adapter
+          ..interceptors.add(container.read(_authInterceptorTestProvider));
+
+        await dio.get('/support/tickets/active');
+
+        expect(adapter.requests.single.headers['Authorization'], isNull);
+      },
+    );
+
+    test(
+      'recovery 401 clears recovery token without invalidating app session',
+      () async {
+        final container = ProviderContainer(
+          overrides: [secureStorageProvider.overrideWithValue(mockStorage)],
+        );
+        addTearDown(container.dispose);
+
+        await mockStorage.write(
+          key: StorageKeys.accessToken,
+          value: 'active.access',
+        );
+        await mockStorage.write(
+          key: StorageKeys.refreshToken,
+          value: 'active.refresh',
+        );
+        await mockStorage.write(
+          key: StorageKeys.recoveryAccessToken,
+          value: 'recovery.access',
+        );
+
+        final adapter = _RecordingStatusAdapter(statusCode: 401);
+        final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
+          ..httpClientAdapter = adapter
+          ..interceptors.add(container.read(_authInterceptorTestProvider));
+
+        await expectLater(
+          dio.post('/user/pin/reset'),
+          throwsA(
+            isA<DioException>().having(
+              (error) => error.response?.statusCode,
+              'statusCode',
+              401,
+            ),
+          ),
+        );
+
+        expect(mockStorage.storage[StorageKeys.recoveryAccessToken], isNull);
+        expect(mockStorage.storage[StorageKeys.accessToken], 'active.access');
+        expect(mockStorage.storage[StorageKeys.refreshToken], 'active.refresh');
+        expect(container.read(authSessionInvalidatedProvider), equals(0));
+      },
+    );
+
+    test(
+      'checks mobile version policy after upgrade-required responses',
+      () async {
+        final container = ProviderContainer(
+          overrides: [
+            secureStorageProvider.overrideWithValue(mockStorage),
+            mobileVersionPolicyProvider.overrideWith(
+              _RecordingVersionPolicyController.new,
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await mockStorage.write(
+          key: StorageKeys.accessToken,
+          value: 'valid.access',
+        );
+
+        final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
+          ..httpClientAdapter = const _UpgradeRequiredAdapter()
+          ..interceptors.add(container.read(_authInterceptorTestProvider));
+
+        await expectLater(
+          dio.get('/wallet'),
+          throwsA(
+            isA<DioException>().having(
+              (error) => error.response?.statusCode,
+              'statusCode',
+              426,
+            ),
+          ),
+        );
+        await pumpEventQueue(times: 5);
+
+        expect(_RecordingVersionPolicyController.reasons, contains('http_426'));
+      },
+    );
+
     test(
       'clears local session and emits invalidation when device is blacklisted',
       () async {
@@ -205,7 +544,7 @@ void main() {
     test('should map device blacklist errors to blocked-device message', () {
       // Arrange
       final dioError = DioException(
-        requestOptions: RequestOptions(path: '/wallet/balance'),
+        requestOptions: RequestOptions(path: '/wallet'),
         response: Response(
           statusCode: 403,
           data: {
@@ -213,7 +552,7 @@ void main() {
             'message': 'Access denied. This device has been blocked.',
             'error': 'DEVICE_BLACKLISTED',
           },
-          requestOptions: RequestOptions(path: '/wallet/balance'),
+          requestOptions: RequestOptions(path: '/wallet'),
         ),
         type: DioExceptionType.badResponse,
       );
@@ -236,7 +575,7 @@ void main() {
       () {
         // Arrange
         final dioError = DioException(
-          requestOptions: RequestOptions(path: '/wallet/balance'),
+          requestOptions: RequestOptions(path: '/wallet'),
           response: Response(
             statusCode: 403,
             data: {
@@ -246,7 +585,7 @@ void main() {
                 'message': 'Access denied. This device has been blocked.',
               },
             },
-            requestOptions: RequestOptions(path: '/wallet/balance'),
+            requestOptions: RequestOptions(path: '/wallet'),
           ),
           type: DioExceptionType.badResponse,
         );
@@ -388,6 +727,55 @@ void main() {
       expect(exception.message, equals('Custom error message'));
     });
 
+    test('should hide framework route-miss messages from users', () {
+      final dioError = DioException(
+        requestOptions: RequestOptions(path: '/auth/recovery/request-otp'),
+        response: Response(
+          statusCode: 404,
+          data: {
+            'success': false,
+            'error': {
+              'code': 'NOT_FOUND',
+              'message': 'Cannot POST /api/v1/auth/recovery/request-otp',
+            },
+          },
+          requestOptions: RequestOptions(path: '/auth/recovery/request-otp'),
+        ),
+        type: DioExceptionType.badResponse,
+      );
+
+      final exception = ApiException.fromDioError(dioError);
+
+      expect(exception.statusCode, equals(404));
+      expect(exception.message, equals('Not found'));
+      expect(exception.message, isNot(contains('Cannot POST')));
+    });
+
+    test('should preserve business 404 messages', () {
+      final dioError = DioException(
+        requestOptions: RequestOptions(path: '/auth/recovery/request-otp'),
+        response: Response(
+          statusCode: 404,
+          data: {
+            'success': false,
+            'error': {
+              'code': 'NOT_FOUND',
+              'message': 'User not found. Please register first.',
+            },
+          },
+          requestOptions: RequestOptions(path: '/auth/recovery/request-otp'),
+        ),
+        type: DioExceptionType.badResponse,
+      );
+
+      final exception = ApiException.fromDioError(dioError);
+
+      expect(
+        exception.message,
+        equals('User not found. Please register first.'),
+      );
+    });
+
     test('should handle connection timeout', () {
       // Arrange
       final dioError = DioException(
@@ -490,6 +878,75 @@ void main() {
       expect(exception.data, isNotNull);
     });
 
+    test('should expose retry metadata from rate-limit envelopes', () {
+      final dioError = DioException(
+        requestOptions: RequestOptions(path: '/auth/recovery/request-otp'),
+        response: Response(
+          statusCode: 429,
+          data: {
+            'success': false,
+            'error': {
+              'code': 'E9001',
+              'message': 'Too many verification requests',
+              'context': {'retryAfterSeconds': 120, 'resendAvailableIn': 120},
+            },
+          },
+          requestOptions: RequestOptions(path: '/auth/recovery/request-otp'),
+        ),
+        type: DioExceptionType.badResponse,
+      );
+
+      final exception = ApiException.fromDioError(dioError);
+
+      expect(exception.statusCode, 429);
+      expect(exception.retryAfterSeconds, 120);
+      expect(exception.resendAvailableIn, 120);
+    });
+
+    test('should expose retry metadata from rate-limit headers', () {
+      final dioError = DioException(
+        requestOptions: RequestOptions(path: '/auth/login'),
+        response: Response(
+          statusCode: 429,
+          data: {'message': 'Too many requests'},
+          headers: Headers.fromMap({
+            'retry-after': ['45'],
+          }),
+          requestOptions: RequestOptions(path: '/auth/login'),
+        ),
+        type: DioExceptionType.badResponse,
+      );
+
+      final exception = ApiException.fromDioError(dioError);
+
+      expect(exception.statusCode, 429);
+      expect(exception.retryAfterSeconds, 45);
+      expect(exception.resendAvailableIn, 45);
+    });
+
+    test('should treat X-RateLimit-Reset epoch seconds as cooldown', () {
+      final resetAtEpochSeconds =
+          DateTime.now().millisecondsSinceEpoch ~/ 1000 + 75;
+      final dioError = DioException(
+        requestOptions: RequestOptions(path: '/kyc/liveness/session'),
+        response: Response(
+          statusCode: 429,
+          data: {'message': 'Too many liveness checks'},
+          headers: Headers.fromMap({
+            'x-ratelimit-reset': ['$resetAtEpochSeconds'],
+          }),
+          requestOptions: RequestOptions(path: '/kyc/liveness/session'),
+        ),
+        type: DioExceptionType.badResponse,
+      );
+
+      final exception = ApiException.fromDioError(dioError);
+
+      expect(exception.statusCode, 429);
+      expect(exception.retryAfterSeconds, inInclusiveRange(70, 75));
+      expect(exception.resendAvailableIn, inInclusiveRange(70, 75));
+    });
+
     test('should create exception with message only', () {
       // Arrange & Act
       final exception = ApiException(message: 'Simple error');
@@ -519,6 +976,7 @@ void main() {
     test('should have correct key values', () {
       expect(StorageKeys.accessToken, equals('access_token'));
       expect(StorageKeys.refreshToken, equals('refresh_token'));
+      expect(StorageKeys.recoveryAccessToken, equals('recovery_access_token'));
       expect(StorageKeys.userPin, equals('user_pin'));
       expect(StorageKeys.biometricEnabled, equals('biometric_enabled'));
     });

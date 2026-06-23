@@ -178,7 +178,8 @@ class InsightsService {
     // Group by recipient
     final recipientMap = <String, List<Transaction>>{};
     for (final txn in sentTxns) {
-      final recipientId = txn.recipientWalletId ??
+      final recipientId =
+          txn.recipientWalletId ??
           txn.recipientPhone ??
           txn.recipientAddress ??
           'unknown';
@@ -193,7 +194,8 @@ class InsightsService {
       final firstTxn = txns.first;
 
       // Extract name from metadata or use phone/address
-      final name = firstTxn.metadata?['recipientName'] as String? ??
+      final name =
+          firstTxn.metadata?['recipientName'] as String? ??
           firstTxn.recipientPhone ??
           firstTxn.recipientAddress?.substring(0, 10) ??
           'Unknown';
@@ -257,6 +259,7 @@ class InsightsService {
 
   bool _isSpending(Transaction txn) {
     return txn.type == TransactionType.withdrawal ||
+        txn.type == TransactionType.billPayment ||
         txn.type == TransactionType.transferExternal ||
         (txn.type == TransactionType.transferInternal && txn.amount < 0);
   }
@@ -276,11 +279,15 @@ class InsightsService {
     switch (txn.type) {
       case TransactionType.withdrawal:
         return 'Bills';
+      case TransactionType.billPayment:
+        return 'Bill payments';
       case TransactionType.transferExternal:
       case TransactionType.transferInternal:
         return 'Transfers';
       case TransactionType.deposit:
         return 'Deposits';
+      case TransactionType.unknown:
+        return 'Other';
     }
   }
 

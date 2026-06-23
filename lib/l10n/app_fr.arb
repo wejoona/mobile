@@ -276,6 +276,8 @@
   "kyc_status_pending_description": "Complétez votre vérification d'identité pour débloquer des limites plus élevées et toutes les fonctionnalités.",
   "kyc_status_submitted_title": "Vérification en cours",
   "kyc_status_submitted_description": "Vos documents sont en cours d'examen. Cela prend généralement 1 à 2 jours ouvrables.",
+  "kyc_status_manualReview_title": "Revue manuelle requise",
+  "kyc_status_manualReview_description": "Un réviseur Korido vérifie vos justificatifs d'identité. Vous pouvez continuer à utiliser les fonctionnalités éligibles pendant la revue.",
   "kyc_status_approved_title": "Vérification terminée",
   "kyc_status_approved_description": "Votre identité a été vérifiée. Vous avez maintenant accès à toutes les fonctionnalités!",
   "kyc_status_rejected_title": "Échec de la vérification",
@@ -289,6 +291,8 @@
   "kyc_info_security_description": "Tous les documents sont cryptés et stockés en toute sécurité",
   "kyc_info_time_title": "Processus rapide",
   "kyc_info_time_description": "La vérification prend généralement 1 à 2 jours ouvrables",
+  "kyc_info_manualReview_title": "Revue humaine",
+  "kyc_info_manualReview_description": "Si les contrôles automatiques ne peuvent pas décider en toute sécurité, un réviseur termine la décision au lieu de vous laisser bloqué.",
   "kyc_info_documents_title": "Documents requis",
   "kyc_info_documents_description": "Pièce d'identité ou passeport émis par le gouvernement",
   "kyc_reviewDocuments": "Vérifier les documents",
@@ -536,6 +540,12 @@
   "pin_reenterPin": "Entrez à nouveau votre code PIN pour confirmer",
   "pin_enterCurrentPin": "Entrez votre code PIN actuel",
   "pin_confirmNewPin": "Confirmez votre nouveau code PIN",
+  "pin_temporaryReset_chooseNewDescription": "Votre code PIN temporaire a fonctionné. Choisissez maintenant votre nouveau code PIN.",
+  "pin_temporaryReset_confirmNewDescription": "Confirmez le nouveau code PIN que vous voulez utiliser pour Korido.",
+  "pin_temporaryReset_missingSession": "Code PIN temporaire accepté, mais la session de réinitialisation est introuvable. Demandez au support d'émettre un nouveau code PIN temporaire.",
+  "pin_temporaryReset_expiredSession": "Cette session de réinitialisation a expiré. Veuillez vous reconnecter.",
+  "pin_temporaryReset_mismatch": "Les codes PIN ne correspondent pas. Confirmez-le à nouveau.",
+  "pin_temporaryReset_setFailed": "Impossible de définir le nouveau code PIN.",
   "pin_requirements": "Exigences du code PIN",
   "pin_rule_6digits": "6 chiffres",
   "pin_rule_noSequential": "Pas de numéros séquentiels (123456)",
@@ -3231,5 +3241,16 @@
     }
   },
   "moneyFlow_reviewRequiredMessage": "Votre compte est en cours de vérification. Nous vous préviendrons quand cette action sera disponible.",
-  "moneyFlow_verificationRequiredMessage": "Terminez la vérification d'identité pour utiliser cette action."
+  "moneyFlow_verificationRequiredMessage": "Terminez la vérification d'identité pour utiliser cette action.",
+  "forceUpdate_title": "Mise à jour requise",
+  "forceUpdate_defaultMessage": "Une nouvelle version de Korido est requise pour garder votre portefeuille sécurisé.",
+  "forceUpdate_requiredVersion": "Version requise : {version}",
+  "@forceUpdate_requiredVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "forceUpdate_button": "Mettre à jour Korido"
 }

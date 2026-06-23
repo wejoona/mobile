@@ -1,11 +1,16 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/core/constants/api_endpoints.dart';
-import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 import 'package:usdc_wallet/core/utils/amount_conversion.dart';
-import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
+import 'package:usdc_wallet/core/utils/transaction_headers.dart';
+import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
+import 'package:usdc_wallet/features/limits/utils/money_flow_limit_errors.dart';
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
+import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
+import 'package:usdc_wallet/features/wallet/utils/cash_out_availability.dart';
+import 'package:usdc_wallet/features/wallet/utils/cash_out_phone_normalizer.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/limits/limits_service.dart';
 
 /// Withdrawal methods matching Korido's mobile money providers.
 enum WithdrawMethod {
@@ -21,7 +26,7 @@ enum WithdrawMethod {
   const WithdrawMethod(this.label, this.prefix, this.providerCode);
 }
 
-/// Backend-owned withdrawal rail returned by `/wallet/withdraw/options`.
+/// Backend-owned mobile-money cash-out rail returned by `/wallet/cash-out/mobile-money/options`.
 class WithdrawalOption {
   const WithdrawalOption({
     required this.id,
@@ -93,6 +98,7 @@ class WithdrawState {
   final String? error;
   final WithdrawMethod? method;
   final String? phoneNumber;
+  final String? countryCode;
   final double? amount;
   final double fee;
   final WithdrawResult? result;
@@ -102,6 +108,7 @@ class WithdrawState {
     this.error,
     this.method,
     this.phoneNumber,
+    this.countryCode,
     this.amount,
     this.fee = 0,
     this.result,
@@ -114,6 +121,7 @@ class WithdrawState {
     String? error,
     WithdrawMethod? method,
     String? phoneNumber,
+    String? countryCode,
     double? amount,
     double? fee,
     WithdrawResult? result,
@@ -122,6 +130,7 @@ class WithdrawState {
     error: error,
     method: method ?? this.method,
     phoneNumber: phoneNumber ?? this.phoneNumber,
+    countryCode: countryCode ?? this.countryCode,
     amount: amount ?? this.amount,
     fee: fee ?? this.fee,
     result: result ?? this.result,
@@ -174,8 +183,12 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
 
   void selectMethod(WithdrawMethod method) =>
       state = state.copyWith(method: method);
-  void setPhoneNumber(String phone) =>
-      state = state.copyWith(phoneNumber: phone);
+  void setPhoneNumber(String phone, {String? countryCode}) =>
+      state = state.copyWith(phoneNumber: phone, countryCode: countryCode);
+
+  void setSecurityCheckUnavailable() => state = state.copyWith(
+    error: 'Security check unavailable. Please try again before withdrawing.',
+  );
 
   /// Quote fees from the same backend commercial terms path used for submission.
   Future<void> setAmount(double amount) async {
@@ -200,17 +213,20 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
       state = state.copyWith(
         amount: amount,
         fee: 0,
-        error: 'Unable to estimate withdrawal fee. Please try again.',
+        error: isCashOutUnavailableError(e)
+            ? cashOutUnavailableMessage
+            : 'Unable to estimate withdrawal fee. Please try again.',
       );
     }
   }
 
-  /// Fix #8: Wire to real /withdrawals/initiate endpoint.
+  /// Submit a mobile-money cash-out through the explicit wallet cash-out route.
   /// Fix #1: PIN token in headers. Fix #2: Idempotency key in headers.
   /// Fix #3: Amount converted to cents for backend.
   Future<void> submit({
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
+    String? stepUpToken,
   }) async {
     if (state.method == null || state.amount == null) return;
     final providerCode = state.method!.providerCode;
@@ -225,6 +241,21 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
       state = state.copyWith(error: 'Phone number is required.');
       return;
     }
+    final normalizedPhoneNumber = normalizeCashOutPhone(
+      phoneNumber: phoneNumber,
+      countryCode: state.countryCode,
+    );
+    if (normalizedPhoneNumber == null) {
+      state = state.copyWith(error: 'Enter a valid mobile money phone number.');
+      return;
+    }
+    final limitError = await _verifyWithdrawalLimitsBeforeSubmission(
+      state.amount!,
+    );
+    if (limitError != null) {
+      state = state.copyWith(error: limitError);
+      return;
+    }
 
     state = state.copyWith(isLoading: true);
     try {
@@ -232,14 +263,15 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
       final headers = transactionHeaders(
         pinToken: pinToken,
         idempotencyKey: idempotencyKey,
+        stepUpToken: stepUpToken,
       );
 
       final response = await dio.post(
-        '/withdrawals/initiate',
+        ApiEndpoints.mobileMoneyCashOut,
         data: {
           'amount': toCents(state.amount!),
           'providerCode': providerCode,
-          'phoneNumber': phoneNumber,
+          'phoneNumber': normalizedPhoneNumber,
           'currency': 'XOF',
         },
         options: Options(headers: headers),
@@ -254,11 +286,42 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
       ref.invalidate(walletBalanceProvider);
       ref.invalidate(transactionsProvider);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      final moneyFlowError = moneyFlowLimitExceptionFromError(
+        e,
+        operation: TransactionLimitOperation.withdraw,
+      );
+      state = state.copyWith(
+        isLoading: false,
+        error: isCashOutUnavailableError(e)
+            ? cashOutUnavailableMessage
+            : moneyFlowError?.message ?? e.toString(),
+      );
     }
   }
 
   void reset() => state = const WithdrawState();
+
+  Future<String?> _verifyWithdrawalLimitsBeforeSubmission(double amount) async {
+    try {
+      final limits = await ref.read(limitsServiceProvider).getLimits();
+      final limitHit = limits.limitHitByFor(
+        TransactionLimitOperation.withdraw,
+        amount,
+      );
+      if (limitHit == null) {
+        return null;
+      }
+      return moneyFlowLimitErrorFor(
+        limitHit,
+        limits,
+        TransactionLimitOperation.withdraw,
+      );
+    } on DioException {
+      return 'Unable to verify withdrawal limits. Please try again.';
+    } on Object {
+      return 'Unable to verify withdrawal limits. Please try again.';
+    }
+  }
 
   Future<double> _estimateMobileMoneyFee({
     required double amount,
@@ -266,7 +329,7 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
   }) async {
     final dio = ref.read(dioProvider);
     final response = await dio.post(
-      ApiEndpoints.withdrawQuote,
+      ApiEndpoints.mobileMoneyCashOutQuote,
       data: {
         'amount': toCents(amount),
         'providerCode': providerCode,
@@ -291,10 +354,16 @@ final withdrawProvider = NotifierProvider<WithdrawNotifier, WithdrawState>(
 final withdrawalOptionsProvider =
     FutureProvider.family<List<WithdrawalOption>, String>((ref, country) async {
       final dio = ref.read(dioProvider);
-      final response = await dio.get(
-        '/wallet/withdraw/options',
-        queryParameters: {'country': country},
-      );
+      Response<dynamic> response;
+      try {
+        response = await dio.get(
+          ApiEndpoints.mobileMoneyCashOutOptions,
+          queryParameters: {'country': country},
+        );
+      } catch (e) {
+        if (isCashOutUnavailableError(e)) return const [];
+        rethrow;
+      }
       final payload = response.data is Map
           ? Map<String, dynamic>.from(response.data as Map)
           : <String, dynamic>{};

@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
@@ -268,20 +268,35 @@ class _SessionManagerState extends ConsumerState<SessionManager>
       return;
     }
 
-    _go('/session-locked');
+    final returnTo = _currentRouteForLock();
+    final encodedReturnTo = Uri.encodeComponent(returnTo);
+    const lockRoute = '/session-locked';
+    _go('$lockRoute?returnTo=$encodedReturnTo');
+  }
+
+  String _currentRouteForLock() {
+    try {
+      final router = ref.read(routerProvider);
+      final uri = router.routeInformationProvider.value.uri;
+      final location = uri.toString();
+      if (location.isNotEmpty && !location.startsWith('/session-locked')) {
+        return location;
+      }
+    } catch (error) {
+      AppLogger(
+        'SessionManager',
+      ).warning('Could not resolve current route for session lock', error);
+    }
+    return '/home';
   }
 
   void _go(String location) {
     try {
-      ref.read(routerProvider).go(location);
-    } on Object {
-      try {
-        context.go(location);
-      } on Object catch (fallbackError) {
-        AppLogger(
-          'SessionManager',
-        ).error('Could not navigate to $location', fallbackError);
-      }
+      context.fsmGo(location);
+    } on Object catch (fallbackError) {
+      AppLogger(
+        'SessionManager',
+      ).error('Could not navigate to $location', fallbackError);
     }
   }
 }

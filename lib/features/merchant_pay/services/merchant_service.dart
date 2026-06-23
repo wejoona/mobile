@@ -117,7 +117,7 @@ class MerchantService {
   Future<PaymentResponse> processPayment({
     required String qrData,
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
     double? amount,
     String? merchantId,
     String? merchantMcc,

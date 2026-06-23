@@ -3,6 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 
+const double _securityPadKeyWidth = 84;
+const double _securityPadKeyHeight = 78;
+const double _securityPadIconSize = 31;
+const double _securityPadDigitSize = 30;
+
 class SecurityCodeDots extends StatelessWidget {
   const SecurityCodeDots({
     super.key,
@@ -53,6 +58,7 @@ class SecurityNumberPad extends StatelessWidget {
     this.onBiometricPressed,
     this.showBiometric = false,
     this.isLoading = false,
+    this.loadingLabel,
     this.biometricIcon = Icons.fingerprint_rounded,
   });
 
@@ -61,10 +67,15 @@ class SecurityNumberPad extends StatelessWidget {
   final VoidCallback? onBiometricPressed;
   final bool showBiometric;
   final bool isLoading;
+  final String? loadingLabel;
   final IconData biometricIcon;
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return _PadLoadingPanel(label: loadingLabel);
+    }
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -84,7 +95,10 @@ class SecurityNumberPad extends StatelessWidget {
                       onPressed: isLoading ? null : onBiometricPressed,
                       isAccent: true,
                     )
-                  : const SizedBox.square(dimension: 64),
+                  : const SizedBox(
+                      width: _securityPadKeyWidth,
+                      height: _securityPadKeyHeight,
+                    ),
             ),
             _PadSlot(
               child: _PadButton.digit(
@@ -93,12 +107,10 @@ class SecurityNumberPad extends StatelessWidget {
               ),
             ),
             _PadSlot(
-              child: isLoading
-                  ? const _PadLoading()
-                  : _PadButton.icon(
-                      icon: Icons.backspace_outlined,
-                      onPressed: onDeletePressed,
-                    ),
+              child: _PadButton.icon(
+                icon: Icons.backspace_outlined,
+                onPressed: onDeletePressed,
+              ),
             ),
           ],
         ),
@@ -374,14 +386,16 @@ class _PadButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.lg),
         splashColor: colors.gold.withValues(alpha: 0.14),
         child: SizedBox(
-          width: 64,
-          height: 60,
+          width: _securityPadKeyWidth,
+          height: _securityPadKeyHeight,
           child: Center(
             child: icon != null
-                ? Icon(icon, color: foreground, size: 23)
+                ? Icon(icon, color: foreground, size: _securityPadIconSize)
                 : AppText(
                     label ?? '',
-                    variant: AppTextVariant.moneyMedium,
+                    style: AppTypography.moneyMedium.copyWith(
+                      fontSize: _securityPadDigitSize,
+                    ),
                     color: foreground,
                   ),
           ),
@@ -391,17 +405,90 @@ class _PadButton extends StatelessWidget {
   }
 }
 
-class _PadLoading extends StatelessWidget {
-  const _PadLoading();
+class _PadLoadingPanel extends StatelessWidget {
+  const _PadLoadingPanel({this.label});
+
+  final String? label;
 
   @override
-  Widget build(BuildContext context) => SizedBox.square(
-    dimension: 64,
-    child: Center(
-      child: CircularProgressIndicator(
-        color: context.colors.gold,
-        strokeWidth: 2,
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final accentBg = colors.goldSubtle.withValues(
+      alpha: colors.isDark ? 0.58 : 0.72,
+    );
+    final panelShadow = colors.isDark
+        ? AppShadows.goldGlow
+        : AppShadows.lightGoldGlow;
+
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 320),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.xl,
+          ),
+          decoration: BoxDecoration(
+            color: colors.container.withValues(alpha: colors.isDark ? 0.92 : 1),
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            border: Border.all(
+              color: colors.gold.withValues(alpha: colors.isDark ? 0.34 : 0.24),
+            ),
+            boxShadow: panelShadow,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox.square(
+                dimension: 76,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    SizedBox.square(
+                      dimension: 72,
+                      child: CircularProgressIndicator(
+                        color: colors.gold,
+                        strokeWidth: 3.2,
+                        strokeCap: StrokeCap.round,
+                        backgroundColor: colors.borderSubtle,
+                      ),
+                    ),
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: accentBg,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.verified_user_rounded,
+                        color: colors.gold,
+                        size: 26,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              AppText(
+                label ?? 'Securing your session...',
+                variant: AppTextVariant.titleSmall,
+                color: colors.textPrimary,
+                fontWeight: FontWeight.w800,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              AppText(
+                'Verifying locally and syncing your account.',
+                variant: AppTextVariant.bodySmall,
+                color: colors.textSecondary,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
       ),
-    ),
-  );
+    );
+  }
 }

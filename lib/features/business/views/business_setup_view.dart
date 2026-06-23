@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/enums/account_type.dart';
 import 'package:usdc_wallet/features/business/providers/business_provider.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Business Setup View - initial setup for business account
 class BusinessSetupView extends ConsumerStatefulWidget {
@@ -50,7 +50,7 @@ class _BusinessSetupViewState extends ConsumerState<BusinessSetupView> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.gold),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
       ),
       body: SafeArea(
@@ -72,7 +72,8 @@ class _BusinessSetupViewState extends ConsumerState<BusinessSetupView> {
                 label: l10n.business_businessName,
                 controller: _businessNameController,
                 keyboardType: TextInputType.text,
-                validator: (v) => v?.isEmpty == true ? l10n.error_required : null,
+                validator: (v) =>
+                    v?.isEmpty == true ? l10n.error_required : null,
               ),
               const SizedBox(height: AppSpacing.lg),
 
@@ -90,10 +91,10 @@ class _BusinessSetupViewState extends ConsumerState<BusinessSetupView> {
                 label: l10n.business_businessType,
                 value: _selectedBusinessType,
                 items: BusinessType.values
-                    .map((type) => AppSelectItem(
-                          value: type,
-                          label: type.displayName,
-                        ))
+                    .map(
+                      (type) =>
+                          AppSelectItem(value: type, label: type.displayName),
+                    )
                     .toList(),
                 onChanged: (type) {
                   if (type != null) {
@@ -128,11 +129,7 @@ class _BusinessSetupViewState extends ConsumerState<BusinessSetupView> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      Icons.info_outline,
-                      color: colors.gold,
-                      size: 20,
-                    ),
+                    Icon(Icons.info_outline, color: colors.gold, size: 20),
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: AppText(
@@ -164,19 +161,21 @@ class _BusinessSetupViewState extends ConsumerState<BusinessSetupView> {
     if (!_formKey.currentState!.validate()) return;
 
     final l10n = AppLocalizations.of(context)!;
-    final success = await ref.read(businessProvider.notifier).saveBusinessProfile(
-      businessName: _businessNameController.text.trim(),
-      registrationNumber: _registrationNumberController.text.trim().isEmpty
-          ? null
-          : _registrationNumberController.text.trim(),
-      businessType: _selectedBusinessType,
-      businessAddress: _businessAddressController.text.trim().isEmpty
-          ? null
-          : _businessAddressController.text.trim(),
-      taxId: _taxIdController.text.trim().isEmpty
-          ? null
-          : _taxIdController.text.trim(),
-    );
+    final success = await ref
+        .read(businessProvider.notifier)
+        .saveBusinessProfile(
+          businessName: _businessNameController.text.trim(),
+          registrationNumber: _registrationNumberController.text.trim().isEmpty
+              ? null
+              : _registrationNumberController.text.trim(),
+          businessType: _selectedBusinessType,
+          businessAddress: _businessAddressController.text.trim().isEmpty
+              ? null
+              : _businessAddressController.text.trim(),
+          taxId: _taxIdController.text.trim().isEmpty
+              ? null
+              : _taxIdController.text.trim(),
+        );
 
     if (mounted) {
       if (success) {
@@ -188,7 +187,7 @@ class _BusinessSetupViewState extends ConsumerState<BusinessSetupView> {
           ),
         );
         // Navigate to business profile
-        context.go('/settings/business-profile');
+        context.fsmGo('/settings/business-profile');
       } else {
         // Show error
         final error = ref.read(businessProvider).error;

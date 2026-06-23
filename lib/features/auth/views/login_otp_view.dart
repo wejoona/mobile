@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/environment_config.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/models/login_state.dart';
+import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/auth/widgets/otp_progress_cue.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Login OTP verification screen
 class LoginOtpView extends ConsumerStatefulWidget {
@@ -31,8 +33,8 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
     final isBusy = state.isLoading || _isSubmittingOtp;
     final otpCueLabel = _localizedOtpCopy(
       context,
-      en: 'Code accepted. Securing your session...',
-      fr: 'Code accepté. Sécurisation de la session...',
+      en: 'Verifying code. Securing your session...',
+      fr: 'Vérification du code. Sécurisation de la session...',
     );
 
     return Scaffold(
@@ -54,16 +56,16 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
                     child: Column(
                       children: [
                         const SizedBox(height: AppSpacing.lg),
-                        AuthTopBar(onBack: () => context.pop()),
+                        AuthTopBar(onBack: () => context.fsmGo('/login')),
                         const SizedBox(height: AppSpacing.xl),
                         AuthScreenHeader(
                           appName: l10n.appName,
                           title: l10n.login_verifyCode,
                           subtitle: l10n.login_codeSentTo(
-                            state.countryCode ?? '+225',
+                            state.dialCode ?? '+225',
                             _formatPhoneForDisplay(
                               state.phoneNumber ?? '',
-                              countryCode: state.countryCode,
+                              dialCode: state.dialCode,
                             ),
                           ),
                         ),
@@ -161,7 +163,15 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
       if (mounted) {
         final state = ref.read(loginProvider);
         if (state.currentStep == LoginStep.pin) {
-          context.go('/login/pin');
+          final returnTo = GoRouterState.of(
+            context,
+          ).uri.queryParameters['returnTo']?.trim();
+          final pinRoute = returnTo == null || returnTo.isEmpty
+              ? '/login/pin'
+              : '/login/pin?returnTo=${Uri.encodeComponent(returnTo)}';
+          context.fsmGo(pinRoute);
+        } else if (state.currentStep == LoginStep.needsPinSetup) {
+          context.fsmGo('/setup/set-pin');
         } else if (state.error != null) {
           setState(() {
             _hasError = true;
@@ -192,15 +202,11 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
     await ref.read(loginProvider.notifier).resendOtp();
   }
 
-  String _formatPhoneForDisplay(String phone, {String? countryCode}) {
-    var localPhone = phone.trim();
-    final dialCode = countryCode?.trim();
-    if (dialCode != null &&
-        dialCode.isNotEmpty &&
-        localPhone.startsWith(dialCode)) {
-      localPhone = localPhone.substring(dialCode.length);
-    }
-    localPhone = localPhone.replaceAll(RegExp(r'\D'), '');
+  String _formatPhoneForDisplay(String phone, {String? dialCode}) {
+    final localPhone = localPhoneDigits(
+      dialCode: dialCode ?? '+225',
+      phoneNumber: phone,
+    );
     if (localPhone.length < 4) return localPhone;
     return '${localPhone.substring(0, 2)} XX XX XX XX';
   }

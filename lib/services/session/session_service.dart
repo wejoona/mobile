@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/settings/providers/security_settings_provider.dart';
 import 'package:usdc_wallet/services/security/security_headers_interceptor.dart';
 
 /// Session configuration
@@ -92,8 +93,8 @@ class SessionState {
 
 /// Session service that manages user session lifecycle
 class SessionService extends Notifier<SessionState> {
-  static const _accessTokenKey = 'access_token';
-  static const _refreshTokenKey = 'refresh_token';
+  static const _accessTokenKey = StorageKeys.accessToken;
+  static const _refreshTokenKey = StorageKeys.refreshToken;
   static const _tokenExpiryKey = 'token_expiry';
   static const _sessionStartKey = 'session_start';
 
@@ -236,9 +237,21 @@ class SessionService extends Notifier<SessionState> {
 
     // Don't lock immediately — give a grace period for camera, image picker,
     // biometric prompts, etc. which briefly send the app to background.
-    // Lock after 2 minutes in background.
     _backgroundLockTimer?.cancel();
-    _backgroundLockTimer = Timer(const Duration(minutes: 2), () {
+    final settings = ref.read(securitySettingsProvider);
+    if (!settings.isLoaded) {
+      return;
+    }
+    if (!settings.pinOnAppOpen) {
+      return;
+    }
+
+    final lockDelay = Duration(minutes: settings.autoLockMinutes);
+    final effectiveDelay = lockDelay < const Duration(seconds: 60)
+        ? const Duration(seconds: 60)
+        : lockDelay;
+
+    _backgroundLockTimer = Timer(effectiveDelay, () {
       if (state.isInBackground && state.status == SessionStatus.active) {
         lockSession();
       }
@@ -255,8 +268,11 @@ class SessionService extends Notifier<SessionState> {
 
     if (wasInBackground != null && state.status != SessionStatus.inactive) {
       final backgroundDuration = DateTime.now().difference(wasInBackground);
+      final settings = ref.read(securitySettingsProvider);
 
-      if (backgroundDuration >= _config.backgroundTimeout) {
+      if (settings.isLoaded &&
+          settings.pinOnAppOpen &&
+          backgroundDuration >= Duration(minutes: settings.autoLockMinutes)) {
         // Been in background too long (>5 min), lock session (NOT expire/logout)
         lockSession();
       } else {

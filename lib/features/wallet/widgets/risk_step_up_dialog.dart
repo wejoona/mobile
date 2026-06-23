@@ -342,7 +342,10 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
       switch (widget.decision.stepUpType) {
         case StepUpType.biometric:
           final success = await securityService.executeStepUp(widget.decision);
-          if (success) {
+          final validated = success
+              ? await _validateBiometricStepUp(securityService)
+              : false;
+          if (validated) {
             widget.onSuccess();
           } else {
             setState(() => _error = 'Biometric verification failed');
@@ -383,6 +386,21 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
         setState(() => _isProcessing = false);
       }
     }
+  }
+
+  Future<bool> _validateBiometricStepUp(
+    RiskBasedSecurityService securityService,
+  ) async {
+    final challengeToken = widget.decision.challengeToken;
+    if (challengeToken == null || challengeToken.isEmpty) {
+      setState(() => _error = 'Verification challenge is missing.');
+      return false;
+    }
+
+    return securityService.validateStepUp(
+      challengeToken: challengeToken,
+      biometricVerified: true,
+    );
   }
 
   Future<void> _sendOtp() async {
@@ -584,6 +602,8 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
       decoration: _sheetDecoration(context),
       child: LivenessCheckWidget(
         onComplete: _onLivenessComplete,
+        onManualReviewRequired: _onLivenessManualReviewRequired,
+        onManualReviewAcknowledged: _acknowledgeLivenessManualReview,
         onCancel: () {
           setState(() {
             _showLiveness = false;
@@ -592,6 +612,25 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
         },
       ),
     );
+  }
+
+  void _onLivenessManualReviewRequired(LivenessManualReviewRequest request) {
+    if (!mounted) return;
+    setState(() {
+      _showLiveness = false;
+      _isProcessing = false;
+      _error =
+          'This operation needs manual review before it can continue. Reason: ${request.reason.replaceAll('_', ' ')}.';
+    });
+  }
+
+  void _acknowledgeLivenessManualReview() {
+    if (!mounted) return;
+    setState(() {
+      _showLiveness = false;
+      _isProcessing = false;
+      _error = 'This operation needs manual review before it can continue.';
+    });
   }
 
   Future<void> _onLivenessComplete(LivenessResult result) async {
@@ -605,13 +644,27 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
       setState(() => _isProcessing = false);
       return;
     }
+    if (result.decision != LivenessDecision.autoApprove || faceScore < 0.85) {
+      setState(
+        () => _error =
+            'This operation needs manual review before it can continue.',
+      );
+      setState(() => _isProcessing = false);
+      return;
+    }
 
     // Validate with backend
     try {
+      final challengeToken = widget.decision.challengeToken;
+      if (challengeToken == null || challengeToken.isEmpty) {
+        setState(() => _error = 'Verification challenge is missing.');
+        return;
+      }
+
       final securityService = ref.read(riskBasedSecurityServiceProvider);
       final validated = await securityService.validateStepUp(
-        challengeToken: widget.decision.challengeToken!,
-        livenessSessionId: result.sessionId,
+        challengeToken: challengeToken,
+        livenessSessionId: result.stepUpProofId,
         biometricVerified:
             widget.decision.stepUpType == StepUpType.biometricAndLiveness,
       );

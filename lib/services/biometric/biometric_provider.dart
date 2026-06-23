@@ -1,10 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
+import 'package:usdc_wallet/services/security/auth/biometric_reenrollment_detector.dart';
 
 /// Run 373: Biometric authentication Riverpod providers
 final biometricServiceProvider = Provider<BiometricService>((ref) {
-  return BiometricService();
+  return BiometricService(
+    null,
+    ref.watch(secureStorageProvider),
+    ref.watch(biometricReenrollmentDetectorProvider),
+  );
 });
 
 final biometricAvailableProvider = FutureProvider<bool>((ref) async {
@@ -24,13 +29,14 @@ final biometricEnrolledProvider = FutureProvider<bool>((ref) async {
 
 /// Whether biometric authentication is enabled by the user.
 final biometricEnabledProvider = FutureProvider<bool>((ref) async {
-  const storage = FlutterSecureStorage();
-  final value = await storage.read(key: 'biometric_enabled');
-  return value == 'true';
+  final service = ref.watch(biometricServiceProvider);
+  return service.isBiometricEnabled();
 });
 
 /// The primary biometric type available on the device.
-final primaryBiometricTypeProvider = FutureProvider<BiometricType?>((ref) async {
+final primaryBiometricTypeProvider = FutureProvider<BiometricType?>((
+  ref,
+) async {
   final service = ref.watch(biometricServiceProvider);
   final available = await service.isAvailable();
   if (!available) return null;

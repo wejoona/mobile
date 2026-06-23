@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart';
@@ -13,6 +12,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/connectivity/connectivity_provider.dart';
 import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class ConfirmScreen extends ConsumerWidget {
   const ConfirmScreen({super.key});
@@ -25,7 +25,7 @@ class ConfirmScreen extends ConsumerWidget {
 
     if (!state.canProceedToConfirm) {
       // Navigate back if incomplete
-      Future.microtask(() => context.go('/send'));
+      Future.microtask(() => context.fsmGo('/send'));
       return const SizedBox.shrink();
     }
 
@@ -127,7 +127,7 @@ class ConfirmScreen extends ConsumerWidget {
                                 color: colors.gold,
                                 size: 20,
                               ),
-                              onPressed: () => context.go('/send'),
+                              onPressed: () => context.fsmGo('/send'),
                             ),
                           ],
                         ),
@@ -172,7 +172,7 @@ class ConfirmScreen extends ConsumerWidget {
                                   color: colors.gold,
                                   size: 20,
                                 ),
-                                onPressed: () => context.go('/send/amount'),
+                                onPressed: () => context.fsmGo('/send/amount'),
                               ),
                             ],
                           ),
@@ -257,6 +257,9 @@ class ConfirmScreen extends ConsumerWidget {
                   }
 
                   try {
+                    final sendNotifier = ref.read(sendMoneyProvider.notifier);
+                    sendNotifier.clearStepUpAuthorization();
+
                     // Risk-based step-up evaluation
                     final securityService = ref.read(
                       riskBasedSecurityServiceProvider,
@@ -274,20 +277,70 @@ class ConfirmScreen extends ConsumerWidget {
                     );
 
                     if (decision.stepUpRequired) {
+                      if (decision.stepUpType == StepUpType.manualReview) {
+                        if (!context.mounted) return;
+                        HapticFeedback.heavyImpact();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              localizedSendCopy(
+                                context,
+                                en: 'This transfer needs manual review before it can continue.',
+                                fr: 'Ce transfert nécessite une revue manuelle avant de continuer.',
+                              ),
+                            ),
+                            backgroundColor: context.colors.error,
+                          ),
+                        );
+                        return;
+                      }
+
                       if (!context.mounted) return;
                       final passed = await RiskStepUpDialog.show(
                         context,
                         decision: decision,
                       );
                       if (!passed) return;
+                      final stepUpToken = decision.challengeToken?.trim();
+                      if (stepUpToken == null || stepUpToken.isEmpty) {
+                        if (!context.mounted) return;
+                        HapticFeedback.heavyImpact();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              localizedSendCopy(
+                                context,
+                                en: 'Security challenge is incomplete. Please try again before sending money.',
+                                fr: 'La vérification de sécurité est incomplète. Réessayez avant d’envoyer de l’argent.',
+                              ),
+                            ),
+                            backgroundColor: context.colors.error,
+                          ),
+                        );
+                        return;
+                      }
+                      sendNotifier.markStepUpAuthorized(stepUpToken);
                     }
                   } catch (e) {
-                    // If risk evaluation fails, still allow proceeding to PIN
-                    // (PIN verification is the minimum required security)
+                    if (!context.mounted) return;
+                    HapticFeedback.heavyImpact();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          localizedSendCopy(
+                            context,
+                            en: 'Security check unavailable. Please try again before sending money.',
+                            fr: 'La vérification de sécurité est indisponible. Réessayez avant d’envoyer de l’argent.',
+                          ),
+                        ),
+                        backgroundColor: context.colors.error,
+                      ),
+                    );
+                    return;
                   }
 
                   if (!context.mounted) return;
-                  context.push('/send/pin');
+                  context.fsmPush('/send/pin');
                 },
                 isFullWidth: true,
               ),

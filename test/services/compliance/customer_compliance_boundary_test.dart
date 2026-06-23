@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 
 void main() {
   group('customer compliance API boundary', () {
@@ -29,18 +30,42 @@ void main() {
         isEmpty,
         reason:
             'Customer UI/navigation must not call admin/compliance-officer routes. '
-            'Use user-facing APIs such as /user/limits, /wallet/kyc/status, '
+            'Use user-facing APIs such as /user/limits, /kyc/status, '
             'or a dedicated mobile-safe endpoint instead.',
       );
     });
 
     test('customer transaction limits are sourced from user limits routes', () {
-      final limitsService = File('lib/services/limits/limits_service.dart')
-          .readAsStringSync();
+      final limitsService = File(
+        'lib/services/limits/limits_service.dart',
+      ).readAsStringSync();
 
-      expect(limitsService, contains("'/user/limits'"));
-      expect(limitsService, contains("'/user/limits/usage'"));
+      expect(ApiEndpoints.limits, '/user/limits');
+      expect(ApiEndpoints.limitsUsage, '/user/limits/usage');
+      expect(limitsService, contains('ApiEndpoints.limits'));
+      expect(limitsService, contains('ApiEndpoints.limitsUsage'));
       expect(limitsService, isNot(contains("'/compliance/limits'")));
+    });
+
+    test('mobile ships no dormant compliance decision clients', () {
+      final root = Directory('lib/services/compliance');
+      final dartFiles = root.existsSync()
+          ? root
+                .listSync(recursive: true)
+                .whereType<File>()
+                .where((file) => file.path.endsWith('.dart'))
+                .map((file) => file.path)
+                .toList()
+          : <String>[];
+
+      expect(
+        dartFiles..sort(),
+        isEmpty,
+        reason:
+            'Compliance, reporting, sanctions, CDD/EDD, and limit decisions '
+            'are backend-owned. Mobile should call explicit customer-safe '
+            'endpoints such as /user/limits and /kyc/status only.',
+      );
     });
   });
 }

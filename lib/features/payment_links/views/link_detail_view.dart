@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -11,6 +10,7 @@ import 'package:usdc_wallet/features/payment_links/widgets/share_link_sheet.dart
 import 'package:usdc_wallet/features/qr_payment/widgets/branded_qr_image.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class LinkDetailView extends ConsumerStatefulWidget {
   const LinkDetailView({super.key, required this.linkId});
@@ -230,7 +230,9 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
                 icon: Icons.receipt_long,
                 onPressed: () {
                   if (resolvedLink.transactionId != null) {
-                    context.push('/transactions/${resolvedLink.transactionId}');
+                    context.fsmPush(
+                      '/transactions/${resolvedLink.transactionId}',
+                    );
                   }
                 },
                 isFullWidth: true,
@@ -425,7 +427,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
               backgroundColor: context.colors.success,
             ),
           );
-          context.pop();
+          context.fsmPop();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

@@ -1,12 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/state/index.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class ProfileView extends ConsumerStatefulWidget {
   const ProfileView({super.key});
@@ -17,10 +18,20 @@ class ProfileView extends ConsumerStatefulWidget {
 
 class _ProfileViewState extends ConsumerState<ProfileView> {
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(ref.read(kycStateMachineProvider.notifier).fetch());
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
     final userState = ref.watch(userStateMachineProvider);
+    final kycStatus = ref.watch(effectiveKycStatusProvider);
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -33,12 +44,12 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.gold),
-          onPressed: () => context.safePop(fallbackRoute: '/home'),
+          onPressed: () => context.fsmSafePop(fallbackRoute: '/home'),
         ),
         actions: [
           IconButton(
             icon: Icon(Icons.edit, color: colors.gold),
-            onPressed: () => context.push('/settings/profile/edit'),
+            onPressed: () => context.fsmPush('/settings/profile/edit'),
           ),
         ],
       ),
@@ -53,7 +64,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
               Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.md),
                 child: GestureDetector(
-                  onTap: () => context.push('/profile/verify-email'),
+                  onTap: () => context.fsmPush('/profile/verify-email'),
                   child: Container(
                     padding: const EdgeInsets.all(AppSpacing.md),
                     decoration: BoxDecoration(
@@ -149,7 +160,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                       userState.email!.isNotEmpty &&
                       !userState.emailVerified
                   ? TextButton(
-                      onPressed: () => context.push('/profile/verify-email'),
+                      onPressed: () => context.fsmPush('/profile/verify-email'),
                       child: AppText(
                         l10n.profile_verify,
                         variant: AppTextVariant.labelMedium,
@@ -164,12 +175,12 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
             // KYC Status
             _buildInfoCard(
               label: l10n.profile_kycStatus,
-              value: _getKycStatusText(userState.kycStatus, l10n),
+              value: _getKycStatusText(kycStatus, l10n),
               icon: Icons.verified_user,
-              valueColor: _getKycStatusColor(userState.kycStatus),
-              trailing: userState.kycStatus != KycStatus.verified
+              valueColor: _getKycStatusColor(kycStatus),
+              trailing: kycStatus != KycStatus.verified
                   ? TextButton(
-                      onPressed: () => context.push('/settings/kyc'),
+                      onPressed: () => context.fsmPush('/settings/kyc'),
                       child: AppText(
                         l10n.profile_verify,
                         variant: AppTextVariant.labelMedium,

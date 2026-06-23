@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:usdc_wallet/config/api_config.dart';
+import 'package:usdc_wallet/config/environment_config.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/session_fsm.dart';
@@ -18,63 +20,31 @@ import 'package:usdc_wallet/services/security/jwe/jwe_interceptor.dart';
 import 'package:usdc_wallet/mocks/index.dart';
 import 'package:usdc_wallet/services/security/certificate_pinning.dart';
 import 'package:usdc_wallet/services/offline/offline_queue_interceptor.dart';
+import 'package:usdc_wallet/services/app_version/mobile_version_policy_service.dart';
 
 /// API Configuration
 /// SECURITY: Use HTTPS in production, HTTP only for local development
 class ApiConfig {
-  // Environment-based configuration using --dart-define
-  // Pass via: flutter run --dart-define=API_URL=http://YOUR_IP:3000/api/v1
-  // Or use: flutter run --dart-define-from-file=env.dev.json
-
-  /// Get API URL from compile-time environment variable
-  /// Falls back to default dev/prod URLs if not specified
-  static const String _envApiUrl = String.fromEnvironment(
-    'API_URL',
-    defaultValue: '',
-  );
-
-  /// Environment type (development, staging, production)
-  static const String _env = String.fromEnvironment(
-    'ENV',
-    defaultValue: 'development',
-  );
-
-  /// Default development URL — host-local API for simulator/device debugging.
-  static const String _defaultDevUrl = 'http://127.0.0.1:3401/api/v1';
-
-  /// Default production URL
-  static const String _defaultProdUrl =
-      'https://korido-api.joonapay.com/api/v1';
-
-  /// Get the base URL based on environment and configuration
-  /// Priority: 1. --dart-define API_URL, 2. ENV-based default
-  /// SECURITY: Always use HTTPS in production
-  static String get baseUrl {
-    // If API_URL is explicitly set via --dart-define, use it
-    if (_envApiUrl.isNotEmpty) {
-      return _envApiUrl;
-    }
-
-    // Otherwise, use environment-appropriate default
-    switch (_env) {
-      case 'production':
-        return _defaultProdUrl;
-      case 'staging':
-        return 'https://staging-korido-api.joonapay.com/api/v1';
-      case 'development':
-      default:
-        return kDebugMode ? _defaultDevUrl : _defaultProdUrl;
-    }
-  }
+  /// Resolved API URL. Kept as a compatibility wrapper for older imports.
+  static String get baseUrl => ApiConfiguration.baseUrl;
 
   /// Check if running in production
-  static bool get isProduction => _env == 'production';
+  static bool get isProduction => EnvironmentConfig.isProduction;
 
   /// Check if running in development
-  static bool get isDevelopment => _env == 'development' || kDebugMode;
+  static bool get isDevelopment => EnvironmentConfig.isDevelopment;
 
   static bool get allowsBodyLogging =>
-      isDevelopment && !baseUrl.contains('joonapay.com');
+      (isDevelopment || kDebugMode) && !baseUrl.contains('joonapay.com');
+
+  static String get environmentLabel {
+    final buildMode = kReleaseMode
+        ? 'release'
+        : kProfileMode
+        ? 'profile'
+        : 'debug';
+    return '${EnvironmentConfig.environment} ($buildMode)';
+  }
 
   static const Duration connectTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);
@@ -84,10 +54,25 @@ class ApiConfig {
 class StorageKeys {
   static const String accessToken = 'access_token';
   static const String refreshToken = 'refresh_token';
+  static const String userId = 'user_id';
+  static const String userPhone = 'user_phone';
+  static const String userDialCode = 'user_dial_code';
+  static const String userLocalPhone = 'user_local_phone';
+  static const String userPhoneE164 = 'user_phone_e164';
+  static const String recoveryAccessToken = 'recovery_access_token';
+  static const String recoveryAccessTokenPhone = 'recovery_access_token_phone';
+  static const String recoveryAccessTokenScope = 'recovery_access_token_scope';
+  static const String recoveryAccessTokenCreatedAt =
+      'recovery_access_token_created_at';
   static const String userPin = 'user_pin';
   static const String biometricEnabled = 'biometric_enabled';
   static const String rememberedPhone = 'remembered_phone';
   static const String avatarUrl = 'avatar_url';
+}
+
+/// Dio request metadata keys used by app services.
+abstract final class ApiRequestExtra {
+  static const String useRecoveryToken = 'useRecoveryToken';
 }
 
 /// Secure Storage Provider
@@ -119,9 +104,7 @@ final dioProvider = Provider<Dio>((ref) {
 
   // Log API configuration
   logger.info('API URL: ${ApiConfig.baseUrl}');
-  logger.info(
-    'Environment: ${ApiConfig.isDevelopment ? 'Development' : 'Production'}',
-  );
+  logger.info('Environment: ${ApiConfig.environmentLabel}');
   logger.info('Mock Mode: ${MockConfig.useMocks ? 'Enabled' : 'Disabled'}');
 
   final dio = Dio(
@@ -138,8 +121,12 @@ final dioProvider = Provider<Dio>((ref) {
 
   // SECURITY: Certificate pinning for production
   if (!MockConfig.useMocks) {
-    dio.enableCertificatePinning();
-    logger.info('Certificate pinning enabled');
+    final pinningActive = dio.enableCertificatePinning();
+    logger.info(
+      pinningActive
+          ? 'Certificate pinning active'
+          : 'Certificate pinning skipped for this build',
+    );
   }
 
   // MOCKING: Add mock interceptor first if mocks are enabled
@@ -149,20 +136,22 @@ final dioProvider = Provider<Dio>((ref) {
     logger.info('Mock interceptor enabled - using mock API responses');
   }
 
-  // PERFORMANCE: Add request deduplication
-  dio.interceptors.add(ref.read(deduplicationInterceptorProvider));
+  // Add auth before cache/dedup so user-specific GET state is keyed per
+  // authenticated session instead of only by path.
+  dio.interceptors.add(AuthInterceptor(ref));
 
-  // PERFORMANCE: Add HTTP response caching (must be before auth)
+  // PERFORMANCE: Add HTTP response caching before deduplication so a cache hit
+  // does not create an in-flight deduplication entry that can never complete.
   dio.interceptors.add(ref.read(cacheInterceptorProvider));
+
+  // PERFORMANCE: Add request deduplication for network-bound GET requests.
+  dio.interceptors.add(ref.read(deduplicationInterceptorProvider));
 
   // SECURITY: Add device fingerprint and risk score headers
   final securityHeadersInterceptor = ref.read(
     securityHeadersInterceptorProvider,
   );
   dio.interceptors.add(securityHeadersInterceptor);
-
-  // Add auth interceptor
-  dio.interceptors.add(AuthInterceptor(ref));
 
   // SECURITY: JWE encryption for sensitive endpoints (transfers, PIN, etc.)
   final jweService = ref.read(jweServiceProvider);
@@ -198,6 +187,8 @@ class AuthInterceptor extends Interceptor {
   Completer<bool>? _refreshCompleter;
   bool _sessionInvalidated = false;
 
+  static const _pinResetRecoveryScope = 'pin_reset';
+
   AuthInterceptor(this._ref);
 
   @override
@@ -206,26 +197,39 @@ class AuthInterceptor extends Interceptor {
     RequestInterceptorHandler handler,
   ) async {
     // Skip auth for public endpoints
-    final publicEndpoints = [
-      '/auth/register',
-      '/auth/verify-otp',
-      '/auth/login',
-      '/auth/refresh',
-    ];
-    final isPublicEndpoint = publicEndpoints.any(
-      (e) => options.path.contains(e),
-    );
-    if (isPublicEndpoint) {
+    if (_isPublicEndpoint(options.path)) {
+      return handler.next(options);
+    }
+
+    final storage = _ref.read(secureStorageProvider);
+    final useRecoveryToken =
+        options.extra[ApiRequestExtra.useRecoveryToken] == true;
+
+    if (useRecoveryToken) {
+      final recoveryToken = await _readRecoveryTokenForScope(
+        storage,
+        _pinResetRecoveryScope,
+      );
+      if (recoveryToken != null && recoveryToken.isNotEmpty) {
+        options.headers['Authorization'] = 'Bearer $recoveryToken';
+      }
       return handler.next(options);
     }
 
     // Add token
-    final storage = _ref.read(secureStorageProvider);
     final token = await storage.read(key: StorageKeys.accessToken);
 
     if (token != null) {
       _sessionInvalidated = false;
       options.headers['Authorization'] = 'Bearer $token';
+    } else if (_isAccountRecoveryEndpoint(options.path)) {
+      final recoveryToken = await _readRecoveryTokenForScope(
+        storage,
+        _pinResetRecoveryScope,
+      );
+      if (recoveryToken != null && recoveryToken.isNotEmpty) {
+        options.headers['Authorization'] = 'Bearer $recoveryToken';
+      }
     }
 
     handler.next(options);
@@ -233,15 +237,12 @@ class AuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
+    _scheduleVersionPolicyCheck(err);
+
     // Check if this is an authenticated endpoint
-    final publicEndpoints = [
-      '/auth/register',
-      '/auth/verify-otp',
-      '/auth/login',
-      '/auth/refresh',
-    ];
-    final isPublicEndpoint = publicEndpoints.any(
-      (e) => err.requestOptions.path.contains(e),
+    final isPublicEndpoint = _isPublicEndpoint(err.requestOptions.path);
+    final isAccountRecoveryEndpoint = _isAccountRecoveryEndpoint(
+      err.requestOptions.path,
     );
     final optionalAuthEndpoints = ['/feature-flags/me'];
     final isOptionalAuthEndpoint = optionalAuthEndpoints.any(
@@ -249,6 +250,11 @@ class AuthInterceptor extends Interceptor {
     );
 
     if (err.response?.statusCode == 401 && isOptionalAuthEndpoint) {
+      return handler.next(err);
+    }
+
+    if (err.response?.statusCode == 401 && isAccountRecoveryEndpoint) {
+      await _clearRecoveryAuthorization(_ref.read(secureStorageProvider));
       return handler.next(err);
     }
 
@@ -260,6 +266,7 @@ class AuthInterceptor extends Interceptor {
     // Handle connection errors on authenticated endpoints - may be server rejecting expired token
     // Connection reset can happen when server sends 401 but connection closes before response arrives
     if (!isPublicEndpoint &&
+        !isAccountRecoveryEndpoint &&
         err.response == null &&
         (err.type == DioExceptionType.connectionError ||
             err.type == DioExceptionType.unknown)) {
@@ -349,6 +356,84 @@ class AuthInterceptor extends Interceptor {
     }
 
     handler.next(err);
+  }
+
+  void _scheduleVersionPolicyCheck(DioException err) {
+    if (!_shouldCheckVersionPolicy(err)) return;
+    unawaited(
+      _ref
+          .read(mobileVersionPolicyProvider.notifier)
+          .check(reason: 'http_${err.response?.statusCode ?? err.type.name}'),
+    );
+  }
+
+  bool _shouldCheckVersionPolicy(DioException err) {
+    if (MockConfig.useMocks) return false;
+    if (err.requestOptions.path.contains('/config/mobile-version')) {
+      return false;
+    }
+
+    final statusCode = err.response?.statusCode;
+    if (statusCode == null) {
+      return err.type == DioExceptionType.connectionError ||
+          err.type == DioExceptionType.badResponse ||
+          err.type == DioExceptionType.unknown;
+    }
+
+    return statusCode == 404 ||
+        statusCode == 410 ||
+        statusCode == 426 ||
+        statusCode >= 500;
+  }
+
+  bool _isPublicEndpoint(String path) {
+    const publicEndpoints = [
+      '/auth/register',
+      '/auth/verify-otp',
+      '/auth/recovery/request-otp',
+      '/auth/recovery/verify-otp',
+      '/auth/login',
+      '/auth/refresh',
+      '/config/countries',
+      '/config/mobile-version',
+    ];
+    return publicEndpoints.any(path.contains);
+  }
+
+  bool _isAccountRecoveryEndpoint(String path) {
+    const recoveryEndpoints = [
+      '/step-up/operation',
+      '/step-up/validate',
+      '/user/pin/reset',
+      '/kyc/liveness',
+    ];
+    return recoveryEndpoints.any(path.contains);
+  }
+
+  Future<String?> _readRecoveryTokenForScope(
+    FlutterSecureStorage storage,
+    String scope,
+  ) async {
+    final token = await storage.read(key: StorageKeys.recoveryAccessToken);
+    if (token == null || token.isEmpty) {
+      return null;
+    }
+
+    final storedScope = await storage.read(
+      key: StorageKeys.recoveryAccessTokenScope,
+    );
+    if (storedScope != scope) {
+      return null;
+    }
+
+    return token;
+  }
+
+  Future<void> _clearRecoveryAuthorization(FlutterSecureStorage storage) async {
+    await storage.delete(key: StorageKeys.recoveryAccessToken);
+    await storage.delete(key: StorageKeys.recoveryAccessTokenPhone);
+    await storage.delete(key: StorageKeys.recoveryAccessTokenScope);
+    await storage.delete(key: StorageKeys.recoveryAccessTokenCreatedAt);
   }
 
   Future<Response<dynamic>> _retryWithAccessToken(
@@ -483,7 +568,7 @@ class AuthInterceptor extends Interceptor {
   }
 }
 
-Map<String, dynamic> _responsePayload(Object? raw) {
+Map<String, dynamic> apiResponsePayload(Object? raw) {
   if (raw is Map<String, dynamic>) {
     final data = raw['data'];
     if (data is Map<String, dynamic>) return data;
@@ -498,6 +583,8 @@ Map<String, dynamic> _responsePayload(Object? raw) {
   return const <String, dynamic>{};
 }
 
+Map<String, dynamic> _responsePayload(Object? raw) => apiResponsePayload(raw);
+
 /// API Exception
 class ApiException implements Exception {
   final String message;
@@ -510,6 +597,10 @@ class ApiException implements Exception {
   factory ApiException.fromDioError(DioException error) {
     String message = 'An unexpected error occurred';
     int? statusCode = error.response?.statusCode;
+    final responseData = _withRetryMetadata(
+      error.response?.data,
+      error.response,
+    );
 
     if (isOfflineQueueableErrorMessage(error.message)) {
       return ApiException(
@@ -519,8 +610,8 @@ class ApiException implements Exception {
       );
     }
 
-    if (error.response?.data != null) {
-      final data = error.response?.data;
+    if (responseData != null) {
+      final data = responseData;
       final code = errorCode(data);
       if (code == 'DEVICE_BLACKLISTED') {
         return ApiException(
@@ -537,6 +628,10 @@ class ApiException implements Exception {
           (data['error'] as Map)['message'] != null) {
         message = (data['error'] as Map)['message'].toString();
       } else {
+        message = _getMessageFromStatusCode(statusCode);
+      }
+
+      if (statusCode == 404 && _isFrameworkRouteMiss(message)) {
         message = _getMessageFromStatusCode(statusCode);
       }
     } else {
@@ -560,12 +655,35 @@ class ApiException implements Exception {
     return ApiException(
       message: message,
       statusCode: statusCode,
-      data: error.response?.data,
-      code: errorCode(error.response?.data),
+      data: responseData,
+      code: errorCode(responseData),
     );
   }
 
   bool get isDeviceBlacklisted => code == 'DEVICE_BLACKLISTED';
+
+  static bool _isFrameworkRouteMiss(String message) {
+    final normalized = message.trim();
+    return RegExp(
+      r'^Cannot\s+(GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD)\s+/',
+      caseSensitive: false,
+    ).hasMatch(normalized);
+  }
+
+  int? get retryAfterSeconds => _positiveSecondsFrom(data, const [
+    'retryAfterSeconds',
+    'retryAfter',
+    'retry_after_seconds',
+    'retry_after',
+  ]);
+
+  int? get resendAvailableIn => _positiveSecondsFrom(data, const [
+    'resendAvailableIn',
+    'retryAfterSeconds',
+    'retryAfter',
+    'retry_after_seconds',
+    'retry_after',
+  ]);
 
   static String? errorCode(Object? data) {
     if (data is Map) {
@@ -580,6 +698,112 @@ class ApiException implements Exception {
       return value?.toString();
     }
     return null;
+  }
+
+  static int? _positiveSecondsFrom(Object? data, List<String> keys) {
+    if (data is! Map) return null;
+
+    for (final key in keys) {
+      final parsed = _parsePositiveSeconds(data[key]);
+      if (parsed != null) return parsed;
+    }
+
+    final error = data['error'];
+    if (error is Map) {
+      for (final key in keys) {
+        final parsed = _parsePositiveSeconds(error[key]);
+        if (parsed != null) return parsed;
+      }
+
+      final context = error['context'];
+      if (context is Map) {
+        for (final key in keys) {
+          final parsed = _parsePositiveSeconds(context[key]);
+          if (parsed != null) return parsed;
+        }
+      }
+    }
+
+    final context = data['context'];
+    if (context is Map) {
+      for (final key in keys) {
+        final parsed = _parsePositiveSeconds(context[key]);
+        if (parsed != null) return parsed;
+      }
+    }
+
+    return null;
+  }
+
+  static Object? _withRetryMetadata(Object? data, Response? response) {
+    final retryAfterSeconds = _retryAfterSecondsFromHeaders(response?.headers);
+    if (retryAfterSeconds == null) return data;
+
+    if (data is Map<String, dynamic>) {
+      final copy = Map<String, dynamic>.from(data);
+      copy.putIfAbsent('retryAfterSeconds', () => retryAfterSeconds);
+      copy.putIfAbsent('resendAvailableIn', () => retryAfterSeconds);
+      return copy;
+    }
+
+    if (data is Map) {
+      final copy = Map<String, dynamic>.from(data);
+      copy.putIfAbsent('retryAfterSeconds', () => retryAfterSeconds);
+      copy.putIfAbsent('resendAvailableIn', () => retryAfterSeconds);
+      return copy;
+    }
+
+    return {
+      'retryAfterSeconds': retryAfterSeconds,
+      'resendAvailableIn': retryAfterSeconds,
+    };
+  }
+
+  static int? _retryAfterSecondsFromHeaders(Headers? headers) {
+    if (headers == null) return null;
+
+    final retryAfter = _parseRetryHeader(headers.value('retry-after'));
+    if (retryAfter != null) return retryAfter;
+
+    return _parseRateLimitResetHeader(headers.value('x-ratelimit-reset'));
+  }
+
+  static int? _parseRateLimitResetHeader(String? value) {
+    final parsed = _parsePositiveSeconds(value);
+    if (parsed == null) return null;
+
+    // VerifyHQ and many gateway stacks expose X-RateLimit-Reset as epoch
+    // seconds, while other APIs use relative seconds. Treat Unix-like values
+    // as timestamps so the app never shows multi-year cooldowns.
+    if (parsed > 1000000000) {
+      final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      final waitSeconds = parsed - now;
+      return waitSeconds <= 0 ? 1 : waitSeconds;
+    }
+
+    return parsed;
+  }
+
+  static int? _parseRetryHeader(String? value) {
+    final seconds = _parsePositiveSeconds(value);
+    if (seconds != null) return seconds;
+
+    if (value == null || value.trim().isEmpty) return null;
+    final parsedDate = DateTime.tryParse(value.trim());
+    if (parsedDate == null) return null;
+    final difference = parsedDate.difference(DateTime.now()).inSeconds;
+    return difference <= 0 ? 1 : difference;
+  }
+
+  static int? _parsePositiveSeconds(Object? value) {
+    final number = switch (value) {
+      int() => value,
+      double() => value.ceil(),
+      String() => int.tryParse(value),
+      _ => null,
+    };
+    if (number == null || number <= 0) return null;
+    return number;
   }
 
   static String _getMessageFromStatusCode(int? code) {

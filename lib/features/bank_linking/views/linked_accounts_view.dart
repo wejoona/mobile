@@ -4,7 +4,6 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/typography.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
@@ -12,13 +11,13 @@ import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/features/bank_linking/providers/bank_linking_provider.dart';
 import 'package:usdc_wallet/features/bank_linking/widgets/linked_account_card.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class LinkedAccountsView extends ConsumerStatefulWidget {
   const LinkedAccountsView({super.key});
 
   @override
-  ConsumerState<LinkedAccountsView> createState() =>
-      _LinkedAccountsViewState();
+  ConsumerState<LinkedAccountsView> createState() => _LinkedAccountsViewState();
 }
 
 class _LinkedAccountsViewState extends ConsumerState<LinkedAccountsView> {
@@ -46,7 +45,7 @@ class _LinkedAccountsViewState extends ConsumerState<LinkedAccountsView> {
         backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
       ),
       body: SafeArea(
@@ -56,8 +55,8 @@ class _LinkedAccountsViewState extends ConsumerState<LinkedAccountsView> {
               child: state.isLoading && state.linkedAccounts.isEmpty
                   ? _buildLoadingState()
                   : state.linkedAccounts.isEmpty
-                      ? _buildEmptyState(l10n)
-                      : _buildAccountsList(l10n, state),
+                  ? _buildEmptyState(l10n)
+                  : _buildAccountsList(l10n, state),
             ),
             _buildBottomButton(l10n),
           ],
@@ -136,10 +135,7 @@ class _LinkedAccountsViewState extends ConsumerState<LinkedAccountsView> {
       decoration: BoxDecoration(
         color: context.colors.surface,
         border: Border(
-          top: BorderSide(
-            color: context.colors.elevated,
-            width: 1,
-          ),
+          top: BorderSide(color: context.colors.elevated, width: 1),
         ),
       ),
       child: SafeArea(
@@ -155,17 +151,17 @@ class _LinkedAccountsViewState extends ConsumerState<LinkedAccountsView> {
 
   void _handleAccountTap(String accountId) {
     // Navigate to account details or verification
-    context.push('/bank-linking/verify/$accountId');
+    context.fsmPush('/bank-linking/verify/$accountId');
   }
 
   void _handleDeposit(String accountId) {
     // Navigate to deposit flow
-    context.push('/bank-linking/transfer/$accountId', extra: 'deposit');
+    context.fsmPush('/bank-linking/transfer/$accountId', extra: 'deposit');
   }
 
   void _handleWithdraw(String accountId) {
     // Navigate to withdraw flow
-    context.push('/bank-linking/transfer/$accountId', extra: 'withdraw');
+    context.fsmPush('/bank-linking/transfer/$accountId', extra: 'withdraw');
   }
 
   Future<void> _handleSetPrimary(String accountId) async {
@@ -189,6 +185,6 @@ class _LinkedAccountsViewState extends ConsumerState<LinkedAccountsView> {
   }
 
   void _handleLinkNewAccount() {
-    context.push('/bank-linking/select');
+    context.fsmPush('/bank-linking/select');
   }
 }

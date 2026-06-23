@@ -1051,6 +1051,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your documents are being reviewed. This usually takes 1-2 business days.';
 
   @override
+  String get kyc_status_manualReview_title => 'Manual Review Needed';
+
+  @override
+  String get kyc_status_manualReview_description =>
+      'A Korido reviewer is checking your identity evidence. You can keep using eligible features while we complete the review.';
+
+  @override
   String get kyc_status_approved_title => 'Verification Complete';
 
   @override
@@ -1093,6 +1100,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get kyc_info_time_description =>
       'Verification usually takes 1-2 business days';
+
+  @override
+  String get kyc_info_manualReview_title => 'Human Review';
+
+  @override
+  String get kyc_info_manualReview_description =>
+      'If automated checks cannot safely decide, a reviewer completes the decision instead of leaving you blocked.';
 
   @override
   String get kyc_info_documents_title => 'Documents Needed';
@@ -1708,6 +1722,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pin_confirmNewPin => 'Confirm your new PIN';
+
+  @override
+  String get pin_temporaryReset_chooseNewDescription =>
+      'Your temporary PIN worked. Choose your own new PIN to continue.';
+
+  @override
+  String get pin_temporaryReset_confirmNewDescription =>
+      'Confirm the new PIN you want to use for Korido.';
+
+  @override
+  String get pin_temporaryReset_missingSession =>
+      'Temporary PIN accepted, but the reset session was missing. Ask support to issue a new temporary PIN.';
+
+  @override
+  String get pin_temporaryReset_expiredSession =>
+      'This reset session expired. Please sign in again.';
+
+  @override
+  String get pin_temporaryReset_mismatch =>
+      'The PINs do not match. Confirm it again.';
+
+  @override
+  String get pin_temporaryReset_setFailed => 'Unable to set the new PIN.';
 
   @override
   String get pin_requirements => 'PIN Requirements';
@@ -7814,4 +7851,19 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get moneyFlow_verificationRequiredMessage =>
       'Complete identity verification to use this action.';
+
+  @override
+  String get forceUpdate_title => 'Update required';
+
+  @override
+  String get forceUpdate_defaultMessage =>
+      'A newer version of Korido is required to keep your wallet secure.';
+
+  @override
+  String forceUpdate_requiredVersion(String version) {
+    return 'Required version: $version';
+  }
+
+  @override
+  String get forceUpdate_button => 'Update Korido';
 }

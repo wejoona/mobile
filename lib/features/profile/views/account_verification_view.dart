@@ -5,6 +5,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Run 342: Account verification status view
 class AccountVerificationView extends ConsumerWidget {
@@ -39,7 +40,9 @@ class AccountVerificationView extends ConsumerWidget {
           _VerificationStep(
             step: 2,
             title: l10n.verification_personalInfo,
-            subtitle: user?.firstName != null ? l10n.verification_complete : l10n.verification_toComplete,
+            subtitle: user?.firstName != null
+                ? l10n.verification_complete
+                : l10n.verification_toComplete,
             isComplete: user?.firstName != null,
             icon: Icons.person_outline,
           ),
@@ -64,7 +67,7 @@ class AccountVerificationView extends ConsumerWidget {
               label: l10n.verification_continue,
               variant: AppButtonVariant.primary,
               onPressed: () {
-                Navigator.of(context).pushNamed('/kyc/start');
+                context.fsmGo('/kyc/start');
               },
             ),
           ),
@@ -112,7 +115,9 @@ class _VerificationStep extends StatelessWidget {
                   ),
                   child: Icon(
                     isComplete ? Icons.check : icon,
-                    color: isComplete ? context.colors.success : context.colors.gold,
+                    color: isComplete
+                        ? context.colors.success
+                        : context.colors.gold,
                     size: 22,
                   ),
                 ),

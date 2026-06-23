@@ -42,9 +42,7 @@ class WalletUnderReviewView extends ConsumerWidget {
             builder: (context, constraints) {
               return SingleChildScrollView(
                 child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: constraints.maxHeight,
-                  ),
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
                   child: IntrinsicHeight(
                     child: Column(
                       children: [
@@ -75,7 +73,11 @@ class WalletUnderReviewView extends ConsumerWidget {
                             children: [
                               Row(
                                 children: [
-                                  Icon(Icons.info_outline, color: context.colors.gold, size: 20),
+                                  Icon(
+                                    Icons.info_outline,
+                                    color: context.colors.gold,
+                                    size: 20,
+                                  ),
                                   SizedBox(width: AppSpacing.sm),
                                   Expanded(
                                     child: AppText(
@@ -89,7 +91,9 @@ class WalletUnderReviewView extends ConsumerWidget {
                               SizedBox(height: AppSpacing.sm),
                               _buildInfoRow(
                                 l10n.wallet_reviewStarted,
-                                reviewStartedAt != null ? _formatDate(reviewStartedAt) : '-',
+                                reviewStartedAt != null
+                                    ? _formatDate(reviewStartedAt)
+                                    : '-',
                               ),
                               SizedBox(height: AppSpacing.xs),
                               _buildInfoRow(
@@ -122,7 +126,9 @@ class WalletUnderReviewView extends ConsumerWidget {
                         AppButton(
                           label: l10n.wallet_checkStatus,
                           onPressed: () {
-                            ref.read(appFsmProvider.notifier).dispatch(
+                            ref
+                                .read(appFsmProvider.notifier)
+                                .dispatch(
                                   const AppWalletEvent(WalletRefresh()),
                                 );
                           },
@@ -131,7 +137,7 @@ class WalletUnderReviewView extends ConsumerWidget {
                         SizedBox(height: AppSpacing.sm),
                         AppButton(
                           label: l10n.common_backToHome,
-                          onPressed: () => Navigator.of(context).pop(),
+                          onPressed: () => context.fsmSafePop(),
                           variant: AppButtonVariant.secondary,
                           isFullWidth: true,
                         ),
@@ -171,7 +177,11 @@ class WalletUnderReviewView extends ConsumerWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppText('• ', variant: AppTextVariant.bodySmall, color: AppColors.gold500),
+          AppText(
+            '• ',
+            variant: AppTextVariant.bodySmall,
+            color: AppColors.gold500,
+          ),
           Expanded(
             child: AppText(
               text,

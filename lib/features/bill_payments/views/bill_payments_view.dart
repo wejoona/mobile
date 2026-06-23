@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
@@ -8,6 +7,7 @@ import 'package:usdc_wallet/services/bill_payments/bill_payments_service.dart';
 import 'package:usdc_wallet/features/bill_payments/providers/bill_payments_provider.dart';
 import 'package:usdc_wallet/features/bill_payments/widgets/category_selector.dart';
 import 'package:usdc_wallet/features/bill_payments/widgets/provider_card.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Main Bill Payments Screen
 /// Shows categories and providers for bill payments
@@ -51,12 +51,12 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.icon),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
         actions: [
           IconButton(
             icon: Icon(Icons.history, color: colors.icon),
-            onPressed: () => context.push('/bill-payments/history'),
+            onPressed: () => context.fsmPush('/bill-payments/history'),
             tooltip: l10n.billPayments_history,
           ),
         ],
@@ -266,6 +266,6 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
 
   void _onProviderSelected(BillProvider provider) {
     ref.read(selectedBillProviderProvider.notifier).select(provider);
-    context.push('/bill-payments/form/${provider.id}');
+    context.fsmPush('/bill-payments/form/${provider.id}');
   }
 }

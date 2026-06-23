@@ -1,12 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/sub_business/providers/sub_business_provider.dart';
 import 'package:usdc_wallet/features/sub_business/widgets/sub_business_card.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Main screen showing list of sub-businesses
@@ -23,7 +24,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
     super.initState();
     // Load sub-businesses on mount
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(subBusinessProvider.notifier).loadSubBusinesses();
+      unawaited(ref.read(subBusinessProvider.notifier).loadSubBusinesses());
     });
   }
 
@@ -49,15 +50,76 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
         backgroundColor: context.colors.container,
         child: state.isLoading && state.subBusinesses.isEmpty
             ? const Center(child: CircularProgressIndicator())
+            : state.requiresBusinessProfile
+            ? _buildBusinessSetupState(l10n)
+            : state.error != null && state.subBusinesses.isEmpty
+            ? _buildErrorState(state.error!, l10n)
             : state.subBusinesses.isEmpty
             ? _buildEmptyState(l10n)
             : _buildSubBusinessesList(state, l10n),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/sub-businesses/create'),
-        backgroundColor: context.colors.gold,
-        child: Icon(Icons.add, color: context.colors.canvas),
-      ),
+      floatingActionButton: state.requiresBusinessProfile
+          ? null
+          : FloatingActionButton(
+              onPressed: () => context.fsmPush('/sub-businesses/create'),
+              backgroundColor: context.colors.gold,
+              child: Icon(Icons.add, color: context.colors.canvas),
+            ),
+    );
+  }
+
+  Widget _buildBusinessSetupState(AppLocalizations l10n) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      children: [
+        const SizedBox(height: AppSpacing.xxl),
+        Icon(Icons.storefront_outlined, size: 64, color: context.colors.gold),
+        const SizedBox(height: AppSpacing.lg),
+        AppText(
+          l10n.business_setupTitle,
+          variant: AppTextVariant.headlineSmall,
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        AppText(
+          l10n.business_setupDescription,
+          variant: AppTextVariant.bodyMedium,
+          color: context.colors.textSecondary,
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        AppButton(
+          label: l10n.business_setupNow,
+          onPressed: () => context.fsmPush('/settings/business-setup'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorState(String message, AppLocalizations l10n) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      children: [
+        const SizedBox(height: AppSpacing.xxl),
+        Icon(Icons.error_outline, size: 64, color: context.colors.error),
+        const SizedBox(height: AppSpacing.lg),
+        AppText(
+          message,
+          variant: AppTextVariant.bodyMedium,
+          color: context.colors.textSecondary,
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        AppButton(
+          label: l10n.common_retry,
+          variant: AppButtonVariant.secondary,
+          onPressed: () => unawaited(
+            ref.read(subBusinessProvider.notifier).loadSubBusinesses(),
+          ),
+        ),
+      ],
     );
   }
 
@@ -89,7 +151,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
             SizedBox(height: AppSpacing.xl),
             AppButton(
               label: l10n.subBusiness_createFirst,
-              onPressed: () => context.push('/sub-businesses/create'),
+              onPressed: () => context.fsmPush('/sub-businesses/create'),
             ),
           ],
         ),
@@ -159,7 +221,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
             child: SubBusinessCard(
               subBusiness: subBusiness,
               onTap: () =>
-                  context.push('/sub-businesses/detail/${subBusiness.id}'),
+                  context.fsmPush('/sub-businesses/detail/${subBusiness.id}'),
             ),
           );
         }),

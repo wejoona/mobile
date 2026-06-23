@@ -5,7 +5,13 @@ import 'package:usdc_wallet/services/security/device_fingerprint_service.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Actions that can be risk-scored on the client side.
-enum RiskAction { login, transfer, withdrawal, largeTransaction }
+enum RiskAction {
+  login,
+  accountRecovery,
+  transfer,
+  withdrawal,
+  largeTransaction,
+}
 
 /// Client-side risk score service.
 ///
@@ -16,7 +22,7 @@ class ClientRiskScoreService {
   final DeviceFingerprintService _fingerprintService;
 
   ClientRiskScoreService({required DeviceFingerprintService fingerprintService})
-      : _fingerprintService = fingerprintService;
+    : _fingerprintService = fingerprintService;
 
   /// Calculate client-side risk score for the given action.
   ///
@@ -53,6 +59,9 @@ class ClientRiskScoreService {
       case RiskAction.login:
         score += 0.0;
         break;
+      case RiskAction.accountRecovery:
+        score += 0.0;
+        break;
       case RiskAction.transfer:
         score += 0.05;
         break;
@@ -78,8 +87,7 @@ class ClientRiskScoreService {
 }
 
 /// Provider for ClientRiskScoreService
-final clientRiskScoreServiceProvider =
-    Provider<ClientRiskScoreService>((ref) {
+final clientRiskScoreServiceProvider = Provider<ClientRiskScoreService>((ref) {
   return ClientRiskScoreService(
     fingerprintService: ref.watch(deviceFingerprintServiceProvider),
   );

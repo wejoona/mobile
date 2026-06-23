@@ -1142,6 +1142,14 @@
   "@kyc_status_submitted_description": {
     "description": "Submitted status description"
   },
+  "kyc_status_manualReview_title": "Manual review needed",
+  "@kyc_status_manualReview_title": {
+    "description": "Manual review KYC status title"
+  },
+  "kyc_status_manualReview_description": "A Korido reviewer is checking your identity evidence. You can keep using eligible features while we complete the review.",
+  "@kyc_status_manualReview_description": {
+    "description": "Manual review KYC status description"
+  },
   "kyc_status_approved_title": "Verificação completar",
   "@kyc_status_approved_title": {
     "description": "Approved status title"
@@ -1193,6 +1201,14 @@
   "kyc_info_time_description": "Verificação usually takes 1-2 business days",
   "@kyc_info_time_description": {
     "description": "Time info description"
+  },
+  "kyc_info_manualReview_title": "Human review",
+  "@kyc_info_manualReview_title": {
+    "description": "Manual review info card title"
+  },
+  "kyc_info_manualReview_description": "If automated checks cannot safely decide, a reviewer completes the decision instead of leaving you blocked.",
+  "@kyc_info_manualReview_description": {
+    "description": "Manual review info card description"
   },
   "kyc_info_documents_title": "Documentos needed",
   "@kyc_info_documents_title": {
@@ -1934,6 +1950,30 @@
   "pin_confirmNewPin": "Confirmar your new pin",
   "@pin_confirmNewPin": {
     "description": "Confirm new PIN instruction"
+  },
+  "pin_temporaryReset_chooseNewDescription": "O PIN temporário foi aceite. Escolha o seu novo PIN para continuar.",
+  "@pin_temporaryReset_chooseNewDescription": {
+    "description": "Temporary PIN reset screen description before entering a new PIN"
+  },
+  "pin_temporaryReset_confirmNewDescription": "Confirme o novo PIN que quer usar no Korido.",
+  "@pin_temporaryReset_confirmNewDescription": {
+    "description": "Temporary PIN reset screen description before confirming a new PIN"
+  },
+  "pin_temporaryReset_missingSession": "O PIN temporário foi aceite, mas a sessão de redefinição está em falta. Peça ao suporte para emitir um novo PIN temporário.",
+  "@pin_temporaryReset_missingSession": {
+    "description": "Error shown when backend accepts a temporary PIN without returning a reset token"
+  },
+  "pin_temporaryReset_expiredSession": "Esta sessão de redefinição expirou. Inicie sessão novamente.",
+  "@pin_temporaryReset_expiredSession": {
+    "description": "Error shown when temporary PIN reset token or login session has expired"
+  },
+  "pin_temporaryReset_mismatch": "Os PINs não coincidem. Confirme novamente.",
+  "@pin_temporaryReset_mismatch": {
+    "description": "Temporary PIN reset confirmation mismatch error"
+  },
+  "pin_temporaryReset_setFailed": "Não foi possível definir o novo PIN.",
+  "@pin_temporaryReset_setFailed": {
+    "description": "Generic error shown when temporary PIN reset completion fails"
   },
   "pin_requirements": "Pin requirements",
   "@pin_requirements": {
@@ -7967,5 +8007,16 @@
     }
   },
   "moneyFlow_reviewRequiredMessage": "Sua conta está em análise. Avisaremos quando esta ação estiver disponível.",
-  "moneyFlow_verificationRequiredMessage": "Conclua a verificação de identidade para usar esta ação."
+  "moneyFlow_verificationRequiredMessage": "Conclua a verificação de identidade para usar esta ação.",
+  "forceUpdate_title": "Update required",
+  "forceUpdate_defaultMessage": "A newer version of Korido is required to keep your wallet secure.",
+  "forceUpdate_requiredVersion": "Required version: {version}",
+  "@forceUpdate_requiredVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "forceUpdate_button": "Update Korido"
 }

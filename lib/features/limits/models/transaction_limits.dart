@@ -1,4 +1,4 @@
-enum TransactionLimitOperation { send, deposit, withdraw }
+enum TransactionLimitOperation { send, deposit, withdraw, receive }
 
 class MoneyFlowPermissions {
   final bool canSend;
@@ -9,24 +9,28 @@ class MoneyFlowPermissions {
   final bool reviewRequired;
 
   const MoneyFlowPermissions({
-    this.canSend = true,
-    this.canDeposit = true,
-    this.canWithdraw = true,
-    this.canReceive = true,
+    this.canSend = false,
+    this.canDeposit = false,
+    this.canWithdraw = false,
+    this.canReceive = false,
     this.blockReason,
     this.reviewRequired = false,
   });
 
   factory MoneyFlowPermissions.fromJson(Map<String, dynamic>? json) {
     if (json == null) {
-      return const MoneyFlowPermissions();
+      return const MoneyFlowPermissions(
+        blockReason:
+            'Unable to verify account permissions. Please refresh and try again.',
+      );
     }
 
     return MoneyFlowPermissions(
-      canSend: _boolOf(json, const ['canSend', 'can_send']) ?? true,
-      canDeposit: _boolOf(json, const ['canDeposit', 'can_deposit']) ?? true,
-      canWithdraw: _boolOf(json, const ['canWithdraw', 'can_withdraw']) ?? true,
-      canReceive: _boolOf(json, const ['canReceive', 'can_receive']) ?? true,
+      canSend: _boolOf(json, const ['canSend', 'can_send']) ?? false,
+      canDeposit: _boolOf(json, const ['canDeposit', 'can_deposit']) ?? false,
+      canWithdraw:
+          _boolOf(json, const ['canWithdraw', 'can_withdraw']) ?? false,
+      canReceive: _boolOf(json, const ['canReceive', 'can_receive']) ?? false,
       blockReason: _stringOf(json, const [
         'blockReason',
         'block_reason',
@@ -50,6 +54,7 @@ class MoneyFlowPermissions {
       TransactionLimitOperation.send => canSend,
       TransactionLimitOperation.deposit => canDeposit,
       TransactionLimitOperation.withdraw => canWithdraw,
+      TransactionLimitOperation.receive => canReceive,
     };
   }
 }
@@ -308,6 +313,7 @@ class TransactionLimits {
         dailyDepositLimit > 0 ? dailyDepositLimit : dailyLimit,
       TransactionLimitOperation.withdraw =>
         dailyWithdrawLimit > 0 ? dailyWithdrawLimit : dailyLimit,
+      TransactionLimitOperation.receive => 0.0,
     };
   }
 
@@ -316,6 +322,7 @@ class TransactionLimits {
       TransactionLimitOperation.send => dailyUsed,
       TransactionLimitOperation.deposit => dailyDepositUsed,
       TransactionLimitOperation.withdraw => dailyWithdrawUsed,
+      TransactionLimitOperation.receive => 0.0,
     };
   }
 
@@ -324,6 +331,7 @@ class TransactionLimits {
       TransactionLimitOperation.send => dailyRemaining,
       TransactionLimitOperation.deposit => dailyDepositRemaining,
       TransactionLimitOperation.withdraw => dailyWithdrawRemaining,
+      TransactionLimitOperation.receive => 0.0,
     };
   }
 
@@ -353,6 +361,7 @@ class TransactionLimits {
       TransactionLimitOperation.send => dailyRemaining,
       TransactionLimitOperation.deposit => dailyDepositRemaining,
       TransactionLimitOperation.withdraw => dailyWithdrawRemaining,
+      TransactionLimitOperation.receive => 0.0,
     };
     final operationLimit = operation == TransactionLimitOperation.withdraw
         ? withdrawalLimit
@@ -377,6 +386,10 @@ class TransactionLimits {
       return permissions.reviewRequired
           ? 'manual_review_required'
           : 'kyc_required';
+    }
+
+    if (operation == TransactionLimitOperation.receive) {
+      return null;
     }
 
     final operationLimit = operation == TransactionLimitOperation.withdraw

@@ -8,12 +8,12 @@ import 'package:usdc_wallet/features/settings/providers/devices_provider.dart';
 import 'package:usdc_wallet/services/index.dart';
 import 'package:usdc_wallet/services/device/device_registration_service.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
+import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/state/fsm/index.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
-import 'package:usdc_wallet/services/realtime/realtime_service.dart';
-import 'package:usdc_wallet/services/analytics/analytics_service.dart';
 import 'package:usdc_wallet/utils/logger.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Auth State
 enum AuthStatus {
@@ -30,30 +30,42 @@ class AuthState {
   final AuthStatus status;
   final User? user;
   final String? phone;
+  final String? countryCode;
   final String? error;
   final int? otpExpiresIn;
+  final int? otpResendAvailableIn;
+  final bool otpReused;
 
   const AuthState({
     this.status = AuthStatus.initial,
     this.user,
     this.phone,
+    this.countryCode,
     this.error,
     this.otpExpiresIn,
+    this.otpResendAvailableIn,
+    this.otpReused = false,
   });
 
   AuthState copyWith({
     AuthStatus? status,
     User? user,
     String? phone,
+    String? countryCode,
     String? error,
     int? otpExpiresIn,
+    int? otpResendAvailableIn,
+    bool? otpReused,
   }) {
     return AuthState(
       status: status ?? this.status,
       user: user ?? this.user,
       phone: phone ?? this.phone,
+      countryCode: countryCode ?? this.countryCode,
       error: error,
       otpExpiresIn: otpExpiresIn ?? this.otpExpiresIn,
+      otpResendAvailableIn: otpResendAvailableIn ?? this.otpResendAvailableIn,
+      otpReused: otpReused ?? this.otpReused,
     );
   }
 
@@ -87,6 +99,35 @@ class AuthNotifier extends Notifier<AuthState> {
   FlutterSecureStorage get _storage => ref.read(secureStorageProvider);
   AnalyticsService get _analytics => ref.read(analyticsServiceProvider);
 
+  Future<PhoneNumberValue?> _persistPhoneValue({
+    required String? phone,
+    String? countryCode,
+  }) async {
+    final phoneValue = PhoneNumberValue.tryFromAny(
+      phoneNumber: phone,
+      countryCode: countryCode,
+    );
+    if (phoneValue == null) {
+      return null;
+    }
+
+    await _storage.write(key: StorageKeys.userPhone, value: phoneValue.e164);
+    await _storage.write(
+      key: StorageKeys.userPhoneE164,
+      value: phoneValue.e164,
+    );
+    await _storage.write(
+      key: StorageKeys.userDialCode,
+      value: phoneValue.dialCode,
+    );
+    await _storage.write(
+      key: StorageKeys.userLocalPhone,
+      value: phoneValue.localNumber,
+    );
+
+    return phoneValue;
+  }
+
   /// Check if user is already authenticated
   Future<void> checkAuth({bool startupOnly = false}) async {
     final restoreVersion = _sessionMutationVersion;
@@ -103,7 +144,7 @@ class AuthNotifier extends Notifier<AuthState> {
       if (debugToken.isNotEmpty) {
         await _storage.write(key: StorageKeys.accessToken, value: debugToken);
         if (debugPhone.isNotEmpty) {
-          await _storage.write(key: 'user_phone', value: debugPhone);
+          await _persistPhoneValue(phone: debugPhone);
         }
       }
 
@@ -137,7 +178,7 @@ class AuthNotifier extends Notifier<AuthState> {
         }
 
         if (debugToken.isNotEmpty && EnvironmentConfig.debugSkipPin) {
-          final userId = await _storage.read(key: 'user_id');
+          final userId = await _storage.read(key: StorageKeys.userId);
           if (!ref.mounted) return;
           if (!_isCurrentSessionMutation(restoreVersion)) return;
           ref
@@ -164,7 +205,7 @@ class AuthNotifier extends Notifier<AuthState> {
         state = state.copyWith(status: AuthStatus.locked);
 
         // Sync FSM: restore auth state and trigger data fetches in background
-        final userId = await _storage.read(key: 'user_id');
+        final userId = await _storage.read(key: StorageKeys.userId);
         if (!ref.mounted) return;
         if (!_isCurrentSessionMutation(restoreVersion)) return;
         ref
@@ -239,7 +280,7 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   /// Unlock the session after PIN/biometric verification
-  void unlock() {
+  void unlock({bool refreshAfterUnlock = true}) {
     if (state.status != AuthStatus.locked &&
         state.status != AuthStatus.authenticated) {
       return;
@@ -255,7 +296,9 @@ class AuthNotifier extends Notifier<AuthState> {
     } catch (_) {}
 
     // Proactively refresh token after unlock — session may have expired while locked.
-    unawaited(_refreshTokenOnUnlock());
+    if (refreshAfterUnlock) {
+      unawaited(_refreshTokenOnUnlock());
+    }
     ref.read(appFsmProvider.notifier).hydrateAuthenticatedSession();
     unawaited(
       ref
@@ -263,12 +306,35 @@ class AuthNotifier extends Notifier<AuthState> {
           .hydrateAuthenticatedSession(fetchRelated: false),
     );
     // Start real-time sync (WebSocket + polling fallback)
-    ref.read(realtimeServiceProvider).start();
+    unawaited(ref.read(realtimeServiceProvider).start());
+  }
+
+  /// Unlock only after the backend confirms the refresh/session/device state.
+  ///
+  /// Financial apps must not route from a local PIN/biometric success into the
+  /// authenticated shell until the server has accepted the current refresh
+  /// token. The refresh path also enforces revoked session and blacklisted
+  /// device checks.
+  Future<bool> unlockWithServerValidation() async {
+    if (state.status != AuthStatus.locked &&
+        state.status != AuthStatus.authenticated) {
+      return false;
+    }
+
+    final refreshed = await _refreshTokenOnUnlock();
+    if (!refreshed) {
+      return false;
+    }
+
+    unlock(refreshAfterUnlock: false);
+    return true;
   }
 
   /// Force the local auth/session state back to active after a trusted account
   /// recovery flow such as a server-approved PIN reset.
   Future<bool> unlockAfterAccountRecovery() async {
+    _sessionMutationVersion++;
+
     var token = await _storage.read(key: StorageKeys.accessToken);
     if (token == null || token.isEmpty) {
       return false;
@@ -284,7 +350,15 @@ class AuthNotifier extends Notifier<AuthState> {
     }
 
     final refreshToken = await _storage.read(key: StorageKeys.refreshToken);
-    final userId = await _storage.read(key: 'user_id');
+    final userId = await _storage.read(key: StorageKeys.userId);
+
+    await ref
+        .read(sessionServiceProvider.notifier)
+        .startSession(
+          accessToken: token,
+          refreshToken: refreshToken,
+          tokenValidity: const Duration(minutes: 15),
+        );
 
     state = state.copyWith(status: AuthStatus.authenticated, error: null);
 
@@ -298,9 +372,6 @@ class AuthNotifier extends Notifier<AuthState> {
           );
     } catch (_) {}
     try {
-      ref.read(sessionServiceProvider.notifier).unlockSession();
-    } catch (_) {}
-    try {
       ref.read(appFsmProvider.notifier).unlockSession();
     } catch (_) {}
 
@@ -310,7 +381,7 @@ class AuthNotifier extends Notifier<AuthState> {
           .read(userStateMachineProvider.notifier)
           .hydrateAuthenticatedSession(fetchRelated: false),
     );
-    ref.read(realtimeServiceProvider).start();
+    unawaited(ref.read(realtimeServiceProvider).start());
 
     return true;
   }
@@ -362,15 +433,27 @@ class AuthNotifier extends Notifier<AuthState> {
     String? termsVersion,
     String? privacyVersion,
   }) async {
-    state = state.copyWith(status: AuthStatus.loading, phone: phone);
+    final phoneValue = PhoneNumberValue.fromAny(
+      phoneNumber: phone,
+      countryCode: countryCode,
+    );
+    state = state.copyWith(
+      status: AuthStatus.loading,
+      phone: phoneValue.localNumber,
+      countryCode: phoneValue.apiCountryCode,
+      otpResendAvailableIn: 0,
+      otpReused: false,
+    );
 
     // Sync with FSM: notify that login/register is starting
-    ref.read(appFsmProvider.notifier).login(phone, countryCode);
+    ref
+        .read(appFsmProvider.notifier)
+        .login(phoneValue.localNumber, phoneValue.apiCountryCode);
 
     try {
       final response = await _authService.register(
-        phone: phone,
-        countryCode: countryCode,
+        phone: phoneValue.apiPhone,
+        countryCode: phoneValue.apiCountryCode,
         acceptedTerms: acceptedTerms,
         termsVersion: termsVersion,
         privacyVersion: privacyVersion,
@@ -379,17 +462,23 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(
         status: AuthStatus.otpSent,
         otpExpiresIn: response.expiresIn,
+        otpResendAvailableIn: response.resendAvailableIn,
+        otpReused: response.reused,
       );
 
       // Analytics: registration
-      _analytics.trackRegistration(country: countryCode);
+      _analytics.trackRegistration(country: phoneValue.apiCountryCode);
 
       // Sync with FSM: notify that OTP was sent
       ref
           .read(appFsmProvider.notifier)
           .onOtpReceived(expiresIn: response.expiresIn);
     } on ApiException catch (e) {
-      state = state.copyWith(status: AuthStatus.error, error: e.message);
+      state = state.copyWith(
+        status: AuthStatus.error,
+        error: e.message,
+        otpResendAvailableIn: e.resendAvailableIn ?? e.retryAfterSeconds,
+      );
 
       // Sync with FSM: notify auth failed
       ref.read(appFsmProvider.notifier).onAuthFailed(e.message);
@@ -397,19 +486,35 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   /// Login existing user
-  Future<void> login(String phone) async {
-    state = state.copyWith(status: AuthStatus.loading, phone: phone);
+  Future<void> login(String phone, {String? countryCode}) async {
+    final phoneValue = PhoneNumberValue.fromAny(
+      phoneNumber: phone,
+      countryCode: countryCode,
+    );
+    state = state.copyWith(
+      status: AuthStatus.loading,
+      phone: phoneValue.localNumber,
+      countryCode: phoneValue.apiCountryCode,
+      otpResendAvailableIn: 0,
+      otpReused: false,
+    );
 
     // Sync with FSM: notify that login is starting
-    // Note: Using empty country code since login doesn't require it
-    ref.read(appFsmProvider.notifier).login(phone, '');
+    ref
+        .read(appFsmProvider.notifier)
+        .login(phoneValue.localNumber, phoneValue.apiCountryCode);
 
     try {
-      final response = await _authService.login(phone: phone);
+      final response = await _authService.login(
+        phone: phoneValue.apiPhone,
+        countryCode: phoneValue.apiCountryCode,
+      );
 
       state = state.copyWith(
         status: AuthStatus.otpSent,
         otpExpiresIn: response.expiresIn,
+        otpResendAvailableIn: response.resendAvailableIn,
+        otpReused: response.reused,
       );
 
       // Sync with FSM: notify that OTP was sent
@@ -417,7 +522,11 @@ class AuthNotifier extends Notifier<AuthState> {
           .read(appFsmProvider.notifier)
           .onOtpReceived(expiresIn: response.expiresIn);
     } on ApiException catch (e) {
-      state = state.copyWith(status: AuthStatus.error, error: e.message);
+      state = state.copyWith(
+        status: AuthStatus.error,
+        error: e.message,
+        otpResendAvailableIn: e.resendAvailableIn ?? e.retryAfterSeconds,
+      );
 
       // Sync with FSM: notify auth failed
       ref.read(appFsmProvider.notifier).onAuthFailed(e.message);
@@ -442,6 +551,7 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final response = await _authService.verifyOtp(
         phone: state.phone!,
+        countryCode: state.countryCode,
         otp: otp,
       );
 
@@ -458,6 +568,13 @@ class AuthNotifier extends Notifier<AuthState> {
           value: response.refreshToken!,
         );
       }
+      await _storage.write(key: StorageKeys.userId, value: response.user.id);
+      final phoneValue = await _persistPhoneValue(
+        phone: response.user.phone.isNotEmpty
+            ? response.user.phone
+            : state.phone,
+        countryCode: response.user.countryCode,
+      );
 
       // Start session with actual token validity from backend
       await ref
@@ -495,17 +612,17 @@ class AuthNotifier extends Notifier<AuthState> {
             refreshToken: response.refreshToken,
           );
 
-      // Also report KYC status from the auth response to avoid waiting for separate fetch
-      // This ensures the FSM knows the KYC state immediately
-      if (response.kycStatus != null) {
-        ref
-            .read(kycStateMachineProvider.notifier)
-            .updateFromAuthResponse(response.kycStatus);
-      }
-
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: response.user,
+        phone: phoneValue?.localNumber ?? state.phone,
+        countryCode: phoneValue?.isoCountryCode ?? response.user.countryCode,
+      );
+
+      // Also report KYC status from the auth response to avoid waiting for separate fetch
+      // This ensures the FSM knows the KYC state immediately
+      final responseKycStatus = _projectKycStatus(
+        response.kycStatus ?? response.user.kycStatus?.toApiString(),
       );
 
       // Populate UserStateMachine with profile data from auth response
@@ -518,6 +635,7 @@ class AuthNotifier extends Notifier<AuthState> {
             email: response.user.email,
             avatarUrl: response.user.avatarUrl,
             avatarThumb: response.user.avatarBase64,
+            kycStatus: responseKycStatus,
           );
 
       // Ensure legacy profile/cache state is fully hydrated without duplicating
@@ -556,8 +674,10 @@ class AuthNotifier extends Notifier<AuthState> {
     String? refreshToken,
     User? user,
     String? phone,
+    String? countryCode,
     String? kycStatus,
     int? expiresIn,
+    String analyticsMethod = 'otp_pin',
   }) async {
     try {
       await _storage.write(key: StorageKeys.accessToken, value: accessToken);
@@ -567,11 +687,12 @@ class AuthNotifier extends Notifier<AuthState> {
           value: refreshToken,
         );
       }
-      if (phone != null && phone.isNotEmpty) {
-        await _storage.write(key: 'user_phone', value: phone);
-      }
+      final phoneValue = await _persistPhoneValue(
+        phone: phone ?? user?.phone,
+        countryCode: countryCode ?? user?.countryCode,
+      );
       if (user?.id != null) {
-        await _storage.write(key: 'user_id', value: user!.id);
+        await _storage.write(key: StorageKeys.userId, value: user!.id);
       }
 
       await ref
@@ -599,25 +720,26 @@ class AuthNotifier extends Notifier<AuthState> {
         rethrow;
       }
 
-      ref
-          .read(appFsmProvider.notifier)
-          .onAuthVerified(
-            userId: user?.id ?? '',
-            accessToken: accessToken,
-            refreshToken: refreshToken,
-          );
-
-      if (kycStatus != null) {
-        ref
-            .read(kycStateMachineProvider.notifier)
-            .updateFromAuthResponse(kycStatus);
-      }
-
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: user,
-        phone: phone,
+        phone: phoneValue?.localNumber ?? phone ?? user?.phone,
+        countryCode:
+            phoneValue?.isoCountryCode ?? countryCode ?? user?.countryCode,
         error: null,
+      );
+
+      ref
+          .read(appFsmProvider.notifier)
+          .completeAuthenticatedSession(
+            userId: user?.id ?? '',
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+            phone: phoneValue?.localNumber ?? phone ?? user?.phone ?? '',
+          );
+
+      final sessionKycStatus = _projectKycStatus(
+        kycStatus ?? user?.kycStatus?.toApiString(),
       );
 
       if (user != null) {
@@ -629,6 +751,7 @@ class AuthNotifier extends Notifier<AuthState> {
               email: user.email,
               avatarUrl: user.avatarUrl,
               avatarThumb: user.avatarBase64,
+              kycStatus: sessionKycStatus,
             );
       }
 
@@ -637,9 +760,9 @@ class AuthNotifier extends Notifier<AuthState> {
             .read(userStateMachineProvider.notifier)
             .hydrateAuthenticatedSession(fetchRelated: false),
       );
-      ref.read(realtimeServiceProvider).start();
+      unawaited(ref.read(realtimeServiceProvider).start());
 
-      _analytics.trackLogin(method: 'otp_pin');
+      _analytics.trackLogin(method: analyticsMethod);
       if (user != null) {
         _analytics.setUserProperties(userId: user.id);
       }
@@ -657,13 +780,27 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   /// Login with biometric (refresh token)
-  Future<bool> loginWithBiometric(String refreshToken) async {
+  Future<bool> loginWithBiometric(
+    String refreshToken, {
+    String? expectedUserId,
+  }) async {
     state = state.copyWith(status: AuthStatus.loading);
 
     try {
       final response = await _authService.refreshToken(
         refreshToken: refreshToken,
       );
+      final responseUserId = response.user?.id;
+      if (expectedUserId != null &&
+          expectedUserId.isNotEmpty &&
+          responseUserId != expectedUserId) {
+        await clearLocalSession();
+        state = state.copyWith(
+          status: AuthStatus.error,
+          error: 'Biometric login failed. Please log in again.',
+        );
+        return false;
+      }
 
       // Store new tokens
       await _storage.write(
@@ -676,27 +813,41 @@ class AuthNotifier extends Notifier<AuthState> {
           value: response.refreshToken!,
         );
       }
+      if (responseUserId != null && responseUserId.isNotEmpty) {
+        await _storage.write(key: StorageKeys.userId, value: responseUserId);
+      }
+      final phoneValue = await _persistPhoneValue(
+        phone: response.user?.phone,
+        countryCode: response.user?.countryCode,
+      );
 
       // Start session with actual token validity from backend
       await ref
           .read(sessionServiceProvider.notifier)
           .startSession(
             accessToken: response.accessToken,
+            refreshToken: response.refreshToken ?? refreshToken,
             tokenValidity: Duration(seconds: response.expiresIn),
-          );
-
-      // Sync with FSM: notify that auth verification succeeded
-      ref
-          .read(appFsmProvider.notifier)
-          .onAuthVerified(
-            userId: response.user?.id ?? '',
-            accessToken: response.accessToken,
-            refreshToken: response.refreshToken,
           );
 
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: response.user,
+        phone: phoneValue?.localNumber,
+        countryCode: phoneValue?.isoCountryCode ?? response.user?.countryCode,
+      );
+
+      ref
+          .read(appFsmProvider.notifier)
+          .completeAuthenticatedSession(
+            userId: response.user?.id ?? '',
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken,
+            phone: phoneValue?.localNumber ?? response.user?.phone ?? '',
+          );
+
+      final responseKycStatus = _projectKycStatus(
+        response.kycStatus ?? response.user?.kycStatus?.toApiString(),
       );
 
       if (response.user != null) {
@@ -708,6 +859,7 @@ class AuthNotifier extends Notifier<AuthState> {
               email: response.user!.email,
               avatarUrl: response.user!.avatarUrl,
               avatarThumb: response.user!.avatarBase64,
+              kycStatus: responseKycStatus,
             );
       }
       unawaited(
@@ -737,6 +889,19 @@ class AuthNotifier extends Notifier<AuthState> {
 
   bool _isRefreshRejected(ApiException e) =>
       e.statusCode == 400 || e.statusCode == 401 || e.statusCode == 403;
+
+  KycStatus? _projectKycStatus(String? status) {
+    if (status == null || status.trim().isEmpty) {
+      return null;
+    }
+
+    final parsedStatus = KycStatus.fromString(status);
+    ref.read(kycStateMachineProvider.notifier).updateFromAuthResponse(status);
+    ref
+        .read(userStateMachineProvider.notifier)
+        .updateProfile(kycStatus: parsedStatus);
+    return parsedStatus;
+  }
 
   /// Logout
   Future<void> logout({bool localFirst = true}) async {
@@ -795,23 +960,30 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> clearLocalSession() async {
     _sessionMutationVersion++;
 
+    final realtimeService = ref.read(realtimeServiceProvider);
+    final sessionService = ref.read(sessionServiceProvider.notifier);
+    final biometricService = ref.read(biometricServiceProvider);
+    final userStateMachine = ref.read(userStateMachineProvider.notifier);
+    final appFsm = ref.read(appFsmProvider.notifier);
+
+    state = const AuthState(status: AuthStatus.unauthenticated);
+    appFsm.logout();
+
     // Stop real-time sync
-    ref.read(realtimeServiceProvider).stop();
+    realtimeService.stop();
 
     // End session
-    await ref.read(sessionServiceProvider.notifier).endSession();
-    ref.invalidate(loginProvider);
+    await sessionService.endSession();
+    if (ref.mounted) {
+      ref.invalidate(loginProvider);
+    }
 
     await _storage.delete(key: StorageKeys.accessToken);
     await _storage.delete(key: StorageKeys.refreshToken);
+    await biometricService.disableBiometric();
 
     // Clear user state machine (clears cache, avatar, storage keys)
-    await ref.read(userStateMachineProvider.notifier).logout();
-
-    state = const AuthState(status: AuthStatus.unauthenticated);
-
-    // Sync with FSM: notify logout
-    ref.read(appFsmProvider.notifier).logout();
+    await userStateMachine.logout();
   }
 
   /// Clear error

@@ -1,10 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/utils/logger.dart';
-import 'package:usdc_wallet/utils/phone_normalizer.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Auth Service - mirrors backend AuthController
 class AuthService {
@@ -22,18 +23,15 @@ class AuthService {
     String? privacyVersion,
   }) async {
     try {
-      final normalizedPhone = PhoneNormalizer.toE164(
-        phone,
+      final phoneValue = PhoneNumberValue.fromAny(
+        phoneNumber: phone,
         countryCode: countryCode,
       );
       final response = await _dio.post(
-        '/auth/register',
+        ApiEndpoints.authRegister,
         data: {
-          'phone': normalizedPhone,
-          'countryCode': PhoneNormalizer.toIsoCountryCode(
-            countryCode,
-            normalizedPhone,
-          ),
+          'phone': phoneValue.apiPhone,
+          'countryCode': phoneValue.apiCountryCode,
           'acceptedTerms': acceptedTerms,
           if (termsVersion != null) 'termsVersion': termsVersion,
           if (privacyVersion != null) 'privacyVersion': privacyVersion,
@@ -46,11 +44,46 @@ class AuthService {
   }
 
   /// POST /auth/login
-  Future<OtpResponse> login({required String phone}) async {
+  Future<OtpResponse> login({
+    required String phone,
+    String? countryCode,
+  }) async {
     try {
+      final phoneValue = PhoneNumberValue.fromAny(
+        phoneNumber: phone,
+        countryCode: countryCode,
+      );
       final response = await _dio.post(
-        '/auth/login',
-        data: {'phone': PhoneNormalizer.toE164(phone)},
+        ApiEndpoints.authLogin,
+        data: {
+          'phone': phoneValue.apiPhone,
+          'countryCode': phoneValue.apiCountryCode,
+        },
+      );
+      return OtpResponse.fromJson(response.data);
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
+  /// POST /auth/recovery/request-otp
+  Future<OtpResponse> requestRecoveryOtp({
+    required String phone,
+    String? countryCode,
+    String scope = 'pin_reset',
+  }) async {
+    try {
+      final phoneValue = PhoneNumberValue.fromAny(
+        phoneNumber: phone,
+        countryCode: countryCode,
+      );
+      final response = await _dio.post(
+        ApiEndpoints.authRecoveryRequestOtp,
+        data: {
+          'phone': phoneValue.apiPhone,
+          'countryCode': phoneValue.apiCountryCode,
+          'scope': scope,
+        },
       );
       return OtpResponse.fromJson(response.data);
     } on DioException catch (e) {
@@ -62,18 +95,51 @@ class AuthService {
   Future<AuthResponse> verifyOtp({
     required String phone,
     required String otp,
+    String? countryCode,
     String? verificationId,
   }) async {
     try {
+      final phoneValue = PhoneNumberValue.fromAny(
+        phoneNumber: phone,
+        countryCode: countryCode,
+      );
       final response = await _dio.post(
-        '/auth/verify-otp',
+        ApiEndpoints.authVerifyOtp,
         data: {
-          'phone': PhoneNormalizer.toE164(phone),
+          'phone': phoneValue.apiPhone,
+          'countryCode': phoneValue.apiCountryCode,
           'otp': otp,
           if (verificationId != null) 'verificationId': verificationId,
         },
       );
       return AuthResponse.fromJson(response.data);
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
+  /// POST /auth/recovery/verify-otp
+  Future<RecoveryOtpResponse> verifyRecoveryOtp({
+    required String phone,
+    required String otp,
+    String? countryCode,
+    String scope = 'pin_reset',
+  }) async {
+    try {
+      final phoneValue = PhoneNumberValue.fromAny(
+        phoneNumber: phone,
+        countryCode: countryCode,
+      );
+      final response = await _dio.post(
+        ApiEndpoints.authRecoveryVerifyOtp,
+        data: {
+          'phone': phoneValue.apiPhone,
+          'countryCode': phoneValue.apiCountryCode,
+          'otp': otp,
+          'scope': scope,
+        },
+      );
+      return RecoveryOtpResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -174,12 +240,16 @@ class OtpResponse {
   final String message;
   final int expiresIn;
   final String? verificationId;
+  final bool reused;
+  final int resendAvailableIn;
 
   const OtpResponse({
     required this.success,
     required this.message,
     required this.expiresIn,
     this.verificationId,
+    this.reused = false,
+    this.resendAvailableIn = 0,
   });
 
   factory OtpResponse.fromJson(Map<String, dynamic> json) {
@@ -188,6 +258,8 @@ class OtpResponse {
       message: json['message'] as String? ?? 'OTP sent',
       expiresIn: json['expiresIn'] as int? ?? 300,
       verificationId: json['verificationId'] as String?,
+      reused: json['reused'] as bool? ?? false,
+      resendAvailableIn: json['resendAvailableIn'] as int? ?? 0,
     );
   }
 }
@@ -218,8 +290,28 @@ class AuthResponse {
       refreshToken: json['refreshToken'] as String?,
       user: User.fromJson(json['user'] as Map<String, dynamic>),
       walletCreated: json['walletCreated'] as bool? ?? false,
-      kycStatus: json['kycStatus'] as String?,
+      kycStatus: (json['kycStatus'] ?? json['kyc_status']) as String?,
       expiresIn: json['expiresIn'] as int? ?? 900, // Default 15 minutes
+    );
+  }
+}
+
+class RecoveryOtpResponse {
+  final String recoveryAccessToken;
+  final int expiresIn;
+  final String scope;
+
+  const RecoveryOtpResponse({
+    required this.recoveryAccessToken,
+    required this.expiresIn,
+    required this.scope,
+  });
+
+  factory RecoveryOtpResponse.fromJson(Map<String, dynamic> json) {
+    return RecoveryOtpResponse(
+      recoveryAccessToken: json['recoveryAccessToken'] as String,
+      expiresIn: json['expiresIn'] as int? ?? 600,
+      scope: json['scope'] as String? ?? 'pin_reset',
     );
   }
 }
@@ -229,12 +321,14 @@ class RefreshResponse {
   final String accessToken;
   final String? refreshToken;
   final User? user;
+  final String? kycStatus;
   final int expiresIn; // Access token expiry in seconds
 
   const RefreshResponse({
     required this.accessToken,
     this.refreshToken,
     this.user,
+    this.kycStatus,
     required this.expiresIn,
   });
 
@@ -248,6 +342,7 @@ class RefreshResponse {
       user: payload['user'] != null
           ? User.fromJson(payload['user'] as Map<String, dynamic>)
           : null,
+      kycStatus: (payload['kycStatus'] ?? payload['kyc_status']) as String?,
       expiresIn: payload['expiresIn'] as int? ?? 900, // Default 15 minutes
     );
   }

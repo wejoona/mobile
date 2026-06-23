@@ -1,18 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:usdc_wallet/services/wallet/wallet_service.dart';
+import 'package:usdc_wallet/services/fx/fx_service.dart';
 
-/// Currency converter state management — fetches live rates from GET /wallet/exchange-rate.
+const _unset = Object();
+
+/// Currency converter state management — fetches live indicative FX quotes.
 class CurrencyConversionState {
-  final String fromCurrency;
-  final String toCurrency;
-  final double amount;
-  final double? convertedAmount;
-  final double? rate;
-  final bool isLoading;
-  final String? error;
-  final DateTime? rateTimestamp;
-
   const CurrencyConversionState({
     this.fromCurrency = 'USDC',
     this.toCurrency = 'XOF',
@@ -24,8 +19,19 @@ class CurrencyConversionState {
     this.rateTimestamp,
   });
 
+  final String fromCurrency;
+  final String toCurrency;
+  final double amount;
+  final double? convertedAmount;
+  final double? rate;
+  final bool isLoading;
+  final String? error;
+  final DateTime? rateTimestamp;
+
   bool get isRateStale {
-    if (rateTimestamp == null) return true;
+    if (rateTimestamp == null) {
+      return true;
+    }
     return DateTime.now().difference(rateTimestamp!).inMinutes > 5;
   }
 
@@ -33,7 +39,7 @@ class CurrencyConversionState {
     String? fromCurrency,
     String? toCurrency,
     double? amount,
-    double? convertedAmount,
+    Object? convertedAmount = _unset,
     double? rate,
     bool? isLoading,
     String? error,
@@ -42,7 +48,9 @@ class CurrencyConversionState {
     fromCurrency: fromCurrency ?? this.fromCurrency,
     toCurrency: toCurrency ?? this.toCurrency,
     amount: amount ?? this.amount,
-    convertedAmount: convertedAmount ?? this.convertedAmount,
+    convertedAmount: identical(convertedAmount, _unset)
+        ? this.convertedAmount
+        : convertedAmount as double?,
     rate: rate ?? this.rate,
     isLoading: isLoading ?? this.isLoading,
     error: error,
@@ -51,19 +59,19 @@ class CurrencyConversionState {
 }
 
 class CurrencyConverterNotifier extends StateNotifier<CurrencyConversionState> {
-  final WalletService _walletService;
-
-  CurrencyConverterNotifier(this._walletService)
+  CurrencyConverterNotifier(this._fxService)
     : super(const CurrencyConversionState());
+
+  final FxService _fxService;
 
   void setFromCurrency(String currency) {
     state = state.copyWith(fromCurrency: currency);
-    fetchRate(); // Re-fetch when currency changes
+    unawaited(fetchRate());
   }
 
   void setToCurrency(String currency) {
     state = state.copyWith(toCurrency: currency);
-    fetchRate(); // Re-fetch when currency changes
+    unawaited(fetchRate());
   }
 
   void setAmount(double amount) {
@@ -76,37 +84,32 @@ class CurrencyConverterNotifier extends StateNotifier<CurrencyConversionState> {
       fromCurrency: state.toCurrency,
       toCurrency: state.fromCurrency,
     );
-    fetchRate();
+    unawaited(fetchRate());
   }
 
-  /// Fetch live exchange rate from backend GET /wallet/exchange-rate.
+  /// Fetch live indicative quote from backend GET /fx/quote.
   Future<void> fetchRate() async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true);
     try {
-      final rateResponse = await _walletService.getRate(
+      final quote = await _fxService.quote(
         sourceCurrency: state.fromCurrency,
         targetCurrency: state.toCurrency,
         amount: state.amount > 0 ? state.amount : 1,
       );
 
-      // Backend returns { sourceCurrency, targetCurrency, rate, sourceAmount, targetAmount }
-      // We need the conversion factor: how many toCurrency per 1 fromCurrency
-      final double rate = (state.amount > 0 && rateResponse.sourceAmount > 0)
-          ? rateResponse.targetAmount / rateResponse.sourceAmount
-          : rateResponse.rate;
+      final rate = quote.rate;
 
       state = state.copyWith(
         rate: rate,
+        convertedAmount: state.amount > 0 ? quote.targetAmount : null,
         isLoading: false,
-        rateTimestamp: DateTime.now(),
+        rateTimestamp: quote.updatedAt ?? DateTime.now(),
       );
-      _recalculate();
-    } catch (e) {
+    } on Object {
       state = CurrencyConversionState(
         fromCurrency: state.fromCurrency,
         toCurrency: state.toCurrency,
         amount: state.amount,
-        isLoading: false,
         error: 'Exchange rate unavailable. Please try again.',
       );
     }
@@ -115,6 +118,8 @@ class CurrencyConverterNotifier extends StateNotifier<CurrencyConversionState> {
   void _recalculate() {
     if (state.rate != null && state.amount > 0) {
       state = state.copyWith(convertedAmount: state.amount * state.rate!);
+    } else {
+      state = state.copyWith(convertedAmount: null);
     }
   }
 }
@@ -123,13 +128,24 @@ final currencyConverterProvider =
     StateNotifierProvider<CurrencyConverterNotifier, CurrencyConversionState>((
       ref,
     ) {
-      final walletService = ref.watch(walletServiceProvider);
-      final notifier = CurrencyConverterNotifier(walletService);
-      notifier.fetchRate();
+      final fxService = ref.watch(fxServiceProvider);
+      final notifier = CurrencyConverterNotifier(fxService);
+      unawaited(notifier.fetchRate());
       return notifier;
     });
 
 /// Supported currencies for conversion
-final supportedCurrenciesProvider = Provider<List<String>>((ref) {
-  return ['USDC', 'XOF', 'USD', 'EUR'];
+final supportedCurrenciesProvider = FutureProvider<List<String>>((ref) async {
+  try {
+    final currencies = await ref
+        .watch(fxServiceProvider)
+        .getSupportedCurrencies();
+    final codes = currencies.map((currency) => currency.code).toSet().toList()
+      ..sort();
+    return codes.isEmpty ? _fallbackSupportedCurrencies : codes;
+  } on Object {
+    return _fallbackSupportedCurrencies;
+  }
 });
+
+const _fallbackSupportedCurrencies = ['USDC', 'XOF', 'USD', 'EUR'];

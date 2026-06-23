@@ -48,7 +48,7 @@ class SavingsPotsService {
     String potId,
     double amount, {
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) async {
     final response = await _dio.post(
       '/savings-pots/$potId/deposit',
@@ -68,7 +68,7 @@ class SavingsPotsService {
     String potId,
     double amount, {
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) async {
     final response = await _dio.post(
       '/savings-pots/$potId/withdraw',
@@ -87,7 +87,7 @@ class SavingsPotsService {
   Future<SavingsPot> withdrawAll(
     String potId, {
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) async {
     final response = await _dio.post(
       '/savings-pots/$potId/withdraw-all',
@@ -159,7 +159,7 @@ class SavingsPotsService {
     String potId,
     double amount, {
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) => deposit(
     potId,
     amount,
@@ -170,7 +170,7 @@ class SavingsPotsService {
     String potId,
     double amount, {
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) => withdraw(
     potId,
     amount,

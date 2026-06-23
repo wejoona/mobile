@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/cards/providers/cards_provider.dart';
+import 'package:usdc_wallet/features/cards/widgets/card_empty_state.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
+import 'package:usdc_wallet/utils/context_extensions.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Request Card View
@@ -51,6 +55,7 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
     final colors = context.colors;
     final userState = ref.watch(userStateMachineProvider);
     final kycState = ref.watch(kycStateMachineProvider);
+    final cardsEnvelopeAsync = ref.watch(cardsEnvelopeProvider);
 
     final canRequestCard =
         userState.kycStatus.isVerified || kycState.status.isVerified;
@@ -61,13 +66,7 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
         backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded, color: colors.textPrimary),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/cards');
-            }
-          },
+          onPressed: () => context.fsmSafePop(fallbackRoute: '/cards'),
         ),
         title: AppText(
           l10n.cards_requestCard,
@@ -75,139 +74,170 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
           color: colors.textPrimary,
         ),
       ),
-      body: !canRequestCard
-          ? _buildKYCRequired(context, l10n, colors)
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(AppSpacing.screenPadding),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    InfoCallout(
-                      icon: Icons.info_outline,
-                      title: l10n.cards_requestCard,
-                      body: l10n.cards_requestInfo,
-                    ),
-
-                    const SizedBox(height: AppSpacing.xxl),
-
-                    // Cardholder name
-                    AppText(
-                      l10n.cards_cardholderName,
-                      variant: AppTextVariant.labelLarge,
-                      color: colors.textPrimary,
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    AppInput(
-                      label: l10n.cards_cardholderNameHint,
-                      controller: _nameController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return l10n.cards_nameRequired;
-                        }
-                        return null;
-                      },
-                    ),
-
-                    const SizedBox(height: AppSpacing.lg),
-
-                    // Spending limit
-                    AppText(
-                      l10n.cards_spendingLimit,
-                      variant: AppTextVariant.labelLarge,
-                      color: colors.textPrimary,
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    AppInput(
-                      label: l10n.cards_spendingLimitHint,
-                      controller: _limitController,
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return l10n.cards_limitRequired;
-                        }
-                        final amount = double.tryParse(value);
-                        if (amount == null || amount <= 0) {
-                          return l10n.cards_limitInvalid;
-                        }
-                        if (amount < 10) {
-                          return l10n.cards_limitTooLow;
-                        }
-                        if (amount > 10000) {
-                          return l10n.cards_limitTooHigh;
-                        }
-                        return null;
-                      },
-                    ),
-
-                    const SizedBox(height: AppSpacing.md),
-
-                    // Limit suggestions
-                    Wrap(
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.sm,
-                      children: [100, 500, 1000, 5000]
-                          .map(
-                            (amount) => _buildLimitChip(
-                              context,
-                              amount,
-                              () => _limitController.text = amount.toString(),
-                            ),
-                          )
-                          .toList(),
-                    ),
-
-                    const SizedBox(height: AppSpacing.xxl),
-
-                    // Features list
-                    AppText(
-                      l10n.cards_cardFeatures,
-                      variant: AppTextVariant.titleMedium,
-                      color: colors.textPrimary,
-                    ),
-
-                    const SizedBox(height: AppSpacing.md),
-
-                    _buildFeatureItem(
-                      context,
-                      icon: Icons.shopping_cart_outlined,
-                      text: l10n.cards_featureOnlineShopping,
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    _buildFeatureItem(
-                      context,
-                      icon: Icons.security_outlined,
-                      text: l10n.cards_featureSecure,
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    _buildFeatureItem(
-                      context,
-                      icon: Icons.ac_unit,
-                      text: l10n.cards_featureFreeze,
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    _buildFeatureItem(
-                      context,
-                      icon: Icons.notifications_outlined,
-                      text: l10n.cards_featureAlerts,
-                    ),
-
-                    const SizedBox(height: AppSpacing.xxxl),
-
-                    // Submit button
-                    AppButton(
-                      label: l10n.cards_requestCardSubmit,
-                      onPressed: _handleSubmit,
-                      isLoading: _isSubmitting,
-                      isFullWidth: true,
-                    ),
-                  ],
-                ),
-              ),
+      body: cardsEnvelopeAsync.when(
+        loading: _buildCapabilityLoading,
+        error: (error, _) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xxl),
+            child: AppText(
+              l10n.cards_error(error.toString()),
+              color: colors.textSecondary,
+              textAlign: TextAlign.center,
             ),
+          ),
+        ),
+        data: (envelope) {
+          if (!envelope.canRequestCard) {
+            return CardEmptyState(
+              canCreateCard: false,
+              reason: envelope.featureReason ?? envelope.reason,
+              onNotifyMe: () => _subscribeToCards(context, l10n),
+            );
+          }
+
+          return !canRequestCard
+              ? _buildKYCRequired(context, l10n, colors)
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.all(AppSpacing.screenPadding),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        InfoCallout(
+                          icon: Icons.info_outline,
+                          title: l10n.cards_requestCard,
+                          body: l10n.cards_requestInfo,
+                        ),
+
+                        const SizedBox(height: AppSpacing.xxl),
+
+                        // Cardholder name
+                        AppText(
+                          l10n.cards_cardholderName,
+                          variant: AppTextVariant.labelLarge,
+                          color: colors.textPrimary,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        AppInput(
+                          label: l10n.cards_cardholderNameHint,
+                          controller: _nameController,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return l10n.cards_nameRequired;
+                            }
+                            return null;
+                          },
+                        ),
+
+                        const SizedBox(height: AppSpacing.lg),
+
+                        // Spending limit
+                        AppText(
+                          l10n.cards_spendingLimit,
+                          variant: AppTextVariant.labelLarge,
+                          color: colors.textPrimary,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        AppInput(
+                          label: l10n.cards_spendingLimitHint,
+                          controller: _limitController,
+                          keyboardType: TextInputType.number,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return l10n.cards_limitRequired;
+                            }
+                            final amount = double.tryParse(value);
+                            if (amount == null || amount <= 0) {
+                              return l10n.cards_limitInvalid;
+                            }
+                            if (amount < 10) {
+                              return l10n.cards_limitTooLow;
+                            }
+                            if (amount > 10000) {
+                              return l10n.cards_limitTooHigh;
+                            }
+                            return null;
+                          },
+                        ),
+
+                        const SizedBox(height: AppSpacing.md),
+
+                        // Limit suggestions
+                        Wrap(
+                          spacing: AppSpacing.sm,
+                          runSpacing: AppSpacing.sm,
+                          children: [100, 500, 1000, 5000]
+                              .map(
+                                (amount) => _buildLimitChip(
+                                  context,
+                                  amount,
+                                  () =>
+                                      _limitController.text = amount.toString(),
+                                ),
+                              )
+                              .toList(),
+                        ),
+
+                        const SizedBox(height: AppSpacing.xxl),
+
+                        // Features list
+                        AppText(
+                          l10n.cards_cardFeatures,
+                          variant: AppTextVariant.titleMedium,
+                          color: colors.textPrimary,
+                        ),
+
+                        const SizedBox(height: AppSpacing.md),
+
+                        _buildFeatureItem(
+                          context,
+                          icon: Icons.shopping_cart_outlined,
+                          text: l10n.cards_featureOnlineShopping,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        _buildFeatureItem(
+                          context,
+                          icon: Icons.security_outlined,
+                          text: l10n.cards_featureSecure,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        _buildFeatureItem(
+                          context,
+                          icon: Icons.ac_unit,
+                          text: l10n.cards_featureFreeze,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        _buildFeatureItem(
+                          context,
+                          icon: Icons.notifications_outlined,
+                          text: l10n.cards_featureAlerts,
+                        ),
+
+                        const SizedBox(height: AppSpacing.xxxl),
+
+                        // Submit button
+                        AppButton(
+                          label: l10n.cards_requestCardSubmit,
+                          onPressed: _handleSubmit,
+                          isLoading: _isSubmitting,
+                          isFullWidth: true,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+        },
+      ),
     );
   }
+
+  Widget _buildCapabilityLoading() => const Center(
+    child: Padding(
+      padding: EdgeInsets.all(AppSpacing.xxl),
+      child: CircularProgressIndicator(),
+    ),
+  );
 
   Widget _buildKYCRequired(
     BuildContext context,
@@ -240,7 +270,7 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
           const SizedBox(height: AppSpacing.xxl),
           AppButton(
             label: l10n.cards_completeKYC,
-            onPressed: () => context.push('/kyc'),
+            onPressed: () => context.fsmPush('/kyc'),
             icon: Icons.arrow_forward,
           ),
         ],
@@ -291,6 +321,45 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
     );
   }
 
+  Future<void> _subscribeToCards(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) async {
+    final authState = ref.read(authProvider);
+    final user = authState.user;
+    try {
+      await ref
+          .read(featureSubscriptionServiceProvider)
+          .subscribe(
+            FeatureSubscriptionRequest(
+              featureKey: 'virtual_card',
+              source: 'cards_request_screen',
+              phone: user?.phone ?? authState.phone,
+              email: user?.email,
+              featureName: 'Korido virtual card',
+              requestedFeature: 'virtual_card_launch',
+              countryCode: user?.countryCode,
+              locale: user?.preferredLocale,
+              metadata: const {'surface': 'cards_request'},
+            ),
+          );
+    } on Object catch (error) {
+      if (!context.mounted) {
+        return;
+      }
+      context.showSnack(
+        l10n.common_errorFormat(error.toString()),
+        tone: AppSnackTone.error,
+      );
+      return;
+    }
+
+    if (!context.mounted) {
+      return;
+    }
+    context.showSnack(l10n.cards_notifySuccess, tone: AppSnackTone.success);
+  }
+
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -312,8 +381,9 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
         'cardholderName': name,
         'spendingLimit': limit,
       });
-      ref.invalidate(cardsEnvelopeProvider);
-      ref.invalidate(cardsProvider);
+      ref
+        ..invalidate(cardsEnvelopeProvider)
+        ..invalidate(cardsProvider);
       await ref.read(cardsEnvelopeProvider.future);
 
       if (!mounted) {
@@ -326,7 +396,7 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
           backgroundColor: context.colors.success,
         ),
       );
-      context.pop();
+      context.fsmPop();
     } on Object {
       if (!mounted) {
         return;

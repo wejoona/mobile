@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
@@ -16,6 +15,7 @@ import 'package:usdc_wallet/features/qr_payment/widgets/branded_qr_image.dart';
 import 'package:usdc_wallet/features/qr_payment/services/qr_code_service.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart' as user_state;
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Screen for displaying user's QR code to receive payments
 class ReceiveQrScreen extends ConsumerStatefulWidget {
@@ -110,7 +110,7 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
       ),
       body: SingleChildScrollView(

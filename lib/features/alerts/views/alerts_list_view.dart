@@ -4,14 +4,15 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/alerts/models/index.dart';
-import 'package:usdc_wallet/features/alerts/providers/index.dart' hide AlertType;
+import 'package:usdc_wallet/features/alerts/providers/index.dart'
+    hide AlertType;
 import 'package:usdc_wallet/features/alerts/widgets/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class AlertsListView extends ConsumerStatefulWidget {
   const AlertsListView({super.key});
@@ -65,10 +66,7 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Flexible(
-              child: AppText(
-                'Alertes',
-                variant: AppTextVariant.titleLarge,
-              ),
+              child: AppText('Alertes', variant: AppTextVariant.titleLarge),
             ),
             if (state.unreadCount > 0) ...[
               const SizedBox(width: AppSpacing.sm),
@@ -92,12 +90,13 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
         actions: [
           if (state.unreadCount > 0)
             TextButton(
-              onPressed: () => ref.read(alertsProvider.notifier).markAllAsRead(),
+              onPressed: () =>
+                  ref.read(alertsProvider.notifier).markAllAsRead(),
               child: AppText(
                 'Mark all read',
                 variant: AppTextVariant.labelMedium,
@@ -106,7 +105,7 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
             ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
-            onPressed: () => context.push('/alerts/preferences'),
+            onPressed: () => context.fsmPush('/alerts/preferences'),
             tooltip: "Préférences d'alertes",
           ),
         ],
@@ -114,7 +113,8 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
       body: Column(
         children: [
           // Statistics summary
-          if (state.statistics != null) _buildStatisticsSummary(state.statistics!, colors),
+          if (state.statistics != null)
+            _buildStatisticsSummary(state.statistics!, colors),
 
           // Filter chips
           _buildFilterChips(colors),
@@ -122,42 +122,45 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
           // Alerts list
           Expanded(
             child: state.isLoading && state.alerts.isEmpty
-                ? Center(
-                    child: CircularProgressIndicator(color: colors.gold),
-                  )
+                ? Center(child: CircularProgressIndicator(color: colors.gold))
                 : filteredAlerts.isEmpty
-                    ? _buildEmptyState(colors)
-                    : RefreshIndicator(
-                        onRefresh: () => ref.read(alertsProvider.notifier).loadAlerts(refresh: true),
-                        color: colors.gold,
-                        backgroundColor: colors.container,
-                        child: ListView.builder(
-                          controller: _scrollController,
-                          padding: const EdgeInsets.all(AppSpacing.screenPadding),
-                          itemCount: filteredAlerts.length + (state.isLoadingMore ? 1 : 0),
-                          itemBuilder: (context, index) {
-                            if (index == filteredAlerts.length) {
-                              return Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(AppSpacing.lg),
-                                  child: CircularProgressIndicator(
-                                    color: colors.gold,
-                                  ),
-                                ),
-                              );
-                            }
+                ? _buildEmptyState(colors)
+                : RefreshIndicator(
+                    onRefresh: () => ref
+                        .read(alertsProvider.notifier)
+                        .loadAlerts(refresh: true),
+                    color: colors.gold,
+                    backgroundColor: colors.container,
+                    child: ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.all(AppSpacing.screenPadding),
+                      itemCount:
+                          filteredAlerts.length + (state.isLoadingMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == filteredAlerts.length) {
+                          return Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(AppSpacing.lg),
+                              child: CircularProgressIndicator(
+                                color: colors.gold,
+                              ),
+                            ),
+                          );
+                        }
 
-                            final alert = filteredAlerts[index];
-                            return AlertCard(
-                              alert: alert,
-                              onTap: () => _openAlertDetail(alert),
-                              onDismiss: alert.isRead
-                                  ? null
-                                  : () => ref.read(alertsProvider.notifier).markAsRead(alert.alertId),
-                            );
-                          },
-                        ),
-                      ),
+                        final alert = filteredAlerts[index];
+                        return AlertCard(
+                          alert: alert,
+                          onTap: () => _openAlertDetail(alert),
+                          onDismiss: alert.isRead
+                              ? null
+                              : () => ref
+                                    .read(alertsProvider.notifier)
+                                    .markAsRead(alert.alertId),
+                        );
+                      },
+                    ),
+                  ),
           ),
         ],
       ),
@@ -178,14 +181,29 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
         children: [
           _buildStatItem('Total', stats.total, colors.textSecondary, colors),
           _buildStatItem('Unread', stats.unread, colors.gold, colors),
-          _buildStatItem('Critical', stats.critical, context.colors.error, colors),
-          _buildStatItem('Action', stats.actionRequired, context.colors.warning, colors),
+          _buildStatItem(
+            'Critical',
+            stats.critical,
+            context.colors.error,
+            colors,
+          ),
+          _buildStatItem(
+            'Action',
+            stats.actionRequired,
+            context.colors.warning,
+            colors,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildStatItem(String label, int value, Color color, ThemeColors colors) {
+  Widget _buildStatItem(
+    String label,
+    int value,
+    Color color,
+    ThemeColors colors,
+  ) {
     return Column(
       children: [
         AppText(
@@ -302,17 +320,13 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
               : colors.container,
           borderRadius: BorderRadius.circular(AppRadius.full),
           border: Border.all(
-            color: isSelected
-                ? (color ?? colors.gold)
-                : colors.borderSubtle,
+            color: isSelected ? (color ?? colors.gold) : colors.borderSubtle,
           ),
         ),
         child: AppText(
           label,
           variant: AppTextVariant.labelMedium,
-          color: isSelected
-              ? (color ?? colors.gold)
-              : colors.textSecondary,
+          color: isSelected ? (color ?? colors.gold) : colors.textSecondary,
         ),
       ),
     );
@@ -388,6 +402,6 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
     if (!alert.isRead) {
       ref.read(alertsProvider.notifier).markAsRead(alert.alertId);
     }
-    context.push('/alerts/${alert.alertId}');
+    context.fsmPush('/alerts/${alert.alertId}');
   }
 }

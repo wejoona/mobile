@@ -7,6 +7,7 @@ import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Multi-step KYC flow screen.
 class KycFlowScreen extends ConsumerStatefulWidget {
@@ -92,7 +93,10 @@ class _KycFlowScreenState extends ConsumerState<KycFlowScreen> {
         return _SelfieStep(
           selfie: state.selfie,
           onCapture: () async {
-            final img = await _picker.pickImage(source: ImageSource.camera, preferredCameraDevice: CameraDevice.front);
+            final img = await _picker.pickImage(
+              source: ImageSource.camera,
+              preferredCameraDevice: CameraDevice.front,
+            );
             if (img != null) notifier.setSelfie(File(img.path));
           },
           onNext: () => notifier.nextStep(),
@@ -109,13 +113,23 @@ class _KycFlowScreenState extends ConsumerState<KycFlowScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.check_circle, size: 64, color: Theme.of(context).colorScheme.primary),
+              Icon(
+                Icons.check_circle,
+                size: 64,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               SizedBox(height: AppSpacing.md),
-              Text(AppLocalizations.of(context)!.kyc_documentsSubmitted, style: Theme.of(context).textTheme.headlineSmall),
+              Text(
+                AppLocalizations.of(context)!.kyc_documentsSubmitted,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
               SizedBox(height: AppSpacing.sm),
               Text(AppLocalizations.of(context)!.kyc_verificationProcessing),
               SizedBox(height: AppSpacing.xl),
-              AppButton(label: AppStrings.done, onPressed: () => Navigator.pop(context)),
+              AppButton(
+                label: AppStrings.done,
+                onPressed: () => context.fsmSafePop(fallbackRoute: '/home'),
+              ),
             ],
           ),
         );
@@ -130,7 +144,13 @@ class _PersonalInfoStep extends StatelessWidget {
   final TextEditingController addressController;
   final VoidCallback onNext;
 
-  const _PersonalInfoStep({required this.firstNameController, required this.lastNameController, required this.dobController, required this.addressController, required this.onNext});
+  const _PersonalInfoStep({
+    required this.firstNameController,
+    required this.lastNameController,
+    required this.dobController,
+    required this.addressController,
+    required this.onNext,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -139,13 +159,28 @@ class _PersonalInfoStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          TextField(controller: firstNameController, decoration: const InputDecoration(labelText: 'Prenom')),
+          TextField(
+            controller: firstNameController,
+            decoration: const InputDecoration(labelText: 'Prenom'),
+          ),
           SizedBox(height: AppSpacing.md),
-          TextField(controller: lastNameController, decoration: const InputDecoration(labelText: 'Nom')),
+          TextField(
+            controller: lastNameController,
+            decoration: const InputDecoration(labelText: 'Nom'),
+          ),
           SizedBox(height: AppSpacing.md),
-          TextField(controller: dobController, decoration: const InputDecoration(labelText: 'Date de naissance', hintText: 'JJ/MM/AAAA')),
+          TextField(
+            controller: dobController,
+            decoration: const InputDecoration(
+              labelText: 'Date de naissance',
+              hintText: 'JJ/MM/AAAA',
+            ),
+          ),
           SizedBox(height: AppSpacing.md),
-          TextField(controller: addressController, decoration: const InputDecoration(labelText: 'Adresse')),
+          TextField(
+            controller: addressController,
+            decoration: const InputDecoration(labelText: 'Adresse'),
+          ),
           const Spacer(),
           AppButton(label: AppStrings.next, onPressed: onNext),
         ],
@@ -165,18 +200,23 @@ class _DocumentTypeStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(AppLocalizations.of(context)!.kyc_documentType, style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            AppLocalizations.of(context)!.kyc_documentType,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           SizedBox(height: AppSpacing.md),
           ...[
             ('Carte nationale d\'identite', Icons.credit_card),
             ('Passeport', Icons.flight),
             ('Permis de conduire', Icons.directions_car),
-          ].map((doc) => ListTile(
-            leading: Icon(doc.$2),
-            title: Text(doc.$1),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: onNext,
-          )),
+          ].map(
+            (doc) => ListTile(
+              leading: Icon(doc.$2),
+              title: Text(doc.$1),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: onNext,
+            ),
+          ),
         ],
       ),
     );
@@ -190,7 +230,13 @@ class _DocumentCaptureStep extends StatelessWidget {
   final VoidCallback onCaptureBack;
   final VoidCallback onNext;
 
-  const _DocumentCaptureStep({this.idFront, this.idBack, required this.onCaptureFront, required this.onCaptureBack, required this.onNext});
+  const _DocumentCaptureStep({
+    this.idFront,
+    this.idBack,
+    required this.onCaptureFront,
+    required this.onCaptureBack,
+    required this.onNext,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -199,11 +245,22 @@ class _DocumentCaptureStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _CaptureButton(label: 'Recto du document', file: idFront, onCapture: onCaptureFront),
+          _CaptureButton(
+            label: 'Recto du document',
+            file: idFront,
+            onCapture: onCaptureFront,
+          ),
           SizedBox(height: AppSpacing.md),
-          _CaptureButton(label: 'Verso du document', file: idBack, onCapture: onCaptureBack),
+          _CaptureButton(
+            label: 'Verso du document',
+            file: idBack,
+            onCapture: onCaptureBack,
+          ),
           const Spacer(),
-          AppButton(label: AppStrings.next, onPressed: idFront != null ? onNext : null),
+          AppButton(
+            label: AppStrings.next,
+            onPressed: idFront != null ? onNext : null,
+          ),
         ],
       ),
     );
@@ -215,7 +272,11 @@ class _CaptureButton extends StatelessWidget {
   final File? file;
   final VoidCallback onCapture;
 
-  const _CaptureButton({required this.label, this.file, required this.onCapture});
+  const _CaptureButton({
+    required this.label,
+    this.file,
+    required this.onCapture,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -224,15 +285,30 @@ class _CaptureButton extends StatelessWidget {
       child: Container(
         height: 150,
         decoration: BoxDecoration(
-          border: Border.all(color: file != null ? Theme.of(context).colorScheme.primary : Colors.grey.shade300),
+          border: Border.all(
+            color: file != null
+                ? Theme.of(context).colorScheme.primary
+                : Colors.grey.shade300,
+          ),
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
         child: file != null
-            ? ClipRRect(borderRadius: BorderRadius.circular(AppRadius.lg), child: Image.file(file!, fit: BoxFit.cover, width: double.infinity))
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                child: Image.file(
+                  file!,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                ),
+              )
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.camera_alt_outlined, size: 40, color: context.colors.textSecondary),
+                  Icon(
+                    Icons.camera_alt_outlined,
+                    size: 40,
+                    color: context.colors.textSecondary,
+                  ),
                   SizedBox(height: AppSpacing.sm),
                   Text(label, style: Theme.of(context).textTheme.bodySmall),
                 ],
@@ -247,7 +323,11 @@ class _SelfieStep extends StatelessWidget {
   final VoidCallback onCapture;
   final VoidCallback onNext;
 
-  const _SelfieStep({this.selfie, required this.onCapture, required this.onNext});
+  const _SelfieStep({
+    this.selfie,
+    required this.onCapture,
+    required this.onNext,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -256,23 +336,48 @@ class _SelfieStep extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(AppLocalizations.of(context)!.kyc_takeSelfie, style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            AppLocalizations.of(context)!.kyc_takeSelfie,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           SizedBox(height: AppSpacing.md),
           if (selfie != null)
-            ClipOval(child: Image.file(selfie!, width: 200, height: 200, fit: BoxFit.cover))
+            ClipOval(
+              child: Image.file(
+                selfie!,
+                width: 200,
+                height: 200,
+                fit: BoxFit.cover,
+              ),
+            )
           else
             GestureDetector(
               onTap: onCapture,
               child: Container(
-                width: 200, height: 200,
-                decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.grey.shade300, width: 2)),
-                child: Icon(Icons.face, size: 80, color: context.colors.textSecondary),
+                width: 200,
+                height: 200,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.grey.shade300, width: 2),
+                ),
+                child: Icon(
+                  Icons.face,
+                  size: 80,
+                  color: context.colors.textSecondary,
+                ),
               ),
             ),
           SizedBox(height: AppSpacing.lg),
-          if (selfie != null) TextButton(onPressed: onCapture, child: Text(AppLocalizations.of(context)!.kyc_retake)),
+          if (selfie != null)
+            TextButton(
+              onPressed: onCapture,
+              child: Text(AppLocalizations.of(context)!.kyc_retake),
+            ),
           SizedBox(height: AppSpacing.md),
-          AppButton(label: AppStrings.next, onPressed: selfie != null ? onNext : null),
+          AppButton(
+            label: AppStrings.next,
+            onPressed: selfie != null ? onNext : null,
+          ),
         ],
       ),
     );
@@ -285,7 +390,12 @@ class _ReviewStep extends StatelessWidget {
   final String? error;
   final VoidCallback onSubmit;
 
-  const _ReviewStep({required this.state, required this.isLoading, this.error, required this.onSubmit});
+  const _ReviewStep({
+    required this.state,
+    required this.isLoading,
+    this.error,
+    required this.onSubmit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -296,16 +406,34 @@ class _ReviewStep extends StatelessWidget {
         children: [
           Text('Vérification', style: Theme.of(context).textTheme.titleMedium),
           SizedBox(height: AppSpacing.md),
-          _ReviewItem(label: 'Prenom', value: state.personalInfo['firstName'] ?? '-'),
-          _ReviewItem(label: 'Nom', value: state.personalInfo['lastName'] ?? '-'),
-          _ReviewItem(label: 'Date de naissance', value: state.personalInfo['dateOfBirth'] ?? '-'),
-          _ReviewItem(label: 'Document recto', value: state.idFront != null ? 'Capturé' : 'Manquant'),
-          _ReviewItem(label: 'Selfie', value: state.selfie != null ? 'Capturé' : 'Manquant'),
+          _ReviewItem(
+            label: 'Prenom',
+            value: state.personalInfo['firstName'] ?? '-',
+          ),
+          _ReviewItem(
+            label: 'Nom',
+            value: state.personalInfo['lastName'] ?? '-',
+          ),
+          _ReviewItem(
+            label: 'Date de naissance',
+            value: state.personalInfo['dateOfBirth'] ?? '-',
+          ),
+          _ReviewItem(
+            label: 'Document recto',
+            value: state.idFront != null ? 'Capturé' : 'Manquant',
+          ),
+          _ReviewItem(
+            label: 'Selfie',
+            value: state.selfie != null ? 'Capturé' : 'Manquant',
+          ),
           const Spacer(),
           if (error != null)
             Padding(
               padding: EdgeInsets.only(bottom: AppSpacing.sm),
-              child: Text(error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              child: Text(
+                error!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
             ),
           AppButton(
             label: AppLocalizations.of(context)!.kyc_submit,

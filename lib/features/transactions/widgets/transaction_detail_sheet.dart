@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/domain/entities/transaction.dart';
+import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/design/components/primitives/bottom_sheet_handle.dart';
 import 'package:usdc_wallet/design/components/primitives/info_row.dart';
 import 'package:usdc_wallet/utils/clipboard_utils.dart';
@@ -55,7 +56,7 @@ class TransactionDetailSheet extends StatelessWidget {
               children: [
                 // Amount
                 AmountText.fromText(
-                  '${isCredit ? '+' : '-'}\$${transaction.amount.abs().toStringAsFixed(2)}',
+                  '${transaction.amountSign}\$${transaction.amount.abs().toStringAsFixed(2)}',
                   currencyCode: transaction.currency,
                   size: AmountTextSize.large,
                   color: isCredit
@@ -79,7 +80,10 @@ class TransactionDetailSheet extends StatelessWidget {
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     child: Column(
                       children: [
-                        InfoRow(label: 'Type', value: transaction.type.name),
+                        InfoRow(
+                          label: 'Type',
+                          value: transaction.type.displayLabel,
+                        ),
                         InfoRow(
                           label: 'Date',
                           value:

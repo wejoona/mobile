@@ -9,22 +9,33 @@ class TransactionTile extends StatelessWidget {
   final Transaction transaction;
   final VoidCallback? onTap;
 
-  const TransactionTile({
-    super.key,
-    required this.transaction,
-    this.onTap,
-  });
+  const TransactionTile({super.key, required this.transaction, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final isCredit = transaction.isCredit;
+    final isDebit = transaction.isDebit;
+    final directionColor = isCredit
+        ? Colors.green
+        : isDebit
+        ? Colors.red
+        : theme.colorScheme.onSurfaceVariant;
+    final directionIcon = isCredit
+        ? Icons.arrow_downward_rounded
+        : isDebit
+        ? Icons.arrow_upward_rounded
+        : Icons.receipt_long_rounded;
     final amountColor = isCredit
         ? (isDark ? Colors.green.shade300 : Colors.green.shade700)
+        : isDebit
+        ? Colors.red
         : theme.colorScheme.onSurface;
-    final statusColor =
-        ColorUtils.statusColor(transaction.status.name, isDark: isDark);
+    final statusColor = ColorUtils.statusColor(
+      transaction.status.name,
+      isDark: isDark,
+    );
 
     return InkWell(
       onTap: onTap,
@@ -37,16 +48,10 @@ class TransactionTile extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: (isCredit ? Colors.green : Colors.red).withValues(alpha: 0.1),
+                color: directionColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                isCredit
-                    ? Icons.arrow_downward_rounded
-                    : Icons.arrow_upward_rounded,
-                color: isCredit ? Colors.green : Colors.red,
-                size: 20,
-              ),
+              child: Icon(directionIcon, color: directionColor, size: 20),
             ),
             const SizedBox(width: 12),
             // Details
@@ -55,8 +60,7 @@ class TransactionTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    transaction.description ??
-                        _typeLabel(transaction.type),
+                    transaction.description ?? _typeLabel(transaction.type),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w500,
                     ),
@@ -97,7 +101,7 @@ class TransactionTile extends StatelessWidget {
             ),
             // Amount
             Text(
-              '${isCredit ? '+' : '-'}\$${transaction.amount.toStringAsFixed(2)}',
+              '${transaction.amountSign}\$${transaction.amount.abs().toStringAsFixed(2)}',
               style: theme.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w600,
                 color: amountColor,
@@ -120,6 +124,10 @@ class TransactionTile extends StatelessWidget {
         return 'Transfer';
       case TransactionType.transferExternal:
         return 'External Transfer';
+      case TransactionType.billPayment:
+        return 'Bill payment';
+      case TransactionType.unknown:
+        return 'Transaction';
     }
   }
 }

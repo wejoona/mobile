@@ -1,63 +1,46 @@
-import 'dart:convert';
-import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// End-to-end encryption for sensitive payloads.
 ///
-/// Uses X25519 key exchange and AES-256-GCM for encrypting sensitive
-/// data before transmission. Keys are ephemeral per session.
+/// This boundary is intentionally fail-closed until a real X25519/AES-GCM
+/// implementation or platform-backed crypto channel is wired end-to-end.
 class E2eEncryptionService {
   static const _tag = 'E2eEncryption';
   final AppLogger _log = AppLogger(_tag);
 
-  Uint8List? _publicKey;
-  // ignore: unused_field
-  Uint8List? _privateKey;
-  Uint8List? _sharedSecret;
-
   /// Generate ephemeral key pair for this session.
   Future<Uint8List> generateKeyPair() async {
-    // In production: use X25519 via pointycastle or platform channel
-    final random = Random.secure();
-    _privateKey = Uint8List.fromList(
-        List.generate(32, (_) => random.nextInt(256)));
-    _publicKey = Uint8List.fromList(
-        List.generate(32, (_) => random.nextInt(256)));
-    _log.debug('Ephemeral key pair generated');
-    return _publicKey!;
+    _log.error('E2E key generation requested before crypto implementation');
+    throw UnsupportedError(
+      'E2E encryption is not implemented; key generation blocked.',
+    );
   }
 
   /// Derive shared secret from server's public key.
   void deriveSharedSecret(Uint8List serverPublicKey) {
-    // In production: X25519 key agreement
-    _sharedSecret = Uint8List(32);
-    _log.debug('Shared secret derived');
+    _log.error('E2E shared-secret derivation requested before implementation');
+    throw UnsupportedError(
+      'E2E encryption is not implemented; shared-secret derivation blocked.',
+    );
   }
 
   /// Encrypt sensitive payload.
   String encrypt(String plaintext) {
-    if (_sharedSecret == null) {
-      throw StateError('Shared secret not established');
-    }
-    // Placeholder: AES-256-GCM encryption
-    return base64Encode(utf8.encode(plaintext));
+    _log.error('E2E encryption requested before implementation');
+    throw UnsupportedError(
+      'E2E encryption is not implemented; plaintext transmission blocked.',
+    );
   }
 
   /// Decrypt received payload.
   String decrypt(String ciphertext) {
-    if (_sharedSecret == null) {
-      throw StateError('Shared secret not established');
-    }
-    return utf8.decode(base64Decode(ciphertext));
+    throw UnsupportedError('E2E decryption is not implemented.');
   }
 
   /// Clear all key material.
   void dispose() {
-    _publicKey = null;
-    _privateKey = null;
-    _sharedSecret = null;
     _log.debug('Key material cleared');
   }
 }

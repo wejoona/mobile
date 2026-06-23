@@ -1,16 +1,19 @@
+// ignore_for_file: unreachable_from_main
+
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:firebase_core/firebase_core.dart';
+
 import 'package:dio/dio.dart';
-import 'package:usdc_wallet/utils/logger.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/settings/repositories/devices_repository.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/notifications/notifications_service.dart';
 import 'package:usdc_wallet/services/security/device_fingerprint_service.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
-final _logger = AppLogger('PushNotifications');
+const _logger = AppLogger('PushNotifications');
 
 /// Background message handler - must be top-level function
 @pragma('vm:entry-point')
@@ -51,7 +54,12 @@ class PushNotificationService {
   final DeviceFingerprintService _fingerprintService;
   final DevicesRepository _devicesRepository;
 
+  // Managed by dispose(); this service is lifecycle-owned by Riverpod.
+  // ignore: cancel_subscriptions
   StreamSubscription<RemoteMessage>? _foregroundSubscription;
+
+  // Managed by dispose(); this service is lifecycle-owned by Riverpod.
+  // ignore: cancel_subscriptions
   StreamSubscription<String>? _tokenRefreshSubscription;
 
   String? _currentToken;
@@ -68,69 +76,83 @@ class PushNotificationService {
 
   FirebaseMessaging get _messaging => FirebaseMessaging.instance;
 
-  /// Initialize push notification service
-  /// Call this early in app lifecycle after Firebase.initializeApp()
-  Future<void> initialize() async {
-    if (_isInitialized) return;
+  /// Initialize push notification service.
+  ///
+  /// This does not ask for OS notification permission by default. Callers that
+  /// are behind an explicit user action, such as the notification permission
+  /// screen, must pass [requestPermission] so consent stays intentional.
+  Future<void> initialize({bool requestPermission = false}) async {
+    if (_isInitialized) {
+      return;
+    }
 
-    // Set background message handler
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-    // Request permissions
-    final settings = await _requestPermissions();
-
-    if (settings.authorizationStatus == AuthorizationStatus.authorized ||
-        settings.authorizationStatus == AuthorizationStatus.provisional) {
-      // Get initial token
-      _currentToken = await _messaging.getToken();
-      _logger.debug('FCM Token obtained', _currentToken);
-
-      // Listen for token refresh
-      _tokenRefreshSubscription = _messaging.onTokenRefresh.listen(
-        _handleTokenRefresh,
-      );
-
-      // Handle foreground messages
-      _foregroundSubscription = FirebaseMessaging.onMessage.listen(
-        _handleForegroundMessage,
-      );
-
-      // Handle notification tap when app was in background
-      FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
-
-      // Check if app was opened from terminated state via notification
-      final initialMessage = await _messaging.getInitialMessage();
-      if (initialMessage != null) {
-        _handleMessageOpenedApp(initialMessage);
-      }
-
-      _isInitialized = true;
-    } else {
+    if (!_isFirebaseAvailable) {
       _logger.warn(
-        'Push notifications not authorized',
-        settings.authorizationStatus,
+        'Firebase is not initialized; push notifications disabled for this run',
       );
+      return;
+    }
+
+    try {
+      // Set background message handler
+      FirebaseMessaging.onBackgroundMessage(
+        _firebaseMessagingBackgroundHandler,
+      );
+
+      final settings = requestPermission
+          ? await _requestPermissions()
+          : await _messaging.getNotificationSettings();
+
+      if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+          settings.authorizationStatus == AuthorizationStatus.provisional) {
+        // Get initial token
+        _currentToken = await _messaging.getToken();
+        _logger.debug('FCM Token obtained', _currentToken);
+
+        // Listen for token refresh
+        _tokenRefreshSubscription = _messaging.onTokenRefresh.listen(
+          _handleTokenRefresh,
+        );
+
+        // Handle foreground messages
+        _foregroundSubscription = FirebaseMessaging.onMessage.listen(
+          _handleForegroundMessage,
+        );
+
+        // Handle notification tap when app was in background
+        FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
+
+        // Check if app was opened from terminated state via notification
+        final initialMessage = await _messaging.getInitialMessage();
+        if (initialMessage != null) {
+          _handleMessageOpenedApp(initialMessage);
+        }
+
+        _isInitialized = true;
+      } else {
+        _logger.warn('Push notifications not authorized for initialization', {
+          'authorizationStatus': settings.authorizationStatus.name,
+          'requestPermission': requestPermission,
+        });
+      }
+    } on FirebaseException catch (error) {
+      _logger.warn('Firebase messaging unavailable; push disabled', error);
     }
   }
 
   /// Request notification permissions
-  Future<NotificationSettings> _requestPermissions() async {
-    return await _messaging.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
-  }
+  Future<NotificationSettings> _requestPermissions() =>
+      _messaging.requestPermission();
 
   /// Get current FCM token
   String? get currentToken => _currentToken;
 
   /// Check if push notifications are enabled
   Future<bool> get isEnabled async {
+    if (!_isFirebaseAvailable) {
+      return false;
+    }
+
     final settings = await _messaging.getNotificationSettings();
     return settings.authorizationStatus == AuthorizationStatus.authorized ||
         settings.authorizationStatus == AuthorizationStatus.provisional;
@@ -167,7 +189,9 @@ class PushNotificationService {
   /// Unregister FCM token from backend
   /// Call this on logout
   Future<void> unregisterFromBackend() async {
-    if (_currentToken == null) return;
+    if (_currentToken == null) {
+      return;
+    }
 
     try {
       await _notificationsService.removeFcmToken(_currentToken!);
@@ -179,7 +203,7 @@ class PushNotificationService {
   }
 
   /// Handle token refresh
-  void _handleTokenRefresh(String newToken) async {
+  Future<void> _handleTokenRefresh(String newToken) async {
     _logger.info('FCM token refreshed');
 
     // Unregister old token if we have one
@@ -201,29 +225,27 @@ class PushNotificationService {
       'body': message.notification?.body,
     });
 
-    // Invoke callback if set
-    if (onForegroundMessage != null) {
-      onForegroundMessage!(message);
-    }
+    onForegroundMessage?.call(message);
   }
 
   /// Handle message tap (app was in background/terminated)
   void _handleMessageOpenedApp(RemoteMessage message) {
     _logger.info('Message opened app', message.messageId);
 
-    // Invoke callback if set
-    if (onMessageOpenedApp != null) {
-      onMessageOpenedApp!(message);
+    final handleOpenedApp = onMessageOpenedApp;
+    if (handleOpenedApp != null) {
+      handleOpenedApp(message);
+      return;
     }
 
-    // Handle navigation based on message data
     _handleNavigation(message.data);
   }
 
   /// Handle navigation based on notification data
   void _handleNavigation(Map<String, dynamic> data) {
-    if (onNavigate != null) {
-      onNavigate!(data);
+    final navigate = onNavigate;
+    if (navigate != null) {
+      navigate(data);
       return;
     }
 
@@ -238,40 +260,38 @@ class PushNotificationService {
       'transactionId': transactionId,
     });
 
-    // Navigation logic would go here
-    // This should integrate with your router (e.g., GoRouter)
-    // Example:
-    // switch (type) {
-    //   case 'transaction':
-    //     if (transactionId != null) {
-    //       router.push('/transactions/$transactionId');
-    //     }
-    //     break;
-    //   case 'security':
-    //     router.push('/settings/security');
-    //     break;
-    //   case 'kyc':
-    //     router.push('/kyc');
-    //     break;
-    // }
+    // Notification route intents are surfaced through [onNavigate]. Widgets
+    // translate them into FSM-owned navigation so services never own routing.
   }
 
   /// Subscribe to a topic
   Future<void> subscribeToTopic(String topic) async {
+    if (!_isFirebaseAvailable) {
+      _logger.warn('Firebase unavailable; topic subscribe skipped', topic);
+      return;
+    }
+
     await _messaging.subscribeToTopic(topic);
     _logger.info('Subscribed to topic', topic);
   }
 
   /// Unsubscribe from a topic
   Future<void> unsubscribeFromTopic(String topic) async {
+    if (!_isFirebaseAvailable) {
+      _logger.warn('Firebase unavailable; topic unsubscribe skipped', topic);
+      return;
+    }
+
     await _messaging.unsubscribeFromTopic(topic);
     _logger.info('Unsubscribed from topic', topic);
   }
 
+  bool get _isFirebaseAvailable => Firebase.apps.isNotEmpty;
+
   Future<DeviceFingerprint?> _safeFingerprint() async {
     try {
       return await _fingerprintService.collect();
-    } catch (error) {
+    } on Object catch (error) {
       _logger.warn(
         'Device fingerprint unavailable for push registration',
         error,
@@ -281,14 +301,14 @@ class PushNotificationService {
   }
 
   String? _displayDeviceName(DeviceFingerprint? fingerprint) {
-    if (fingerprint == null) return null;
+    if (fingerprint == null) {
+      return null;
+    }
 
     final parts = [fingerprint.brand, fingerprint.model]
         .whereType<String>()
         .map((part) => part.trim())
-        .where((part) {
-          return part.isNotEmpty;
-        })
+        .where((part) => part.isNotEmpty)
         .toList();
 
     return parts.isEmpty ? null : parts.join(' ');
@@ -315,8 +335,15 @@ class PushNotificationService {
 
   /// Dispose resources
   void dispose() {
-    _foregroundSubscription?.cancel();
-    _tokenRefreshSubscription?.cancel();
+    final foregroundSubscription = _foregroundSubscription;
+    final tokenRefreshSubscription = _tokenRefreshSubscription;
+
+    if (foregroundSubscription != null) {
+      unawaited(foregroundSubscription.cancel());
+    }
+    if (tokenRefreshSubscription != null) {
+      unawaited(tokenRefreshSubscription.cancel());
+    }
   }
 }
 
@@ -327,16 +354,18 @@ final pushNotificationServiceProvider = Provider<PushNotificationService>((
   // Keep watching the Dio-backed API client so provider invalidation follows
   // auth/network lifecycle changes even though calls are routed via the facade.
   ref.watch(dioProvider);
-  return PushNotificationService(
+  final service = PushNotificationService(
     ref.watch(notificationsServiceProvider),
     ref.watch(deviceFingerprintServiceProvider),
     ref.watch(devicesRepositoryProvider),
   );
+  ref.onDispose(service.dispose);
+  return service;
 });
 
 /// Provider for initializing push notifications
 /// Use this in your app initialization
-final pushNotificationInitProvider = FutureProvider<void>((ref) async {
+final pushNotificationInitProvider = FutureProvider<void>((ref) {
   final service = ref.read(pushNotificationServiceProvider);
-  await service.initialize();
+  return service.initialize();
 });

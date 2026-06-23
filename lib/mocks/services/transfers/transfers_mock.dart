@@ -43,18 +43,6 @@ class TransfersMockState {
     transfers.add(transfer);
     return transfer;
   }
-
-  /// Get recent transfers
-  static List<Map<String, dynamic>> getRecentTransfers({
-    int limit = 10,
-    String? type,
-  }) {
-    var filtered = transfers;
-    if (type != null) {
-      filtered = transfers.where((t) => t['type'] == type).toList();
-    }
-    return filtered.take(limit).toList();
-  }
 }
 
 class TransfersMock {
@@ -66,39 +54,11 @@ class TransfersMock {
       handler: _handleInternalTransfer,
     );
 
-    // POST /transfers/internal - Legacy internal transfer compatibility
-    interceptor.register(
-      method: 'POST',
-      path: '/transfers/internal',
-      handler: _handleInternalTransfer,
-    );
-
     // POST /wallet/transfer/external - External transfer through the secured wallet route
     interceptor.register(
       method: 'POST',
       path: '/wallet/transfer/external',
       handler: _handleExternalTransfer,
-    );
-
-    // POST /transfers/external - Legacy external transfer compatibility
-    interceptor.register(
-      method: 'POST',
-      path: '/transfers/external',
-      handler: _handleExternalTransfer,
-    );
-
-    // GET /transfers - Get transfers
-    interceptor.register(
-      method: 'GET',
-      path: r'/transfers$',
-      handler: _handleGetTransfers,
-    );
-
-    // GET /transfers/:id - Get transfer by ID
-    interceptor.register(
-      method: 'GET',
-      path: r'/transfers/[\w-]+',
-      handler: _handleGetTransferById,
     );
   }
 
@@ -250,57 +210,6 @@ class TransfersMock {
       note: note,
       status: 'pending',
     );
-
-    return MockResponse.success(transfer);
-  }
-
-  /// Handle get transfers
-  static Future<MockResponse> _handleGetTransfers(
-    RequestOptions options,
-  ) async {
-    final userId = AuthMockState.currentUserId;
-    if (userId == null) {
-      return MockResponse.unauthorized('Not authenticated');
-    }
-
-    final queryParams = options.queryParameters;
-    final page = int.tryParse(queryParams['page']?.toString() ?? '1') ?? 1;
-    final pageSize =
-        int.tryParse(queryParams['pageSize']?.toString() ?? '20') ?? 20;
-    final type = queryParams['type'] as String?;
-
-    final transfers = TransfersMockState.getRecentTransfers(
-      limit: pageSize,
-      type: type,
-    );
-
-    return MockResponse.success({
-      'items': transfers,
-      'total': transfers.length,
-      'page': page,
-      'pageSize': pageSize,
-      'totalPages': (transfers.length / pageSize).ceil(),
-    });
-  }
-
-  /// Handle get transfer by ID
-  static Future<MockResponse> _handleGetTransferById(
-    RequestOptions options,
-  ) async {
-    final userId = AuthMockState.currentUserId;
-    if (userId == null) {
-      return MockResponse.unauthorized('Not authenticated');
-    }
-
-    final id = options.path.split('/').last;
-    final transfer = TransfersMockState.transfers.firstWhere(
-      (t) => t['id'] == id,
-      orElse: () => {},
-    );
-
-    if (transfer.isEmpty) {
-      return MockResponse.notFound('Transfer not found');
-    }
 
     return MockResponse.success(transfer);
   }

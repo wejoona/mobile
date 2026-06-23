@@ -1091,7 +1091,7 @@ class GoldenTestWrapper extends StatelessWidget {
     '/settings',
     '/bank-linking',
     '/home',
-    '/pin/confirm',
+    '/signup/set-pin',
     '/pin/reset',
     '/pin/locked',
     '/login',

@@ -1,7 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -11,8 +12,8 @@ import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/features/qr_payment/services/qr_code_service.dart';
 import 'package:usdc_wallet/features/qr_payment/models/qr_payment_data.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Screen for scanning QR codes to send payments
 class ScanQrScreen extends ConsumerStatefulWidget {
@@ -22,56 +23,102 @@ class ScanQrScreen extends ConsumerStatefulWidget {
   ConsumerState<ScanQrScreen> createState() => _ScanQrScreenState();
 }
 
-class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
+class _ScanQrScreenState extends ConsumerState<ScanQrScreen>
+    with WidgetsBindingObserver {
   final _qrService = QrCodeService();
   MobileScannerController? _scannerController;
 
   bool _isScanning = true;
   bool _isScannerInitialized = false;
   bool _permissionDenied = false;
+  bool _isCheckingPermission = false;
+  MobileScannerException? _scannerRuntimeError;
   QrPaymentData? _scannedData;
 
   @override
   void initState() {
     super.initState();
-    _requestCameraPermission();
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        unawaited(_ensureCameraAccess());
+      }
+    });
   }
 
   @override
   void dispose() {
-    _scannerController?.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+    final controller = _scannerController;
+    if (controller != null) {
+      unawaited(controller.dispose());
+    }
     super.dispose();
   }
 
-  Future<void> _requestCameraPermission() async {
-    final status = await Permission.camera.request();
-
-    if (status.isGranted) {
-      _initScanner();
-    } else if (status.isDenied || status.isPermanentlyDenied) {
-      setState(() => _permissionDenied = true);
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed &&
+        mounted &&
+        (_permissionDenied || !_isScannerInitialized)) {
+      unawaited(_ensureCameraAccess(requestIfNeeded: false));
     }
   }
 
-  Future<void> _initScanner() async {
-    _scannerController = MobileScannerController(
-      detectionSpeed: DetectionSpeed.normal,
-      facing: CameraFacing.back,
-      torchEnabled: false,
-      autoStart: false,
-    );
+  Future<void> _ensureCameraAccess({bool requestIfNeeded = true}) async {
+    if (_isCheckingPermission) {
+      return;
+    }
+
+    _isCheckingPermission = true;
 
     try {
-      await _scannerController!.start();
-      if (mounted) {
-        setState(() => _isScannerInitialized = true);
+      var status = await Permission.camera.status;
+      if (status.isDenied && requestIfNeeded) {
+        status = await Permission.camera.request();
       }
-    } catch (e) {
-      AppLogger('Scanner initialization error').error('Scanner initialization error', e);
-      if (mounted) {
-        setState(() => _permissionDenied = true);
+
+      if (!mounted) {
+        return;
       }
+
+      if (status.isGranted || status.isLimited) {
+        _attachScanner();
+        return;
+      }
+
+      setState(() {
+        _isScannerInitialized = false;
+        _permissionDenied = true;
+        _scannerRuntimeError = null;
+      });
+    } finally {
+      _isCheckingPermission = false;
     }
+  }
+
+  void _attachScanner() {
+    _scannerController ??= MobileScannerController();
+
+    setState(() {
+      _permissionDenied = false;
+      _scannerRuntimeError = null;
+      _isScannerInitialized = true;
+    });
+  }
+
+  void _resetScannerAfterError() {
+    final controller = _scannerController;
+    _scannerController = null;
+    if (controller != null) {
+      unawaited(controller.dispose());
+    }
+
+    setState(() {
+      _scannerRuntimeError = null;
+      _isScannerInitialized = false;
+    });
+    unawaited(_ensureCameraAccess(requestIfNeeded: false));
   }
 
   @override
@@ -88,14 +135,16 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
       ),
       body: _scannedData != null
           ? _buildScannedResult()
           : _permissionDenied
-              ? _buildPermissionDenied()
-              : _buildScanner(),
+          ? _buildPermissionDenied()
+          : _scannerRuntimeError != null
+          ? _buildScannerError(_scannerRuntimeError!)
+          : _buildScanner(),
     );
   }
 
@@ -124,13 +173,12 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
         MobileScanner(
           controller: _scannerController!,
           onDetect: _onDetect,
+          errorBuilder: (context, error) => _captureScannerError(error),
         ),
 
         // Dark overlay
         Container(
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.5),
-          ),
+          decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.5)),
         ),
 
         // Scanner frame
@@ -170,7 +218,9 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
                 Positioned(
                   bottom: 0,
                   right: 0,
-                  child: _CornerDecoration(position: CornerPosition.bottomRight),
+                  child: _CornerDecoration(
+                    position: CornerPosition.bottomRight,
+                  ),
                 ),
               ],
             ),
@@ -298,7 +348,8 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
                     value: _qrService.formatPhone(_scannedData!.phone),
                     colors: colors,
                   ),
-                  if (_scannedData!.name != null && _scannedData!.name!.isNotEmpty)
+                  if (_scannedData!.name != null &&
+                      _scannedData!.name!.isNotEmpty)
                     _InfoRow(
                       label: 'Name',
                       value: _scannedData!.name!,
@@ -307,10 +358,12 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
                   if (_scannedData!.amount != null)
                     _InfoRow(
                       label: 'Amount',
-                      value: '\$${_scannedData!.amount} ${_scannedData!.currency ?? "USD"}',
+                      value:
+                          '\$${_scannedData!.amount} ${_scannedData!.currency ?? "USD"}',
                       colors: colors,
                     ),
-                  if (_scannedData!.reference != null && _scannedData!.reference!.isNotEmpty)
+                  if (_scannedData!.reference != null &&
+                      _scannedData!.reference!.isNotEmpty)
                     _InfoRow(
                       label: 'Reference',
                       value: _scannedData!.reference!,
@@ -326,17 +379,27 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
               label: 'Send Money',
               onPressed: () {
                 // Analytics: QR scan payment initiated
-                ref.read(analyticsServiceProvider).trackAction('qr_payment_scanned', properties: {
-                  'has_amount': _scannedData!.amount != null,
-                  'currency': _scannedData!.currency ?? 'USD',
-                });
+                ref
+                    .read(analyticsServiceProvider)
+                    .trackAction(
+                      'qr_payment_scanned',
+                      properties: {
+                        'has_amount': _scannedData!.amount != null,
+                        'currency': _scannedData!.currency ?? 'USD',
+                      },
+                    );
                 // Navigate to send view with prefilled data
-                context.pop(); // Close scanner
-                context.push('/send', extra: {
-                  'phone': _scannedData!.phone,
-                  'amount': _scannedData!.amount?.toString(),
-                  'reference': _scannedData!.reference,
-                });
+                context.fsmPop(); // Close scanner
+                unawaited(
+                  context.fsmPush(
+                    '/send',
+                    extra: {
+                      'phone': _scannedData!.phone,
+                      'amount': _scannedData!.amount?.toString(),
+                      'reference': _scannedData!.reference,
+                    },
+                  ),
+                );
               },
               variant: AppButtonVariant.primary,
               isFullWidth: true,
@@ -359,7 +422,6 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
                 _scannedData = null;
                 _isScanning = true;
               });
-              _scannerController?.start();
             },
             variant: AppButtonVariant.secondary,
             isFullWidth: true,
@@ -400,8 +462,95 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
             const SizedBox(height: AppSpacing.xxl),
             AppButton(
               label: 'Open Settings',
-              onPressed: () => openAppSettings(),
+              onPressed: () async {
+                await openAppSettings();
+              },
               variant: AppButtonVariant.primary,
+              isFullWidth: true,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            AppButton(
+              label: 'I allowed access',
+              onPressed: () =>
+                  unawaited(_ensureCameraAccess(requestIfNeeded: false)),
+              variant: AppButtonVariant.secondary,
+              isFullWidth: true,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _captureScannerError(MobileScannerException error) {
+    if (_scannerRuntimeError?.errorCode != error.errorCode) {
+      final logger = AppLogger('Scanner runtime error');
+      if (error.errorCode == MobileScannerErrorCode.unsupported) {
+        logger.warn('Scanner unavailable on this device', error);
+      } else {
+        logger.error('Scanner runtime error', error);
+      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() => _scannerRuntimeError = error);
+        }
+      });
+    }
+
+    return const ColoredBox(color: Colors.black);
+  }
+
+  Widget _buildScannerError(MobileScannerException error) {
+    final colors = context.colors;
+    final isPermissionError =
+        error.errorCode == MobileScannerErrorCode.permissionDenied;
+    final title = isPermissionError
+        ? 'Camera Permission Required'
+        : 'Camera Unavailable';
+    final message = isPermissionError
+        ? 'Please grant camera permission to scan QR codes.'
+        : 'The camera could not start safely. Try again or import a QR image.';
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.screenPadding),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isPermissionError
+                  ? Icons.camera_alt_outlined
+                  : Icons.videocam_off_outlined,
+              size: 80,
+              color: colors.textTertiary,
+            ),
+            const SizedBox(height: AppSpacing.xxl),
+            AppText(
+              title,
+              variant: AppTextVariant.headlineSmall,
+              color: colors.textPrimary,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            AppText(
+              message,
+              variant: AppTextVariant.bodyMedium,
+              color: colors.textSecondary,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.xxl),
+            AppButton(
+              label: 'Try Again',
+              onPressed: _resetScannerAfterError,
+              variant: AppButtonVariant.primary,
+              isFullWidth: true,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            AppButton(
+              label: 'Import from Gallery',
+              onPressed: _importFromGallery,
+              variant: AppButtonVariant.secondary,
+              isFullWidth: true,
             ),
           ],
         ),
@@ -438,8 +587,11 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
         _isScanning = false;
       });
 
-      _scannerController?.stop();
-      HapticFeedback.mediumImpact();
+      final controller = _scannerController;
+      if (controller != null) {
+        unawaited(controller.stop());
+      }
+      unawaited(HapticFeedback.mediumImpact());
     } catch (e) {
       AppLogger('Gallery QR import error').error('Gallery QR import error', e);
       if (mounted) {
@@ -468,8 +620,11 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
       _isScanning = false;
     });
 
-    _scannerController?.stop();
-    HapticFeedback.mediumImpact();
+    final controller = _scannerController;
+    if (controller != null) {
+      unawaited(controller.stop());
+    }
+    unawaited(HapticFeedback.mediumImpact());
   }
 }
 
@@ -485,9 +640,7 @@ class _CornerDecoration extends StatelessWidget {
     return SizedBox(
       width: 30,
       height: 30,
-      child: CustomPaint(
-        painter: _CornerPainter(position: position),
-      ),
+      child: CustomPaint(painter: _CornerPainter(position: position)),
     );
   }
 }

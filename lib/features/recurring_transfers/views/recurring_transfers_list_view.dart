@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/recurring_transfers/providers/recurring_transfers_provider.dart';
 import 'package:usdc_wallet/features/recurring_transfers/widgets/recurring_transfer_card.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Recurring transfers list screen.
 class RecurringTransfersListView extends ConsumerWidget {
@@ -24,7 +24,7 @@ class RecurringTransfersListView extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.add_rounded),
             tooltip: 'Nouveau virement récurrent',
-            onPressed: () => context.push('/recurring-transfers/create'),
+            onPressed: () => context.fsmPush('/recurring-transfers/create'),
           ),
         ],
       ),
@@ -44,7 +44,7 @@ class RecurringTransfersListView extends ConsumerWidget {
               subtitle:
                   'Set up automatic transfers to save time on regular payments',
               actionLabel: 'Create Recurring',
-              onAction: () => context.push('/recurring-transfers/create'),
+              onAction: () => context.fsmPush('/recurring-transfers/create'),
             );
           }
           return RefreshIndicator(
@@ -86,7 +86,7 @@ class RecurringTransfersListView extends ConsumerWidget {
                   (t) => RecurringTransferCard(
                     transfer: t,
                     onTap: () =>
-                        context.push('/recurring-transfers/detail/${t.id}'),
+                        context.fsmPush('/recurring-transfers/detail/${t.id}'),
                   ),
                 ),
                 const SizedBox(height: 80),

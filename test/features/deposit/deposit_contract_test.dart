@@ -42,6 +42,35 @@ void main() {
       });
     });
 
+    test('initiateDeposit preserves decimal source amounts', () async {
+      final dio = MockDio();
+      dio.queueResponse(
+        _initiateResponse(paymentMethodType: 'ACH'),
+        statusCode: 201,
+      );
+      final service = DepositService(dio);
+
+      await service.initiateDeposit(
+        const InitiateDepositRequest(
+          amount: 5.49,
+          provider: 'us_ach',
+          phoneNumber: '',
+          currency: 'USD',
+          countryCode: 'US',
+        ),
+        idempotencyKey: 'deposit-attempt-1',
+      );
+
+      final request = dio.requestHistory.single;
+      expect(request.headers['X-Idempotency-Key'], 'deposit-attempt-1');
+      expect(request.data, {
+        'amount': 5.49,
+        'sourceCurrency': 'USD',
+        'channelId': 'us_ach',
+        'countryCode': 'US',
+      });
+    });
+
     test('getExchangeRate uses wallet exchange-rate mobile alias', () async {
       final dio = MockDio();
       dio.queueResponse({
@@ -87,6 +116,7 @@ void main() {
       'initiate stores the typed deposit response and enters processing',
       () async {
         final dio = MockDio();
+        dio.queueResponse(_limitsResponse());
         dio.queueResponse(
           _initiateResponse(paymentMethodType: 'OTP'),
           statusCode: 201,
@@ -123,8 +153,9 @@ void main() {
         expect(state.response?.paymentMethodType, PaymentMethodType.otp);
         expect(state.response?.token, 'tok_dep_123');
         expect(state.result?.id, 'dep_123');
+        expect(dio.requestHistory.first.path, '/user/limits');
         expect(
-          dio.requestHistory.single.headers['X-Idempotency-Key'],
+          dio.requestHistory.last.headers['X-Idempotency-Key'],
           isNotEmpty,
         );
       },
@@ -157,7 +188,125 @@ void main() {
         expect(dio.requestHistory, isEmpty);
       },
     );
+
+    test('initiate blocks when backend limits disallow deposits', () async {
+      final dio = MockDio();
+      dio.queueResponse({
+        ..._limitsResponse(),
+        'permissions': {
+          'can_deposit': false,
+          'review_required': true,
+          'block_reason': 'Manual review required',
+        },
+      });
+      final container = ProviderContainer(
+        overrides: [dioProvider.overrideWithValue(dio)],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(depositProvider.notifier);
+      notifier.setAmountXOF(
+        10000,
+        ExchangeRate(
+          fromCurrency: 'XOF',
+          toCurrency: 'USD',
+          rate: 655.957,
+          timestamp: DateTime.utc(2026, 6, 2),
+        ),
+      );
+      notifier.selectProviderData(
+        const ProviderData(
+          id: 'BANK',
+          name: 'Korido Bank Rail',
+          paymentMethodType: 'BANK_TRANSFER',
+        ),
+      );
+
+      await notifier.initiate();
+
+      final state = container.read(depositProvider);
+      expect(state.step, DepositFlowStep.failed);
+      expect(state.error, 'Manual review required');
+      expect(dio.requestHistory, hasLength(1));
+      expect(dio.requestHistory.single.path, '/user/limits');
+    });
+
+    test('retries the same deposit attempt with one idempotency key', () async {
+      final dio = MockDio();
+      dio.queueResponse(_limitsResponse());
+      dio.queueErrorResponse(statusCode: 504, message: 'Gateway timeout');
+      dio.queueResponse(_limitsResponse());
+      dio.queueResponse(
+        _initiateResponse(paymentMethodType: 'ACH'),
+        statusCode: 201,
+      );
+      final container = ProviderContainer(
+        overrides: [dioProvider.overrideWithValue(dio)],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(depositProvider.notifier);
+      notifier.setAmountUSD(
+        5.49,
+        ExchangeRate(
+          fromCurrency: 'XOF',
+          toCurrency: 'USD',
+          rate: 655.957,
+          timestamp: DateTime.utc(2026, 6, 2),
+        ),
+        'US',
+      );
+      notifier.selectProviderData(
+        const ProviderData(
+          id: 'us_ach',
+          name: 'ACH transfer',
+          paymentMethodType: 'ACH',
+        ),
+      );
+
+      await notifier.initiate();
+      await notifier.initiate();
+
+      final postRequests = dio.requestHistory
+          .where((request) => request.method == 'POST')
+          .toList();
+      expect(postRequests, hasLength(2));
+      expect(
+        postRequests.first.headers['X-Idempotency-Key'],
+        postRequests.last.headers['X-Idempotency-Key'],
+      );
+      expect(postRequests.last.data, {
+        'amount': 5.49,
+        'sourceCurrency': 'USD',
+        'channelId': 'us_ach',
+        'countryCode': 'US',
+      });
+    });
   });
+}
+
+Map<String, dynamic> _limitsResponse() {
+  return {
+    'currency': 'USDC',
+    'daily': {
+      'send': {'limit': 5000, 'used': 100},
+      'withdraw': {'limit': 5000, 'used': 100},
+      'deposit': {'limit': 5000, 'used': 100},
+    },
+    'monthly': {
+      'total': {'limit': 50000, 'used': 500},
+    },
+    'perTransaction': {'send': 2500, 'withdraw': 2500},
+    'tier': 'verified',
+    'permissions': {
+      'can_send': true,
+      'can_deposit': true,
+      'can_withdraw': true,
+      'can_receive': true,
+      'review_required': false,
+      'block_reason': null,
+    },
+  };
 }
 
 Map<String, dynamic> _initiateResponse({required String paymentMethodType}) {

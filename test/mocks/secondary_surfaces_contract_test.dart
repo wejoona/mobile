@@ -132,6 +132,7 @@ void main() {
           accountNumber: '123456789',
           amount: 12500,
           pinToken: 'mock_pin_token_test',
+          idempotencyKey: 'bill-pay-contract-invalid-provider',
         ),
         throwsA(isA<ApiException>()),
       );

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class HelpView extends ConsumerStatefulWidget {
   const HelpView({super.key});
@@ -116,7 +116,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.gold),
-          onPressed: () => context.safePop(fallbackRoute: '/settings'),
+          onPressed: () => context.fsmSafePop(fallbackRoute: '/settings'),
         ),
       ),
       body: SingleChildScrollView(

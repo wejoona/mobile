@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/composed/pin_confirmation_sheet.dart';
@@ -9,6 +8,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/cards/providers/cards_provider.dart';
 import 'package:usdc_wallet/features/cards/widgets/virtual_card_widget.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Card Detail View
 ///
@@ -41,13 +41,7 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
           backgroundColor: Colors.transparent,
           leading: IconButton(
             icon: Icon(Icons.arrow_back_rounded, color: colors.textPrimary),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go('/cards');
-              }
-            },
+            onPressed: () => context.fsmSafePop(fallbackRoute: '/cards'),
           ),
         ),
         body: Center(
@@ -66,13 +60,7 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
         backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded, color: colors.textPrimary),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/cards');
-            }
-          },
+          onPressed: () => context.fsmSafePop(fallbackRoute: '/cards'),
         ),
         title: AppText(
           l10n.cards_cardDetails,
@@ -82,7 +70,7 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
         actions: [
           IconButton(
             icon: Icon(Icons.settings, color: colors.textPrimary),
-            onPressed: () => context.push('/cards/settings/${card.id}'),
+            onPressed: () => context.fsmPush('/cards/settings/${card.id}'),
           ),
         ],
       ),
@@ -210,11 +198,10 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
                         variant: AppTextVariant.bodyMedium,
                         color: colors.textSecondary,
                       ),
-                      AppText(
+                      AmountText.fromText(
                         '${card.currency} ${card.spentAmount.toStringAsFixed(2)}',
-                        variant: AppTextVariant.labelLarge,
+                        size: AmountTextSize.small,
                         color: colors.textPrimary,
-                        fontWeight: FontWeight.w600,
                       ),
                     ],
                   ),
@@ -317,7 +304,8 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
             // Actions
             AppButton(
               label: l10n.cards_viewTransactions,
-              onPressed: () => context.push('/cards/transactions/${card.id}'),
+              onPressed: () =>
+                  context.fsmPush('/cards/transactions/${card.id}'),
               variant: AppButtonVariant.secondary,
               isFullWidth: true,
               icon: Icons.history,

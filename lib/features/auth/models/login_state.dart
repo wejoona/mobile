@@ -1,10 +1,11 @@
 import 'package:usdc_wallet/domain/entities/index.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Login state model
 class LoginState {
   final LoginStep currentStep;
   final String? phoneNumber;
-  final String? countryCode;
+  final String? dialCode;
   final String? otp;
   final bool isLoading;
   final String? error;
@@ -21,7 +22,7 @@ class LoginState {
   const LoginState({
     this.currentStep = LoginStep.phone,
     this.phoneNumber,
-    this.countryCode = '+225',
+    this.dialCode = '+225',
     this.otp,
     this.isLoading = false,
     this.error,
@@ -39,7 +40,7 @@ class LoginState {
   LoginState copyWith({
     LoginStep? currentStep,
     String? phoneNumber,
-    String? countryCode,
+    String? dialCode,
     String? otp,
     bool? isLoading,
     String? error,
@@ -56,7 +57,7 @@ class LoginState {
     return LoginState(
       currentStep: currentStep ?? this.currentStep,
       phoneNumber: phoneNumber ?? this.phoneNumber,
-      countryCode: countryCode ?? this.countryCode,
+      dialCode: dialCode ?? this.dialCode,
       otp: otp ?? this.otp,
       isLoading: isLoading ?? this.isLoading,
       error: error,
@@ -73,20 +74,22 @@ class LoginState {
   }
 
   int get remainingAttempts => 3 - pinAttempts;
+
+  PhoneNumberValue? get phoneValue => PhoneNumberValue.tryFromAny(
+    phoneNumber: phoneNumber,
+    countryCode: dialCode,
+  );
+
+  String? get localPhoneNumber => phoneValue?.localNumber ?? phoneNumber;
+  String get canonicalDialCode => phoneValue?.dialCode ?? dialCode ?? '+225';
+
+  LoginState withPhoneValue(PhoneNumberValue phoneValue) {
+    return copyWith(
+      phoneNumber: phoneValue.localNumber,
+      dialCode: phoneValue.dialCode,
+    );
+  }
 }
 
 /// Login flow steps
-enum LoginStep { phone, otp, pin, biometric, success }
-
-/// Login request model
-class LoginRequest {
-  final String phoneNumber;
-  final String countryCode;
-
-  const LoginRequest({required this.phoneNumber, this.countryCode = '+225'});
-
-  Map<String, dynamic> toJson() => {
-    'phoneNumber': phoneNumber,
-    'countryCode': countryCode,
-  };
-}
+enum LoginStep { phone, otp, pin, needsPinSetup, biometric, success }

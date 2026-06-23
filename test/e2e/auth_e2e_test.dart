@@ -12,6 +12,7 @@ void main() {
 
   late E2EClient client;
   late String authPhone;
+  late String wrongOtpPhone;
 
   if (!runLiveE2E) {
     test('Live E2E disabled', () {}, skip: liveE2ESkipReason);
@@ -21,13 +22,16 @@ void main() {
   setUpAll(() {
     client = E2EClient();
     authPhone = uniqueE2EPhone();
+    wrongOtpPhone = uniqueE2EPhone();
   });
 
   e2eGroup('Auth E2E', () {
     test('POST /auth/register — new user or already exists', () async {
+      final consentPayload = await client.registrationConsentPayload();
       final res = await client.post('/auth/register', {
         'phone': authPhone,
         'countryCode': 'CI',
+        ...consentPayload,
       });
       // 201 = new user, 200/409 = already exists
       expect(res.statusCode, anyOf(200, 201, 409));
@@ -81,8 +85,16 @@ void main() {
     });
 
     test('POST /auth/verify-otp — wrong OTP returns 400/401', () async {
+      final consentPayload = await client.registrationConsentPayload();
+      final registerRes = await client.post('/auth/register', {
+        'phone': wrongOtpPhone,
+        'countryCode': 'CI',
+        ...consentPayload,
+      });
+      expect(registerRes.statusCode, anyOf(200, 201, 409));
+
       final res = await client.post('/auth/verify-otp', {
-        'phone': authPhone,
+        'phone': wrongOtpPhone,
         'otp': '000000',
       });
       expect(res.statusCode, anyOf(400, 401));

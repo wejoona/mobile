@@ -22,7 +22,42 @@ class ProviderData {
     this.supportedCurrencies = const [],
     this.rails = const [],
   });
+
+  String get brandKey {
+    final normalized = [
+      enumProvider,
+      id,
+      name,
+    ].whereType<String>().map(_normalizeBrandCandidate).join(' ');
+
+    if (normalized.contains('orange') || normalized.contains('omci')) {
+      return 'orange_money';
+    }
+    if (normalized.contains('mtn') || normalized.contains('mtnci')) {
+      return 'mtn_momo';
+    }
+    if (normalized.contains('moov') || normalized.contains('moovci')) {
+      return 'moov_money';
+    }
+    if (normalized.contains('wave') || normalized.contains('waveci')) {
+      return 'wave';
+    }
+    if (normalized.contains('ach')) {
+      return 'ach';
+    }
+    if (normalized.contains('card')) {
+      return 'card';
+    }
+    if (normalized.contains('crypto') || normalized.contains('usdc')) {
+      return 'crypto';
+    }
+
+    return _normalizeBrandCandidate(enumProvider ?? id);
+  }
 }
+
+String _normalizeBrandCandidate(String value) =>
+    value.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_');
 
 class DepositProvidersAvailability {
   final List<ProviderData> providers;

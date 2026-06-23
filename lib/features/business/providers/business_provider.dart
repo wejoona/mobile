@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/business_profile.dart';
 import 'package:usdc_wallet/domain/enums/account_type.dart';
@@ -38,7 +40,7 @@ class BusinessState {
 class BusinessNotifier extends Notifier<BusinessState> {
   @override
   BusinessState build() {
-    _loadAccountType();
+    unawaited(Future<void>.microtask(_loadAccountType));
     return const BusinessState();
   }
 
@@ -50,20 +52,14 @@ class BusinessNotifier extends Notifier<BusinessState> {
 
     try {
       final accountType = await _businessService.getAccountType();
-      state = state.copyWith(
-        isLoading: false,
-        accountType: accountType,
-      );
+      state = state.copyWith(isLoading: false, accountType: accountType);
 
       // If business account, load profile
       if (accountType == AccountType.business) {
         await loadBusinessProfile();
       }
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -73,15 +69,9 @@ class BusinessNotifier extends Notifier<BusinessState> {
 
     try {
       final profile = await _businessService.getBusinessProfile();
-      state = state.copyWith(
-        isLoading: false,
-        businessProfile: profile,
-      );
+      state = state.copyWith(isLoading: false, businessProfile: profile);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -91,10 +81,7 @@ class BusinessNotifier extends Notifier<BusinessState> {
 
     try {
       await _businessService.switchAccountType(newType);
-      state = state.copyWith(
-        isLoading: false,
-        accountType: newType,
-      );
+      state = state.copyWith(isLoading: false, accountType: newType);
 
       // Load business profile if switching to business
       if (newType == AccountType.business) {
@@ -103,10 +90,7 @@ class BusinessNotifier extends Notifier<BusinessState> {
 
       return true;
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
       return false;
     }
   }
@@ -138,10 +122,7 @@ class BusinessNotifier extends Notifier<BusinessState> {
 
       return true;
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
       return false;
     }
   }

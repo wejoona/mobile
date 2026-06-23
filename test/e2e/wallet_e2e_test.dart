@@ -8,6 +8,17 @@ Map<String, String> _idempotencyHeaders() => {
   'X-Idempotency-Key': 'e2e-${DateTime.now().microsecondsSinceEpoch}',
 };
 
+void _expectRejectedOrUnavailable(E2EResponse res) {
+  if (res.statusCode == 404 || res.statusCode == 501) {
+    final error = res.data?['error'];
+    final code = error is Map<String, dynamic> ? error['code'] : null;
+    expect(code, anyOf('NOT_FOUND', 'NOT_IMPLEMENTED', 'FEATURE_UNAVAILABLE'));
+    return;
+  }
+
+  expect(res.statusCode, anyOf(400, 401, 403));
+}
+
 void main() {
   if (!e2eEnabled) {
     skipE2ESuite();
@@ -35,8 +46,8 @@ void main() {
       expect(data, isNotNull);
     });
 
-    test('GET /wallet/limits — returns transaction limits', () async {
-      final res = await client.get('/wallet/limits');
+    test('GET /user/limits — returns transaction limits', () async {
+      final res = await client.get('/user/limits');
       res.expectOk();
     });
 
@@ -83,8 +94,8 @@ void main() {
       expect(data['timestamp'], isA<String>());
     });
 
-    test('GET /wallet/kyc/status — returns KYC status', () async {
-      final res = await client.get('/wallet/kyc/status');
+    test('GET /kyc/status — returns KYC status', () async {
+      final res = await client.get('/kyc/status');
       res.expectOk();
     });
 
@@ -92,32 +103,6 @@ void main() {
       final noAuth = E2EClient();
       final res = await noAuth.get('/wallet');
       expect(res.statusCode, 401);
-    });
-  });
-
-  e2eGroup('Wallet PIN E2E', () {
-    test('POST /user/pin/set — set wallet PIN', () async {
-      final res = await client.post('/user/pin/set', {
-        'pinHash':
-            '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92',
-      });
-      expect(res.statusCode, anyOf(200, 201, 400, 409));
-    });
-
-    test('POST /user/pin/verify — verify correct PIN', () async {
-      final res = await client.post('/user/pin/verify', {
-        'pinHash':
-            '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92',
-      });
-      expect(res.statusCode, anyOf(200, 400));
-    });
-
-    test('POST /user/pin/verify — wrong PIN', () async {
-      final res = await client.post('/user/pin/verify', {
-        'pinHash':
-            '0000000000000000000000000000000000000000000000000000000000000000',
-      });
-      expect(res.statusCode, anyOf(400, 401));
     });
   });
 
@@ -140,35 +125,51 @@ void main() {
       expect(res.statusCode, anyOf(400, 428));
     });
 
-    test('POST /deposits/initiate — missing fields returns 400', () async {
+    test('POST /deposits/initiate — retired writer returns 410', () async {
       final res = await client.post(
         '/deposits/initiate',
         {},
         _idempotencyHeaders(),
       );
-      expect(res.statusCode, 400);
+      expect(res.statusCode, 410);
+      final error = res.data?['error'];
+      expect(error, isA<Map<String, dynamic>>());
+      expect(
+        (error as Map<String, dynamic>)['code'],
+        'DEPOSIT_WRITE_ENDPOINT_RETIRED',
+      );
+      expect(error['canonicalEndpoint'], '/api/v1/wallet/deposit');
     });
 
-    test('POST /deposits/initiate — invalid amount returns 400', () async {
-      final res = await client.post('/deposits/initiate', {
-        'amount': -100,
-        'currency': 'XOF',
-        'providerCode': 'OMCI',
-      }, _idempotencyHeaders());
-      expect(res.statusCode, 400);
-    });
+    test(
+      'POST /deposits/initiate — retired before legacy validation',
+      () async {
+        final res = await client.post('/deposits/initiate', {
+          'amount': -100,
+          'currency': 'XOF',
+          'providerCode': 'OMCI',
+        }, _idempotencyHeaders());
+        expect(res.statusCode, 410);
+      },
+    );
   });
 
   e2eGroup('Transfer E2E', () {
-    test('POST /transfers/internal — missing fields is rejected', () async {
-      final res = await client.post('/transfers/internal', {});
-      expect(res.statusCode, anyOf(400, 401, 403));
-    });
+    test(
+      'POST /wallet/transfer/internal — missing fields is rejected',
+      () async {
+        final res = await client.post('/wallet/transfer/internal', {});
+        expect(res.statusCode, anyOf(400, 401, 403));
+      },
+    );
 
-    test('POST /transfers/external — missing fields is rejected', () async {
-      final res = await client.post('/transfers/external', {});
-      expect(res.statusCode, anyOf(400, 401, 403));
-    });
+    test(
+      'POST /wallet/transfer/external — missing fields is rejected',
+      () async {
+        final res = await client.post('/wallet/transfer/external', {});
+        expect(res.statusCode, anyOf(400, 401, 403));
+      },
+    );
 
     test(
       'GET /wallet/transfer/external/estimate-fee — returns fee estimate',
@@ -183,22 +184,46 @@ void main() {
   });
 
   e2eGroup('Withdrawal E2E', () {
-    test('POST /wallet/withdraw — missing auth factors is rejected', () async {
-      final res = await client.post('/wallet/withdraw', {
-        'amount': 10,
-        'destinationAddress': '0x1234567890abcdef1234567890abcdef12345678',
-        'network': 'polygon',
-      }, _idempotencyHeaders());
-      expect(res.statusCode, anyOf(400, 401, 403));
-    });
+    test(
+      'POST /wallet/transfer/external — missing auth factors is rejected',
+      () async {
+        final res = await client.post('/wallet/transfer/external', {
+          'amount': 10,
+          'toAddress': '0x1234567890abcdef1234567890abcdef12345678',
+          'currency': 'USDC',
+          'network': 'polygon',
+        }, _idempotencyHeaders());
+        expect(res.statusCode, anyOf(400, 401, 403));
+      },
+    );
 
-    test('POST /withdrawals/initiate — missing fields is rejected', () async {
-      final res = await client.post(
-        '/withdrawals/initiate',
-        {},
-        _idempotencyHeaders(),
-      );
-      expect(res.statusCode, anyOf(400, 401, 403));
-    });
+    test(
+      'GET /wallet/cash-out/mobile-money/options — returns rails or unavailable',
+      () async {
+        final res = await client.get(
+          '/wallet/cash-out/mobile-money/options?country=CI',
+        );
+        if (res.isOk) {
+          final raw = res.data?['data'] ?? res.data;
+          expect(raw, isA<Map<String, dynamic>>());
+          final data = raw! as Map<String, dynamic>;
+          expect(data['options'], isA<List<dynamic>>());
+        } else {
+          _expectRejectedOrUnavailable(res);
+        }
+      },
+    );
+
+    test(
+      'POST /wallet/cash-out/mobile-money — missing fields is rejected or unavailable',
+      () async {
+        final res = await client.post(
+          '/wallet/cash-out/mobile-money',
+          {},
+          _idempotencyHeaders(),
+        );
+        _expectRejectedOrUnavailable(res);
+      },
+    );
   });
 }

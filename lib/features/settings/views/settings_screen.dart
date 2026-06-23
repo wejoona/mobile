@@ -1,22 +1,25 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:usdc_wallet/config/environment_config.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/theme/theme_provider.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
-import 'package:usdc_wallet/services/biometric/biometric_service.dart';
-import 'package:usdc_wallet/services/localization/language_provider.dart';
-import 'package:usdc_wallet/state/index.dart';
-import 'package:usdc_wallet/services/currency/currency_provider.dart';
-import 'package:usdc_wallet/services/currency/currency_service.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/settings/utils/profile_phone_formatter.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/mocks/mock_config.dart';
+import 'package:usdc_wallet/services/biometric/biometric_service.dart';
+import 'package:usdc_wallet/services/currency/currency_provider.dart';
+import 'package:usdc_wallet/services/currency/currency_service.dart';
+import 'package:usdc_wallet/services/localization/language_provider.dart';
+import 'package:usdc_wallet/state/index.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Comprehensive Settings Screen
 /// Integrates profile, security, preferences, devices, sessions, and support
@@ -35,6 +38,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void initState() {
     super.initState();
     _loadAppVersion();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(ref.read(kycStateMachineProvider.notifier).fetch());
+    });
   }
 
   Future<void> _loadAppVersion() async {
@@ -66,7 +73,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Profile Card - shows user info, KYC status
-            _ProfileCard(onTap: () => context.push('/settings/profile')),
+            _ProfileCard(onTap: () => context.fsmPush('/settings/profile')),
 
             const SizedBox(height: AppSpacing.xxl),
 
@@ -77,9 +84,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               icon: Icons.edit_outlined,
               title: l10n.settings_profile,
               subtitle: l10n.settings_profileDescription,
-              onTap: () => context.push('/settings/profile/edit'),
+              onTap: () => context.fsmPush('/settings/profile/edit'),
             ),
-            _KycTile(onTap: () => context.push('/settings/kyc')),
+            _KycTile(onTap: () => context.fsmPush('/settings/kyc')),
 
             const SizedBox(height: AppSpacing.xxl),
 
@@ -90,32 +97,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               icon: Icons.lock_outline,
               title: l10n.pin_changeTitle,
               subtitle: l10n.settings_securityDescription,
-              onTap: () => context.push('/settings/pin'),
+              onTap: () => context.fsmPush('/settings/pin'),
             ),
             const _BiometricTile(),
             _SettingsTile(
               icon: Icons.devices,
               title: l10n.settings_devices,
               subtitle: l10n.settings_devicesDescription,
-              onTap: () => context.push('/settings/devices'),
+              onTap: () => context.fsmPush('/settings/devices'),
             ),
             _SettingsTile(
               icon: Icons.history,
               title: l10n.settings_activeSessions,
               subtitle: l10n.security_activeSessionsSubtitle,
-              onTap: () => context.push('/settings/sessions'),
+              onTap: () => context.fsmPush('/settings/sessions'),
             ),
             _SettingsTile(
               icon: Icons.security,
               title: l10n.settings_securitySettings,
               subtitle: l10n.settings_securityDescription,
-              onTap: () => context.push('/settings/security'),
+              onTap: () => context.fsmPush('/settings/security'),
             ),
             _SettingsTile(
               icon: Icons.speed,
               title: l10n.settings_transactionLimits,
               subtitle: l10n.settings_limitsDescription,
-              onTap: () => context.push('/settings/limits'),
+              onTap: () => context.fsmPush('/settings/limits'),
             ),
 
             const SizedBox(height: AppSpacing.xxl),
@@ -130,7 +137,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               icon: Icons.notifications_outlined,
               title: l10n.settings_notifications,
               subtitle: l10n.notifications_transactionsDescription,
-              onTap: () => context.push('/settings/notifications'),
+              onTap: () => context.fsmPush('/settings/notifications'),
             ),
 
             const SizedBox(height: AppSpacing.xxl),
@@ -142,7 +149,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               icon: Icons.help_outline,
               title: l10n.settings_helpSupport,
               subtitle: l10n.settings_helpDescription,
-              onTap: () => context.push('/settings/help'),
+              onTap: () => context.fsmPush('/settings/help'),
             ),
             _SettingsTile(
               icon: Icons.description_outlined,
@@ -160,7 +167,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             // Referral Card - Gold accent
             AppCard(
               variant: AppCardVariant.goldAccent,
-              onTap: () => context.push('/referrals'),
+              onTap: () => context.fsmPush('/referrals'),
               child: Row(
                 children: [
                   Container(
@@ -201,6 +208,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             // ACCOUNT ACTIONS
             // Logout Button
             AppButton(
+              key: const ValueKey('settings_logout_button'),
               label: l10n.common_logout,
               onPressed: () => _showLogoutDialog(context, ref, l10n),
               variant: AppButtonVariant.secondary,
@@ -356,11 +364,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               size: AppButtonSize.small,
             ),
             AppButton(
+              key: const ValueKey('settings_logout_confirm_button'),
               label: l10n.common_logout,
               onPressed: () {
                 Navigator.pop(dialogContext);
                 ref.read(authProvider.notifier).logout();
-                context.go('/login');
+                context.fsmGo('/login');
               },
               variant: AppButtonVariant.danger,
               size: AppButtonSize.small,
@@ -472,7 +481,7 @@ class _KycTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final kycStatus = ref.watch(kycStatusProvider);
+    final kycStatus = ref.watch(effectiveKycStatusProvider);
     final l10n = AppLocalizations.of(context)!;
 
     String subtitle;
@@ -551,12 +560,20 @@ class _BiometricTile extends ConsumerWidget {
               onChanged: (value) async {
                 final service = ref.read(biometricServiceProvider);
                 if (value) {
+                  final authState = ref.read(authProvider);
+                  final userId = authState.user?.id;
+                  if (userId == null || userId.isEmpty) {
+                    return;
+                  }
                   final authenticatedBio = await service.authenticate(
                     localizedReason:
                         l10n.biometric_enrollment_authenticate_reason,
                   );
                   if (authenticatedBio.success) {
-                    await service.enableBiometric();
+                    await service.enableBiometric(
+                      userId: userId,
+                      phone: authState.phone,
+                    );
                     ref.invalidate(biometricEnabledProvider);
                   }
                 } else {
@@ -605,7 +622,7 @@ class _LanguageTile extends ConsumerWidget {
       icon: Icons.language,
       title: l10n.settings_language,
       subtitle: currentLanguageName,
-      onTap: () => context.push('/settings/language'),
+      onTap: () => context.fsmPush('/settings/language'),
     );
   }
 }
@@ -631,7 +648,7 @@ class _CurrencyTile extends ConsumerWidget {
       icon: Icons.attach_money,
       title: l10n.settings_defaultCurrency,
       subtitle: subtitle,
-      onTap: () => context.push('/settings/currency'),
+      onTap: () => context.fsmPush('/settings/currency'),
     );
   }
 }
@@ -804,7 +821,7 @@ class _ProfileCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.colors;
     final userState = ref.watch(userStateMachineProvider);
-    final kycStatus = ref.watch(kycStatusProvider);
+    final kycStatus = ref.watch(effectiveKycStatusProvider);
 
     return AppCard(
       variant: AppCardVariant.elevated,
@@ -850,7 +867,7 @@ class _ProfileCard extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.xxs),
                 // Phone number
                 AppText(
-                  _formatPhone(userState.phone),
+                  formatProfilePhone(userState.phone),
                   variant: AppTextVariant.bodySmall,
                   color: colors.textSecondary,
                 ),
@@ -861,21 +878,5 @@ class _ProfileCard extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  String _formatPhone(String? phone) {
-    if (phone == null || phone.isEmpty) return '';
-    // Format: +225 XX XX XX XX
-    if (phone.startsWith('+') && phone.length > 6) {
-      final countryCode = phone.substring(0, 4); // +225
-      final number = phone.substring(4);
-      // Insert spaces every 2 digits
-      final formatted = number.replaceAllMapped(
-        RegExp(r'.{2}'),
-        (match) => '${match.group(0)} ',
-      );
-      return '$countryCode $formatted'.trim();
-    }
-    return phone;
   }
 }

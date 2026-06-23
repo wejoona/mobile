@@ -2,17 +2,20 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Email verification screen — 6-digit OTP input
 class EmailVerificationScreen extends ConsumerStatefulWidget {
-  const EmailVerificationScreen({super.key});
+  const EmailVerificationScreen({super.key, String? successRoute})
+    : _successRoute = successRoute;
+
+  final String? _successRoute;
 
   @override
   ConsumerState<EmailVerificationScreen> createState() =>
@@ -150,9 +153,16 @@ class _EmailVerificationScreenState
 
       await _markEmailVerified();
 
-      // Pop back after a short delay
       await Future.delayed(const Duration(seconds: 2));
-      if (mounted) context.pop();
+      if (!mounted) {
+        return;
+      }
+      final successRoute = widget._successRoute;
+      if (successRoute != null && successRoute.startsWith('/')) {
+        context.fsmGo(successRoute);
+      } else {
+        context.fsmPop();
+      }
     } catch (e) {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
@@ -331,7 +341,7 @@ class _EmailVerificationScreenState
         backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.textPrimary),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
         title: AppText(
           l10n.emailVerification_title,
@@ -587,7 +597,7 @@ class _EmailVerificationScreenState
         backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.textPrimary),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
         title: AppText(
           l10n.emailVerification_title,
@@ -635,7 +645,7 @@ class _EmailVerificationScreenState
               AppButton(
                 label: l10n.emailVerification_addEmail,
                 icon: Icons.edit_rounded,
-                onPressed: () => context.go('/settings/profile/edit'),
+                onPressed: () => context.fsmGo('/settings/profile/edit'),
                 isFullWidth: true,
               ),
             ],

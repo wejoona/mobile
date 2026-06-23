@@ -1,20 +1,22 @@
 import 'package:go_router/go_router.dart';
+import 'package:usdc_wallet/features/auth/views/legal_document_view.dart';
 import 'package:usdc_wallet/features/auth/views/login_otp_view.dart';
 import 'package:usdc_wallet/features/auth/views/login_view.dart';
-import 'package:usdc_wallet/features/auth/views/otp_view.dart';
 import 'package:usdc_wallet/features/fsm_states/views/index.dart';
-import 'package:usdc_wallet/features/onboarding/views/kyc_prompt_view.dart';
-import 'package:usdc_wallet/features/onboarding/views/onboarding_pin_view.dart';
-import 'package:usdc_wallet/features/onboarding/views/onboarding_success_view.dart';
 import 'package:usdc_wallet/features/onboarding/views/onboarding_view.dart';
-import 'package:usdc_wallet/features/onboarding/views/otp_verification_view.dart';
-import 'package:usdc_wallet/features/onboarding/views/phone_input_view.dart';
 import 'package:usdc_wallet/features/onboarding/views/profile_complete_view.dart';
-import 'package:usdc_wallet/features/onboarding/views/profile_setup_view.dart';
 import 'package:usdc_wallet/features/pin/views/pin_screen.dart';
+import 'package:usdc_wallet/features/signup/views/signup_kyc_prompt_view.dart';
+import 'package:usdc_wallet/features/signup/views/signup_legal_consent_view.dart';
+import 'package:usdc_wallet/features/signup/views/signup_otp_verification_view.dart';
+import 'package:usdc_wallet/features/signup/views/signup_phone_view.dart';
+import 'package:usdc_wallet/features/signup/views/signup_pin_setup_view.dart';
+import 'package:usdc_wallet/features/signup/views/signup_profile_setup_view.dart';
+import 'package:usdc_wallet/features/signup/views/signup_success_view.dart';
 import 'package:usdc_wallet/features/splash/views/splash_view.dart';
 import 'package:usdc_wallet/features/wallet/views/create_wallet_view.dart';
 import 'package:usdc_wallet/router/page_transitions.dart';
+import 'package:usdc_wallet/services/legal/legal_documents_service.dart';
 
 List<RouteBase> authStateRoutes() => [
   // Splash Screen (no transition)
@@ -32,55 +34,108 @@ List<RouteBase> authStateRoutes() => [
       child: const ProfileCompleteView(),
     ),
   ),
+  GoRoute(
+    path: '/setup/set-pin',
+    pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+      state: state,
+      child: const SignupPinSetupView(mode: SignupPinSetupMode.accountSetup),
+    ),
+  ),
 
-  // Onboarding Route (fade)
+  // Product introduction route. This is not account creation.
   GoRoute(
     path: '/onboarding',
     pageBuilder: (context, state) =>
         AppPageTransitions.fade(state: state, child: const OnboardingView()),
   ),
+
+  // Signup/account creation routes. Keep these explicit so login,
+  // introduction, and registration cannot drift into each other.
   GoRoute(
-    path: '/onboarding/phone',
+    path: '/signup',
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
-      child: const PhoneInputView(),
+      child: const SignupPhoneView(),
     ),
   ),
   GoRoute(
-    path: '/onboarding/otp',
+    path: '/signup/legal-consent',
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
-      child: const OtpVerificationView(),
+      child: const SignupLegalConsentView(),
     ),
   ),
   GoRoute(
-    path: '/onboarding/profile',
+    path: '/legal/terms',
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
-      child: const ProfileSetupView(),
+      child: LegalDocumentView(
+        documentType: LegalDocumentType.termsOfService,
+        fallbackRoute: _legalReturnTo(state),
+      ),
     ),
   ),
   GoRoute(
-    path: '/onboarding/pin',
+    path: '/legal/privacy',
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
-      child: const OnboardingPinView(),
+      child: LegalDocumentView(
+        documentType: LegalDocumentType.privacyPolicy,
+        fallbackRoute: _legalReturnTo(state),
+      ),
     ),
   ),
   GoRoute(
-    path: '/onboarding/kyc-prompt',
+    path: '/signup/verify-phone',
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
-      child: const KycPromptView(),
+      child: const SignupOtpVerificationView(),
     ),
   ),
   GoRoute(
-    path: '/onboarding/success',
+    path: '/signup/profile',
+    pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+      state: state,
+      child: const SignupProfileSetupView(),
+    ),
+  ),
+  GoRoute(
+    path: '/signup/set-pin',
+    pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+      state: state,
+      child: const SignupPinSetupView(mode: SignupPinSetupMode.signup),
+    ),
+  ),
+  GoRoute(
+    path: '/signup/kyc-prompt',
+    pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+      state: state,
+      child: const SignupKycPromptView(),
+    ),
+  ),
+  GoRoute(
+    path: '/signup/success',
     pageBuilder: (context, state) => AppPageTransitions.scaleAndFade(
       state: state,
-      child: const OnboardingSuccessView(),
+      child: const SignupSuccessView(),
     ),
   ),
+
+  // Legacy signup paths. Redirect instead of rendering so old deep links stay
+  // valid while new code speaks the explicit signup language.
+  GoRoute(path: '/onboarding/phone', redirect: (_, _) => '/signup'),
+  GoRoute(
+    path: '/onboarding/legal-consent',
+    redirect: (_, _) => '/signup/legal-consent',
+  ),
+  GoRoute(path: '/onboarding/otp', redirect: (_, _) => '/signup/verify-phone'),
+  GoRoute(path: '/onboarding/profile', redirect: (_, _) => '/signup/profile'),
+  GoRoute(path: '/onboarding/pin', redirect: (_, _) => '/signup/set-pin'),
+  GoRoute(
+    path: '/onboarding/kyc-prompt',
+    redirect: (_, _) => '/signup/kyc-prompt',
+  ),
+  GoRoute(path: '/onboarding/success', redirect: (_, _) => '/signup/success'),
 
   // Auth Routes (fade for smooth transitions)
   GoRoute(
@@ -99,13 +154,18 @@ List<RouteBase> authStateRoutes() => [
     path: '/login/pin',
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
-      child: const PinScreen(pinContext: PinContext.login),
+      child: PinScreen(
+        pinContext: PinContext.login,
+        successRoute: _authReturnTo(state),
+      ),
     ),
   ),
   GoRoute(
     path: '/otp',
-    pageBuilder: (context, state) =>
-        AppPageTransitions.fade(state: state, child: const OtpView()),
+    redirect: (_, state) {
+      final query = state.uri.query;
+      return query.isEmpty ? '/login/otp' : '/login/otp?$query';
+    },
   ),
 
   // FSM State-specific Routes
@@ -199,10 +259,33 @@ List<RouteBase> authStateRoutes() => [
   ),
 ];
 
-String _sessionLockReturnTo(GoRouterState state) {
+String _sessionLockReturnTo(GoRouterState state) =>
+    _safeReturnTo(state) ?? '/home';
+
+String _legalReturnTo(GoRouterState state) {
   final returnTo = state.uri.queryParameters['returnTo']?.trim();
   if (returnTo == null || returnTo.isEmpty) {
-    return '/home';
+    return '/login';
+  }
+
+  final uri = Uri.tryParse(returnTo);
+  if (uri == null ||
+      uri.hasScheme ||
+      uri.hasAuthority ||
+      !returnTo.startsWith('/') ||
+      returnTo.startsWith('//')) {
+    return '/login';
+  }
+
+  return returnTo;
+}
+
+String? _authReturnTo(GoRouterState state) => _safeReturnTo(state);
+
+String? _safeReturnTo(GoRouterState state) {
+  final returnTo = state.uri.queryParameters['returnTo']?.trim();
+  if (returnTo == null || returnTo.isEmpty) {
+    return null;
   }
 
   final uri = Uri.tryParse(returnTo);
@@ -212,9 +295,10 @@ String _sessionLockReturnTo(GoRouterState state) {
       !returnTo.startsWith('/') ||
       returnTo.startsWith('//') ||
       returnTo.startsWith('/login') ||
+      returnTo.startsWith('/signup') ||
       returnTo.startsWith('/onboarding') ||
-      returnTo == '/session-locked') {
-    return '/home';
+      returnTo.startsWith('/session-locked')) {
+    return null;
   }
 
   return returnTo;

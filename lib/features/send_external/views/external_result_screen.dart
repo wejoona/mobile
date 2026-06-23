@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/send_external/providers/external_transfer_provider.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class ExternalResultScreen extends ConsumerWidget {
   const ExternalResultScreen({super.key});
@@ -20,10 +20,12 @@ class ExternalResultScreen extends ConsumerWidget {
     final state = ref.watch(externalTransferProvider);
     final result = state.result;
     final hasTransactionHash = result?.txHash.isNotEmpty == true;
+    final resultState = _externalResultState(result?.status ?? 'pending');
+    final colors = context.colors;
 
     if (result == null) {
       // Navigate back if no result
-      Future.microtask(() => context.go('/send-external'));
+      Future.microtask(() => context.fsmGo('/send-external'));
       return const SizedBox.shrink();
     }
 
@@ -38,28 +40,29 @@ class ExternalResultScreen extends ConsumerWidget {
                 children: [
                   SizedBox(height: AppSpacing.xxl),
 
-                  // Success animation/icon
                   Center(
                     child: Container(
                       width: 100,
                       height: 100,
                       decoration: BoxDecoration(
-                        color: context.colors.success.withValues(alpha: 0.2),
+                        color: _statusAccentColor(
+                          colors,
+                          resultState,
+                        ).withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        Icons.check_circle,
-                        color: context.colors.success,
+                        _statusIcon(resultState),
+                        color: _statusAccentColor(colors, resultState),
                         size: 60,
                       ),
                     ),
                   ),
                   SizedBox(height: AppSpacing.xl),
 
-                  // Success title
                   Center(
                     child: AppText(
-                      l10n.sendExternal_transferSuccess,
+                      _statusTitle(context, l10n, resultState),
                       variant: AppTextVariant.headlineMedium,
                       fontWeight: FontWeight.w600,
                       textAlign: TextAlign.center,
@@ -68,7 +71,7 @@ class ExternalResultScreen extends ConsumerWidget {
                   SizedBox(height: AppSpacing.sm),
                   Center(
                     child: AppText(
-                      l10n.sendExternal_processingMessage,
+                      _statusBody(context, l10n, resultState),
                       variant: AppTextVariant.bodyMedium,
                       color: context.colors.textSecondary,
                       textAlign: TextAlign.center,
@@ -76,12 +79,17 @@ class ExternalResultScreen extends ConsumerWidget {
                   ),
                   SizedBox(height: AppSpacing.xxl),
 
-                  // Amount sent
                   AppCard(
                     child: Column(
                       children: [
                         AppText(
-                          l10n.sendExternal_amountSent,
+                          resultState == _ExternalResultState.completed
+                              ? l10n.sendExternal_amountSent
+                              : _localizedExternalCopy(
+                                  context,
+                                  en: 'Amount',
+                                  fr: 'Montant',
+                                ),
                           variant: AppTextVariant.bodySmall,
                           color: context.colors.textSecondary,
                         ),
@@ -145,7 +153,7 @@ class ExternalResultScreen extends ConsumerWidget {
                     l10n.sendExternal_status,
                     _getStatusDisplay(result.status, l10n),
                     icon: Icons.info_outline,
-                    statusColor: _getStatusColor(result.status),
+                    statusColor: _getStatusColor(context, result.status),
                   ),
                   SizedBox(height: AppSpacing.xxl),
 
@@ -273,18 +281,8 @@ class ExternalResultScreen extends ConsumerWidget {
     }
   }
 
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'pending':
-      case 'processing':
-        return AppColors.warningBase;
-      case 'completed':
-        return AppColors.successBase;
-      case 'failed':
-        return AppColors.errorBase;
-      default:
-        return AppColors.textPrimary;
-    }
+  Color _getStatusColor(BuildContext context, String status) {
+    return _statusAccentColor(context.colors, _externalResultState(status));
   }
 
   void _copyToClipboard(BuildContext context, String text) {
@@ -340,6 +338,82 @@ class ExternalResultScreen extends ConsumerWidget {
     // Reset state
     ref.read(externalTransferProvider.notifier).reset();
     // Navigate to home
-    context.go('/home');
+    context.fsmGo('/home');
   }
+}
+
+enum _ExternalResultState { completed, pending, failed }
+
+_ExternalResultState _externalResultState(String status) {
+  switch (status.trim().toLowerCase()) {
+    case 'completed':
+    case 'success':
+    case 'successful':
+      return _ExternalResultState.completed;
+    case 'failed':
+    case 'rejected':
+    case 'cancelled':
+    case 'canceled':
+    case 'expired':
+      return _ExternalResultState.failed;
+    default:
+      return _ExternalResultState.pending;
+  }
+}
+
+IconData _statusIcon(_ExternalResultState state) => switch (state) {
+  _ExternalResultState.completed => Icons.check_circle,
+  _ExternalResultState.pending => Icons.schedule_rounded,
+  _ExternalResultState.failed => Icons.error_outline_rounded,
+};
+
+Color _statusAccentColor(ThemeColors colors, _ExternalResultState state) =>
+    switch (state) {
+      _ExternalResultState.completed => colors.success,
+      _ExternalResultState.pending => colors.warningText,
+      _ExternalResultState.failed => colors.error,
+    };
+
+String _statusTitle(
+  BuildContext context,
+  AppLocalizations l10n,
+  _ExternalResultState state,
+) => switch (state) {
+  _ExternalResultState.completed => l10n.sendExternal_transferSuccess,
+  _ExternalResultState.pending => _localizedExternalCopy(
+    context,
+    en: 'Transfer Pending',
+    fr: 'Transfert en attente',
+  ),
+  _ExternalResultState.failed => _localizedExternalCopy(
+    context,
+    en: 'Transfer Failed',
+    fr: 'Échec du transfert',
+  ),
+};
+
+String _statusBody(
+  BuildContext context,
+  AppLocalizations l10n,
+  _ExternalResultState state,
+) => switch (state) {
+  _ExternalResultState.completed => l10n.sendExternal_processingMessage,
+  _ExternalResultState.pending => _localizedExternalCopy(
+    context,
+    en: 'Korido accepted the request. Wait for the final blockchain status before sending again.',
+    fr: 'Korido a accepté la demande. Attendez le statut final sur la blockchain avant de renvoyer.',
+  ),
+  _ExternalResultState.failed => _localizedExternalCopy(
+    context,
+    en: 'No external transfer was completed. Check the details or contact support before retrying.',
+    fr: 'Aucun transfert externe n’a été finalisé. Vérifiez les détails ou contactez le support avant de réessayer.',
+  ),
+};
+
+String _localizedExternalCopy(
+  BuildContext context, {
+  required String en,
+  required String fr,
+}) {
+  return Localizations.localeOf(context).languageCode == 'fr' ? fr : en;
 }

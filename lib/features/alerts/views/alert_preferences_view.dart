@@ -4,19 +4,21 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/alerts/models/index.dart';
-import 'package:usdc_wallet/features/alerts/providers/index.dart' hide AlertType;
+import 'package:usdc_wallet/features/alerts/providers/index.dart'
+    hide AlertType;
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class AlertPreferencesView extends ConsumerStatefulWidget {
   const AlertPreferencesView({super.key});
 
   @override
-  ConsumerState<AlertPreferencesView> createState() => _AlertPreferencesViewState();
+  ConsumerState<AlertPreferencesView> createState() =>
+      _AlertPreferencesViewState();
 }
 
 class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
@@ -45,11 +47,13 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
         actions: [
           TextButton(
-            onPressed: state.isSaving ? null : () => _resetToDefault(l10n, colors),
+            onPressed: state.isSaving
+                ? null
+                : () => _resetToDefault(l10n, colors),
             child: AppText(
               'Réinitialiser',
               variant: AppTextVariant.labelMedium,
@@ -59,33 +63,35 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
         ],
       ),
       body: state.isLoading
-          ? Center(
-              child: CircularProgressIndicator(color: colors.gold),
-            )
+          ? Center(child: CircularProgressIndicator(color: colors.gold))
           : state.preferences == null
-              ? Center(
-                  child: AppText(
-                    'Impossible de charger les préférences',
-                    variant: AppTextVariant.bodyMedium,
-                    color: colors.textSecondary,
+          ? Center(
+              child: AppText(
+                'Impossible de charger les préférences',
+                variant: AppTextVariant.bodyMedium,
+                color: colors.textSecondary,
+              ),
+            )
+          : Stack(
+              children: [
+                _buildContent(state.preferences!, colors, l10n),
+                if (state.isSaving)
+                  Container(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    child: Center(
+                      child: CircularProgressIndicator(color: colors.gold),
+                    ),
                   ),
-                )
-              : Stack(
-                  children: [
-                    _buildContent(state.preferences!, colors, l10n),
-                    if (state.isSaving)
-                      Container(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        child: Center(
-                          child: CircularProgressIndicator(color: colors.gold),
-                        ),
-                      ),
-                  ],
-                ),
+              ],
+            ),
     );
   }
 
-  Widget _buildContent(AlertPreferences prefs, ThemeColors colors, AppLocalizations l10n) {
+  Widget _buildContent(
+    AlertPreferences prefs,
+    ThemeColors colors,
+    AppLocalizations l10n,
+  ) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
       child: Column(
@@ -99,7 +105,9 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
             title: 'Notifications push',
             subtitle: 'Recevoir les alertes sur votre appareil',
             value: prefs.pushAlerts,
-            onChanged: (value) => ref.read(alertPreferencesProvider.notifier).togglePushAlerts(value),
+            onChanged: (value) => ref
+                .read(alertPreferencesProvider.notifier)
+                .togglePushAlerts(value),
             colors: colors,
           ),
           _buildChannelToggle(
@@ -107,7 +115,9 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
             title: 'Alertes par e-mail',
             subtitle: 'Recevoir les alertes par e-mail',
             value: prefs.emailAlerts,
-            onChanged: (value) => ref.read(alertPreferencesProvider.notifier).toggleEmailAlerts(value),
+            onChanged: (value) => ref
+                .read(alertPreferencesProvider.notifier)
+                .toggleEmailAlerts(value),
             colors: colors,
           ),
           _buildChannelToggle(
@@ -115,7 +125,9 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
             title: 'SMS Alerts',
             subtitle: 'Recevoir les alertes critiques par SMS',
             value: prefs.smsAlerts,
-            onChanged: (value) => ref.read(alertPreferencesProvider.notifier).toggleSmsAlerts(value),
+            onChanged: (value) => ref
+                .read(alertPreferencesProvider.notifier)
+                .toggleSmsAlerts(value),
             colors: colors,
           ),
 
@@ -131,7 +143,9 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
             min: 100,
             max: 10000,
             suffix: ' USD',
-            onChanged: (value) => ref.read(alertPreferencesProvider.notifier).setLargeTransactionThreshold(value),
+            onChanged: (value) => ref
+                .read(alertPreferencesProvider.notifier)
+                .setLargeTransactionThreshold(value),
             colors: colors,
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -142,7 +156,9 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
             min: 0,
             max: 500,
             suffix: ' USD',
-            onChanged: (value) => ref.read(alertPreferencesProvider.notifier).setBalanceLowThreshold(value),
+            onChanged: (value) => ref
+                .read(alertPreferencesProvider.notifier)
+                .setBalanceLowThreshold(value),
             colors: colors,
           ),
 
@@ -157,7 +173,9 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
             color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.md),
-          ...AlertType.values.map((type) => _buildAlertTypeToggle(prefs, type, colors)),
+          ...AlertType.values.map(
+            (type) => _buildAlertTypeToggle(prefs, type, colors),
+          ),
 
           const SizedBox(height: AppSpacing.xxl),
 
@@ -174,12 +192,15 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
           _buildToggleCard(
             icon: Icons.priority_high,
             title: 'Instant Critical Alerts',
-            subtitle: 'Always receive critical alerts immediately, even during quiet hours',
+            subtitle:
+                'Always receive critical alerts immediately, even during quiet hours',
             value: prefs.instantCriticalAlerts,
             onChanged: (value) {
-              ref.read(alertPreferencesProvider.notifier).updatePreferences(
-                prefs.copyWith(instantCriticalAlerts: value),
-              );
+              ref
+                  .read(alertPreferencesProvider.notifier)
+                  .updatePreferences(
+                    prefs.copyWith(instantCriticalAlerts: value),
+                  );
             },
             colors: colors,
           ),
@@ -396,7 +417,11 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
     );
   }
 
-  Widget _buildAlertTypeToggle(AlertPreferences prefs, AlertType type, ThemeColors colors) {
+  Widget _buildAlertTypeToggle(
+    AlertPreferences prefs,
+    AlertType type,
+    ThemeColors colors,
+  ) {
     final isEnabled = prefs.alertTypes.contains(type);
 
     return Container(
@@ -440,7 +465,9 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
           ),
           Switch(
             value: isEnabled,
-            onChanged: (value) => ref.read(alertPreferencesProvider.notifier).toggleAlertType(type, value),
+            onChanged: (value) => ref
+                .read(alertPreferencesProvider.notifier)
+                .toggleAlertType(type, value),
             activeThumbColor: colors.gold,
           ),
         ],
@@ -478,11 +505,13 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
               ),
               Switch(
                 value: prefs.quietHoursEnabled,
-                onChanged: (value) => ref.read(alertPreferencesProvider.notifier).setQuietHours(
-                  enabled: value,
-                  startTime: prefs.quietHoursStart,
-                  endTime: prefs.quietHoursEnd,
-                ),
+                onChanged: (value) => ref
+                    .read(alertPreferencesProvider.notifier)
+                    .setQuietHours(
+                      enabled: value,
+                      startTime: prefs.quietHoursStart,
+                      endTime: prefs.quietHoursEnd,
+                    ),
                 activeThumbColor: colors.gold,
               ),
             ],
@@ -495,11 +524,13 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
                   child: _buildTimePicker(
                     label: 'Start',
                     time: prefs.quietHoursStart ?? '22:00',
-                    onChanged: (time) => ref.read(alertPreferencesProvider.notifier).setQuietHours(
-                      enabled: true,
-                      startTime: time,
-                      endTime: prefs.quietHoursEnd,
-                    ),
+                    onChanged: (time) => ref
+                        .read(alertPreferencesProvider.notifier)
+                        .setQuietHours(
+                          enabled: true,
+                          startTime: time,
+                          endTime: prefs.quietHoursEnd,
+                        ),
                     colors: colors,
                   ),
                 ),
@@ -508,11 +539,13 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
                   child: _buildTimePicker(
                     label: 'End',
                     time: prefs.quietHoursEnd ?? '07:00',
-                    onChanged: (time) => ref.read(alertPreferencesProvider.notifier).setQuietHours(
-                      enabled: true,
-                      startTime: prefs.quietHoursStart,
-                      endTime: time,
-                    ),
+                    onChanged: (time) => ref
+                        .read(alertPreferencesProvider.notifier)
+                        .setQuietHours(
+                          enabled: true,
+                          startTime: prefs.quietHoursStart,
+                          endTime: time,
+                        ),
                     colors: colors,
                   ),
                 ),
@@ -555,7 +588,8 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
         );
 
         if (picked != null) {
-          final newTime = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+          final newTime =
+              '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
           onChanged(newTime);
         }
       },
@@ -584,7 +618,10 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
     );
   }
 
-  Widget _buildDigestFrequencySection(AlertPreferences prefs, ThemeColors colors) {
+  Widget _buildDigestFrequencySection(
+    AlertPreferences prefs,
+    ThemeColors colors,
+  ) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
@@ -601,24 +638,32 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
             color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.md),
-          ...DigestFrequency.values.map((freq) => _buildDigestFrequencyOption(prefs, freq, colors)),
+          ...DigestFrequency.values.map(
+            (freq) => _buildDigestFrequencyOption(prefs, freq, colors),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildDigestFrequencyOption(AlertPreferences prefs, DigestFrequency freq, ThemeColors colors) {
+  Widget _buildDigestFrequencyOption(
+    AlertPreferences prefs,
+    DigestFrequency freq,
+    ThemeColors colors,
+  ) {
     final isSelected = prefs.digestFrequency == freq;
 
     return GestureDetector(
-      onTap: () => ref.read(alertPreferencesProvider.notifier).updatePreferences(
-        prefs.copyWith(digestFrequency: freq),
-      ),
+      onTap: () => ref
+          .read(alertPreferencesProvider.notifier)
+          .updatePreferences(prefs.copyWith(digestFrequency: freq)),
       child: Container(
         margin: const EdgeInsets.only(bottom: AppSpacing.sm),
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: isSelected ? colors.gold.withValues(alpha: 0.1) : Colors.transparent,
+          color: isSelected
+              ? colors.gold.withValues(alpha: 0.1)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
             color: isSelected ? colors.gold : context.colors.borderSubtle,
@@ -655,7 +700,10 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
     );
   }
 
-  Future<void> _resetToDefault(AppLocalizations l10n, ThemeColors colors) async {
+  Future<void> _resetToDefault(
+    AppLocalizations l10n,
+    ThemeColors colors,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(

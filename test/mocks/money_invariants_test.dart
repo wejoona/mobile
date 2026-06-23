@@ -34,11 +34,7 @@ void main() {
     await expectLater(
       dio.post(
         '/wallet/transfer/internal',
-        data: {
-          'toPhone': '+2250708091011',
-          'amount': 5,
-          'currency': 'USDC',
-        },
+        data: {'toPhone': '+2250708091011', 'amount': 5, 'currency': 'USDC'},
       ),
       throwsA(
         isA<DioException>()
@@ -46,9 +42,12 @@ void main() {
             .having(
               (error) => error.response?.data,
               'data',
-              containsPair(
-                'error',
-                'PIN verification required for this operation',
+              allOf(
+                containsPair(
+                  'message',
+                  'PIN verification required for this operation',
+                ),
+                containsPair('code', 'PIN_REQUIRED'),
               ),
             ),
       ),
@@ -56,7 +55,7 @@ void main() {
   });
 
   test(
-    'internal transfer updates wallet, transfers, and history together',
+    'internal transfer updates wallet and canonical history together',
     () async {
       final dio = await _authenticatedDio();
       _ensureCurrentWalletBalance(minUsdc: 50);
@@ -87,12 +86,6 @@ void main() {
         closeTo(openingBalance - 12.25, 0.001),
       );
 
-      final transferListResponse = await dio.get('/transfers');
-      final transferItems =
-          (transferListResponse.data as Map<String, dynamic>)['items']
-              as List<dynamic>;
-      expect(transferItems.first, containsPair('id', transfer['id']));
-
       final historyResponse = await dio.get('/wallet/transactions');
       final transactions =
           (historyResponse.data as Map<String, dynamic>)['transactions']
@@ -111,13 +104,17 @@ void main() {
       final dio = await _authenticatedDio();
 
       final initiateResponse = await dio.post(
-        '/deposits/initiate',
-        data: {'providerCode': 'OMCI', 'amount': 5000, 'currency': 'XOF'},
+        '/wallet/deposit',
+        data: {
+          'channelId': 'orange_money_ci',
+          'amount': 5000,
+          'sourceCurrency': 'XOF',
+        },
       );
       final deposit = initiateResponse.data as Map<String, dynamic>;
       final depositId = deposit['depositId'] as String;
 
-      final statusResponse = await dio.get('/deposits/$depositId');
+      final statusResponse = await dio.get('/wallet/deposit/$depositId');
       final status = statusResponse.data as Map<String, dynamic>;
 
       expect(depositId, isNotEmpty);

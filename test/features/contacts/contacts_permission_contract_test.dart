@@ -16,14 +16,11 @@ void main() {
     final recipientSource = File(
       'lib/features/send/views/recipient_screen.dart',
     ).readAsStringSync();
-    final entrySource = File(
-      'lib/features/contacts/views/contacts_entry_screen.dart',
-    ).readAsStringSync();
-    final permissionScreenSource = File(
-      'lib/features/contacts/views/contacts_permission_screen.dart',
-    ).readAsStringSync();
     final listSource = File(
       'lib/features/contacts/views/contacts_list_screen.dart',
+    ).readAsStringSync();
+    final routeSource = File(
+      'lib/router/routes/feature_overview_routes.dart',
     ).readAsStringSync();
 
     final syncContactsBody = _methodBody(providerSource, 'syncContacts');
@@ -78,25 +75,26 @@ void main() {
     expect(pickerSource, contains('contactsService.hasContactsPermission'));
     expect(pickerSource, isNot(contains('permission_handler')));
     expect(pickerSource, contains('_readSyncedDeviceContacts'));
-    expect(entrySource, contains('contactsServiceProvider'));
-    expect(entrySource, contains('hasContactsPermission'));
-    expect(entrySource, isNot(contains('permission_handler')));
-    expect(permissionScreenSource, contains('openContactsSettings'));
-    expect(permissionScreenSource, isNot(contains('permission_handler')));
     expect(listSource, contains('openContactsSettings'));
     expect(listSource, isNot(contains('permission_handler')));
-    expect(listSource, contains('_loadContactsOrRouteToPermission'));
+    expect(listSource, contains('_loadContacts'));
     expect(
       listSource,
-      contains('final routed = await _routeToPermissionPromptIfNeeded();'),
+      isNot(contains("context.go('/contacts/permission')")),
       reason:
-          'contacts list startup should not sync and show an inline error while also routing first-time users to the permission explainer',
+          'Contacts owns its permission state inline instead of bouncing to another route.',
     );
     expect(
       listSource,
-      contains('if (!routed && mounted)'),
+      isNot(contains('_routeToPermissionPromptIfNeeded')),
       reason:
-          'background contact sync must only run after the permission route decision is settled',
+          'Contacts should have one canonical screen role, not entry/permission/list variants.',
+    );
+    expect(
+      routeSource,
+      contains('child: const ContactsListScreen()'),
+      reason:
+          'Both /contacts and the legacy /contacts/permission route should use the canonical list surface.',
     );
 
     final recipientContactBody = _methodBody(

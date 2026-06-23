@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Welcome screen with onboarding slides
 class WelcomeView extends ConsumerStatefulWidget {
@@ -138,11 +138,7 @@ class _WelcomeViewState extends ConsumerState<WelcomeView> {
               color: colors.elevated,
               borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
-            child: Icon(
-              icon,
-              size: 100,
-              color: colors.gold,
-            ),
+            child: Icon(icon, size: 100, color: colors.gold),
           ),
           SizedBox(height: AppSpacing.xxl),
           AppText(
@@ -187,6 +183,6 @@ class _WelcomeViewState extends ConsumerState<WelcomeView> {
   }
 
   void _handleGetStarted() {
-    context.go('/onboarding/phone');
+    context.fsmGo('/signup');
   }
 }

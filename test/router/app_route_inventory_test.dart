@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
 import 'package:usdc_wallet/router/app_router.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/state/app_state.dart' hide AuthStatus;
@@ -26,6 +27,11 @@ class _TestAppFsmNotifier extends AppFsmNotifier {
 
   @override
   void handleEffects(List<FsmEffect> effects) {}
+}
+
+class _FixedSignupFlowNotifier extends SignupFlowNotifier {
+  @override
+  SignupFlowState build() => const SignupFlowState(isLoading: false);
 }
 
 class _TestKycStateMachine extends KycStateMachine {
@@ -53,6 +59,7 @@ void main() {
       kycStateMachineProvider.overrideWith(_TestKycStateMachine.new),
       userStateMachineProvider.overrideWith(_TestUserStateMachine.new),
       walletStateMachineProvider.overrideWith(_TestWalletStateMachine.new),
+      signupFlowProvider.overrideWith(_FixedSignupFlowNotifier.new),
       secureStorageProvider.overrideWithValue(MockSecureStorage()),
     ],
   );
@@ -90,13 +97,30 @@ void main() {
       );
     });
 
-    test('covers the full onboarding route sequence explicitly', () {
+    test('covers the full signup route sequence explicitly', () {
       final routePaths = _declaredRoutePaths();
 
-      const onboardingFlow = [
+      const signupFlow = [
         '/',
         '/onboarding',
+        '/signup',
+        '/signup/legal-consent',
+        '/signup/verify-phone',
+        '/signup/profile',
+        '/signup/set-pin',
+        '/signup/kyc-prompt',
+        '/signup/success',
+      ];
+
+      expect(routePaths, containsAllInOrder(signupFlow));
+    });
+
+    test('keeps legacy onboarding signup route redirects declared', () {
+      final routePaths = _declaredRoutePaths();
+
+      const legacySignupPaths = [
         '/onboarding/phone',
+        '/onboarding/legal-consent',
         '/onboarding/otp',
         '/onboarding/profile',
         '/onboarding/pin',
@@ -104,7 +128,54 @@ void main() {
         '/onboarding/success',
       ];
 
-      expect(routePaths, containsAllInOrder(onboardingFlow));
+      expect(routePaths, containsAll(legacySignupPaths));
+    });
+
+    test('does not expose legacy PIN route aliases', () {
+      final routePaths = _declaredRoutePaths();
+
+      expect(routePaths, contains('/settings/pin'));
+      expect(routePaths, contains('/setup/set-pin'));
+      expect(routePaths, contains('/signup/set-pin'));
+      expect(routePaths, isNot(contains('/pin/setup')));
+      expect(routePaths, isNot(contains('/pin/confirm')));
+      expect(routePaths, isNot(contains('/pin/change')));
+      expect(routePaths, isNot(contains('/pin/set')));
+    });
+
+    test('legacy transfer success aliases cannot render fake success data', () {
+      final source = File(
+        'lib/router/routes/card_account_routes.dart',
+      ).readAsStringSync();
+
+      expect(source, contains("path: '/transfer/success'"));
+      expect(source, contains("path: '/transfer-success'"));
+      expect(source, contains("redirect: (_, _) => '/send/result'"));
+      expect(source, isNot(contains('TransferSuccessView(')));
+      expect(source, isNot(contains("transactionId: 'N/A'")));
+      expect(source, isNot(contains("recipient: 'Unknown'")));
+    });
+
+    test('receive route uses permission-aware money-flow screen', () {
+      final source = File(
+        'lib/router/routes/card_account_routes.dart',
+      ).readAsStringSync();
+
+      expect(source, contains("path: '/receive'"));
+      expect(source, contains('ReceiveView()'));
+      expect(source, isNot(contains('ReceiveQrScreen()')));
+    });
+
+    test('merchant payment receipt uses backend payment status', () {
+      final source = File(
+        'lib/features/merchant_pay/views/payment_receipt_view.dart',
+      ).readAsStringSync();
+
+      expect(source, contains('widget.payment.status'));
+      expect(source, contains('_paymentStatus(widget.payment.status)'));
+      expect(source, contains('_statusTitle(paymentStatus)'));
+      expect(source, isNot(contains('status: TransactionStatus.completed')));
+      expect(source, isNot(contains("'Payment Successful!'")));
     });
 
     test(
@@ -148,7 +219,7 @@ List<String> _declaredRoutePaths() {
   return routeSources.expand((file) {
     final source = file.readAsStringSync();
     return RegExp(
-      r"path:\s*'([^']+)'",
+      r"GoRoute\(\s*path:\s*'([^']+)'",
     ).allMatches(source).map((match) => match.group(1)!);
   }).toList();
 }

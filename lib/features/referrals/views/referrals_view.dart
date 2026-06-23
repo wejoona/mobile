@@ -1,12 +1,16 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/referrals/providers/referrals_provider.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 
 class ReferralsView extends ConsumerWidget {
@@ -36,7 +40,7 @@ class ReferralsView extends ConsumerWidget {
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.textPrimary),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => context.fsmSafePop(),
         ),
         title: AppText(
           l10n.referrals_title,
@@ -54,55 +58,66 @@ class ReferralsView extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Subtitle
-              AppText(
-                l10n.referrals_subtitle,
-                variant: AppTextVariant.bodyMedium,
-                color: colors.textSecondary,
-              ),
+              AppText(l10n.referrals_subtitle, color: colors.textSecondary),
 
               const SizedBox(height: AppSpacing.xxl),
 
               // Rewards Card
-              AppCard(
-                variant: AppCardVariant.goldAccent,
-                padding: const EdgeInsets.all(AppSpacing.xxl),
-                child: Column(
-                  children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: context.colors.goldGradient,
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+              SizedBox(
+                width: double.infinity,
+                child: AppCard(
+                  variant: AppCardVariant.goldAccent,
+                  padding: const EdgeInsets.all(AppSpacing.xxl),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: context.colors.goldGradient,
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(AppRadius.full),
                         ),
-                        borderRadius: BorderRadius.circular(AppRadius.full),
+                        child: Icon(
+                          Icons.card_giftcard,
+                          size: 40,
+                          color: context.colors.textInverse,
+                        ),
                       ),
-                      child: Icon(
-                        Icons.card_giftcard,
-                        size: 40,
-                        color: context.colors.textInverse,
+                      const SizedBox(height: AppSpacing.lg),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: AmountText.fromText(
+                          l10n.referrals_earnAmount,
+                          size: AmountTextSize.display,
+                          color: colors.gold,
+                          textAlign: TextAlign.center,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    AppText(
-                      l10n.referrals_earnAmount,
-                      variant: AppTextVariant.displaySmall,
-                      color: colors.gold,
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    AppText(
-                      l10n.referrals_earnDescription,
-                      variant: AppTextVariant.bodyMedium,
-                      color: colors.textSecondary,
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+                      const SizedBox(height: AppSpacing.sm),
+                      AppText(
+                        l10n.referrals_earnDescription,
+                        color: colors.textSecondary,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
               const SizedBox(height: AppSpacing.xxl),
+
+              if (referralAsync.hasError) ...[
+                _ReferralErrorCard(
+                  colors: colors,
+                  message: _referralErrorMessage(l10n, referralAsync.error!),
+                  onRetry: () => ref.invalidate(referralProvider),
+                ),
+                const SizedBox(height: AppSpacing.xxl),
+              ],
 
               // Referral Code Card
               AppCard(
@@ -126,7 +141,6 @@ class ReferralsView extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(AppRadius.md),
                               border: Border.all(
                                 color: colors.gold.withValues(alpha: 0.3),
-                                width: 1,
                               ),
                             ),
                             child: Center(
@@ -167,9 +181,8 @@ class ReferralsView extends ConsumerWidget {
                     child: AppButton(
                       label: l10n.referrals_shareLink,
                       onPressed: isReferralReady
-                          ? () => _shareLink(context, referralCode, l10n)
+                          ? () => _shareLink(referralCode, l10n)
                           : null,
-                      variant: AppButtonVariant.primary,
                       icon: Icons.share,
                     ),
                   ),
@@ -213,6 +226,7 @@ class ReferralsView extends ConsumerWidget {
                       colors: colors,
                       icon: Icons.attach_money,
                       value: formatXof(totalEarned),
+                      isMoney: true,
                       label: l10n.referrals_totalEarned,
                     ),
                   ),
@@ -279,7 +293,6 @@ class ReferralsView extends ConsumerWidget {
                         const SizedBox(height: AppSpacing.md),
                         AppText(
                           l10n.referrals_noReferrals,
-                          variant: AppTextVariant.bodyMedium,
                           color: colors.textSecondary,
                         ),
                         const SizedBox(height: AppSpacing.xs),
@@ -315,7 +328,6 @@ class ReferralsView extends ConsumerWidget {
                               children: [
                                 AppText(
                                   entry.referredName,
-                                  variant: AppTextVariant.bodyMedium,
                                   color: colors.textPrimary,
                                 ),
                                 AppText(
@@ -327,9 +339,9 @@ class ReferralsView extends ConsumerWidget {
                             ),
                           ),
                           if (entry.reward != null)
-                            AppText(
+                            AmountText.fromText(
                               '+${formatXof(entry.reward!)}',
-                              variant: AppTextVariant.bodyMedium,
+                              size: AmountTextSize.medium,
                               color: colors.success,
                             ),
                         ],
@@ -346,10 +358,16 @@ class ReferralsView extends ConsumerWidget {
     );
   }
 
+  String _referralErrorMessage(AppLocalizations l10n, Object error) {
+    final raw = error.toString().replaceFirst(RegExp(r'^Exception:\s*'), '');
+    final compact = raw.length > 160 ? '${raw.substring(0, 157)}...' : raw;
+    return l10n.referrals_error(compact);
+  }
+
   void _copyCode(BuildContext context, String code) {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
-    Clipboard.setData(ClipboardData(text: code));
+    unawaited(Clipboard.setData(ClipboardData(text: code)));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(l10n.referrals_codeCopied),
@@ -358,14 +376,14 @@ class ReferralsView extends ConsumerWidget {
     );
   }
 
-  void _shareLink(BuildContext context, String code, AppLocalizations l10n) {
+  void _shareLink(String code, AppLocalizations l10n) => unawaited(
     SharePlus.instance.share(
       ShareParams(
         text: l10n.referrals_shareMessage(code),
         title: l10n.referrals_shareSubject,
       ),
-    );
-  }
+    ),
+  );
 
   void _inviteContacts(
     BuildContext context,
@@ -373,78 +391,149 @@ class ReferralsView extends ConsumerWidget {
     String referralCode,
   ) {
     final colors = context.colors;
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: colors.container,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: AppSpacing.md),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colors.borderSubtle,
-                borderRadius: BorderRadius.circular(2),
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        backgroundColor: colors.container,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppRadius.lg),
+          ),
+        ),
+        builder: (ctx) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: AppSpacing.md),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: colors.borderSubtle,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            AppText(
-              l10n.referrals_invite,
-              variant: AppTextVariant.titleMedium,
-              color: colors.textPrimary,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            ListTile(
-              leading: const Icon(Icons.message, color: Color(0xFF25D366)),
-              title: const AppText('WhatsApp'),
-              onTap: () {
-                Navigator.pop(ctx);
-                final msg = Uri.encodeComponent(
-                  l10n.referrals_shareMessage(referralCode),
-                );
-                launchUrl(
-                  Uri.parse('https://wa.me/?text=$msg'),
-                  mode: LaunchMode.externalApplication,
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.sms, color: colors.gold),
-              title: const AppText('SMS'),
-              onTap: () {
-                Navigator.pop(ctx);
-                final msg = Uri.encodeComponent(
-                  l10n.referrals_shareMessage(referralCode),
-                );
-                launchUrl(
-                  Uri.parse('sms:?body=$msg'),
-                  mode: LaunchMode.externalApplication,
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.share, color: colors.textSecondary),
-              title: AppText(l10n.referrals_shareLink),
-              onTap: () {
-                Navigator.pop(ctx);
-                SharePlus.instance.share(
-                  ShareParams(
-                    text: l10n.referrals_shareMessage(referralCode),
-                    title: l10n.referrals_shareSubject,
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: AppSpacing.lg),
-          ],
+              const SizedBox(height: AppSpacing.lg),
+              AppText(
+                l10n.referrals_invite,
+                variant: AppTextVariant.titleMedium,
+                color: colors.textPrimary,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              ListTile(
+                leading: const Icon(Icons.message, color: Color(0xFF25D366)),
+                title: const AppText('WhatsApp'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  final msg = Uri.encodeComponent(
+                    l10n.referrals_shareMessage(referralCode),
+                  );
+                  unawaited(
+                    launchUrl(
+                      Uri.parse('https://wa.me/?text=$msg'),
+                      mode: LaunchMode.externalApplication,
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.sms, color: colors.gold),
+                title: const AppText('SMS'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  final msg = Uri.encodeComponent(
+                    l10n.referrals_shareMessage(referralCode),
+                  );
+                  unawaited(
+                    launchUrl(
+                      Uri.parse('sms:?body=$msg'),
+                      mode: LaunchMode.externalApplication,
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.share, color: colors.textSecondary),
+                title: AppText(l10n.referrals_shareLink),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  unawaited(
+                    SharePlus.instance.share(
+                      ShareParams(
+                        text: l10n.referrals_shareMessage(referralCode),
+                        title: l10n.referrals_shareSubject,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: AppSpacing.lg),
+            ],
+          ),
         ),
       ),
     );
+  }
+}
+
+class _ReferralErrorCard extends StatelessWidget {
+  const _ReferralErrorCard({
+    required this.colors,
+    required this.message,
+    required this.onRetry,
+  });
+
+  final ThemeColors colors;
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) => AppCard(
+    variant: AppCardVariant.elevated,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: colors.error.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(AppRadius.md),
+              ),
+              child: Icon(Icons.error_outline, color: colors.error),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: AppText(
+                AppLocalizations.of(context)!.common_error,
+                variant: AppTextVariant.titleMedium,
+                color: colors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+        AppText(message, color: colors.textSecondary),
+        const SizedBox(height: AppSpacing.lg),
+        AppButton(
+          label: AppLocalizations.of(context)!.action_retry,
+          onPressed: onRetry,
+          icon: Icons.refresh,
+          variant: AppButtonVariant.secondary,
+        ),
+      ],
+    ),
+  );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ThemeColors>('colors', colors))
+      ..add(StringProperty('message', message))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onRetry', onRetry));
   }
 }
 
@@ -454,35 +543,53 @@ class _StatCard extends StatelessWidget {
     required this.icon,
     required this.value,
     required this.label,
+    this.isMoney = false,
   });
 
   final ThemeColors colors;
   final IconData icon;
   final String value;
   final String label;
+  final bool isMoney;
 
   @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      variant: AppCardVariant.elevated,
-      child: Column(
-        children: [
-          Icon(icon, color: colors.gold, size: 28),
-          const SizedBox(height: AppSpacing.md),
+  Widget build(BuildContext context) => AppCard(
+    variant: AppCardVariant.elevated,
+    child: Column(
+      children: [
+        Icon(icon, color: colors.gold, size: 28),
+        const SizedBox(height: AppSpacing.md),
+        if (isMoney)
+          AmountText.fromText(
+            value,
+            size: AmountTextSize.medium,
+            color: colors.textPrimary,
+          )
+        else
           AppText(
             value,
             variant: AppTextVariant.titleLarge,
             color: colors.textPrimary,
           ),
-          const SizedBox(height: AppSpacing.xs),
-          AppText(
-            label,
-            variant: AppTextVariant.bodySmall,
-            color: colors.textSecondary,
-          ),
-        ],
-      ),
-    );
+        const SizedBox(height: AppSpacing.xs),
+        AppText(
+          label,
+          variant: AppTextVariant.bodySmall,
+          color: colors.textSecondary,
+        ),
+      ],
+    ),
+  );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ThemeColors>('colors', colors))
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(StringProperty('value', value))
+      ..add(StringProperty('label', label))
+      ..add(FlagProperty('isMoney', value: isMoney, ifTrue: 'money'));
   }
 }
 
@@ -502,62 +609,71 @@ class _HowItWorksStep extends StatelessWidget {
   final bool isLast;
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Column(
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: context.colors.goldGradient,
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(AppRadius.full),
+  Widget build(BuildContext context) => Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Column(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: context.colors.goldGradient,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              child: Center(
-                child: AppText(
-                  number,
-                  variant: AppTextVariant.labelLarge,
-                  color: context.colors.textInverse,
-                ),
-              ),
+              borderRadius: BorderRadius.circular(AppRadius.full),
             ),
-            if (!isLast)
-              Container(
-                width: 2,
-                height: 40,
-                color: colors.gold.withValues(alpha: 0.3),
+            child: Center(
+              child: AppText(
+                number,
+                variant: AppTextVariant.labelLarge,
+                color: context.colors.textInverse,
               ),
-          ],
-        ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppText(
-                  title,
-                  variant: AppTextVariant.titleSmall,
-                  color: colors.textPrimary,
-                ),
-                const SizedBox(height: AppSpacing.xxs),
-                AppText(
-                  description,
-                  variant: AppTextVariant.bodySmall,
-                  color: colors.textSecondary,
-                ),
-              ],
             ),
           ),
+          if (!isLast)
+            Container(
+              width: 2,
+              height: 40,
+              color: colors.gold.withValues(alpha: 0.3),
+            ),
+        ],
+      ),
+      const SizedBox(width: AppSpacing.md),
+      Expanded(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppText(
+                title,
+                variant: AppTextVariant.titleSmall,
+                color: colors.textPrimary,
+              ),
+              const SizedBox(height: AppSpacing.xxs),
+              AppText(
+                description,
+                variant: AppTextVariant.bodySmall,
+                color: colors.textSecondary,
+              ),
+            ],
+          ),
         ),
-      ],
-    );
+      ),
+    ],
+  );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ThemeColors>('colors', colors))
+      ..add(StringProperty('number', number))
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('description', description))
+      ..add(FlagProperty('isLast', value: isLast, ifTrue: 'last'));
   }
 }

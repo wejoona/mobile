@@ -39,7 +39,7 @@ class SavingsPotsRepository {
     String potId,
     double amount, {
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) async {
     return _service.deposit(
       potId,
@@ -54,7 +54,7 @@ class SavingsPotsRepository {
     String potId,
     double amount, {
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) async {
     return _service.withdraw(
       potId,

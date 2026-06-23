@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:file_selector/file_selector.dart';
 import 'dart:convert';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/bulk_payments/providers/bulk_payments_provider.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class BulkUploadView extends ConsumerStatefulWidget {
   const BulkUploadView({super.key});
@@ -211,10 +211,16 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
     setState(() => _isUploading = true);
 
     try {
-      final file = await FilePicker.pickFile(
-        type: FileType.custom,
-        allowedExtensions: ['csv'],
+      const csvTypeGroup = XTypeGroup(
+        label: 'CSV',
+        extensions: ['csv'],
+        mimeTypes: ['text/csv', 'application/csv', 'text/plain'],
+        uniformTypeIdentifiers: [
+          'public.comma-separated-values-text',
+          'public.plain-text',
+        ],
       );
+      final file = await openFile(acceptedTypeGroups: [csvTypeGroup]);
 
       if (file != null) {
         _fileName = file.name;
@@ -227,7 +233,7 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
         ref.read(draftBatchProvider.notifier).state = batch;
 
         if (mounted) {
-          context.push('/bulk-payments/preview');
+          context.fsmPush('/bulk-payments/preview');
         }
       }
     } catch (e) {

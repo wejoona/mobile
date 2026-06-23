@@ -102,19 +102,45 @@ void main() {
       expect(rateResponse.data['toCurrency'], 'USD');
     });
 
-    test('handles legacy /deposits initiation and status routes', () async {
-      final initiateResponse = await dio.post(
-        '/deposits/initiate',
-        data: {'amount': 50000, 'currency': 'XOF', 'providerCode': 'WAVECI'},
-      );
-      final depositId = initiateResponse.data['depositId'] as String;
-      final statusResponse = await dio.get('/deposits/$depositId');
+    test(
+      'handles canonical /wallet/deposit initiation and status routes',
+      () async {
+        final initiateResponse = await dio.post(
+          '/wallet/deposit',
+          data: {
+            'amount': 50000,
+            'sourceCurrency': 'XOF',
+            'channelId': 'wave-ci',
+          },
+        );
+        final depositId = initiateResponse.data['depositId'] as String;
+        final statusResponse = await dio.get('/wallet/deposit/$depositId');
 
-      expect(initiateResponse.statusCode, 200);
-      expect(initiateResponse.data['paymentMethodType'], 'QR_LINK');
-      expect(initiateResponse.data['providerCode'], 'WAVECI');
-      expect(statusResponse.statusCode, 200);
-      expect(statusResponse.data['depositId'], depositId);
+        expect(initiateResponse.statusCode, 200);
+        expect(initiateResponse.data['paymentMethodType'], 'mobile_money');
+        expect(initiateResponse.data['channelId'], 'wave-ci');
+        expect(initiateResponse.data['status'], 'processing');
+        expect(statusResponse.statusCode, 200);
+        expect(statusResponse.data['depositId'], depositId);
+      },
+    );
+
+    test('retired legacy /deposits/initiate rejects writes', () async {
+      await expectLater(
+        dio.post(
+          '/deposits/initiate',
+          data: {'amount': 50000, 'currency': 'XOF', 'providerCode': 'WAVECI'},
+        ),
+        throwsA(
+          isA<DioException>()
+              .having((error) => error.response?.statusCode, 'status', 410)
+              .having(
+                (error) => error.response?.data['error']['code'],
+                'code',
+                'DEPOSIT_WRITE_ENDPOINT_RETIRED',
+              ),
+        ),
+      );
     });
   });
 }

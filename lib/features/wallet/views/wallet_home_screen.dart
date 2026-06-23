@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdc_wallet/core/orientation/orientation_helper.dart';
 import 'package:usdc_wallet/design/animations/staggered_entrance.dart';
@@ -15,14 +14,19 @@ import 'package:usdc_wallet/design/utils/responsive_layout.dart';
 import 'package:usdc_wallet/domain/entities/limit.dart';
 import 'package:usdc_wallet/domain/entities/transaction.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
+import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
+import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
 import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
 import 'package:usdc_wallet/features/limits/widgets/limit_warning_banner.dart';
 import 'package:usdc_wallet/features/notifications/providers/notification_count_provider.dart';
+import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart'
+    as notification_feed;
 import 'package:usdc_wallet/features/wallet/widgets/cached_data_chip.dart';
 import 'package:usdc_wallet/features/wallet/widgets/wallet_home_actions.dart';
 import 'package:usdc_wallet/features/wallet/widgets/wallet_home_status_widgets.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/currency/currency_provider.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/utils/context_extensions.dart';
 import 'package:usdc_wallet/utils/logger.dart';
@@ -85,6 +89,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         () => ref.read(limitsProvider.notifier).fetchLimits(),
       ),
     );
+    unawaited(Future<void>.microtask(_refreshKycForHome));
   }
 
   @override
@@ -246,7 +251,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     return Stack(
       children: [
         IconButton(
-          onPressed: () => unawaited(context.push('/notifications')),
+          onPressed: () => unawaited(context.fsmPush('/notifications')),
           icon: Icon(Icons.notifications_outlined, color: colors.textSecondary),
           tooltip: l10n.settings_notifications,
         ),
@@ -304,7 +309,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                 lastName: userState.lastName,
                 showBorder: true,
                 borderColor: colors.gold,
-                onTap: () => unawaited(context.push('/settings/profile')),
+                onTap: () => unawaited(context.fsmPush('/settings/profile')),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -333,7 +338,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
           children: [
             _buildNotificationIcon(context, ref, colors, l10n),
             IconButton(
-              onPressed: () => context.go('/settings'),
+              onPressed: () => context.fsmGo('/settings'),
               icon: Icon(Icons.settings_outlined, color: colors.textSecondary),
               tooltip: l10n.navigation_settings,
             ),
@@ -991,29 +996,42 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
       icon: Icons.send_rounded,
       label: l10n.home_quickAction_send,
       route: '/send',
-      onTap: () => _openMoneyFlow(
-        context,
-        ref,
-        l10n,
-        operation: TransactionLimitOperation.send,
-        route: '/send',
+      onTap: () => unawaited(
+        _openMoneyFlow(
+          context,
+          ref,
+          l10n,
+          operation: TransactionLimitOperation.send,
+          route: '/send',
+        ),
       ),
     ),
     WalletQuickActionData(
       icon: Icons.qr_code_2_rounded,
       label: l10n.home_quickAction_receive,
       route: '/receive',
+      onTap: () => unawaited(
+        _openMoneyFlow(
+          context,
+          ref,
+          l10n,
+          operation: TransactionLimitOperation.receive,
+          route: '/receive',
+        ),
+      ),
     ),
     WalletQuickActionData(
       icon: Icons.add_circle_outline_rounded,
       label: l10n.home_quickAction_deposit,
-      route: '/deposit',
-      onTap: () => _openMoneyFlow(
-        context,
-        ref,
-        l10n,
-        operation: TransactionLimitOperation.deposit,
-        route: '/deposit',
+      route: '/deposit/amount',
+      onTap: () => unawaited(
+        _openMoneyFlow(
+          context,
+          ref,
+          l10n,
+          operation: TransactionLimitOperation.deposit,
+          route: '/deposit/amount',
+        ),
       ),
     ),
     WalletQuickActionData(
@@ -1023,41 +1041,111 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     ),
   ];
 
-  void _openMoneyFlow(
+  Future<void> _openMoneyFlow(
     BuildContext context,
     WidgetRef ref,
     AppLocalizations l10n, {
     required TransactionLimitOperation operation,
     required String route,
-  }) {
-    final limits = ref.read(limitsProvider).limits;
+  }) async {
+    final limitsState = ref.read(limitsProvider);
+    final limits = limitsState.limits;
     final permissions = limits?.permissions;
 
-    if (permissions == null || permissions.can(operation)) {
-      unawaited(context.push(route));
+    if (permissions != null && permissions.can(operation)) {
+      unawaited(context.fsmPush(route));
       return;
     }
 
-    final reason = permissions.blockReason?.trim();
+    if (limits == null) {
+      if (!limitsState.isLoading) {
+        await ref.read(limitsProvider.notifier).fetchLimits();
+        if (!context.mounted) {
+          return;
+        }
+
+        final refreshed = ref.read(limitsProvider).limits;
+        final refreshedPermissions = refreshed?.permissions;
+        if (refreshedPermissions != null &&
+            refreshedPermissions.can(operation)) {
+          unawaited(context.fsmPush(route));
+          return;
+        }
+
+        if (refreshed != null) {
+          _showBlockedMoneyFlow(
+            context,
+            l10n,
+            refreshed.permissions,
+            operation: operation,
+            route: route,
+          );
+          return;
+        }
+      }
+
+      context.showSnack(
+        _localizedText(
+          en: 'We will verify account permissions before completion.',
+          fr: 'Nous verifierons les permissions du compte avant la finalisation.',
+        ),
+        tone: AppSnackTone.info,
+        duration: const Duration(seconds: 4),
+      );
+      unawaited(context.fsmPush(route));
+      return;
+    }
+
+    _showBlockedMoneyFlow(
+      context,
+      l10n,
+      permissions,
+      operation: operation,
+      route: route,
+    );
+  }
+
+  void _showBlockedMoneyFlow(
+    BuildContext context,
+    AppLocalizations l10n,
+    MoneyFlowPermissions? permissions, {
+    required TransactionLimitOperation operation,
+    required String route,
+  }) {
+    final reason = permissions?.blockReason?.trim();
+    final reviewRequired = permissions?.reviewRequired ?? false;
     final message = reason != null && reason.isNotEmpty
         ? reason
-        : permissions.reviewRequired
+        : reviewRequired
         ? l10n.moneyFlow_reviewRequiredMessage
         : l10n.moneyFlow_verificationRequiredMessage;
 
     context.showSnack(
       message,
-      tone: permissions.reviewRequired
-          ? AppSnackTone.info
-          : AppSnackTone.warning,
+      tone: reviewRequired ? AppSnackTone.info : AppSnackTone.warning,
       duration: const Duration(seconds: 4),
-      action: permissions.reviewRequired
+      action: reviewRequired
           ? null
           : SnackBarAction(
               label: l10n.auth_verify,
-              onPressed: () => unawaited(context.push('/kyc')),
+              onPressed: () => unawaited(
+                context.fsmPush(
+                  _verificationRouteFor(operation: operation, route: route),
+                ),
+              ),
             ),
     );
+  }
+
+  String _verificationRouteFor({
+    required TransactionLimitOperation operation,
+    required String route,
+  }) {
+    if (operation != TransactionLimitOperation.deposit) {
+      return '/kyc';
+    }
+
+    return '/kyc?intent=deposit&returnTo=${Uri.encodeComponent(route)}';
   }
 
   Widget _buildKycBanner(
@@ -1067,13 +1155,17 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     ThemeColors colors,
   ) {
     final userState = ref.watch(userStateMachineProvider);
+    final kycState = ref.watch(kycStateMachineProvider);
 
     // Only show if user is authenticated and KYC is not verified
     if (!userState.isAuthenticated) {
       return const SizedBox.shrink();
     }
 
-    final kycStatus = userState.kycStatus;
+    final kycStatus =
+        kycState.isLoading && userState.kycStatus == KycStatus.verified
+        ? userState.kycStatus
+        : kycState.status;
 
     // Don't show banner if verified or already submitted (in review)
     if (kycStatus == KycStatus.verified || kycStatus.isInReview) {
@@ -1083,7 +1175,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     return Column(
       children: [
         GestureDetector(
-          onTap: () => unawaited(context.push('/kyc')),
+          onTap: () => unawaited(context.fsmPush('/kyc')),
           child: Container(
             padding: const EdgeInsets.all(AppSpacing.lg),
             margin: const EdgeInsets.only(bottom: AppSpacing.xxl),
@@ -1191,7 +1283,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     // Show only 3-5 recent transactions
     return TransactionList(
       title: l10n.home_recentActivity,
-      onViewAllTap: () => unawaited(context.push('/transactions')),
+      onViewAllTap: () => unawaited(context.fsmPush('/transactions')),
       transactions: txState.transactions
           .take(5)
           .map(
@@ -1202,8 +1294,9 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
               currencyCode: tx.currency,
               date: tx.createdAt,
               type: _mapTransactionType(tx),
-              onTap: () =>
-                  unawaited(context.push('/transactions/${tx.id}', extra: tx)),
+              onTap: () => unawaited(
+                context.fsmPush('/transactions/${tx.id}', extra: tx),
+              ),
             ),
           )
           .toList(),
@@ -1268,27 +1361,90 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
   }
 
   Future<void> _refreshHomeData() async {
-    await Future.wait<void>([
+    final results = await Future.wait<bool>([
       _refreshWalletForHome(),
       _refreshTransactionsForHome(),
-    ]).timeout(
-      const Duration(seconds: 17),
-      onTimeout: () {
-        _logger.warn('Home refresh timed out before every source completed');
-        return const <void>[];
-      },
-    );
+      _refreshKycForHome(),
+      _refreshNotificationsForHome(),
+      _refreshLimitsForHome(),
+    ]);
+    final walletRefreshCompleted = results.first;
+    final transactionsRefreshCompleted = results[1];
+    final kycRefreshCompleted = results[2];
+    final notificationsRefreshCompleted = results[3];
+    final limitsRefreshCompleted = results[4];
 
     if (!mounted) {
       return;
     }
 
     final wallet = ref.read(walletStateMachineProvider);
-    if (wallet.isDegraded || wallet.isStale || wallet.isCached) {
+    final transactions = ref.read(transactionStateMachineProvider);
+    final balanceNeedsAttention =
+        !walletRefreshCompleted ||
+        wallet.status == WalletStatus.refreshing ||
+        wallet.isDegraded ||
+        wallet.isStale ||
+        wallet.isCached;
+    final historyNeedsAttention =
+        !transactionsRefreshCompleted ||
+        transactions.status == TransactionListStatus.refreshing ||
+        transactions.status == TransactionListStatus.error ||
+        transactions.isCached;
+    final accountUpdatesNeedAttention =
+        !kycRefreshCompleted ||
+        !notificationsRefreshCompleted ||
+        !limitsRefreshCompleted;
+
+    if (balanceNeedsAttention &&
+        historyNeedsAttention &&
+        accountUpdatesNeedAttention) {
       context.showSnack(
         _localizedText(
-          en: 'Showing last known balance. We will keep trying in the background.',
-          fr: 'Dernier solde connu affiché. Nous continuons en arrière-plan.',
+          en: 'Sync is still catching up. Showing the last known wallet activity.',
+          fr: 'La synchronisation continue. Dernière activité connue affichée.',
+        ),
+        tone: AppSnackTone.warning,
+        duration: const Duration(seconds: 4),
+      );
+      return;
+    }
+
+    if (accountUpdatesNeedAttention &&
+        !balanceNeedsAttention &&
+        !historyNeedsAttention) {
+      context.showSnack(
+        _localizedText(
+          en: 'Account updates are still syncing. Please try again shortly.',
+          fr: 'Les mises à jour du compte se synchronisent. Réessayez bientôt.',
+        ),
+        tone: AppSnackTone.warning,
+        duration: const Duration(seconds: 4),
+      );
+      return;
+    }
+
+    if (!walletRefreshCompleted ||
+        wallet.status == WalletStatus.refreshing ||
+        wallet.isDegraded ||
+        wallet.isStale ||
+        wallet.isCached) {
+      context.showSnack(
+        _localizedText(
+          en: 'Balance sync is still catching up. Showing the last known value.',
+          fr: 'La synchronisation du solde continue. Dernier solde connu affiché.',
+        ),
+        tone: AppSnackTone.warning,
+        duration: const Duration(seconds: 4),
+      );
+      return;
+    }
+
+    if (historyNeedsAttention) {
+      context.showSnack(
+        _localizedText(
+          en: 'Balance updated. Recent activity will catch up shortly.',
+          fr: "Solde mis à jour. L'activité récente va se synchroniser.",
         ),
         tone: AppSnackTone.warning,
         duration: const Duration(seconds: 4),
@@ -1302,13 +1458,75 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     );
   }
 
-  Future<void> _refreshWalletForHome() async {
+  Future<bool> _refreshKycForHome() async {
+    try {
+      ref.invalidate(kycProfileProvider);
+      await ref
+          .read(kycStateMachineProvider.notifier)
+          .fetch()
+          .timeout(const Duration(seconds: 8));
+      final kyc = ref.read(kycStateMachineProvider);
+      ref
+          .read(userStateMachineProvider.notifier)
+          .updateProfile(kycStatus: kyc.status);
+      return kyc.error == null;
+    } on Object catch (error, stackTrace) {
+      _logger.error(
+        'Home KYC refresh did not complete cleanly',
+        error,
+        stackTrace,
+      );
+      return false;
+    }
+  }
+
+  Future<bool> _refreshNotificationsForHome() async {
+    try {
+      ref
+        ..invalidate(notification_feed.notificationsProvider)
+        ..invalidate(notification_feed.unreadNotificationCountProvider);
+      await Future.wait<Object?>([
+        ref.refresh(notification_feed.notificationsProvider.future),
+        ref.read(refreshUnreadNotificationCountProvider)(),
+      ]).timeout(const Duration(seconds: 8));
+      return true;
+    } on Object catch (error, stackTrace) {
+      _logger.error(
+        'Home notification refresh did not complete cleanly',
+        error,
+        stackTrace,
+      );
+      return false;
+    }
+  }
+
+  Future<bool> _refreshLimitsForHome() async {
+    try {
+      await ref
+          .read(limitsProvider.notifier)
+          .fetchLimits()
+          .timeout(const Duration(seconds: 8));
+      return ref.read(limitsProvider).error == null;
+    } on Object catch (error, stackTrace) {
+      _logger.error(
+        'Home limits refresh did not complete cleanly',
+        error,
+        stackTrace,
+      );
+      return false;
+    }
+  }
+
+  Future<bool> _refreshWalletForHome() async {
+    var completedCleanly = true;
     try {
       await ref
           .read(walletStateMachineProvider.notifier)
           .refresh()
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 8));
     } on Object catch (error, stackTrace) {
+      completedCleanly = false;
+      ref.read(walletStateMachineProvider.notifier).markRefreshDelayed();
       _logger.error(
         'Wallet refresh did not complete cleanly',
         error,
@@ -1326,6 +1544,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
             .fetch(force: true)
             .timeout(const Duration(seconds: 7));
       } on Object catch (error, stackTrace) {
+        completedCleanly = false;
         _logger.error(
           'Home refresh recovery fetch timed out or failed',
           error,
@@ -1333,20 +1552,28 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         );
       }
     }
+
+    final current = ref.read(walletStateMachineProvider);
+    return completedCleanly && current.status != WalletStatus.refreshing;
   }
 
-  Future<void> _refreshTransactionsForHome() async {
+  Future<bool> _refreshTransactionsForHome() async {
     try {
       await ref
           .read(transactionStateMachineProvider.notifier)
           .refresh(refreshWallet: false)
           .timeout(const Duration(seconds: 11));
+      final transactions = ref.read(transactionStateMachineProvider);
+      return transactions.status != TransactionListStatus.refreshing &&
+          transactions.status != TransactionListStatus.error &&
+          !transactions.isCached;
     } on Object catch (error, stackTrace) {
       _logger.error(
         'Home transaction refresh did not complete cleanly',
         error,
         stackTrace,
       );
+      return false;
     }
   }
 
@@ -1416,6 +1643,12 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
             : l10n.transactions_transferSent;
       case TransactionType.transferExternal:
         return l10n.transactions_externalWallet;
+      case TransactionType.billPayment:
+        return l10n.services_billPayments;
+      case TransactionType.unknown:
+        return transaction.reference.isNotEmpty
+            ? transaction.reference
+            : 'Review details';
     }
   }
 
@@ -1429,6 +1662,10 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         return l10n.transactions_transferReceived;
       case TransactionType.transferExternal:
         return l10n.transactions_transferSent;
+      case TransactionType.billPayment:
+        return l10n.services_billPayments;
+      case TransactionType.unknown:
+        return 'Transaction';
     }
   }
 
@@ -1443,7 +1680,12 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
             ? TransactionDisplayType.transferIn
             : TransactionDisplayType.transferOut;
       case TransactionType.transferExternal:
+      case TransactionType.billPayment:
         return TransactionDisplayType.transferOut;
+      case TransactionType.unknown:
+        if (transaction.isCredit) return TransactionDisplayType.transferIn;
+        if (transaction.isDebit) return TransactionDisplayType.transferOut;
+        return TransactionDisplayType.neutral;
     }
   }
 }

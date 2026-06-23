@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/index.dart';
@@ -12,6 +11,7 @@ import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/features/bill_payments/providers/bill_payments_provider.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Bill Payment Form View
 /// Account entry, validation, and amount input
@@ -59,14 +59,22 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
 
     providersAsync.whenData((data) {
       if (!mounted) return;
-      final provider = data.providers.firstWhere(
-        (p) => p.id == widget.providerId,
-        orElse: () => throw Exception('Provider not found'),
-      );
-      setState(() {
-        _provider = provider;
-      });
+      final provider = _findProvider(data.providers, widget.providerId);
+      if (provider != null) {
+        setState(() {
+          _provider = provider;
+        });
+      }
     });
+  }
+
+  BillProvider? _findProvider(List<BillProvider> providers, String providerId) {
+    for (final provider in providers) {
+      if (provider.id == providerId) {
+        return provider;
+      }
+    }
+    return null;
   }
 
   @override
@@ -84,8 +92,16 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
     final validationState = ref.watch(accountValidationProvider);
     final formState = ref.watch(billPaymentFormProvider);
     final walletAsync = ref.watch(walletBalanceProvider);
+    final selectedProvider = ref.watch(selectedBillProviderProvider);
+    final providersAsync = ref.watch(
+      billProvidersProvider(const BillProvidersParams()),
+    );
+    final provider =
+        _provider ??
+        (selectedProvider?.id == widget.providerId ? selectedProvider : null) ??
+        _findProvider(providersAsync.value?.providers ?? [], widget.providerId);
 
-    if (_provider == null) {
+    if (provider == null) {
       return Scaffold(
         backgroundColor: colors.canvas,
         appBar: AppBar(
@@ -93,14 +109,24 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
           elevation: 0,
           leading: IconButton(
             icon: Icon(Icons.arrow_back, color: colors.icon),
-            onPressed: () => context.pop(),
+            onPressed: () => context.fsmPop(),
           ),
         ),
-        body: Center(child: CircularProgressIndicator(color: colors.gold)),
+        body: Center(
+          child: providersAsync.isLoading
+              ? CircularProgressIndicator(color: colors.gold)
+              : Padding(
+                  padding: const EdgeInsets.all(AppSpacing.xxl),
+                  child: AppText(
+                    l10n.error_notFound,
+                    variant: AppTextVariant.bodyLarge,
+                    color: colors.textSecondary,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+        ),
       );
     }
-
-    final provider = _provider!;
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -114,7 +140,7 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.icon),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
       ),
       body: Form(
@@ -518,7 +544,7 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
     if (success && mounted) {
       final result = ref.read(billPaymentProvider).result;
       if (result != null) {
-        context.go('/bill-payments/success/${result.paymentId}');
+        context.fsmGo('/bill-payments/success/${result.paymentId}');
       }
     } else if (mounted) {
       final l10n = AppLocalizations.of(context)!;

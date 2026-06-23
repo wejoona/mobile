@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -31,10 +30,7 @@ class KycExpiredView extends ConsumerWidget {
       backgroundColor: context.colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: AppText(
-          l10n.kyc_expired,
-          variant: AppTextVariant.headlineSmall,
-        ),
+        title: AppText(l10n.kyc_expired, variant: AppTextVariant.headlineSmall),
       ),
       body: SafeArea(
         child: Column(
@@ -140,14 +136,14 @@ class KycExpiredView extends ConsumerWidget {
                     label: l10n.kyc_renewDocuments,
                     onPressed: () {
                       // Navigate to KYC flow
-                      context.push('/kyc');
+                      context.fsmPush('/kyc');
                     },
                     isFullWidth: true,
                   ),
                   SizedBox(height: AppSpacing.md),
                   AppButton(
                     label: l10n.kyc_remindLater,
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: () => context.fsmSafePop(fallbackRoute: '/home'),
                     variant: AppButtonVariant.secondary,
                     isFullWidth: true,
                   ),
@@ -166,7 +162,11 @@ class KycExpiredView extends ConsumerWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppText('• ', variant: AppTextVariant.bodySmall, color: AppColors.gold500),
+          AppText(
+            '• ',
+            variant: AppTextVariant.bodySmall,
+            color: AppColors.gold500,
+          ),
           Expanded(
             child: AppText(
               text,

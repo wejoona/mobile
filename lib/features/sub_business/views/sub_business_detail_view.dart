@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -9,6 +8,7 @@ import 'package:usdc_wallet/features/sub_business/models/sub_business.dart';
 import 'package:usdc_wallet/features/sub_business/providers/sub_business_provider.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Screen showing details of a single sub-business
 class SubBusinessDetailView extends ConsumerStatefulWidget {
@@ -101,7 +101,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
                   label: l10n.subBusiness_transfer,
                   icon: Icons.swap_horiz,
                   variant: AppButtonVariant.secondary,
-                  onPressed: () => context.push(
+                  onPressed: () => context.fsmPush(
                     '/sub-businesses/transfer/${widget.subBusinessId}',
                   ),
                 ),
@@ -136,7 +136,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
                 icon: Icons.people,
                 variant: AppButtonVariant.ghost,
                 size: AppButtonSize.small,
-                onPressed: () => context.push(
+                onPressed: () => context.fsmPush(
                   '/sub-businesses/${widget.subBusinessId}/staff',
                 ),
               ),
@@ -193,8 +193,9 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
             SizedBox(height: AppSpacing.sm),
             AppButton(
               label: l10n.subBusiness_viewAllStaff,
-              onPressed: () =>
-                  context.push('/sub-businesses/${widget.subBusinessId}/staff'),
+              onPressed: () => context.fsmPush(
+                '/sub-businesses/${widget.subBusinessId}/staff',
+              ),
               variant: AppButtonVariant.secondary,
             ),
           ],
@@ -332,8 +333,9 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
           SizedBox(height: AppSpacing.md),
           AppButton(
             label: l10n.subBusiness_addFirstStaff,
-            onPressed: () =>
-                context.push('/sub-businesses/${widget.subBusinessId}/staff'),
+            onPressed: () => context.fsmPush(
+              '/sub-businesses/${widget.subBusinessId}/staff',
+            ),
             variant: AppButtonVariant.secondary,
             size: AppButtonSize.small,
           ),
@@ -382,7 +384,9 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
               title: Text(l10n.subBusiness_manageStaff),
               onTap: () {
                 Navigator.pop(ctx);
-                context.push('/sub-businesses/${widget.subBusinessId}/staff');
+                context.fsmPush(
+                  '/sub-businesses/${widget.subBusinessId}/staff',
+                );
               },
             ),
           ],

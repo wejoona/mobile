@@ -7,13 +7,14 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
 import 'package:usdc_wallet/features/profile/services/profile_picture_service.dart';
+import 'package:usdc_wallet/features/settings/utils/profile_phone_formatter.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/image_analysis/image_analysis_service.dart';
 import 'package:usdc_wallet/services/user/avatar_multipart.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/state/index.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 enum _AvatarAction { camera, gallery, remove }
 
@@ -96,7 +97,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: context.colors.gold),
-          onPressed: () => context.safePop(fallbackRoute: '/settings'),
+          onPressed: () => context.fsmSafePop(fallbackRoute: '/settings'),
         ),
       ),
       body: SafeArea(
@@ -211,7 +212,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: AppText(
-                        _formatPhone(userState.phone),
+                        formatProfilePhone(userState.phone),
                         variant: AppTextVariant.bodyLarge,
                         color: context.colors.textSecondary,
                       ),
@@ -530,17 +531,19 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     final pictureService = ref.read(profilePictureServiceProvider);
     _setProfilePhotoBusy('Preparing photo...');
     final compressed = await pictureService.compressImage(picked);
+    var uploadImage = compressed;
     _setProfilePhotoBusy('Checking face on this device...');
     var faceDetection = await ref
         .read(imageAnalysisServiceProvider)
         .detectFaces(compressed);
     if (!mounted) return;
 
-    if (!faceDetection.isAvailable) {
-      _setProfilePhotoBusy('Retrying face check on a lighter photo...');
+    if (_shouldRetryProfileFaceCheck(faceDetection)) {
+      _setProfilePhotoBusy('Retrying face check on a clearer photo...');
       final faceCheckImage = await pictureService.prepareForFaceDetection(
         compressed,
       );
+      uploadImage = faceCheckImage;
       faceDetection = await ref
           .read(imageAnalysisServiceProvider)
           .detectFaces(faceCheckImage);
@@ -562,12 +565,12 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
     _setProfilePhotoBusy('Uploading photo...');
     setState(() {
-      _selectedImage = compressed;
+      _selectedImage = uploadImage;
     });
 
     final uploadResult = await ref
         .read(profileProvider.notifier)
-        .uploadAvatar(compressed, faceCheck: faceCheck);
+        .uploadAvatar(uploadImage, faceCheck: faceCheck);
     final profileState = ref.read(profileProvider);
     if (!mounted) return;
 
@@ -596,6 +599,9 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       isError: false,
     );
   }
+
+  bool _shouldRetryProfileFaceCheck(FaceDetectionResult result) =>
+      !result.isAvailable || result.faceCount == 0;
 
   String _profilePhotoFaceMessage(FaceDetectionResult result) {
     if (!result.isAvailable) {
@@ -652,20 +658,6 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     }
   }
 
-  String _formatPhone(String? phone) {
-    if (phone == null || phone.isEmpty) return '';
-    if (phone.startsWith('+') && phone.length > 6) {
-      final countryCode = phone.substring(0, 4);
-      final number = phone.substring(4);
-      final formatted = number.replaceAllMapped(
-        RegExp(r'.{2}'),
-        (match) => '${match.group(0)} ',
-      );
-      return '$countryCode $formatted'.trim();
-    }
-    return phone;
-  }
-
   String? _normalizeUsername(String? value) {
     final normalized = value?.trim().replaceFirst(RegExp(r'^@+'), '');
     if (normalized == null || normalized.isEmpty) return null;
@@ -694,6 +686,16 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final previousEmail = ref
+        .read(userStateMachineProvider)
+        .email
+        ?.trim()
+        .toLowerCase();
+    final submittedEmail = _emailController.text.trim();
+    final submittedEmailKey = submittedEmail.toLowerCase();
+    final changedEmail =
+        submittedEmail.isNotEmpty && submittedEmailKey != previousEmail;
+
     setState(() => _isLoading = true);
 
     try {
@@ -709,20 +711,26 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             clearEmail: _emailController.text.trim().isEmpty,
           );
 
-      await ref
-          .read(profileProvider.notifier)
-          .applyProfileSnapshot(profile);
+      await ref.read(profileProvider.notifier).applyProfileSnapshot(profile);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(context)!.settings_profileUpdated,
-            ),
-            backgroundColor: context.colors.success,
-          ),
-        );
-        context.safePop(fallbackRoute: '/settings');
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.settings_profileUpdated),
+          backgroundColor: context.colors.success,
+        ),
+      );
+
+      final savedEmail = profile.email?.trim();
+      if (changedEmail &&
+          savedEmail != null &&
+          savedEmail.isNotEmpty &&
+          !profile.emailVerified) {
+        final successRoute = Uri.encodeComponent('/settings/profile');
+        context.fsmGo('/profile/verify-email?successRoute=$successRoute');
+      } else {
+        context.fsmSafePop(fallbackRoute: '/settings');
       }
     } catch (e) {
       if (mounted) {

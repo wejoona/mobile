@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
-import 'package:go_router/go_router.dart';
+
+typedef DeepLinkRouteOpener = void Function(String route);
 
 /// Handles deep link routing for Korido app.
 ///
@@ -11,9 +12,9 @@ import 'package:go_router/go_router.dart';
 /// - https://korido.app/pay/:id → Payment link (universal link)
 /// - https://korido.app/referral/:code → Referral code
 class DeepLinkHandler {
-  final GoRouter _router;
+  final DeepLinkRouteOpener _openRoute;
 
-  DeepLinkHandler(this._router);
+  DeepLinkHandler(this._openRoute);
 
   /// Route a deep link URI.
   void handleUri(Uri uri) {
@@ -44,12 +45,12 @@ class DeepLinkHandler {
   void _handleKoridoScheme(String host, Uri uri) {
     switch (host) {
       case 'home':
-        _router.go('/home');
+        _openRoute('/home');
         break;
       case 'pay':
         final id = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : null;
         if (id != null) {
-          _router.go('/pay/$id');
+          _openRoute('/pay/$id');
         } else {
           _goToSend(uri);
         }
@@ -58,10 +59,10 @@ class DeepLinkHandler {
         _goToSend(uri);
         break;
       case 'receive':
-        _router.go('/receive');
+        _openRoute('/receive');
         break;
       case 'deposit':
-        _router.go('/deposit');
+        _openRoute('/deposit');
         break;
       case 'referral':
       case 'referrals':
@@ -70,7 +71,7 @@ class DeepLinkHandler {
       case 'transaction':
       case 'transactions':
         if (uri.pathSegments.isNotEmpty) {
-          _router.go('/transactions/${uri.pathSegments.first}');
+          _openRoute('/transactions/${uri.pathSegments.first}');
         }
         break;
       default:
@@ -81,7 +82,7 @@ class DeepLinkHandler {
   void _handleUniversalLink(String path, Uri uri) {
     if (path.startsWith('/pay/')) {
       final id = path.substring(5);
-      _router.go('/pay/$id');
+      _openRoute('/pay/$id');
     } else if (path == '/send') {
       _goToSend(uri);
     } else if (path.startsWith('/referral/')) {
@@ -91,7 +92,7 @@ class DeepLinkHandler {
       _goToReferrals(uri);
     } else if (path.startsWith('/transactions/')) {
       final id = path.substring('/transactions/'.length);
-      _router.go('/transactions/$id');
+      _openRoute('/transactions/$id');
     } else if (path == '/download') {
       // Ignore — this is for non-users
     } else {
@@ -102,11 +103,11 @@ class DeepLinkHandler {
   void _goToSend(Uri uri) {
     final phone = uri.queryParameters['phone'] ?? uri.queryParameters['to'];
     if (phone == null || phone.trim().isEmpty) {
-      _router.go('/send');
+      _openRoute('/send');
       return;
     }
 
-    _router.go(
+    _openRoute(
       Uri(
         path: '/send',
         queryParameters: {
@@ -124,7 +125,7 @@ class DeepLinkHandler {
 
   void _goToReferrals(Uri uri, {String? code}) {
     final referralCode = code ?? uri.queryParameters['code'];
-    _router.go(
+    _openRoute(
       Uri(
         path: '/referrals',
         queryParameters: {

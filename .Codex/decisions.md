@@ -7,6 +7,7 @@ Do not reopen these unless new evidence changes them.
 - The mobile app should prefer real in-stack APIs for dogfooding.
 - Mocks are acceptable for outside dependencies and future features, but they must match backend contract shape.
 - Auth OTP should use Korido API -> VerifyHQ locally, not a mobile-only fake.
+- Cross-service credentials are bootstrap-only when wired directly through Vault or env values. The platform service / service access enrollment layer is the canonical owner for multi-service credential issuance, rotation, and trust between Korido, VerifyHQ, PaySwitch, and other JoonaPay services.
 
 ## Design
 
@@ -19,8 +20,11 @@ Do not reopen these unless new evidence changes them.
 ## Product
 
 - MVP goal is internal team dogfooding before pilot/release.
+- Once a reported issue is verified solved on current `develop`, treat it as closed and do not re-audit it every session. Reopen only with fresh user evidence, a failing focused check, or a related code change that could regress it.
 - Initial users are in Abidjan and the USA.
 - Region-specific rails and labels should be data-driven.
+- Phone numbers are canonical value objects, not display strings. Keep country ISO, dial/calling code, local national number, E.164/MSISDN, and display text as explicit fields when useful; never concatenate UI fragments like `+225|+225...` into API state, and never hardcode `+225` in money-flow provider logic outside fixtures or CI-specific tests.
+- Money-flow country, currency, and rail ownership must be explicit. Do not infer a deposit/withdraw/send country from a formatted phone display, selected provider label, or currency alone when a country/profile/config value is available.
 - Contact features should identify Korido users clearly, but similar small high-leverage improvements should be found across the product, not only contacts.
 - Savings goals must stay API-backed through Savings Pots. The old wallet-local `SavingsGoalsView` was removed because it used hardcoded in-memory data and could diverge from money-flow reality.
 - Profile photos are protected media. Mobile must preserve auth headers for protected avatar URLs and resolve relative API paths without inventing public storage URLs.

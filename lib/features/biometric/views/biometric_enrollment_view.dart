@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Biometric Enrollment View
 /// Shows benefits and guides user through biometric setup
@@ -44,7 +45,7 @@ class _BiometricEnrollmentViewState
         leading: widget.isOptional
             ? IconButton(
                 icon: Icon(Icons.close, color: context.colors.gold),
-                onPressed: () => context.pop(),
+                onPressed: () => context.fsmPop(),
               )
             : null,
       ),
@@ -165,7 +166,11 @@ class _BiometricEnrollmentViewState
           color: context.colors.textSecondary.withValues(alpha: 0.1),
           shape: BoxShape.circle,
         ),
-        child: Icon(Icons.security, size: 64, color: context.colors.textSecondary),
+        child: Icon(
+          Icons.security,
+          size: 64,
+          color: context.colors.textSecondary,
+        ),
       ),
     );
   }
@@ -191,11 +196,13 @@ class _BiometricEnrollmentViewState
 
     return Column(
       children: benefits
-          .map((benefit) => _buildBenefitCard(
-                icon: benefit['icon'] as IconData,
-                title: benefit['title'] as String,
-                description: benefit['description'] as String,
-              ))
+          .map(
+            (benefit) => _buildBenefitCard(
+              icon: benefit['icon'] as IconData,
+              title: benefit['title'] as String,
+              description: benefit['description'] as String,
+            ),
+          )
           .toList(),
     );
   }
@@ -294,7 +301,7 @@ class _BiometricEnrollmentViewState
                 label: l10n.action_continue,
                 onPressed: () {
                   widget.onComplete?.call();
-                  context.pop(true);
+                  context.fsmPop(true);
                 },
                 isFullWidth: true,
               ),
@@ -325,8 +332,18 @@ class _BiometricEnrollmentViewState
       );
 
       if (authenticatedBio.success) {
+        final authState = ref.read(authProvider);
+        final userId = authState.user?.id;
+        if (userId == null || userId.isEmpty) {
+          _showError(l10n.biometric_enrollment_error_generic);
+          return;
+        }
+
         // Enable biometric
-        await biometricService.enableBiometric();
+        await biometricService.enableBiometric(
+          userId: userId,
+          phone: authState.phone,
+        );
 
         // Invalidate providers to refresh UI
         ref.invalidate(biometricEnabledProvider);
@@ -385,16 +402,13 @@ class _BiometricEnrollmentViewState
 
     if (confirmed == true && mounted) {
       widget.onComplete?.call();
-      context.pop(false);
+      context.fsmPop(false);
     }
   }
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: context.colors.error,
-      ),
+      SnackBar(content: Text(message), backgroundColor: context.colors.error),
     );
   }
 }

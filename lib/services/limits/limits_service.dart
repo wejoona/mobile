@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/domain/entities/limit.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
@@ -11,13 +12,13 @@ class LimitsService {
 
   /// GET /user/limits
   Future<TransactionLimits> getLimits() async {
-    final response = await _dio.get('/user/limits');
+    final response = await _dio.get(ApiEndpoints.limits);
     return TransactionLimits.fromJson(_readPayload(response.data));
   }
 
   /// GET /user/limits/usage
   Future<LimitUsage> getUsage() async {
-    final response = await _dio.get('/user/limits/usage');
+    final response = await _dio.get(ApiEndpoints.limitsUsage);
     return LimitUsage.fromJson(_readPayload(response.data));
   }
 }

@@ -10,6 +10,7 @@ import 'package:usdc_wallet/domain/entities/contact.dart' as domain;
 import 'package:usdc_wallet/features/contacts/models/contact_sync_result.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/utils/phone_normalizer.dart';
 
 /// Simple contact info for contact picker
 class ContactInfo {
@@ -331,22 +332,7 @@ class ContactsService {
     String phone, {
     String defaultCountryPrefix = '225',
   }) {
-    // Remove all non-digit characters
-    String cleaned = phone.replaceAll(RegExp(r'\D'), '');
-    final prefix = defaultCountryPrefix.replaceAll(RegExp(r'\D'), '');
-
-    if (prefix.isNotEmpty &&
-        !cleaned.startsWith(prefix) &&
-        cleaned.length <= 10) {
-      cleaned = '$prefix$cleaned';
-    }
-
-    // Ensure it starts with +
-    if (!cleaned.startsWith('+')) {
-      cleaned = '+$cleaned';
-    }
-
-    return cleaned;
+    return PhoneNormalizer.toE164(phone, countryCode: defaultCountryPrefix);
   }
 
   /// Hash phone number using SHA-256

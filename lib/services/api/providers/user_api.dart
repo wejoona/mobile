@@ -1,9 +1,8 @@
 /// User API — profile, PIN, locale, avatar, search, limits
 library;
 
-import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:usdc_wallet/services/user/avatar_multipart.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 
 class UserApi {
   UserApi(this._dio);
@@ -23,23 +22,6 @@ class UserApi {
 
   /// GET /user/data-export
   Future<Response> exportData() => _dio.get('/user/data-export');
-
-  // ── Avatar ──
-
-  /// POST /user/avatar — upload avatar image
-  Future<Response> uploadAvatar(
-    File file, {
-    required AvatarDeviceFaceCheck faceCheck,
-  }) async {
-    final formData = FormData.fromMap({
-      avatarDeviceFaceCheckField: faceCheck.token,
-      'avatar': await avatarMultipartFile(file),
-    });
-    return _dio.post('/user/avatar', data: formData);
-  }
-
-  /// DELETE /user/avatar
-  Future<Response> deleteAvatar() => _dio.delete('/user/avatar');
 
   // ── Email Verification ──
 
@@ -64,30 +46,35 @@ class UserApi {
 
   /// POST /user/pin/set
   Future<Response> setPin(String pinHash) =>
-      _dio.post('/user/pin/set', data: {'pinHash': pinHash});
+      _dio.post(ApiEndpoints.userPinSet, data: {'pinHash': pinHash});
 
   /// POST /user/pin/verify
   Future<Response> verifyPin(String pinHash) =>
-      _dio.post('/user/pin/verify', data: {'pinHash': pinHash});
+      _dio.post(ApiEndpoints.userPinVerify, data: {'pinHash': pinHash});
 
   /// POST /user/pin/change
   Future<Response> changePin({
     required String oldPinHash,
     required String newPinHash,
+    required String stepUpChallengeToken,
   }) => _dio.post(
-    '/user/pin/change',
-    data: {'oldPinHash': oldPinHash, 'newPinHash': newPinHash},
+    ApiEndpoints.userPinChange,
+    data: {
+      'oldPinHash': oldPinHash,
+      'newPinHash': newPinHash,
+      'stepUpChallengeToken': stepUpChallengeToken,
+    },
   );
 
   /// POST /user/pin/reset
   Future<Response> resetPin({
-    required String otp,
+    String? otp,
     required String newPinHash,
     required String stepUpChallengeToken,
   }) => _dio.post(
-    '/user/pin/reset',
+    ApiEndpoints.userPinReset,
     data: {
-      'otp': otp,
+      if (otp != null && otp.isNotEmpty) 'otp': otp,
       'newPinHash': newPinHash,
       'stepUpChallengeToken': stepUpChallengeToken,
     },
@@ -114,5 +101,5 @@ class UserApi {
   // ── Limits ──
 
   /// GET /user/limits
-  Future<Response> getLimits() => _dio.get('/user/limits');
+  Future<Response> getLimits() => _dio.get(ApiEndpoints.limits);
 }

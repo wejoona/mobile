@@ -16,32 +16,54 @@ class WalletBalance {
     this.currency = 'USDC',
   });
 
-  factory WalletBalance.fromJson(Map<String, dynamic> json) => WalletBalance(
-    updatedAt:
-        DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? DateTime.now(),
-    available:
-        _amountFromString(json['availableDecimal']) ??
-        _amountFromString(json['available_decimal']) ??
-        _amountFromString(json['balanceDecimal']) ??
-        _amountFromString(json['balance_decimal']) ??
-        (json['available'] as num?)?.toDouble() ??
-        (json['balance'] as num?)?.toDouble() ??
-        0,
-    pending:
-        _amountFromString(json['pendingDecimal']) ??
-        _amountFromString(json['pending_decimal']) ??
-        (json['pending'] as num?)?.toDouble() ??
-        0,
-    total:
-        _amountFromString(json['totalDecimal']) ??
-        _amountFromString(json['total_decimal']) ??
-        _amountFromString(json['balanceDecimal']) ??
-        _amountFromString(json['balance_decimal']) ??
-        (json['total'] as num?)?.toDouble() ??
-        (json['balance'] as num?)?.toDouble() ??
-        0,
-    currency: json['currency'] as String? ?? 'USDC',
-  );
+  factory WalletBalance.fromJson(Map<String, dynamic> json) {
+    final available = _amountFromAny(json, const [
+      'availableDecimal',
+      'available_decimal',
+      'availableBalanceDecimal',
+      'available_balance_decimal',
+      'balanceDecimal',
+      'balance_decimal',
+      'available',
+      'availableBalance',
+      'available_balance',
+      'balance',
+    ]);
+    final pending = _amountFromAny(json, const [
+      'pendingDecimal',
+      'pending_decimal',
+      'pendingBalanceDecimal',
+      'pending_balance_decimal',
+      'pending',
+      'pendingBalance',
+      'pending_balance',
+    ]);
+    final total = _amountFromAny(json, const [
+      'totalDecimal',
+      'total_decimal',
+      'totalBalanceDecimal',
+      'total_balance_decimal',
+      'balanceDecimal',
+      'balance_decimal',
+      'total',
+      'totalBalance',
+      'total_balance',
+      'balance',
+      'available',
+      'availableBalance',
+      'available_balance',
+    ]);
+
+    return WalletBalance(
+      updatedAt:
+          DateTime.tryParse(json['updatedAt'] as String? ?? '') ??
+          DateTime.now(),
+      available: available ?? total ?? 0,
+      pending: pending ?? 0,
+      total: total ?? available ?? 0,
+      currency: json['currency'] as String? ?? 'USDC',
+    );
+  }
 
   factory WalletBalance.fromWalletResponse(
     wallet_service.WalletBalanceResponse response,
@@ -120,9 +142,15 @@ final walletBalanceProvider = FutureProvider<WalletBalance>((ref) async {
   return WalletBalance.fromWalletResponse(response);
 });
 
-double? _amountFromString(Object? value) {
-  if (value is String) {
-    return double.tryParse(value);
+double? _amountFromAny(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    if (!json.containsKey(key)) continue;
+    final value = json[key];
+    if (value is num) return value.toDouble();
+    if (value is String) {
+      final parsed = double.tryParse(value.trim());
+      if (parsed != null) return parsed;
+    }
   }
   return null;
 }

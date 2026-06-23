@@ -1,14 +1,14 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/domain/entities/contact.dart';
 import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart';
-import 'package:usdc_wallet/features/wallet/providers/contacts_provider.dart';
+import 'package:usdc_wallet/features/wallet/providers/saved_recipients_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 class SavedRecipientsView extends ConsumerStatefulWidget {
@@ -40,11 +40,11 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
   Widget build(BuildContext context) {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
-    final contactsAsync = ref.watch(contactsProvider);
-    final favoritesAsync = ref.watch(favoritesProvider);
-    final recentsAsync = ref.watch(recentsProvider);
+    final contactsAsync = ref.watch(savedRecipientsProvider);
+    final favoritesAsync = ref.watch(favoriteRecipientsProvider);
+    final recentsAsync = ref.watch(recentRecipientsProvider);
     final searchResultsAsync = _searchQuery.isNotEmpty
-        ? ref.watch(searchContactsProvider(_searchQuery))
+        ? ref.watch(searchSavedRecipientsProvider(_searchQuery))
         : null;
 
     return Scaffold(
@@ -58,7 +58,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.textPrimary),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
         actions: [
           IconButton(
@@ -187,7 +187,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
             AppButton(
               label: AppLocalizations.of(context)!.action_retry,
               onPressed: () {
-                ref.invalidate(searchContactsProvider(_searchQuery));
+                ref.invalidate(searchSavedRecipientsProvider(_searchQuery));
               },
               variant: AppButtonVariant.secondary,
             ),
@@ -232,9 +232,9 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
 
         return RefreshIndicator(
           onRefresh: () async {
-            ref.invalidate(contactsProvider);
-            ref.invalidate(favoritesProvider);
-            ref.invalidate(recentsProvider);
+            ref.invalidate(savedRecipientsProvider);
+            ref.invalidate(favoriteRecipientsProvider);
+            ref.invalidate(recentRecipientsProvider);
           },
           color: context.colors.gold,
           backgroundColor: context.colors.elevated,
@@ -270,9 +270,9 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
             AppButton(
               label: AppLocalizations.of(context)!.action_retry,
               onPressed: () {
-                ref.invalidate(contactsProvider);
-                ref.invalidate(favoritesProvider);
-                ref.invalidate(recentsProvider);
+                ref.invalidate(savedRecipientsProvider);
+                ref.invalidate(favoriteRecipientsProvider);
+                ref.invalidate(recentRecipientsProvider);
               },
               variant: AppButtonVariant.secondary,
             ),
@@ -283,11 +283,13 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
   }
 
   void _sendToRecipient(Contact contact) {
-    unawaited(context.push('/send', extra: contact));
+    unawaited(context.fsmPush('/send', extra: contact));
   }
 
   Future<void> _toggleFavorite(String id) async {
-    final success = await ref.read(contactProvider.notifier).toggleFavorite(id);
+    final success = await ref
+        .read(savedRecipientMutationProvider.notifier)
+        .toggleFavorite(id);
 
     if (mounted) {
       if (success) {
@@ -298,7 +300,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
           ),
         );
       } else {
-        final error = ref.read(contactProvider).error;
+        final error = ref.read(savedRecipientMutationProvider).error;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -344,7 +346,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
                 Navigator.pop(context);
 
                 final success = await ref
-                    .read(contactProvider.notifier)
+                    .read(savedRecipientMutationProvider.notifier)
                     .deleteContact(contact.id);
 
                 if (mounted) {
@@ -360,7 +362,9 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
                       ),
                     );
                   } else {
-                    final error = ref.read(contactProvider).error;
+                    final error = ref
+                        .read(savedRecipientMutationProvider)
+                        .error;
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
@@ -803,7 +807,7 @@ class _AddRecipientSheetState extends ConsumerState<_AddRecipientSheet> {
     }
 
     final success = await ref
-        .read(contactProvider.notifier)
+        .read(savedRecipientMutationProvider.notifier)
         .createContact(
           name: _nameController.text,
           phone: phone,
@@ -817,7 +821,7 @@ class _AddRecipientSheetState extends ConsumerState<_AddRecipientSheet> {
       if (success) {
         widget.onAdded();
       } else {
-        final error = ref.read(contactProvider).error;
+        final error = ref.read(savedRecipientMutationProvider).error;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(

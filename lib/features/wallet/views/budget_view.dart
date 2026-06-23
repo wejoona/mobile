@@ -5,6 +5,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/utils/context_extensions.dart';
 
 class BudgetView extends ConsumerStatefulWidget {
@@ -33,7 +34,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.textPrimary),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => context.fsmSafePop(fallbackRoute: '/home'),
         ),
       ),
       body: SafeArea(

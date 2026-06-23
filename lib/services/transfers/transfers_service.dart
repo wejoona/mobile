@@ -1,10 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
 import 'package:usdc_wallet/utils/logger.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Transfers Service - mirrors backend TransfersController
 /// Uses risk-based adaptive security (Visa 3DS / Apple style)
@@ -25,56 +27,19 @@ class TransfersService {
     String? recipientUsername,
     required double amount,
     String? note,
-    String? riskRecipientId,
     required String pinToken,
     required String idempotencyKey,
+    String? stepUpToken,
   }) async {
     final normalizedRecipientId = recipientId?.trim();
-    final normalizedPhone = recipientPhone?.trim();
+    final normalizedPhone = PhoneNumberValue.tryFromAny(
+      phoneNumber: recipientPhone,
+    )?.e164;
     final normalizedUsername = _normalizeUsername(recipientUsername);
     if ((normalizedRecipientId == null || normalizedRecipientId.isEmpty) &&
         (normalizedPhone == null || normalizedPhone.isEmpty) &&
         (normalizedUsername == null || normalizedUsername.isEmpty)) {
       throw ArgumentError('Recipient ID, phone, or username is required');
-    }
-
-    // Internal transfers usually get green flow (no verification)
-    // But still check for anomalies
-    if (_riskSecurity != null) {
-      final decision = await _riskSecurity.evaluateTransaction(
-        type: 'transfer',
-        amount: amount,
-        currency: 'USDC',
-        recipientId:
-            riskRecipientId ??
-            normalizedRecipientId ??
-            normalizedUsername ??
-            normalizedPhone ??
-            'internal-recipient',
-        recipientType: 'internal',
-      );
-
-      AppLogger('Debug').debug(
-        '${decision.flowEmoji} Internal transfer \$$amount: ${decision.stepUpType.name}',
-      );
-
-      if (decision.stepUpRequired) {
-        final verified = await _riskSecurity.executeStepUp(decision);
-        if (!verified && decision.stepUpType != StepUpType.liveness) {
-          throw SecurityVerificationFailedException(
-            'Security verification required for this transfer',
-            decision: decision,
-          );
-        }
-        // Liveness requires UI - throw to let caller handle
-        if (decision.stepUpType == StepUpType.liveness ||
-            decision.stepUpType == StepUpType.biometricAndLiveness) {
-          throw LivenessRequiredException(
-            'Liveness verification required',
-            decision: decision,
-          );
-        }
-      }
     }
 
     try {
@@ -84,7 +49,7 @@ class TransfersService {
         recipientUsername: normalizedUsername,
       );
       final response = await _dio.post(
-        '/wallet/transfer/internal',
+        ApiEndpoints.transfersSend,
         data: {
           ...recipientBody,
           'amount': amount,
@@ -94,6 +59,7 @@ class TransfersService {
           headers: transactionHeaders(
             pinToken: pinToken,
             idempotencyKey: idempotencyKey,
+            stepUpToken: stepUpToken,
           ),
         ),
       );
@@ -147,6 +113,7 @@ class TransfersService {
     String? livenessSessionId,
     required String pinToken,
     required String idempotencyKey,
+    String? stepUpToken,
   }) async {
     // Check if we have a pre-validated step-up
     if (challengeToken != null && _riskSecurity != null) {
@@ -198,7 +165,7 @@ class TransfersService {
 
     try {
       final response = await _dio.post(
-        '/wallet/transfer/external',
+        ApiEndpoints.transfersExternal,
         data: {
           'toAddress': recipientAddress,
           'amount': amount,
@@ -209,6 +176,7 @@ class TransfersService {
           headers: transactionHeaders(
             pinToken: pinToken,
             idempotencyKey: idempotencyKey,
+            stepUpToken: stepUpToken ?? challengeToken,
           ),
         ),
       );
@@ -239,7 +207,7 @@ class TransfersService {
     );
   }
 
-  /// GET /transfers
+  /// GET /wallet/transactions
   Future<TransferPage> getTransfers({
     int page = 1,
     int pageSize = 20,
@@ -248,7 +216,7 @@ class TransfersService {
   }) async {
     try {
       final response = await _dio.get(
-        '/transfers',
+        ApiEndpoints.walletTransactions,
         queryParameters: {
           'limit': pageSize,
           'offset': (page - 1).clamp(0, 1 << 31) * pageSize,
@@ -262,11 +230,11 @@ class TransfersService {
     }
   }
 
-  /// GET /transfers/:id
+  /// GET /wallet/transactions/:id
   Future<Transfer> getTransfer(String id) async {
     try {
-      final response = await _dio.get('/transfers/$id');
-      return Transfer.fromJson(response.data);
+      final response = await _dio.get(ApiEndpoints.walletTransactionById(id));
+      return Transfer.fromJson(_payloadMap(_asStringMap(response.data)));
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }

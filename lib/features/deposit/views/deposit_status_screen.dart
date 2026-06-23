@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
@@ -18,6 +18,22 @@ class DepositStatusScreen extends ConsumerWidget {
     final colors = context.colors;
     final state = ref.watch(depositProvider);
     final response = state.response;
+    final hasActiveDeposit = state.activeDepositId != null || response != null;
+
+    if (!hasActiveDeposit && state.step != DepositFlowStep.failed) {
+      return Scaffold(
+        backgroundColor: colors.canvas,
+        body: SafeArea(
+          child: _MissingDepositStatus(
+            l10n: l10n,
+            colors: colors,
+            onStartDeposit: () => _handleTryAgain(ref, context),
+            onGoHome: () => _handleGoHome(ref, context),
+          ),
+        ),
+      );
+    }
+
     final status = _getDepositStatus(state);
 
     return Scaffold(
@@ -32,14 +48,14 @@ class DepositStatusScreen extends ConsumerWidget {
               Center(child: _buildStatusIcon(status, colors)),
               const SizedBox(height: AppSpacing.xl),
               AppText(
-                _getStatusTitle(status, l10n),
+                _getStatusTitle(context, status, l10n),
                 variant: AppTextVariant.headlineMedium,
                 color: colors.textPrimary,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.md),
               AppText(
-                _getStatusSubtitle(status, l10n),
+                _getStatusSubtitle(context, status, l10n),
                 color: colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
@@ -54,6 +70,10 @@ class DepositStatusScreen extends ConsumerWidget {
                   l10n: l10n,
                   colors: colors,
                 ),
+                const SizedBox(height: AppSpacing.xl),
+              ],
+              if (status == _DepositStatus.statusUnknown) ...[
+                _StatusUnknownDepositCard(message: state.error, colors: colors),
                 const SizedBox(height: AppSpacing.xl),
               ],
               if (status == _DepositStatus.processing) ...[
@@ -120,6 +140,11 @@ class DepositStatusScreen extends ConsumerWidget {
         colors.error,
         Icons.error,
       ),
+      _DepositStatus.statusUnknown => (
+        colors.warning.withValues(alpha: 0.12),
+        colors.warningText,
+        Icons.schedule_send_outlined,
+      ),
       _DepositStatus.processing => (
         colors.gold.withValues(alpha: 0.1),
         colors.gold,
@@ -142,22 +167,41 @@ class DepositStatusScreen extends ConsumerWidget {
     if (state.step == DepositFlowStep.failed) {
       return _DepositStatus.failed;
     }
+    if (state.step == DepositFlowStep.statusUnknown) {
+      return _DepositStatus.statusUnknown;
+    }
     return _DepositStatus.processing;
   }
 
-  String _getStatusTitle(_DepositStatus status, AppLocalizations l10n) =>
-      switch (status) {
-        _DepositStatus.completed => l10n.deposit_successTitle,
-        _DepositStatus.failed => l10n.deposit_failedTitle,
-        _DepositStatus.processing => l10n.deposit_processingTitle,
-      };
+  String _getStatusTitle(
+    BuildContext context,
+    _DepositStatus status,
+    AppLocalizations l10n,
+  ) => switch (status) {
+    _DepositStatus.completed => l10n.deposit_successTitle,
+    _DepositStatus.failed => l10n.deposit_failedTitle,
+    _DepositStatus.statusUnknown => _localizedDepositCopy(
+      context,
+      en: 'Deposit still pending',
+      fr: 'Dépôt encore en attente',
+    ),
+    _DepositStatus.processing => l10n.deposit_processingTitle,
+  };
 
-  String _getStatusSubtitle(_DepositStatus status, AppLocalizations l10n) =>
-      switch (status) {
-        _DepositStatus.completed => l10n.deposit_successDesc,
-        _DepositStatus.failed => l10n.deposit_failedDesc,
-        _DepositStatus.processing => l10n.deposit_processingSubtitle,
-      };
+  String _getStatusSubtitle(
+    BuildContext context,
+    _DepositStatus status,
+    AppLocalizations l10n,
+  ) => switch (status) {
+    _DepositStatus.completed => l10n.deposit_successDesc,
+    _DepositStatus.failed => l10n.deposit_failedDesc,
+    _DepositStatus.statusUnknown => _localizedDepositCopy(
+      context,
+      en: 'Korido accepted the deposit request, but the final provider status is taking longer than expected.',
+      fr: 'Korido a accepté la demande de dépôt, mais le statut final du fournisseur prend plus de temps que prévu.',
+    ),
+    _DepositStatus.processing => l10n.deposit_processingSubtitle,
+  };
 
   void _handlePrimaryAction(
     _DepositStatus status,
@@ -167,6 +211,7 @@ class DepositStatusScreen extends ConsumerWidget {
     switch (status) {
       case _DepositStatus.completed:
       case _DepositStatus.failed:
+      case _DepositStatus.statusUnknown:
         _handleGoHome(ref, context);
         break;
       case _DepositStatus.processing:
@@ -177,12 +222,12 @@ class DepositStatusScreen extends ConsumerWidget {
 
   void _handleTryAgain(WidgetRef ref, BuildContext context) {
     ref.read(depositProvider.notifier).reset();
-    context.go('/deposit/amount');
+    context.fsmGo('/deposit/amount');
   }
 
   void _handleGoHome(WidgetRef ref, BuildContext context) {
     ref.read(depositProvider.notifier).reset();
-    context.go('/home');
+    context.fsmGo('/home');
   }
 }
 
@@ -215,7 +260,7 @@ class _CompletedDepositCard extends StatelessWidget {
                   label: l10n.deposit_deposited,
                   alignment: Alignment.centerLeft,
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  amount: formatXof(_state.amountXOF ?? response.amount),
+                  amount: _formatSourceAmount(_state, response.amount),
                   color: _colors.textPrimary,
                 ),
               ),
@@ -254,6 +299,14 @@ class _CompletedDepositCard extends StatelessWidget {
       ),
     );
   }
+}
+
+String _formatSourceAmount(DepositState state, double fallbackAmount) {
+  final currency = (state.sourceCurrency ?? 'XOF').toUpperCase();
+  if (currency == 'USD') {
+    return '\$${(state.amountUSD ?? 0).toStringAsFixed(2)}';
+  }
+  return formatXof(state.amountXOF ?? fallbackAmount);
 }
 
 class _AmountColumn extends StatelessWidget {
@@ -364,4 +417,99 @@ class _ProcessingDepositCard extends StatelessWidget {
   );
 }
 
-enum _DepositStatus { completed, failed, processing }
+class _StatusUnknownDepositCard extends StatelessWidget {
+  const _StatusUnknownDepositCard({
+    required String? message,
+    required ThemeColors colors,
+  }) : _message = message,
+       _colors = colors;
+
+  final String? _message;
+  final ThemeColors _colors;
+
+  @override
+  Widget build(BuildContext context) => AppCard(
+    backgroundColor: _colors.warningBg,
+    borderColor: _colors.warning.withValues(alpha: 0.24),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(Icons.info_outline_rounded, color: _colors.warningText, size: 24),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: AppText(
+            _message ??
+                _localizedDepositCopy(
+                  context,
+                  en: 'Please check your transaction history before starting another deposit.',
+                  fr: 'Vérifiez votre historique avant de lancer un autre dépôt.',
+                ),
+            color: _colors.textPrimary,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _MissingDepositStatus extends StatelessWidget {
+  const _MissingDepositStatus({
+    required AppLocalizations l10n,
+    required ThemeColors colors,
+    required VoidCallback onStartDeposit,
+    required VoidCallback onGoHome,
+  }) : _l10n = l10n,
+       _colors = colors,
+       _onStartDeposit = onStartDeposit,
+       _onGoHome = onGoHome;
+
+  final AppLocalizations _l10n;
+  final ThemeColors _colors;
+  final VoidCallback _onStartDeposit;
+  final VoidCallback _onGoHome;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.all(AppSpacing.screenPadding),
+    child: Center(
+      child: AppCard(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.receipt_long_outlined, size: 56, color: _colors.gold),
+            const SizedBox(height: AppSpacing.lg),
+            AppText(
+              _l10n.deposit_noDepositData,
+              variant: AppTextVariant.titleMedium,
+              color: _colors.textPrimary,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            AppButton(
+              label: _l10n.deposit_amount,
+              onPressed: _onStartDeposit,
+              isFullWidth: true,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            AppButton(
+              label: _l10n.action_backToHome,
+              variant: AppButtonVariant.secondary,
+              onPressed: _onGoHome,
+              isFullWidth: true,
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+String _localizedDepositCopy(
+  BuildContext context, {
+  required String en,
+  required String fr,
+}) {
+  return Localizations.localeOf(context).languageCode == 'fr' ? fr : en;
+}
+
+enum _DepositStatus { completed, failed, statusUnknown, processing }

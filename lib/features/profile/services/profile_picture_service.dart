@@ -1,30 +1,23 @@
 import 'dart:io';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:dio/dio.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
-import 'package:usdc_wallet/services/user/avatar_multipart.dart';
-import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Profile Picture Service
 ///
-/// Handles profile picture operations:
-/// - Pick from camera/gallery
-/// - Upload to backend
-/// - Delete avatar
+/// Handles local profile picture preparation only.
+/// Network writes are owned by UserService through ProfileNotifier.
 class ProfilePictureService {
-  final ImagePicker _picker = ImagePicker();
-  final Dio _dio;
-  final _logger = AppLogger('ProfilePictureService');
+  ProfilePictureService();
 
-  ProfilePictureService(this._dio);
+  final ImagePicker _picker = ImagePicker();
+  final _logger = const AppLogger('ProfilePictureService');
 
   /// Pick image from camera
   Future<File?> pickFromCamera() async {
     try {
-      final XFile? image = await _picker.pickImage(
+      final image = await _picker.pickImage(
         source: ImageSource.camera,
         preferredCameraDevice: CameraDevice.front,
         maxWidth: 1024,
@@ -32,11 +25,13 @@ class ProfilePictureService {
         imageQuality: 85,
       );
 
-      if (image == null) return null;
+      if (image == null) {
+        return null;
+      }
 
       _logger.info('Image picked from camera: ${image.path}');
       return File(image.path);
-    } catch (e) {
+    } on Object catch (e) {
       _logger.error('Error picking from camera: $e');
       rethrow;
     }
@@ -45,18 +40,20 @@ class ProfilePictureService {
   /// Pick image from gallery
   Future<File?> pickFromGallery() async {
     try {
-      final XFile? image = await _picker.pickImage(
+      final image = await _picker.pickImage(
         source: ImageSource.gallery,
         maxWidth: 1024,
         maxHeight: 1024,
         imageQuality: 85,
       );
 
-      if (image == null) return null;
+      if (image == null) {
+        return null;
+      }
 
       _logger.info('Image picked from gallery: ${image.path}');
       return File(image.path);
-    } catch (e) {
+    } on Object catch (e) {
       _logger.error('Error picking from gallery: $e');
       rethrow;
     }
@@ -94,85 +91,36 @@ class ProfilePictureService {
     }
   }
 
-  /// Upload avatar to backend.
-  Future<AvatarUploadResult> uploadAvatar(
-    File imageFile, {
-    required void Function(double) onProgress,
-    required AvatarDeviceFaceCheck faceCheck,
-  }) async {
-    try {
-      _logger.info('Uploading avatar: ${imageFile.path}');
-
-      final fileName = imageFile.path.split('/').last;
-      final formData = FormData.fromMap({
-        avatarDeviceFaceCheckField: faceCheck.token,
-        'avatar': await avatarMultipartFile(imageFile, filename: fileName),
-      });
-
-      final response = await _dio.post(
-        '/user/avatar',
-        data: formData,
-        onSendProgress: (sent, total) {
-          final progress = sent / total;
-          onProgress(progress);
-          _logger.debug(
-            'Upload progress: ${(progress * 100).toStringAsFixed(1)}%',
-          );
-        },
-      );
-
-      final data = _readPayload(response.data);
-      _logger.info('Avatar uploaded successfully');
-      return AvatarUploadResult.fromJson(data);
-    } catch (e) {
-      _logger.error('Error uploading avatar: $e');
-      rethrow;
-    }
-  }
-
-  /// Delete current avatar
-  Future<void> deleteAvatar() async {
-    try {
-      _logger.info('Deleting avatar');
-      await _dio.delete('/user/avatar');
-      _logger.info('Avatar deleted successfully');
-    } catch (e) {
-      _logger.error('Error deleting avatar: $e');
-      rethrow;
-    }
-  }
-
   /// Compress image to max size (in bytes).
   /// Uses flutter_image_compress for real compression.
   /// Target: max 500KB, 80% quality, max 1024px dimension.
-  Future<File> compressImage(File file, {int maxSizeBytes = 500 * 1024}) async {
-    return _compressImage(
-      file,
-      maxSizeBytes: maxSizeBytes,
-      minWidth: 1024,
-      minHeight: 1024,
-      firstQuality: 80,
-      retryWidth: 800,
-      retryHeight: 800,
-      retryQuality: 60,
-    );
-  }
+  Future<File> compressImage(
+    File file, {
+    int maxSizeBytes = 500 * 1024,
+  }) async => _compressImage(
+    file,
+    maxSizeBytes: maxSizeBytes,
+    minWidth: 1024,
+    minHeight: 1024,
+    firstQuality: 80,
+    retryWidth: 800,
+    retryHeight: 800,
+    retryQuality: 60,
+  );
 
   /// Prepare a smaller JPEG for on-device face detection on lower-end phones.
-  Future<File> prepareForFaceDetection(File file) async {
-    return _compressImage(
-      file,
-      maxSizeBytes: 220 * 1024,
-      minWidth: 720,
-      minHeight: 720,
-      firstQuality: 68,
-      retryWidth: 560,
-      retryHeight: 560,
-      retryQuality: 54,
-      outputPrefix: 'face_check',
-      forceJpeg: true,
-    );
-  }
+  Future<File> prepareForFaceDetection(File file) async => _compressImage(
+    file,
+    maxSizeBytes: 220 * 1024,
+    minWidth: 720,
+    minHeight: 720,
+    firstQuality: 68,
+    retryWidth: 560,
+    retryHeight: 560,
+    retryQuality: 54,
+    outputPrefix: 'face_check',
+    forceJpeg: true,
+  );
 
   Future<File> _compressImage(
     File file, {
@@ -205,7 +153,6 @@ class ProfilePictureService {
         minWidth: minWidth,
         minHeight: minHeight,
         quality: firstQuality,
-        format: CompressFormat.jpeg,
       );
 
       if (result == null) {
@@ -223,7 +170,6 @@ class ProfilePictureService {
           minWidth: retryWidth,
           minHeight: retryHeight,
           quality: retryQuality,
-          format: CompressFormat.jpeg,
         );
         if (retry != null && retry.length < result.length) {
           final outPath = _compressedJpegPath(file, prefix: outputPrefix);
@@ -237,7 +183,7 @@ class ProfilePictureService {
       final outFile = File(outPath)..writeAsBytesSync(result);
       _logger.info('Compressed to ${result.length} bytes');
       return outFile;
-    } catch (e) {
+    } on Object catch (e) {
       _logger.error('Compression failed: $e, using original');
       return file;
     }
@@ -259,28 +205,6 @@ class ProfilePictureService {
   }
 }
 
-final profilePictureServiceProvider = Provider<ProfilePictureService>((ref) {
-  return ProfilePictureService(ref.watch(dioProvider));
-});
-
-Map<String, dynamic> _readPayload(Object? raw) {
-  if (raw is Map) {
-    final map = Map<String, dynamic>.from(raw);
-    final data = map['data'];
-    if (data is Map) {
-      return _unwrapKnownPayload(Map<String, dynamic>.from(data));
-    }
-    return _unwrapKnownPayload(map);
-  }
-  return const {};
-}
-
-Map<String, dynamic> _unwrapKnownPayload(Map<String, dynamic> map) {
-  for (final key in const ['user', 'profile', 'avatar']) {
-    final nested = map[key];
-    if (nested is Map) {
-      return {...map, ...Map<String, dynamic>.from(nested)};
-    }
-  }
-  return map;
-}
+final profilePictureServiceProvider = Provider<ProfilePictureService>(
+  (ref) => ProfilePictureService(),
+);

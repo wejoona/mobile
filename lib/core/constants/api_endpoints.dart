@@ -9,17 +9,41 @@ abstract final class ApiEndpoints {
   static const authRefresh = '/auth/refresh';
   static const authLogout = '/auth/logout';
   static const authRegister = '/auth/register';
+  static const authRecoveryRequestOtp = '/auth/recovery/request-otp';
+  static const authRecoveryVerifyOtp = '/auth/recovery/verify-otp';
+
+  // App Config
+  static const configCountries = '/config/countries';
+  static const configMobileVersion = '/config/mobile-version';
 
   // User
   static const userProfile = '/user/profile';
   static const userUpdate = '/user/profile';
   static const userDelete = '/user/account';
   static const userExportData = '/user/export';
+  static const userPinPrefix = '/user/pin/';
+  static const userPinSet = '${userPinPrefix}set';
+  static const userPinVerify = '${userPinPrefix}verify';
+  static const userPinChange = '${userPinPrefix}change';
+  static const userPinReset = '${userPinPrefix}reset';
+  static const userPinTemporaryResetComplete =
+      '${userPinPrefix}temporary-reset/complete';
+  static const userPinResetManualReview = '$userPinReset/manual-review';
+  static const userPinResetReviewCurrent = '$userPinReset/review/current';
 
   // Wallet
   static const walletBalance = '/wallet';
-  static const walletAddress = '/wallet/address';
   static const walletTransactions = '/wallet/transactions';
+  static const walletExchangeRate = '/wallet/exchange-rate';
+  static const walletCreate = '/wallet/create';
+  static const walletTransactionStats = '/wallet/transactions/stats';
+  static String walletTransactionById(String id) => '/wallet/transactions/$id';
+  static String walletDepositTransactionStatus(String depositId) =>
+      '/wallet/transactions/deposit/$depositId/status';
+
+  // FX lookup
+  static const fxCurrencies = '/fx/currencies';
+  static const fxQuote = '/fx/quote';
 
   // Transfers
   static const transfersSend = '/wallet/transfer/internal';
@@ -32,11 +56,16 @@ abstract final class ApiEndpoints {
   static const depositProviders = '/wallet/deposit/providers';
   static const depositChannels = '/wallet/deposit/channels';
   static const depositHistory = '/deposits';
+  static String depositById(String id) => '$depositStatus/$id';
 
-  // Withdraw
-  static const withdrawInitiate = '/withdrawals/initiate';
-  static const withdrawQuote = '/withdrawals/quote';
-  static const withdrawStatus = '/withdrawals';
+  // Mobile money cash-out
+  static const mobileMoneyCashOut = '/wallet/cash-out/mobile-money';
+  static const mobileMoneyCashOutOptions =
+      '/wallet/cash-out/mobile-money/options';
+  static const mobileMoneyCashOutQuote = '/wallet/cash-out/mobile-money/quote';
+  static const mobileMoneyCashOutStatus = '/wallet/cash-out/mobile-money';
+  static String mobileMoneyCashOutById(String id) =>
+      '$mobileMoneyCashOutStatus/$id';
 
   // Cards
   static const cards = '/cards';
@@ -78,6 +107,12 @@ abstract final class ApiEndpoints {
   static const kycStatus = '/kyc/status';
   static const kycSubmit = '/kyc/submit';
   static const kycUpload = '/kyc/documents';
+  static const kycManualReview = '/kyc/manual-review';
+  static const kycDocumentSubmit = '/kyc/document/submit';
+  static const kycVerificationStatus = '/kyc/verification/status';
+  static const kycLivenessSession = '/kyc/liveness/session';
+  static const kycLivenessChallenge = '/kyc/liveness/challenge';
+  static const kycLivenessStatus = '/kyc/liveness/status';
 
   // Beneficiaries
   static const beneficiaries = '/beneficiaries';
@@ -127,9 +162,4 @@ abstract final class ApiEndpoints {
   // Contacts
   static const contacts = '/contacts';
   static const contactsSync = '/contacts/sync';
-
-  // Merchant Pay
-  static const merchantPayments = '/merchant/payments';
-  static const merchantQr = '/merchant/qr';
-  static const merchantDashboard = '/merchant/dashboard';
 }

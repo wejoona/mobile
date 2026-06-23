@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/services/wallet/wallet_service.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class DepositInstructionsView extends ConsumerWidget {
   const DepositInstructionsView({super.key, required this.response});
@@ -27,7 +27,7 @@ class DepositInstructionsView extends ConsumerWidget {
         ),
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () => context.go('/home'),
+          onPressed: () => context.fsmGo('/home'),
         ),
       ),
       body: SingleChildScrollView(
@@ -39,7 +39,7 @@ class DepositInstructionsView extends ConsumerWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: context.colors.warning.withValues(alpha:0.1),
+                color: context.colors.warning.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -132,17 +132,20 @@ class DepositInstructionsView extends ConsumerWidget {
                   ),
                   _InstructionStep(
                     number: '2',
-                    text: 'Account: ${response.paymentInstructions.accountNumber}',
+                    text:
+                        'Account: ${response.paymentInstructions.accountNumber}',
                     colors: colors,
                   ),
                   _InstructionStep(
                     number: '3',
-                    text: 'Amount: ${_formatAmount(response.amount)} ${response.sourceCurrency}',
+                    text:
+                        'Amount: ${_formatAmount(response.amount)} ${response.sourceCurrency}',
                     colors: colors,
                   ),
                   _InstructionStep(
                     number: '4',
-                    text: 'Reference: ${response.paymentInstructions.reference}',
+                    text:
+                        'Reference: ${response.paymentInstructions.reference}',
                     isLast: true,
                     colors: colors,
                   ),
@@ -184,17 +187,17 @@ class DepositInstructionsView extends ConsumerWidget {
                       ),
                       const SizedBox(width: AppSpacing.md),
                       IconButton(
-                        onPressed: () => _copyToClipboard(context, response.paymentInstructions.reference),
+                        onPressed: () => _copyToClipboard(
+                          context,
+                          response.paymentInstructions.reference,
+                        ),
                         icon: Container(
                           padding: const EdgeInsets.all(AppSpacing.md),
                           decoration: BoxDecoration(
-                            color: colors.gold.withValues(alpha:0.1),
+                            color: colors.gold.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(AppRadius.md),
                           ),
-                          child: Icon(
-                            Icons.copy,
-                            color: colors.gold,
-                          ),
+                          child: Icon(Icons.copy, color: colors.gold),
                         ),
                       ),
                     ],
@@ -242,7 +245,7 @@ class DepositInstructionsView extends ConsumerWidget {
             // Done Button
             AppButton(
               label: 'I\'ve Made the Payment',
-              onPressed: () => context.go('/home'),
+              onPressed: () => context.fsmGo('/home'),
               variant: AppButtonVariant.primary,
               isFullWidth: true,
             ),
@@ -317,7 +320,7 @@ class DepositInstructionsView extends ConsumerWidget {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                context.go('/home');
+                context.fsmGo('/home');
               },
               child: AppText(
                 'Cancel',
@@ -356,7 +359,7 @@ class _InstructionStep extends StatelessWidget {
             width: 24,
             height: 24,
             decoration: BoxDecoration(
-              color: colors.gold.withValues(alpha:0.1),
+              color: colors.gold.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.full),
             ),
             child: Center(

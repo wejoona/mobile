@@ -1,9 +1,9 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -54,12 +54,14 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
 
   void _triggerResultHaptic() {
     final state = ref.read(sendMoneyProvider);
-    final isSuccess =
-        state.result != null && state.result!.status == 'completed';
+    if (state.result == null) {
+      return;
+    }
+    final resultState = _transferResultState(state.result!.status);
 
-    if (isSuccess) {
+    if (resultState == _TransferResultState.completed) {
       unawaited(hapticService.paymentConfirmed());
-    } else {
+    } else if (resultState == _TransferResultState.failed) {
       unawaited(hapticService.error());
     }
   }
@@ -85,8 +87,31 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     final state = ref.watch(sendMoneyProvider);
     final colors = context.colors;
 
-    final isSuccess =
-        state.result != null && state.result!.status == 'completed';
+    if (state.result == null) {
+      return Scaffold(
+        backgroundColor: colors.canvas,
+        body: SafeArea(
+          child: _MissingTransferResultState(
+            title: localizedSendCopy(
+              context,
+              en: 'Transfer details unavailable',
+              fr: 'Détails du transfert indisponibles',
+            ),
+            body: localizedSendCopy(
+              context,
+              en: 'Start a new transfer so Korido can confirm the recipient, amount, and final status.',
+              fr: 'Démarrez un nouveau transfert afin que Korido confirme le destinataire, le montant et le statut final.',
+            ),
+            primaryLabel: l10n.send_title,
+            secondaryLabel: l10n.action_backToHome,
+            onPrimary: _handleStartNewTransfer,
+            onSecondary: _handleDone,
+          ),
+        ),
+      );
+    }
+
+    final resultState = _transferResultState(state.result!.status);
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -105,10 +130,10 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                 child: IntrinsicHeight(
                   child: Column(
                     children: [
-                      _buildResultContent(l10n, state, colors, isSuccess),
+                      _buildResultContent(l10n, state, colors, resultState),
                       const Spacer(),
                       const SizedBox(height: AppSpacing.sm),
-                      _buildActions(l10n, isSuccess),
+                      _buildActions(l10n, resultState),
                     ],
                   ),
                 ),
@@ -124,7 +149,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     AppLocalizations l10n,
     SendMoneyState state,
     ThemeColors colors,
-    bool isSuccess,
+    _TransferResultState resultState,
   ) => Column(
     children: [
       const SizedBox(height: AppSpacing.xs),
@@ -134,35 +159,47 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
           padding: const EdgeInsets.all(AppSpacing.sm),
           decoration: BoxDecoration(
             color: Color.alphaBlend(
-              (isSuccess ? colors.success : colors.error).withValues(
-                alpha: colors.isDark ? 0.16 : 0.10,
-              ),
+              _resultAccentColor(
+                colors,
+                resultState,
+              ).withValues(alpha: colors.isDark ? 0.16 : 0.10),
               colors.container,
             ),
             borderRadius: BorderRadius.circular(AppRadius.xxxl),
             border: Border.all(
-              color: (isSuccess ? colors.success : colors.error).withValues(
-                alpha: 0.28,
-              ),
+              color: _resultAccentColor(
+                colors,
+                resultState,
+              ).withValues(alpha: 0.28),
             ),
           ),
           child: Icon(
-            isSuccess ? Icons.check_circle : Icons.error,
+            _resultIcon(resultState),
             size: 36,
-            color: isSuccess ? colors.success : colors.error,
+            color: _resultAccentColor(colors, resultState),
           ),
         ),
       ),
       const SizedBox(height: AppSpacing.md),
       AppText(
-        isSuccess ? l10n.send_transferSuccess : l10n.send_transferFailed,
+        _resultTitle(context, l10n, resultState),
         variant: AppTextVariant.titleLarge,
         textAlign: TextAlign.center,
       ),
       const SizedBox(height: AppSpacing.xs),
-      if (isSuccess)
+      if (resultState == _TransferResultState.completed)
         AppText(
           l10n.send_transferSuccessMessage,
+          color: colors.textSecondary,
+          textAlign: TextAlign.center,
+        )
+      else if (resultState == _TransferResultState.pending)
+        AppText(
+          localizedSendCopy(
+            context,
+            en: 'Korido accepted the transfer. We will update your history when the final status is confirmed.',
+            fr: 'Korido a accepté le transfert. L’historique sera mis à jour dès confirmation du statut final.',
+          ),
           color: colors.textSecondary,
           textAlign: TextAlign.center,
         )
@@ -173,7 +210,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
           textAlign: TextAlign.center,
         ),
       const SizedBox(height: AppSpacing.md),
-      if (isSuccess && state.result != null) ...[
+      if (state.result != null) ...[
         AppCard(
           variant: AppCardVariant.elevated,
           padding: const EdgeInsets.all(AppSpacing.md),
@@ -271,7 +308,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
         ),
         const SizedBox(height: AppSpacing.xs),
       ],
-      if (!isSuccess) ...[
+      if (resultState == _TransferResultState.failed) ...[
         const SizedBox(height: AppSpacing.md),
         SendCallout(
           icon: Icons.support_agent_outlined,
@@ -287,12 +324,31 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
           ),
           tone: SendCalloutTone.info,
         ),
+      ] else if (resultState == _TransferResultState.pending) ...[
+        const SizedBox(height: AppSpacing.md),
+        SendCallout(
+          icon: Icons.schedule_rounded,
+          title: localizedSendCopy(
+            context,
+            en: 'Transfer is pending',
+            fr: 'Transfert en attente',
+          ),
+          body: localizedSendCopy(
+            context,
+            en: 'Do not retry yet. Check the transfer in History before starting another payment.',
+            fr: 'Ne réessayez pas encore. Vérifiez ce transfert dans l’historique avant de lancer un autre paiement.',
+          ),
+          tone: SendCalloutTone.warning,
+        ),
       ],
     ],
   );
 
-  Widget _buildActions(AppLocalizations l10n, bool isSuccess) {
-    if (isSuccess) {
+  Widget _buildActions(
+    AppLocalizations l10n,
+    _TransferResultState resultState,
+  ) {
+    if (resultState == _TransferResultState.completed) {
       return Column(
         children: [
           if (_showSaveOption)
@@ -321,11 +377,34 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
       );
     }
 
+    if (resultState == _TransferResultState.pending) {
+      return Column(
+        children: [
+          AppButton(
+            label: l10n.action_done,
+            onPressed: _handleDone,
+            isFullWidth: true,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          AppButton(
+            label: localizedSendCopy(
+              context,
+              en: 'View history',
+              fr: 'Voir l’historique',
+            ),
+            variant: AppButtonVariant.secondary,
+            onPressed: _handleViewHistory,
+            isFullWidth: true,
+          ),
+        ],
+      );
+    }
+
     return Column(
       children: [
         AppButton(
           label: l10n.action_retry,
-          onPressed: () => context.go('/send/confirm'),
+          onPressed: () => context.fsmGo('/send/confirm'),
           isFullWidth: true,
         ),
         const SizedBox(height: AppSpacing.sm),
@@ -420,6 +499,131 @@ ${l10n.appName}
     // Reset the send state
     ref.read(sendMoneyProvider.notifier).reset();
     // Navigate to home
-    context.go('/home');
+    context.fsmGo('/home');
+  }
+
+  void _handleViewHistory() {
+    ref.read(sendMoneyProvider.notifier).reset();
+    context.fsmGo('/transactions');
+  }
+
+  void _handleStartNewTransfer() {
+    ref.read(sendMoneyProvider.notifier).reset();
+    context.fsmGo('/send');
+  }
+}
+
+enum _TransferResultState { completed, pending, failed }
+
+_TransferResultState _transferResultState(String status) {
+  switch (status.trim().toLowerCase()) {
+    case 'completed':
+    case 'success':
+    case 'successful':
+      return _TransferResultState.completed;
+    case 'failed':
+    case 'rejected':
+    case 'cancelled':
+    case 'canceled':
+    case 'expired':
+      return _TransferResultState.failed;
+    default:
+      return _TransferResultState.pending;
+  }
+}
+
+IconData _resultIcon(_TransferResultState state) => switch (state) {
+  _TransferResultState.completed => Icons.check_circle,
+  _TransferResultState.pending => Icons.schedule_rounded,
+  _TransferResultState.failed => Icons.error,
+};
+
+Color _resultAccentColor(ThemeColors colors, _TransferResultState state) =>
+    switch (state) {
+      _TransferResultState.completed => colors.success,
+      _TransferResultState.pending => colors.warningText,
+      _TransferResultState.failed => colors.error,
+    };
+
+String _resultTitle(
+  BuildContext context,
+  AppLocalizations l10n,
+  _TransferResultState state,
+) => switch (state) {
+  _TransferResultState.completed => l10n.send_transferSuccess,
+  _TransferResultState.pending => localizedSendCopy(
+    context,
+    en: 'Transfer Pending',
+    fr: 'Transfert en attente',
+  ),
+  _TransferResultState.failed => l10n.send_transferFailed,
+};
+
+class _MissingTransferResultState extends StatelessWidget {
+  const _MissingTransferResultState({
+    required String title,
+    required String body,
+    required String primaryLabel,
+    required String secondaryLabel,
+    required VoidCallback onPrimary,
+    required VoidCallback onSecondary,
+  }) : _title = title,
+       _body = body,
+       _primaryLabel = primaryLabel,
+       _secondaryLabel = secondaryLabel,
+       _onPrimary = onPrimary,
+       _onSecondary = onSecondary;
+
+  final String _title;
+  final String _body;
+  final String _primaryLabel;
+  final String _secondaryLabel;
+  final VoidCallback _onPrimary;
+  final VoidCallback _onSecondary;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.screenPadding),
+      child: Center(
+        child: AppCard(
+          variant: AppCardVariant.flat,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.receipt_long_outlined, size: 48, color: colors.gold),
+              const SizedBox(height: AppSpacing.lg),
+              AppText(
+                _title,
+                variant: AppTextVariant.titleMedium,
+                color: colors.textPrimary,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              AppText(
+                _body,
+                variant: AppTextVariant.bodyMedium,
+                color: colors.textSecondary,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              AppButton(
+                label: _primaryLabel,
+                onPressed: _onPrimary,
+                isFullWidth: true,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              AppButton(
+                label: _secondaryLabel,
+                variant: AppButtonVariant.secondary,
+                onPressed: _onSecondary,
+                isFullWidth: true,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

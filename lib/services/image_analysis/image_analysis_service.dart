@@ -53,9 +53,28 @@ class ImageAnalysisService {
       return FaceDetectionResult(
         faceCount: 0,
         isAvailable: false,
-        message: error.message,
+        message: _friendlyPlatformMessage(error),
       );
     }
+  }
+
+  String _friendlyPlatformMessage(PlatformException error) {
+    final rawMessage = '${error.code} ${error.message ?? ''}'.toLowerCase();
+
+    if (rawMessage.contains('vndetect') ||
+        rawMessage.contains('vision') ||
+        rawMessage.contains('cancel')) {
+      return 'Face check could not complete. Please try a brighter selfie with your face centered.';
+    }
+
+    if (rawMessage.contains('permission') ||
+        rawMessage.contains('denied') ||
+        rawMessage.contains('restricted')) {
+      return 'Camera or photo permission is needed before we can check your face.';
+    }
+
+    return error.message ??
+        'Face detection is unavailable right now. Please try another clear selfie.';
   }
 }
 

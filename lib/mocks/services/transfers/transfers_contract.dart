@@ -1,6 +1,6 @@
-/// Transfers API Contract
+/// Wallet transfer API Contract
 ///
-/// Defines the interface for transfer endpoints.
+/// Defines the interface for money-movement transfer endpoints.
 /// This serves as the specification for backend implementation.
 ///
 /// IMPORTANT: Both internal and external transfers require PIN verification.
@@ -167,17 +167,18 @@ class TransfersListResponse {
 
 class TransfersContract extends ApiContract {
   @override
-  String get serviceName => 'transfers';
+  String get serviceName => 'wallet-transfers';
 
   @override
-  String get basePath => '/transfers';
+  String get basePath => '/wallet/transfer';
 
   @override
   List<ApiEndpoint> get endpoints => [
     ApiEndpoint(
       path: '/internal',
       method: HttpMethod.post,
-      description: 'Transfer USDC to another JoonaPay user by phone number',
+      description:
+          'Transfer USDC to another Korido user by phone, username, or user id',
       requestType: InternalTransferRequest,
       responseType: TransferResponse,
       requiresAuth: true,
@@ -190,26 +191,6 @@ class TransfersContract extends ApiContract {
       responseType: TransferResponse,
       requiresAuth: true,
     ),
-    ApiEndpoint(
-      path: '',
-      method: HttpMethod.get,
-      description: 'Get paginated list of transfers',
-      responseType: TransfersListResponse,
-      requiresAuth: true,
-      queryParams: {
-        'page': 'Page number (default: 1)',
-        'pageSize': 'Items per page (default: 20)',
-        'type': 'Filter by type: internal or external (optional)',
-      },
-    ),
-    ApiEndpoint(
-      path: '/:id',
-      method: HttpMethod.get,
-      description: 'Get transfer details by ID',
-      responseType: TransferResponse,
-      requiresAuth: true,
-      pathParams: {'id': 'Transfer ID'},
-    ),
   ];
 }
 
@@ -217,7 +198,7 @@ class TransfersContract extends ApiContract {
 
 /// PIN Verification Required
 ///
-/// Both POST /transfers/internal and POST /transfers/external require PIN verification.
+/// Both POST /wallet/transfer/internal and POST /wallet/transfer/external require PIN verification.
 ///
 /// Flow:
 /// 1. Client calls POST /user/pin/verify with { pinHash: "..." }

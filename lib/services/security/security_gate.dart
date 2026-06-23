@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:safe_device/safe_device.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/services/security/device_security.dart';
 import 'package:usdc_wallet/utils/logger.dart';
@@ -83,7 +84,36 @@ class _SecurityGateState extends State<SecurityGate> {
         AppLogger('Debug').debug(
           'SECURITY ALERT: Device compromised - ${combinedResult.threats}',
         );
+        await _reportBlockedStartup(
+          combinedResult,
+          safeDeviceJailbreakDetected: safeDeviceJailbreakDetected,
+          isRealDevice: isRealDevice,
+        );
       }
+    }
+  }
+
+  Future<void> _reportBlockedStartup(
+    DeviceSecurityResult result, {
+    required bool safeDeviceJailbreakDetected,
+    required bool isRealDevice,
+  }) async {
+    try {
+      await Sentry.captureMessage(
+        'Security gate blocked app startup',
+        level: SentryLevel.warning,
+        withScope: (scope) async {
+          await scope.setTag('security_gate.blocked', 'true');
+          await scope.setContexts('security_gate', {
+            'threat_count': result.threats.length,
+            'threats': result.threats,
+            'safe_device_jailbreak_detected': safeDeviceJailbreakDetected,
+            'safe_device_is_real_device': isRealDevice,
+          });
+        },
+      );
+    } on Object catch (error) {
+      AppLogger('Debug').debug('security gate telemetry failed: $error');
     }
   }
 

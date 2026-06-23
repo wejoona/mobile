@@ -32,7 +32,34 @@ class ContactsApi {
     return responses;
   }
 
-  /// POST /contacts/check — check which phone numbers are registered
-  Future<Response> checkContacts(List<String> phoneNumbers) =>
-      _dio.post('/contacts/check', data: {'phoneNumbers': phoneNumbers});
+  /// POST /contacts/check — privacy-preserving registered-user check.
+  Future<Response> checkPhoneHashes(
+    List<String> phoneHashes, {
+    String permissionStatus = 'granted',
+  }) {
+    final hashes = _canonicalPhoneHashes(phoneHashes);
+    return _dio.post(
+      '/contacts/check',
+      data: {'permissionStatus': permissionStatus, 'phoneHashes': hashes},
+    );
+  }
+
+  @Deprecated(
+    'Raw phone contacts must not be sent by mobile. Hash normalized E.164 '
+    'numbers with ContactsService.hashPhone and call checkPhoneHashes.',
+  )
+  Future<Response> checkContacts(List<String> phoneNumbers) {
+    throw UnsupportedError(
+      'ContactsApi.checkContacts no longer sends raw phone numbers. '
+      'Use checkPhoneHashes with SHA-256 E.164 hashes.',
+    );
+  }
+
+  List<String> _canonicalPhoneHashes(List<String> phoneHashes) {
+    return phoneHashes
+        .map((hash) => hash.trim().toLowerCase())
+        .where((hash) => RegExp(r'^[a-f0-9]{64}$').hasMatch(hash))
+        .toSet()
+        .toList();
+  }
 }

@@ -1,4 +1,4 @@
-/// Devices API — register, list, and device-backed sessions.
+/// Devices API — register and manage user devices.
 library;
 
 import 'package:dio/dio.dart';
@@ -19,10 +19,4 @@ class DevicesApi {
 
   /// DELETE /devices/:id
   Future<Response> delete(String id) => _dio.delete('/devices/$id');
-
-  /// GET /devices — active sessions are represented by trusted devices.
-  Future<Response> listSessions() => list();
-
-  /// DELETE /devices/:id — revoke the active device/session.
-  Future<Response> revokeSession(String id) => delete(id);
 }

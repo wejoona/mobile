@@ -44,9 +44,7 @@ class WalletFrozenView extends ConsumerWidget {
             builder: (context, constraints) {
               return SingleChildScrollView(
                 child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: constraints.maxHeight,
-                  ),
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
                   child: IntrinsicHeight(
                     child: Column(
                       children: [
@@ -132,7 +130,7 @@ class WalletFrozenView extends ConsumerWidget {
                         SizedBox(height: AppSpacing.md),
                         AppButton(
                           label: l10n.common_backToHome,
-                          onPressed: () => Navigator.of(context).pop(),
+                          onPressed: () => context.fsmSafePop(),
                           variant: AppButtonVariant.secondary,
                           isFullWidth: true,
                         ),

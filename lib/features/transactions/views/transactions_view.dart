@@ -4,7 +4,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -13,6 +12,7 @@ import 'package:usdc_wallet/design/utils/responsive_layout.dart';
 import 'package:usdc_wallet/core/orientation/orientation_helper.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart'
     hide TransactionFilter;
 import 'package:usdc_wallet/features/transactions/widgets/filter_bottom_sheet.dart';
@@ -78,10 +78,8 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
                 _searchController.clear();
                 ref.read(transactionFilterProvider.notifier).setSearch(null);
               });
-            } else if (context.canPop()) {
-              context.pop();
             } else {
-              context.go('/home');
+              context.fsmSafePop(fallbackRoute: '/home');
             }
           },
         ),
@@ -139,7 +137,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
           // Export button
           IconButton(
             icon: const Icon(Icons.download_outlined),
-            onPressed: () => context.push('/transactions/export'),
+            onPressed: () => context.fsmPush('/transactions/export'),
             tooltip: l10n.transactions_export,
           ),
         ],
@@ -497,7 +495,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
             else
               AppButton(
                 label: l10n.transactions_emptyStateAction,
-                onPressed: () => context.go('/deposit'),
+                onPressed: () => context.fsmGo('/deposit/amount'),
                 icon: Icons.add_circle_outline,
               ),
             const SizedBox(height: AppSpacing.xxxl),
@@ -543,7 +541,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
       title = l10n.transactions_noAccountTitle;
       message = l10n.transactions_noAccountMessage;
       buttonLabel = l10n.wallet_createWallet;
-      buttonAction = () => context.go('/onboarding');
+      buttonAction = () => context.fsmGo('/create-wallet');
     } else if (isConnectionError) {
       icon = Icons.wifi_off_rounded;
       iconColor = colors.warningText;
@@ -613,10 +611,10 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
               onPressed: buttonAction,
               icon: isConnectionError ? Icons.refresh : null,
             ),
-            if (!isNoAccountError && !isAuthError && context.canPop()) ...[
+            if (!isNoAccountError && !isAuthError) ...[
               const SizedBox(height: AppSpacing.md),
               TextButton(
-                onPressed: () => context.pop(),
+                onPressed: () => context.fsmPop(),
                 child: AppText(
                   l10n.action_back,
                   variant: AppTextVariant.labelLarge,
@@ -693,7 +691,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
               date: entry.key,
               transactions: entry.value,
               onTransactionTap: (tx) =>
-                  context.push('/transactions/${tx.id}', extra: tx),
+                  context.fsmPush('/transactions/${tx.id}', extra: tx),
               l10n: l10n,
               isTablet: isTablet,
               isLandscape: isLandscape,
@@ -888,6 +886,9 @@ class _TransactionGroup extends StatelessWidget {
       case TransactionDisplayType.reward:
         icon = Icons.card_giftcard;
         iconColor = colors.gold;
+      case TransactionDisplayType.neutral:
+        icon = Icons.receipt_long;
+        iconColor = colors.textSecondary;
     }
 
     return Container(
@@ -948,11 +949,14 @@ class _TransactionGroup extends StatelessWidget {
   }
 
   String _formatAmount(double amount, TransactionDisplayType type) {
-    final isPositive =
-        type == TransactionDisplayType.deposit ||
-        type == TransactionDisplayType.transferIn ||
-        type == TransactionDisplayType.reward;
-    final sign = isPositive ? '+' : '-';
+    final sign = switch (type) {
+      TransactionDisplayType.deposit ||
+      TransactionDisplayType.transferIn ||
+      TransactionDisplayType.reward => '+',
+      TransactionDisplayType.withdrawal ||
+      TransactionDisplayType.transferOut => '-',
+      TransactionDisplayType.neutral => '',
+    };
     return '$sign\$${amount.abs().toStringAsFixed(2)}';
   }
 
@@ -967,6 +971,8 @@ class _TransactionGroup extends StatelessWidget {
         return colors.errorText; // Red for withdrawals
       case TransactionDisplayType.transferOut:
         return colors.warningText; // Orange/amber for sent transfers
+      case TransactionDisplayType.neutral:
+        return colors.textSecondary;
     }
   }
 
@@ -990,6 +996,14 @@ class _TransactionGroup extends StatelessWidget {
             : l10n.transactions_transferReceived;
       case TransactionType.transferExternal:
         return l10n.transactions_transferSent;
+      case TransactionType.billPayment:
+        return l10n.services_billPayments;
+      case TransactionType.unknown:
+        return tx.isDebit
+            ? l10n.transactions_transferSent
+            : tx.isCredit
+            ? l10n.transactions_transferReceived
+            : 'Transaction';
     }
   }
 
@@ -1006,6 +1020,10 @@ class _TransactionGroup extends StatelessWidget {
                 : l10n.transactions_fromKoridoUser);
       case TransactionType.transferExternal:
         return l10n.transactions_externalWallet;
+      case TransactionType.billPayment:
+        return l10n.services_billPayments;
+      case TransactionType.unknown:
+        return tx.reference.isNotEmpty ? tx.reference : 'Review details';
     }
   }
 
@@ -1020,7 +1038,12 @@ class _TransactionGroup extends StatelessWidget {
             ? TransactionDisplayType.transferOut
             : TransactionDisplayType.transferIn;
       case TransactionType.transferExternal:
+      case TransactionType.billPayment:
         return TransactionDisplayType.transferOut;
+      case TransactionType.unknown:
+        if (tx.isCredit) return TransactionDisplayType.transferIn;
+        if (tx.isDebit) return TransactionDisplayType.transferOut;
+        return TransactionDisplayType.neutral;
     }
   }
 }

@@ -3,33 +3,48 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/sub_business/models/sub_business.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
+const _unset = Object();
+const _subBusinessUnavailableMessage =
+    'Business team management is temporarily unavailable. Please try again later.';
+const _loadSubBusinessesFailedMessage =
+    'We could not load your business teams. Please try again.';
+const _createSubBusinessFailedMessage =
+    'We could not create this business team. Please try again.';
+const _staffUnavailableMessage =
+    'Staff management is temporarily unavailable. Please try again later.';
+const _subBusinessTransferUnavailableMessage =
+    'Sub-business transfers are temporarily unavailable. Please try again later.';
+
 /// State for sub-business management
 class SubBusinessState {
-  final bool isLoading;
-  final String? error;
-  final List<SubBusiness> subBusinesses;
-  final Map<String, List<StaffMember>> staffBySubBusiness;
-
   const SubBusinessState({
     this.isLoading = false,
     this.error,
+    this.requiresBusinessProfile = false,
     this.subBusinesses = const [],
     this.staffBySubBusiness = const {},
   });
 
+  final bool isLoading;
+  final String? error;
+  final bool requiresBusinessProfile;
+  final List<SubBusiness> subBusinesses;
+  final Map<String, List<StaffMember>> staffBySubBusiness;
+
   SubBusinessState copyWith({
     bool? isLoading,
-    String? error,
+    Object? error = _unset,
+    bool? requiresBusinessProfile,
     List<SubBusiness>? subBusinesses,
     Map<String, List<StaffMember>>? staffBySubBusiness,
-  }) {
-    return SubBusinessState(
-      isLoading: isLoading ?? this.isLoading,
-      error: error,
-      subBusinesses: subBusinesses ?? this.subBusinesses,
-      staffBySubBusiness: staffBySubBusiness ?? this.staffBySubBusiness,
-    );
-  }
+  }) => SubBusinessState(
+    isLoading: isLoading ?? this.isLoading,
+    error: identical(error, _unset) ? this.error : error as String?,
+    requiresBusinessProfile:
+        requiresBusinessProfile ?? this.requiresBusinessProfile,
+    subBusinesses: subBusinesses ?? this.subBusinesses,
+    staffBySubBusiness: staffBySubBusiness ?? this.staffBySubBusiness,
+  );
 }
 
 /// Notifier for sub-business management
@@ -51,17 +66,46 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
       final subBusinesses = data
           .map((json) => SubBusiness.fromJson(_asStringMap(json)))
           .toList();
-      state = state.copyWith(isLoading: false, subBusinesses: subBusinesses);
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        error: null,
+        requiresBusinessProfile: false,
+        subBusinesses: subBusinesses,
+      );
+    } on DioException catch (e) {
+      if (_requiresBusinessProfile(e)) {
+        state = state.copyWith(
+          isLoading: false,
+          error: null,
+          requiresBusinessProfile: true,
+          subBusinesses: const [],
+        );
+        return;
+      }
+      state = state.copyWith(
+        isLoading: false,
+        requiresBusinessProfile: false,
+        error: _isMissingEndpoint(e)
+            ? _subBusinessUnavailableMessage
+            : _readDioMessage(e, fallback: _loadSubBusinessesFailedMessage),
+      );
+    } on Exception catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        requiresBusinessProfile: false,
+        error: _readUnexpectedMessage(
+          e,
+          fallback: _loadSubBusinessesFailedMessage,
+        ),
+      );
     }
   }
 
   /// Create new sub-business
   Future<SubBusiness?> createSubBusiness({
     required String name,
-    String? description,
     required SubBusinessType type,
+    String? description,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
@@ -84,8 +128,20 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
         subBusinesses: [...state.subBusinesses, newSubBusiness],
       );
       return newSubBusiness;
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+    } on DioException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: _readDioMessage(e, fallback: _createSubBusinessFailedMessage),
+      );
+      return null;
+    } on Exception catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: _readUnexpectedMessage(
+          e,
+          fallback: _createSubBusinessFailedMessage,
+        ),
+      );
       return null;
     }
   }
@@ -119,9 +175,13 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
         state = state.copyWith(staffBySubBusiness: updatedStaff);
         return;
       }
-      state = state.copyWith(error: e.toString());
-    } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(
+        error: _readDioMessage(e, fallback: _staffUnavailableMessage),
+      );
+    } on Exception catch (e) {
+      state = state.copyWith(
+        error: _readUnexpectedMessage(e, fallback: _staffUnavailableMessage),
+      );
     }
   }
 
@@ -178,12 +238,15 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
       state = state.copyWith(
         isLoading: false,
         error: _isMissingEndpoint(e)
-            ? 'Staff management is not available yet.'
-            : e.toString(),
+            ? _staffUnavailableMessage
+            : _readDioMessage(e, fallback: _staffUnavailableMessage),
       );
       return false;
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+    } on Exception catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: _readUnexpectedMessage(e, fallback: _staffUnavailableMessage),
+      );
       return false;
     }
   }
@@ -231,12 +294,15 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
       state = state.copyWith(
         isLoading: false,
         error: _isMissingEndpoint(e)
-            ? 'Staff management is not available yet.'
-            : e.toString(),
+            ? _staffUnavailableMessage
+            : _readDioMessage(e, fallback: _staffUnavailableMessage),
       );
       return false;
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+    } on Exception catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: _readUnexpectedMessage(e, fallback: _staffUnavailableMessage),
+      );
       return false;
     }
   }
@@ -289,12 +355,15 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
       state = state.copyWith(
         isLoading: false,
         error: _isMissingEndpoint(e)
-            ? 'Staff management is not available yet.'
-            : e.toString(),
+            ? _staffUnavailableMessage
+            : _readDioMessage(e, fallback: _staffUnavailableMessage),
       );
       return false;
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+    } on Exception catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: _readUnexpectedMessage(e, fallback: _staffUnavailableMessage),
+      );
       return false;
     }
   }
@@ -326,12 +395,21 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
       state = state.copyWith(
         isLoading: false,
         error: _isMissingEndpoint(e)
-            ? 'Sub-business transfers are not available yet.'
-            : _readDioMessage(e),
+            ? _subBusinessTransferUnavailableMessage
+            : _readDioMessage(
+                e,
+                fallback: _subBusinessTransferUnavailableMessage,
+              ),
       );
       return false;
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+    } on Exception catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: _readUnexpectedMessage(
+          e,
+          fallback: _subBusinessTransferUnavailableMessage,
+        ),
+      );
       return false;
     }
   }
@@ -344,18 +422,22 @@ final subBusinessProvider =
     );
 
 List<dynamic> _extractList(Object? data, List<String> keys) {
-  if (data is List) return data;
+  if (data is List) {
+    return data;
+  }
   if (data is Map) {
     for (final key in keys) {
       final value = data[key];
-      if (value is List) return value;
+      if (value is List) {
+        return value;
+      }
     }
   }
   return const [];
 }
 
 Map<String, dynamic> _extractObject(Object? data, List<String> keys) {
-  Object? value = data;
+  var value = data;
   if (data is Map) {
     for (final key in keys) {
       if (data[key] is Map) {
@@ -368,8 +450,12 @@ Map<String, dynamic> _extractObject(Object? data, List<String> keys) {
 }
 
 Map<String, dynamic> _asStringMap(Object? value) {
-  if (value is Map<String, dynamic>) return value;
-  if (value is Map) return Map<String, dynamic>.from(value);
+  if (value is Map<String, dynamic>) {
+    return value;
+  }
+  if (value is Map) {
+    return Map<String, dynamic>.from(value);
+  }
   throw const FormatException('Expected sub-business JSON object');
 }
 
@@ -378,13 +464,17 @@ Future<String> _currentWalletId(Dio dio) async {
   final data = response.data;
   if (data is Map) {
     final walletId = data['walletId'] as String? ?? data['id'] as String?;
-    if (walletId != null && walletId.isNotEmpty) return walletId;
+    if (walletId != null && walletId.isNotEmpty) {
+      return walletId;
+    }
   }
   throw const FormatException('Current wallet id is required');
 }
 
 String _backendSubBusinessType(SubBusinessType type) {
-  if (type == SubBusinessType.subsidiary) return SubBusinessType.branch.name;
+  if (type == SubBusinessType.subsidiary) {
+    return SubBusinessType.branch.name;
+  }
   return type.name;
 }
 
@@ -393,13 +483,60 @@ bool _isMissingEndpoint(DioException e) {
   return statusCode == 404 || statusCode == 405;
 }
 
-String _readDioMessage(DioException e) {
-  final data = e.response?.data;
-  if (data is Map) {
-    final message = data['message'];
-    if (message is String && message.isNotEmpty) return message;
-    final error = data['error'];
-    if (error is String && error.isNotEmpty) return error;
+bool _requiresBusinessProfile(DioException e) {
+  if (e.response?.statusCode != 404) {
+    return false;
   }
-  return e.message ?? 'Request failed. Please try again.';
+  final message = _messageFragments(e.response?.data).join(' ').toLowerCase();
+  return message.contains('business profile') ||
+      message.contains('create a business profile');
+}
+
+String _readDioMessage(
+  DioException e, {
+  String fallback = 'Request failed. Please try again.',
+}) {
+  final apiError = ApiException.fromDioError(e);
+  final message = apiError.message.trim();
+  if (message.isEmpty || _isTechnicalDioMessage(message)) {
+    return fallback;
+  }
+  return message;
+}
+
+String _readUnexpectedMessage(Object error, {required String fallback}) {
+  if (error is FormatException && error.message.isNotEmpty) {
+    return error.message;
+  }
+  return fallback;
+}
+
+Iterable<String> _messageFragments(Object? data) sync* {
+  if (data == null) {
+    return;
+  }
+  if (data is String) {
+    if (data.trim().isNotEmpty) {
+      yield data;
+    }
+    return;
+  }
+  if (data is Iterable) {
+    for (final value in data) {
+      yield* _messageFragments(value);
+    }
+    return;
+  }
+  if (data is Map) {
+    for (final key in const ['message', 'error', 'detail', 'title']) {
+      yield* _messageFragments(data[key]);
+    }
+  }
+}
+
+bool _isTechnicalDioMessage(String message) {
+  final lower = message.toLowerCase();
+  return lower.contains('requestoptions.validatestatus') ||
+      lower.contains('dioexception') ||
+      lower.startsWith('this exception was thrown');
 }

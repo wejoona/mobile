@@ -1142,6 +1142,14 @@
   "@kyc_status_submitted_description": {
     "description": "Submitted status description"
   },
+  "kyc_status_manualReview_title": "مراجعة يدوية مطلوبة",
+  "@kyc_status_manualReview_title": {
+    "description": "Manual review KYC status title"
+  },
+  "kyc_status_manualReview_description": "يراجع فريق Korido أدلة هويتك. يمكنك الاستمرار في استخدام الميزات المؤهلة أثناء إكمال المراجعة.",
+  "@kyc_status_manualReview_description": {
+    "description": "Manual review KYC status description"
+  },
   "kyc_status_approved_title": "اكتمل التحقق",
   "@kyc_status_approved_title": {
     "description": "Approved status title"
@@ -1193,6 +1201,14 @@
   "kyc_info_time_description": "عادةً ما يستغرق التحقق 1-2 يوم عمل",
   "@kyc_info_time_description": {
     "description": "Time info description"
+  },
+  "kyc_info_manualReview_title": "مراجعة بشرية",
+  "@kyc_info_manualReview_title": {
+    "description": "Manual review info card title"
+  },
+  "kyc_info_manualReview_description": "إذا لم تتمكن الفحوصات الآلية من اتخاذ قرار آمن، يكمل المراجع القرار بدلاً من إبقائك عالقاً.",
+  "@kyc_info_manualReview_description": {
+    "description": "Manual review info card description"
   },
   "kyc_info_documents_title": "المستندات المطلوبة",
   "@kyc_info_documents_title": {
@@ -1935,6 +1951,30 @@
   "@pin_confirmNewPin": {
     "description": "Confirm new PIN instruction"
   },
+  "pin_temporaryReset_chooseNewDescription": "تم قبول الرمز السري المؤقت. اختر رمزاً سرياً جديداً للمتابعة.",
+  "@pin_temporaryReset_chooseNewDescription": {
+    "description": "Temporary PIN reset screen description before entering a new PIN"
+  },
+  "pin_temporaryReset_confirmNewDescription": "أكد الرمز السري الجديد الذي تريد استخدامه في Korido.",
+  "@pin_temporaryReset_confirmNewDescription": {
+    "description": "Temporary PIN reset screen description before confirming a new PIN"
+  },
+  "pin_temporaryReset_missingSession": "تم قبول الرمز السري المؤقت، لكن جلسة إعادة التعيين غير موجودة. اطلب من الدعم إصدار رمز سري مؤقت جديد.",
+  "@pin_temporaryReset_missingSession": {
+    "description": "Error shown when backend accepts a temporary PIN without returning a reset token"
+  },
+  "pin_temporaryReset_expiredSession": "انتهت صلاحية جلسة إعادة التعيين هذه. الرجاء تسجيل الدخول مرة أخرى.",
+  "@pin_temporaryReset_expiredSession": {
+    "description": "Error shown when temporary PIN reset token or login session has expired"
+  },
+  "pin_temporaryReset_mismatch": "الرمزان السريان غير متطابقين. أكد مرة أخرى.",
+  "@pin_temporaryReset_mismatch": {
+    "description": "Temporary PIN reset confirmation mismatch error"
+  },
+  "pin_temporaryReset_setFailed": "تعذر تعيين الرمز السري الجديد.",
+  "@pin_temporaryReset_setFailed": {
+    "description": "Generic error shown when temporary PIN reset completion fails"
+  },
   "pin_requirements": "متطلبات الرمز السري",
   "@pin_requirements": {
     "description": "PIN requirements section title"
@@ -2642,5 +2682,16 @@
     }
   },
   "moneyFlow_reviewRequiredMessage": "حسابك قيد المراجعة. سنخبرك عندما تصبح هذه العملية متاحة.",
-  "moneyFlow_verificationRequiredMessage": "أكمل التحقق من الهوية لاستخدام هذه العملية."
+  "moneyFlow_verificationRequiredMessage": "أكمل التحقق من الهوية لاستخدام هذه العملية.",
+  "forceUpdate_title": "Update required",
+  "forceUpdate_defaultMessage": "A newer version of Korido is required to keep your wallet secure.",
+  "forceUpdate_requiredVersion": "Required version: {version}",
+  "@forceUpdate_requiredVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "forceUpdate_button": "Update Korido"
 }

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/domain/entities/device.dart';
+import 'package:usdc_wallet/features/settings/index.dart' as settings;
 
 void main() {
   group('Device contract', () {
@@ -99,6 +100,22 @@ void main() {
       expect(device.isRecentlyActive, isFalse);
       expect(device.blockedReason, 'Lost phone');
       expect(device.blockedAt, blockedAt);
+    });
+
+    test('settings barrel exports the canonical blocked-device model', () {
+      final device = settings.Device.fromJson({
+        'id': 'device-4',
+        'userId': 'user-4',
+        'deviceIdentifier': 'blocked-vendor-id',
+        'displayName': 'Team iPhone',
+        'platform': 'ios',
+        'isBlocked': true,
+        'blockedReason': 'Admin blacklist',
+      });
+
+      expect(device.isBlocked, isTrue);
+      expect(device.cannotAccess, isTrue);
+      expect(device.blockedReason, 'Admin blacklist');
     });
   });
 }

@@ -1,11 +1,11 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:usdc_wallet/providers/missing_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/countries.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -14,6 +14,7 @@ import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
 import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
+import 'package:usdc_wallet/features/limits/utils/money_flow_limit_errors.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 
@@ -64,7 +65,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
         title: AppText(l10n.deposit_title, variant: AppTextVariant.titleLarge),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
       ),
       body: SafeArea(
@@ -442,6 +443,11 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
 
     if (_amountController.text.isEmpty) {
       return null;
+    }
+
+    final limitBlock = _limitBlockError(rate, transactionLimits, amount);
+    if (limitBlock != null) {
+      return limitBlock;
     } else if (amount < limits.$1) {
       return AppLocalizations.of(
         context,
@@ -453,6 +459,48 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
     }
 
     return null;
+  }
+
+  String? _limitBlockError(
+    ExchangeRate rate,
+    TransactionLimits? transactionLimits,
+    double sourceAmount,
+  ) {
+    if (transactionLimits == null) return null;
+    final amountForLimit = _amountInLimitCurrency(
+      rate,
+      transactionLimits,
+      sourceAmount,
+    );
+    final hit = transactionLimits.limitHitByFor(
+      TransactionLimitOperation.deposit,
+      amountForLimit,
+    );
+    if (hit == null) return null;
+    return moneyFlowLimitErrorFor(
+      hit,
+      transactionLimits,
+      TransactionLimitOperation.deposit,
+    );
+  }
+
+  double _amountInLimitCurrency(
+    ExchangeRate rate,
+    TransactionLimits transactionLimits,
+    double sourceAmount,
+  ) {
+    final limitCurrency = transactionLimits.currency.toUpperCase();
+    final sourceCurrency = _currency.toUpperCase();
+    if (limitCurrency == sourceCurrency) return sourceAmount;
+    if ((limitCurrency == 'USDC' || limitCurrency == 'USD') &&
+        sourceCurrency == 'XOF') {
+      return rate.convert(sourceAmount);
+    }
+    if (limitCurrency == 'XOF' &&
+        (sourceCurrency == 'USDC' || sourceCurrency == 'USD')) {
+      return rate.convertBack(sourceAmount);
+    }
+    return sourceAmount;
   }
 
   void _validateAmount(
@@ -481,12 +529,17 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
 
   void _handleContinue(ExchangeRate rate) {
     final amount = double.tryParse(_amountController.text) ?? 0;
+    final countryCode = _effectiveCountry(ref).code;
     if (_isXOF) {
-      ref.read(depositProvider.notifier).setAmountXOF(amount, rate);
+      ref
+          .read(depositProvider.notifier)
+          .setAmountXOF(amount, rate, countryCode);
     } else {
-      ref.read(depositProvider.notifier).setAmountUSD(amount, rate);
+      ref
+          .read(depositProvider.notifier)
+          .setAmountUSD(amount, rate, countryCode);
     }
-    unawaited(context.push('/deposit/provider'));
+    unawaited(context.fsmPush('/deposit/provider'));
   }
 
   String get _currency => _isXOF ? 'XOF' : 'USD';

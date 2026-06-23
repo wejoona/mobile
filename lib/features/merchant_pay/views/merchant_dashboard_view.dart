@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -9,6 +8,7 @@ import 'package:usdc_wallet/features/merchant_pay/providers/merchant_provider.da
 import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Merchant Dashboard View
 /// Main dashboard for business users to manage their merchant account
@@ -40,7 +40,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
         backgroundColor: Colors.transparent,
         actions: [
           IconButton(
-            onPressed: () => context.push('/settings/business-profile'),
+            onPressed: () => context.fsmPush('/settings/business-profile'),
             icon: Icon(Icons.settings, color: context.colors.gold),
           ),
         ],
@@ -110,7 +110,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
             SizedBox(height: AppSpacing.xl),
             AppButton(
               label: 'Register as Merchant',
-              onPressed: () => context.push('/settings/business-setup'),
+              onPressed: () => context.fsmPush('/settings/business-setup'),
               variant: AppButtonVariant.primary,
             ),
           ],
@@ -364,7 +364,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
           child: _buildActionCard(
             icon: Icons.qr_code,
             label: 'Show QR',
-            onTap: () => context.push('/merchant-qr', extra: merchant),
+            onTap: () => context.fsmPush('/merchant-qr', extra: merchant),
           ),
         ),
         SizedBox(width: AppSpacing.sm),
@@ -373,7 +373,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
             icon: Icons.add_card,
             label: 'Request Payment',
             onTap: () =>
-                context.push('/create-payment-request', extra: merchant),
+                context.fsmPush('/create-payment-request', extra: merchant),
           ),
         ),
         SizedBox(width: AppSpacing.sm),
@@ -381,7 +381,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
           child: _buildActionCard(
             icon: Icons.history,
             label: l10n.navigation_transactions,
-            onTap: () => context.push(
+            onTap: () => context.fsmPush(
               '/merchant-transactions',
               extra: merchant.merchantId,
             ),
@@ -585,7 +585,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
           children: [
             AppText('Recent Transactions', variant: AppTextVariant.titleMedium),
             TextButton(
-              onPressed: () => context.push(
+              onPressed: () => context.fsmPush(
                 '/merchant-transactions',
                 extra: merchant.merchantId,
               ),

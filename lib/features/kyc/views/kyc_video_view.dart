@@ -1,9 +1,9 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
@@ -613,7 +613,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
     if (_videoPath == null) return;
 
     // Navigate to additional documents or submission
-    context.push('/kyc/additional-docs');
+    context.fsmPush('/kyc/additional-docs');
   }
 
   String _getActionLabel(AppLocalizations l10n, LivenessAction action) {

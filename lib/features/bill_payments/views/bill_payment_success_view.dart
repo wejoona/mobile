@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -61,7 +61,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
               IconButton(
                 icon: const Icon(Icons.close),
                 color: colors.iconSecondary,
-                onPressed: () => context.go('/home'),
+                onPressed: () => context.fsmGo('/home'),
               ),
             ],
           ),
@@ -117,7 +117,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
 
               AppButton(
                 label: l10n.action_done,
-                onPressed: () => context.go('/home'),
+                onPressed: () => context.fsmGo('/home'),
                 isFullWidth: true,
                 icon: Icons.check,
               ),
@@ -464,7 +464,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
             const SizedBox(height: AppSpacing.xl),
             AppButton(
               label: "Retour à l'accueil",
-              onPressed: () => context.go('/home'),
+              onPressed: () => context.fsmGo('/home'),
             ),
           ],
         ),

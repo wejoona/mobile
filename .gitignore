@@ -35,10 +35,12 @@ migrate_working_dir/
 **/ios/Flutter/.last_build_id
 .dart_tool/
 .flutter-plugins-dependencies
+devtools_options.yaml
 .pub-cache/
 .pub/
 /build/
 /coverage/
+/artifacts/
 
 # Symbolication related
 app.*.symbols

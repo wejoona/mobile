@@ -12,6 +12,7 @@ import 'package:usdc_wallet/features/wallet/widgets/risk_step_up_dialog.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Fully wired withdrawal screen.
 class WithdrawScreenWired extends ConsumerStatefulWidget {
@@ -44,7 +45,7 @@ class _WithdrawScreenWiredState extends ConsumerState<WithdrawScreenWired> {
         result: state.result!,
         onDone: () {
           notifier.reset();
-          Navigator.pop(context);
+          context.fsmSafePop(fallbackRoute: '/home');
         },
       );
     }
@@ -170,25 +171,30 @@ class _WithdrawScreenWiredState extends ConsumerState<WithdrawScreenWired> {
                       state.amount != null &&
                       !state.isLoading
                   ? () async {
-                      // Risk-based step-up evaluation
-                      final securityService = ref.read(
-                        riskBasedSecurityServiceProvider,
-                      );
-                      final decision = await securityService
-                          .evaluateTransaction(
-                            type: 'withdrawal',
-                            amount: state.amount!,
-                            currency: 'USDC',
-                            recipientType: 'external',
-                          );
-
-                      if (decision.stepUpRequired) {
-                        if (!context.mounted) return;
-                        final passed = await RiskStepUpDialog.show(
-                          context,
-                          decision: decision,
+                      try {
+                        // Risk-based step-up evaluation
+                        final securityService = ref.read(
+                          riskBasedSecurityServiceProvider,
                         );
-                        if (!passed) return;
+                        final decision = await securityService
+                            .evaluateTransaction(
+                              type: 'withdrawal',
+                              amount: state.amount!,
+                              currency: 'USDC',
+                              recipientType: 'external',
+                            );
+
+                        if (decision.stepUpRequired) {
+                          if (!context.mounted) return;
+                          final passed = await RiskStepUpDialog.show(
+                            context,
+                            decision: decision,
+                          );
+                          if (!passed) return;
+                        }
+                      } catch (_) {
+                        notifier.setSecurityCheckUnavailable();
+                        return;
                       }
 
                       // Fix #1: Get stored PIN token for withdrawal headers

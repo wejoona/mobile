@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:usdc_wallet/domain/entities/notification.dart';
@@ -18,11 +19,11 @@ final notificationsProvider = FutureProvider<List<AppNotification>>((
 ) async {
   final repository = ref.watch(notificationsRepositoryProvider);
   final link = ref.keepAlive();
-  final timer = Timer(const Duration(minutes: 1), () => link.close());
-  ref.onDispose(() => timer.cancel());
+  final timer = Timer(const Duration(minutes: 1), link.close);
+  ref.onDispose(timer.cancel);
 
   final notifications = await repository.getNotifications(pageSize: 100);
-  ref.read(lastKnownNotificationsProvider.notifier).state = notifications;
+  _writeLastKnownNotifications(ref, notifications);
   return notifications;
 });
 
@@ -30,13 +31,46 @@ final notificationsProvider = FutureProvider<List<AppNotification>>((
 final unreadNotificationCountProvider = FutureProvider<int>((ref) async {
   final repository = ref.watch(notificationsRepositoryProvider);
   final link = ref.keepAlive();
-  final timer = Timer(const Duration(minutes: 1), () => link.close());
-  ref.onDispose(() => timer.cancel());
+  final timer = Timer(const Duration(minutes: 1), link.close);
+  ref.onDispose(timer.cancel);
 
   final count = await repository.getUnreadCount();
-  ref.read(lastKnownUnreadNotificationCountProvider.notifier).state = count;
+  _writeLastKnownUnreadCount(ref, count);
   return count;
 });
+
+void _writeLastKnownNotifications(
+  Ref ref,
+  List<AppNotification> notifications,
+) {
+  _writeProviderStateAfterBuild(ref, () {
+    ref.read(lastKnownNotificationsProvider.notifier).state = notifications;
+  });
+}
+
+void _writeLastKnownUnreadCount(Ref ref, int count) {
+  _writeProviderStateAfterBuild(ref, () {
+    ref.read(lastKnownUnreadNotificationCountProvider.notifier).state = count;
+  });
+}
+
+void _writeProviderStateAfterBuild(Ref ref, void Function() write) {
+  void run() {
+    if (!ref.mounted) {
+      return;
+    }
+    write();
+  }
+
+  final scheduler = SchedulerBinding.instance;
+  final phase = scheduler.schedulerPhase;
+  if (phase == SchedulerPhase.idle ||
+      phase == SchedulerPhase.postFrameCallbacks) {
+    scheduleMicrotask(run);
+  } else {
+    scheduler.addPostFrameCallback((_) => run());
+  }
+}
 
 /// Has unread notifications.
 final hasUnreadNotificationsProvider = Provider<bool>((ref) {
@@ -96,11 +130,12 @@ class NotificationActions {
   }
 
   void _refreshNotificationState() {
-    _ref.invalidate(notificationsProvider);
-    _ref.invalidate(unreadNotificationCountProvider);
+    _ref
+      ..invalidate(notificationsProvider)
+      ..invalidate(unreadNotificationCountProvider);
   }
 }
 
-final notificationActionsProvider = Provider<NotificationActions>((ref) {
-  return NotificationActions(ref, ref.watch(notificationsRepositoryProvider));
-});
+final notificationActionsProvider = Provider<NotificationActions>(
+  (ref) => NotificationActions(ref, ref.watch(notificationsRepositoryProvider)),
+);

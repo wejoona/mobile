@@ -13,11 +13,18 @@ Use with local API:
 | Action | Method | Path | Body | Notes |
 | --- | --- | --- | --- | --- |
 | Register/request OTP | POST | `/auth/register` | `{ "phone": "+225...", "countryCode": "CI" }` | Existing phone sends login OTP. |
-| Login/request OTP | POST | `/auth/login` | `{ "phone": "+225..." }` | Requires registered user. |
-| Verify OTP | POST | `/auth/verify-otp` | `{ "phone": "+225...", "otp": "123456" }` | Returns access token, refresh token, user, `kycStatus`, `expiresIn`. |
+| Login/request OTP | POST | `/auth/login` | `{ "phone": "+225...", "countryCode": "CI" }` | Requires registered user. |
+| Verify OTP | POST | `/auth/verify-otp` | `{ "phone": "+225...", "countryCode": "CI", "otp": "123456" }` | Returns access token, refresh token, user, `kycStatus`, `expiresIn`. |
 | Refresh | POST | `/auth/refresh` | `{ "refreshToken": "..." }` | Public endpoint. |
 | Logout | POST | `/auth/logout` | `{ "refreshToken": "..." }` | Authenticated cleanup. |
-| Logout all | POST | `/auth/logout-all` | none | Authenticated. |
+| Logout all devices | POST | `/auth/logout-all` | none | Canonical user-facing logout-all route. Invalidates refresh tokens and revokes session rows. |
+
+## App Config
+
+| Action | Method | Path | Notes |
+| --- | --- | --- | --- |
+| Supported countries | GET | `/config/countries` | Public region/rail config. |
+| Mobile version policy | GET | `/config/mobile-version?platform=ios&version=1.0.0&buildNumber=42` | Public. Returns latest/minimum supported version, optional app URL, API URL, and `forceUpgrade`. |
 
 ## User
 
@@ -37,6 +44,8 @@ Use with local API:
 | Verify email | POST | `/user/verify-email` |
 | Email status | GET | `/user/email-status` |
 | Resend email verification | POST | `/user/resend-email-verification` |
+| Active account type | GET | `/user/active-account-type` |
+| Update active account type | PUT | `/user/active-account-type` |
 | Set PIN | POST | `/user/pin/set` |
 | Change PIN | POST | `/user/pin/change` |
 | Verify PIN | POST | `/user/pin/verify` |
@@ -51,7 +60,7 @@ Avatar URL handling: the API may return absolute URLs, `/user/avatar/...`, `user
 | Active sessions | GET | `/sessions` | Response includes `sessions`, `items`, and `total`. |
 | All sessions | GET | `/sessions/all` | Includes revoked/expired sessions. |
 | Revoke session | DELETE | `/sessions/:id` | Authenticated. |
-| Revoke other sessions | DELETE | `/sessions` | Preserves current session when backend can identify it. |
+| Revoke all session rows | DELETE | `/sessions` | Low-level session-row revoke. Do not use for user-facing logout-all; use `/auth/logout-all`. |
 | Register device | POST | `/devices/register` | Used for device management/risk continuity. |
 | Update FCM token | POST | `/devices/fcm-token` | Push-token registration. |
 | List devices | GET | `/devices` | Current user's active devices. |
@@ -60,8 +69,8 @@ Avatar URL handling: the API may return absolute URLs, `/user/avatar/...`, `user
 | Untrust device | POST | `/devices/:id/untrust` | User/device management. |
 | Rename device | POST | `/devices/:id/rename` | User-facing label. |
 | Register device key | POST | `/devices/:id/register-key` | Device public-key binding. |
-| Delete device | DELETE | `/devices/:id` | Remove one device. |
-| Delete current device | DELETE | `/devices` | Remove current device. |
+| Revoke device | DELETE | `/devices/:id` | Deactivate one registered device and revoke sessions linked to it. |
+| Revoke all registered devices | DELETE | `/devices` | Low-level destructive device deactivation. Do not use for user-facing logout-all; use `/auth/logout-all`. |
 
 ## Wallet And Money
 
@@ -74,10 +83,16 @@ Avatar URL handling: the API may return absolute URLs, `/user/avatar/...`, `user
 | Initiate deposit | POST | `/wallet/deposit` |
 | Deposit status | GET | `/wallet/deposit/:id` |
 | Exchange rate | GET | `/wallet/exchange-rate` |
+| FX currencies | GET | `/fx/currencies` |
+| Indicative FX quote | GET | `/fx/quote?amount=100&sourceCurrency=USDC&targetCurrency=XOF` |
 | Internal transfer | POST | `/wallet/transfer/internal` |
 | External transfer | POST | `/wallet/transfer/external` |
 | Estimate external fee | GET | `/wallet/transfer/external/estimate-fee` |
-| Withdraw | POST | `/wallet/withdraw` |
+| External transfer / on-chain withdrawal | POST | `/wallet/transfer/external` |
+| Mobile money cash-out options | GET | `/wallet/cash-out/mobile-money/options` |
+| Mobile money cash-out quote | POST | `/wallet/cash-out/mobile-money/quote` |
+| Mobile money cash-out | POST | `/wallet/cash-out/mobile-money` |
+| Mobile money cash-out status | GET | `/wallet/cash-out/mobile-money/:id` |
 | KYC status | GET | `/kyc/status` |
 | Submit KYC | POST | `/kyc/submit` |
 | Upload KYC documents | POST | `/kyc/documents` |
@@ -90,7 +105,7 @@ Avatar URL handling: the API may return absolute URLs, `/user/avatar/...`, `user
 
 KYC state should drive the mobile FSM: unverified users can start KYC, pending/manual-review users should see review state, rejected users should see retry/remediation, and approved/verified/auto-approved users should unlock higher-risk flows according to backend limits and risk decisions.
 
-`GET /user/limits` and `GET /wallet/limits` include a `permissions` object:
+`GET /user/limits` is the canonical limits endpoint and includes a `permissions` object. `GET /wallet/limits` is retired and should not be used by mobile callers.
 
 ```json
 {
@@ -104,6 +119,8 @@ KYC state should drive the mobile FSM: unverified users can start KYC, pending/m
 ```
 
 Mobile money-flow screens must check these booleans before presenting transfer, deposit, or withdrawal actions. When `reviewRequired=true`, show the backend `blockReason` and route the user to the manual-review/SLA state instead of retrying liveness or showing a generic limit error.
+
+`POST /wallet/deposit` is the canonical deposit/pay-in writer. Legacy `/deposits/initiate` and `/deposits/confirm` write routes are retired and return `410 DEPOSIT_WRITE_ENDPOINT_RETIRED`; do not use them for new mobile flows. `/deposits` reads can remain only for historical/legacy records until the transaction history surface fully owns pay-in history.
 
 Use only `/kyc/liveness/*` for product liveness. The legacy backend `/liveness/*` mock controller is not part of the mobile/API contract and must not be used for KYC, account recovery, or money-flow step-up.
 
@@ -139,7 +156,7 @@ When the final liveness challenge completes, the response should include `livene
 
 Provider unavailability returns a retryable `KYC_PROVIDER_UNAVAILABLE` response with `supportReviewRequired=true`; mobile account recovery and KYC should route the user to manual review with an SLA instead of looping on liveness.
 
-Account recovery manual review uses `POST /support/tickets` with `category=account_recovery`. The API dedupes active account-recovery tickets for the user and appends new outage/risk signals to the same ticket. Ticket responses may include `reviewSla` with `label`, `firstResponseDueAt`, and `resolutionDueAt`; prefer those values over hardcoded SLA copy.
+PIN recovery manual review uses `POST /user/pin/reset/manual-review` with the scoped recovery token and staged `newPinHash`. The backend creates the support review and owns applying the pending PIN after backoffice approval. Do not create a generic `POST /support/tickets` account-recovery ticket from mobile for PIN reset, because that cannot stage or apply the replacement PIN. Review responses may include `reviewSla` with `label`, `firstResponseDueAt`, and `resolutionDueAt`; prefer those values over hardcoded SLA copy.
 
 ## Contacts
 
@@ -226,14 +243,17 @@ High-risk PIN reset, new-device, profile-photo, KYC, and money movement flows sh
 | Delete user limit override | DELETE | `/admin/users/:userId/limit-override` | Remove special limits. |
 | Suspend user | POST | `/admin/users/:userId/suspend` | Compliance/security action. |
 | Unsuspend user | POST | `/admin/users/:userId/unsuspend` | Compliance/security action. |
-| Reset user PIN | POST | `/admin/users/:userId/reset-pin` | Support flow. |
+| Reset user PIN | POST | `/admin/users/:userId/reset-pin` | Support action. Sends an SMS temporary PIN, revokes active sessions, and forces the user to set a new PIN after `/user/pin/verify` returns `temporaryPinToken`; `/admin/users/:userId/temporary-pin-reset` is a compatibility alias. |
 | Unlock user PIN | POST | `/admin/users/:userId/unlock-pin` | Support flow. |
 | Force logout user | POST | `/admin/users/:userId/force-logout` | Security/session action. |
 | Deactivate device | POST | `/admin/devices/:deviceId/deactivate` | Backoffice device blacklist/deactivation surface. |
 | Pending KYC | GET | `/admin/kyc/pending` | Manual review queue. |
-| Approve KYC | POST | `/admin/users/:userId/kyc/approve` | Manual override/review. |
-| Reject KYC | POST | `/admin/users/:userId/kyc/reject` | Manual override/review. |
+| KYC detail | GET | `/admin/kyc/:kycVerificationId` | Review payload, submitted evidence metadata, and signed evidence URL routes. |
+| Review KYC | POST | `/admin/kyc/:kycVerificationId/review` | Canonical manual approval/rejection. Body: `{ "approved": true, "notes": "..." }` or `{ "approved": false, "rejectionReason": "...", "notes": "..." }`. |
+| Request KYC reupload | POST | `/admin/kyc/:kycVerificationId/request-reupload` | Rejects the current evidence and asks the user for corrected documents/selfie/profile evidence. |
 | Audit logs | GET | `/admin/audit-logs` | Backoffice audit trail. |
+
+The old user-scoped KYC routes `/admin/users/:userId/kyc/approve` and `/admin/users/:userId/kyc/reject` are retired compatibility stubs that return `410`; dashboard, backoffice, mobile tools, and test agents must not call them.
 
 ## Local OTP Stack
 

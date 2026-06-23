@@ -167,7 +167,9 @@ class MockInterceptor extends Interceptor {
             response: Response(
               requestOptions: options,
               statusCode: mockResponse.statusCode,
-              data: {'error': mockResponse.errorMessage},
+              data:
+                  mockResponse.data ??
+                  {'error': mockResponse.errorMessage ?? 'Mock request failed'},
             ),
             type: DioExceptionType.badResponse,
           ),
@@ -305,6 +307,25 @@ class MockInterceptor extends Interceptor {
       });
     }
 
+    if (path == '/config/mobile-version') {
+      return MockResponse.success({
+        'platform': options.queryParameters['platform'] ?? 'unknown',
+        'currentVersion': options.queryParameters['version'] ?? '1.0.0',
+        'currentBuildNumber': options.queryParameters['buildNumber'] ?? '1',
+        'latestVersion': '1.0.0',
+        'minimumSupportedVersion': '1.0.0',
+        'latestBuildNumber': null,
+        'minimumSupportedBuildNumber': null,
+        'forceUpgrade': false,
+        'upgradeRecommended': false,
+        'breakingApiChange': false,
+        'message': null,
+        'appUrl': null,
+        'apiUrl': 'http://127.0.0.1:3401/api/v1',
+        'checkedAt': DateTime.now().toUtc().toIso8601String(),
+      });
+    }
+
     if (path == '/risk/session') {
       return MockResponse.success({
         'success': true,
@@ -323,15 +344,6 @@ class MockInterceptor extends Interceptor {
         'kid': 'mock-key',
         'n': '',
         'e': 'AQAB',
-      });
-    }
-
-    if (path == '/wallet/receive') {
-      return MockResponse.success({
-        'walletAddress': '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
-        'address': '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
-        'network': 'polygon',
-        'currency': 'USDC',
       });
     }
 

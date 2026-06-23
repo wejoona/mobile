@@ -1,12 +1,14 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import 'package:usdc_wallet/config/countries.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
 import 'package:usdc_wallet/features/send/providers/send_provider.dart';
 import 'package:usdc_wallet/features/send/widgets/beneficiary_picker_bottom_sheet.dart';
@@ -16,6 +18,7 @@ import 'package:usdc_wallet/features/send/widgets/send_flow_visuals.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/contacts/contacts_service.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 class RecipientScreen extends ConsumerStatefulWidget {
   const RecipientScreen({
@@ -40,7 +43,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
   final _phoneController = TextEditingController();
   final _nameFocusNode = FocusNode();
   bool _isLoading = false;
-  String _selectedCountryCode = '+225';
+  String? _selectedCountryCode;
   String? _selectedRecipientName;
   String? _selectedRecipientUsername;
   String? _selectedRecipientUserId;
@@ -51,25 +54,14 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
   bool _isRecipientLookupLoading = false;
 
   String get _typedPhoneNumber =>
-      '$_selectedCountryCode${_phoneController.text}';
+      '${_selectedDialCode()}${_phoneController.text}';
 
-  int get _selectedLocalLength {
-    switch (_selectedCountryCode) {
-      case '+221':
-        return 9;
-      case '+223':
-        return 8;
-      case '+1':
-        return 10;
-      case '+225':
-      default:
-        return 10;
-    }
-  }
+  int get _selectedLocalLength => _selectedCountry().phoneLength;
 
   @override
   void initState() {
     super.initState();
+    _selectedCountryCode = _initialCountry().fullPrefix;
     final initialPhone = widget.initialPhone?.trim();
     final initialUsername = widget.initialUsername?.trim();
     final initialRecipientId = widget.initialRecipientId?.trim();
@@ -102,13 +94,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
       );
     }
 
-    // Load recent recipients
-    unawaited(
-      Future<void>.microtask(() async {
-        await ref.read(sendMoneyProvider.notifier).loadRecentRecipients();
-        await ref.read(sendMoneyProvider.notifier).loadBalance();
-      }),
-    );
+    unawaited(_loadInitialSendData());
   }
 
   @override
@@ -119,6 +105,21 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     super.dispose();
   }
 
+  Future<void> _loadInitialSendData() async {
+    await Future<void>.microtask(() {});
+    if (!mounted) {
+      return;
+    }
+
+    final notifier = ref.read(sendMoneyProvider.notifier);
+    await notifier.loadRecentRecipients();
+    if (!mounted) {
+      return;
+    }
+
+    await notifier.loadBalance();
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -126,6 +127,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     final authState = ref.watch(authProvider);
     final userState = ref.watch(userStateMachineProvider);
     final colors = context.colors;
+    final countryOptions = _countryOptions(watch: true);
     final isCompletePhone =
         _phoneController.text.length == _selectedLocalLength;
     final myPhone = authState.user?.phone ?? authState.phone ?? userState.phone;
@@ -188,33 +190,8 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
                         children: [
                           AppSelect<String>(
                             label: l10n.auth_country,
-                            value: _selectedCountryCode,
-                            items: [
-                              AppSelectItem(
-                                value: '+225',
-                                label: l10n.profile_countryIvoryCoast,
-                                subtitle: '+225',
-                              ),
-                              AppSelectItem(
-                                value: '+221',
-                                label: l10n.profile_countrySenegal,
-                                subtitle: '+221',
-                              ),
-                              const AppSelectItem(
-                                value: '+223',
-                                label: 'Mali',
-                                subtitle: '+223',
-                              ),
-                              AppSelectItem(
-                                value: '+1',
-                                label: localizedSendCopy(
-                                  context,
-                                  en: 'United States',
-                                  fr: 'États-Unis',
-                                ),
-                                subtitle: '+1',
-                              ),
-                            ],
+                            value: _selectedDialCode(),
+                            items: _countrySelectItems(countryOptions),
                             onChanged: (value) {
                               if (value == null) {
                                 return;
@@ -239,7 +216,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
                             prefix: Padding(
                               padding: const EdgeInsets.only(left: 12),
                               child: AppText(
-                                '$_selectedCountryCode ',
+                                '${_selectedDialCode()} ',
                                 variant: AppTextVariant.labelLarge,
                                 color: colors.textSecondary,
                               ),
@@ -420,6 +397,20 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     );
   }
 
+  List<AppSelectItem<String>> _countrySelectItems(
+    List<CountryConfig> countries,
+  ) {
+    return countries
+        .map(
+          (country) => AppSelectItem(
+            value: country.fullPrefix,
+            label: country.name,
+            subtitle: country.fullPrefix,
+          ),
+        )
+        .toList(growable: false);
+  }
+
   String? _validatePhone(String? value) {
     final l10n = AppLocalizations.of(context)!;
     if (value == null || value.isEmpty) {
@@ -443,7 +434,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
       builder: (context) => const ContactPickerBottomSheet(),
     );
 
-    if (contact != null) {
+    if (contact != null && mounted) {
       _selectRecipient(
         contact.phone,
         contact.name,
@@ -498,15 +489,19 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     String? userId,
     bool isKnownKorido = false,
   }) {
-    var cleanPhone = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
-    for (final code in ['+225', '+221', '+223', '+1']) {
-      if (cleanPhone.startsWith(code)) {
-        _selectedCountryCode = code;
-        cleanPhone = cleanPhone.substring(code.length).trim();
-        break;
+    final phoneValue = PhoneNumberValue.tryFromAny(
+      phoneNumber: phoneNumber,
+      countryCode: _selectedDialCode(),
+    );
+    var cleanPhone = '';
+    if (phoneValue != null) {
+      if (_countryForDialCode(phoneValue.dialCode) != null) {
+        _selectedCountryCode = phoneValue.dialCode;
       }
+      cleanPhone = phoneValue.localNumber;
+    } else {
+      cleanPhone = phoneNumber.replaceAll(RegExp(r'\D'), '');
     }
-    cleanPhone = cleanPhone.replaceAll(RegExp(r'\D'), '');
 
     _phoneController.text = cleanPhone;
     _selectedRecipientName = name;
@@ -564,13 +559,14 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
   }
 
   Future<void> _lookupTypedRecipient(String phoneNumber) async {
+    if (!mounted) {
+      return;
+    }
+
     final authState = ref.read(authProvider);
     final userState = ref.read(userStateMachineProvider);
     final myPhone = authState.user?.phone ?? authState.phone ?? userState.phone;
     if (_samePhone(phoneNumber, myPhone)) {
-      return;
-    }
-    if (!mounted) {
       return;
     }
 
@@ -584,7 +580,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
           .read(koridoContactsServiceProvider)
           .lookupKoridoUsers(phoneNumber);
       if (!mounted ||
-          '$_selectedCountryCode${_phoneController.text}' != phoneNumber) {
+          '${_selectedDialCode()}${_phoneController.text}' != phoneNumber) {
         return;
       }
       SyncedContact? match;
@@ -634,7 +630,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
 
     setState(() => _isLoading = true);
     try {
-      final phoneNumber = '$_selectedCountryCode${_phoneController.text}';
+      final phoneNumber = '${_selectedDialCode()}${_phoneController.text}';
       final authState = ref.read(authProvider);
       final userState = ref.read(userStateMachineProvider);
       final myPhone =
@@ -718,7 +714,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
       }
 
       if (mounted) {
-        unawaited(context.push('/send/amount'));
+        unawaited(context.fsmPush('/send/amount'));
       }
     } finally {
       if (mounted) {
@@ -768,10 +764,56 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     if (currentUserPhone == null || currentUserPhone.trim().isEmpty) {
       return false;
     }
-    return _phoneDigits(candidate) == _phoneDigits(currentUserPhone);
+    return localPhoneDigits(
+          dialCode: _selectedDialCode(),
+          phoneNumber: candidate,
+        ) ==
+        localPhoneDigits(
+          dialCode: _selectedDialCode(),
+          phoneNumber: currentUserPhone,
+        );
   }
 
-  String _phoneDigits(String value) => value.replaceAll(RegExp(r'\D'), '');
+  CountryConfig _initialCountry() {
+    final userCountryCode = ref.read(userStateMachineProvider).countryCode;
+    final selectedCountry = ref.read(selectedCountryProvider);
+    final countries = _countryOptions();
+    for (final country in countries) {
+      if (country.code == userCountryCode) {
+        return country;
+      }
+    }
+    return selectedCountry;
+  }
+
+  CountryConfig _selectedCountry() {
+    return _countryForDialCode(_selectedCountryCode) ?? _initialCountry();
+  }
+
+  CountryConfig? _countryForDialCode(String? dialCode) {
+    if (dialCode == null || dialCode.trim().isEmpty) {
+      return null;
+    }
+    for (final country in _countryOptions()) {
+      if (country.fullPrefix == dialCode) {
+        return country;
+      }
+    }
+    return null;
+  }
+
+  String _selectedDialCode() => _selectedCountry().fullPrefix;
+
+  List<CountryConfig> _countryOptions({bool watch = false}) {
+    final asyncCountries = watch
+        ? ref.watch(countriesProvider)
+        : ref.read(countriesProvider);
+    final countries = asyncCountries.maybeWhen(
+      data: (items) => items.where((country) => country.isEnabled).toList(),
+      orElse: () => SupportedCountries.all,
+    );
+    return countries.isEmpty ? SupportedCountries.all : countries;
+  }
 
   _RecipientSnack _recipientErrorSnack(String errorCode) {
     final colors = context.colors;

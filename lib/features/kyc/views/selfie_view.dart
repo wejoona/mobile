@@ -1,26 +1,22 @@
-import 'package:usdc_wallet/design/tokens/index.dart';
+import 'dart:async';
 import 'dart:io';
-import 'package:flutter/foundation.dart';
+
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
-import 'package:camera/camera.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as path;
-import 'package:usdc_wallet/design/tokens/colors.dart';
-import 'package:usdc_wallet/design/tokens/spacing.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
-import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
-import 'package:usdc_wallet/services/kyc/image_quality_checker.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/kyc/models/image_quality_result.dart';
-import 'package:usdc_wallet/utils/logger.dart';
-import 'package:usdc_wallet/mocks/mock_config_provider.dart';
+import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
 import 'package:usdc_wallet/features/kyc/widgets/kyc_instruction_screen.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/mocks/mock_config_provider.dart';
+import 'package:usdc_wallet/services/kyc/image_quality_checker.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 enum _SelfieViewState {
   instructions,
@@ -47,7 +43,7 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
 
   @override
   void dispose() {
-    _controller?.dispose();
+    unawaited(_controller?.dispose());
     super.dispose();
   }
 
@@ -69,7 +65,10 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
 
     try {
       debugPrint('[Selfie] Getting available cameras...');
-      _cameras = await availableCameras();
+      _cameras = await availableCameras().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () => <CameraDescription>[],
+      );
 
       if (_cameras == null || _cameras!.isEmpty) {
         debugPrint('[Selfie] No cameras available');
@@ -114,7 +113,12 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
       );
 
       debugPrint('[Selfie] Initializing camera controller...');
-      await _controller!.initialize();
+      await _controller!.initialize().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw Exception('Camera initialization timed out');
+        },
+      );
       debugPrint('[Selfie] Camera initialized successfully');
 
       if (mounted) {
@@ -161,7 +165,7 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
       instructions: KycInstructions.selfieFor(locale),
       buttonLabel: l10n.common_continue,
       onContinue: _initializeCamera,
-      onBack: () => context.safePop(),
+      onBack: () => context.fsmSafePop(),
     );
   }
 
@@ -233,8 +237,8 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
                         color: Colors.white,
                         size: 28,
                       ),
-                      onPressed: () {
-                        _controller?.dispose();
+                      onPressed: () async {
+                        await _controller?.dispose();
                         _controller = null;
                         setState(
                           () => _viewState = _SelfieViewState.instructions,
@@ -444,7 +448,7 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
         backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.safePop(),
+          onPressed: () => context.fsmSafePop(),
         ),
       ),
       body: SafeArea(
@@ -569,7 +573,8 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
 
       final directory = await getApplicationDocumentsDirectory();
       final fileName = 'selfie_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final permanentPath = path.join(directory.path, fileName);
+      final permanentPath =
+          '${directory.path}${Platform.pathSeparator}$fileName';
       await File(image.path).copy(permanentPath);
 
       setState(() {
@@ -619,11 +624,12 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
 
       final directory = await getApplicationDocumentsDirectory();
       final fileName = 'selfie_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final permanentPath = path.join(directory.path, fileName);
+      final permanentPath =
+          '${directory.path}${Platform.pathSeparator}$fileName';
       await File(image.path).copy(permanentPath);
 
       // Dispose camera before showing review
-      _controller?.dispose();
+      await _controller?.dispose();
       _controller = null;
 
       setState(() {
@@ -660,7 +666,7 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
 
   void _acceptPhoto(BuildContext context) {
     ref.read(kycProvider.notifier).setSelfie(_capturedImagePath!);
-    context.go('/kyc/liveness-instructions');
+    context.fsmGo('/kyc/liveness-instructions');
   }
 }
 

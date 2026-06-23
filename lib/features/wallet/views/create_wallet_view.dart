@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
@@ -39,7 +39,7 @@ class _CreateWalletViewState extends ConsumerState<CreateWalletView> {
     final wallet = ref.read(walletStateMachineProvider);
     if (wallet.hasWallet) {
       if (mounted) {
-        context.go('/home');
+        context.fsmGo('/home');
       }
       return;
     }
@@ -51,7 +51,7 @@ class _CreateWalletViewState extends ConsumerState<CreateWalletView> {
 
     final next = ref.read(walletStateMachineProvider);
     if (next.hasWallet) {
-      context.go('/home');
+      context.fsmGo('/home');
     }
   }
 
@@ -71,7 +71,7 @@ class _CreateWalletViewState extends ConsumerState<CreateWalletView> {
 
     ref.listen(walletStateMachineProvider, (previous, next) {
       if (next.hasWallet && mounted) {
-        context.go('/home');
+        context.fsmGo('/home');
       }
     });
 

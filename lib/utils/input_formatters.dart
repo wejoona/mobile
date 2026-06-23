@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Text input formatter that formats currency amounts.
 /// E.g. "1234.56" stays as-is, restricts to 2 decimal places.
@@ -6,10 +7,7 @@ class AmountInputFormatter extends TextInputFormatter {
   final int decimalPlaces;
   final double? maxAmount;
 
-  AmountInputFormatter({
-    this.decimalPlaces = 2,
-    this.maxAmount,
-  });
+  AmountInputFormatter({this.decimalPlaces = 2, this.maxAmount});
 
   @override
   TextEditingValue formatEditUpdate(
@@ -56,6 +54,70 @@ class PhoneInputFormatter extends TextInputFormatter {
     }
 
     return newValue;
+  }
+}
+
+/// Phone formatter for inputs that show the country dial code outside the
+/// text field. If the user pastes/types a full international number, the
+/// dial code is stripped so the field still contains only the local number.
+class LocalPhoneInputFormatter extends TextInputFormatter {
+  LocalPhoneInputFormatter({
+    required this.dialCode,
+    required this.maxLocalDigits,
+    this.displayFormat,
+  });
+
+  final String dialCode;
+  final int maxLocalDigits;
+  final String? displayFormat;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final localDigits = _localDigits(newValue.text);
+    final limitedDigits = localDigits.length > maxLocalDigits
+        ? localDigits.substring(0, maxLocalDigits)
+        : localDigits;
+    final formatted = _format(limitedDigits);
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+
+  String _localDigits(String value) {
+    return editableLocalPhoneInputDigits(
+      dialCode: dialCode,
+      phoneNumber: value,
+      maxLocalDigits: maxLocalDigits,
+    );
+  }
+
+  String _format(String digits) {
+    final format = displayFormat;
+    if (format == null || format.isEmpty || digits.isEmpty) return digits;
+
+    final buffer = StringBuffer();
+    var digitIndex = 0;
+
+    for (var i = 0; i < format.length && digitIndex < digits.length; i++) {
+      if (format[i] == 'X') {
+        buffer.write(digits[digitIndex]);
+        digitIndex++;
+      } else {
+        buffer.write(format[i]);
+      }
+    }
+
+    while (digitIndex < digits.length) {
+      buffer.write(digits[digitIndex]);
+      digitIndex++;
+    }
+
+    return buffer.toString();
   }
 }
 

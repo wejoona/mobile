@@ -36,7 +36,7 @@
 /// Guards prevent invalid transitions:
 /// - Cannot access home without authentication
 /// - Cannot transact without wallet
-/// - Cannot deposit/withdraw without KYC
+/// - Cannot initiate gated money movement without the required KYC/limits
 ///
 /// ### Effects
 /// Effects are side-effects triggered by transitions:
@@ -81,4 +81,5 @@ export 'package:usdc_wallet/state/fsm/wallet_fsm.dart';
 export 'package:usdc_wallet/state/fsm/kyc_fsm.dart';
 export 'package:usdc_wallet/state/fsm/session_fsm.dart';
 export 'package:usdc_wallet/state/fsm/app_fsm.dart';
+export 'package:usdc_wallet/state/fsm/app_route_contract.dart';
 export 'package:usdc_wallet/state/fsm/fsm_provider.dart';

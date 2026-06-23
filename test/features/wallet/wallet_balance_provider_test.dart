@@ -8,30 +8,43 @@ import '../../helpers/test_utils.dart';
 
 void main() {
   group('walletBalanceProvider', () {
-    test('creates a wallet when the backend reports no wallet yet', () async {
+    test('value parser treats total-only rows as displayable balance', () {
+      final balance = WalletBalance.fromJson({
+        'currency': 'USDC',
+        'totalDecimal': '88.125000',
+      });
+
+      expect(balance.available, 88.125);
+      expect(balance.pending, 0);
+      expect(balance.total, 88.125);
+      expect(balance.currency, 'USDC');
+    });
+
+    test('does not create a wallet from the direct balance reader', () async {
       final dio = MockDio()
-        ..queueErrorResponse(statusCode: 404, message: 'Wallet not found')
-        ..queueResponse({
-          'id': 'wallet_1',
-          'currency': 'USDC',
-          'balance': 0,
-          'status': 'active',
-        });
+        ..queueErrorResponse(statusCode: 404, message: 'Wallet not found');
 
       final container = ProviderContainer(
         overrides: [dioProvider.overrideWithValue(dio)],
       );
       addTearDown(container.dispose);
 
-      final balance = await container.read(walletBalanceProvider.future);
+      container.read(walletBalanceProvider);
+      await pumpEventQueue();
 
-      expect(balance.available, 0);
-      expect(balance.total, 0);
-      expect(balance.currency, 'USDC');
-      expect(dio.requestHistory[0].method, 'GET');
-      expect(dio.requestHistory[0].path, '/wallet');
-      expect(dio.requestHistory[1].method, 'POST');
-      expect(dio.requestHistory[1].path, '/wallet/create');
+      final state = container.read(walletBalanceProvider);
+      expect(state.hasError, isTrue);
+      expect(
+        state.error,
+        isA<ApiException>().having(
+          (error) => error.statusCode,
+          'statusCode',
+          404,
+        ),
+      );
+
+      expect(dio.requestHistory.single.method, 'GET');
+      expect(dio.requestHistory.single.path, '/wallet');
     });
 
     test('parses the canonical wallet balance response', () async {

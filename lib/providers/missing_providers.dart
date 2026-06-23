@@ -12,12 +12,12 @@ import 'package:usdc_wallet/features/insights/models/top_recipient.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:usdc_wallet/config/countries.dart';
+import 'package:usdc_wallet/features/deposit/models/deposit_channel_id.dart';
 import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
 import 'package:usdc_wallet/features/deposit/models/provider_data.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
-import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart'
-    hide TransactionItem, TransactionPage;
+import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 import 'package:usdc_wallet/services/sdk/usdc_wallet_sdk.dart';
 import 'package:usdc_wallet/services/notifications/notifications_service.dart';
 import 'package:usdc_wallet/services/transactions/transactions_service.dart';
@@ -295,6 +295,7 @@ DateTime _periodStart(String period) {
 bool _isSpend(Transaction item) =>
     item.isDebit ||
     item.type == TransactionType.withdrawal ||
+    item.type == TransactionType.billPayment ||
     item.type == TransactionType.transferExternal;
 
 String _categoryForTransaction(Transaction item) {
@@ -305,7 +306,10 @@ String _categoryForTransaction(Transaction item) {
       return 'External transfers';
     case TransactionType.transferInternal:
       return 'Transfers';
+    case TransactionType.billPayment:
+      return 'Bill payments';
     case TransactionType.deposit:
+    case TransactionType.unknown:
       return 'Other spending';
   }
 }
@@ -333,18 +337,6 @@ final notificationsNotifierProvider = FutureProvider.autoDispose<List<dynamic>>(
     return service.getNotifications(pageSize: 100);
   },
 );
-
-/// Profile notifier provider — wired to GET /user/profile.
-final profileNotifierProvider =
-    FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
-      final dio = ref.watch(dioProvider);
-      try {
-        final response = await dio.get('/user/profile');
-        return response.data as Map<String, dynamic>;
-      } catch (_) {
-        return {};
-      }
-    });
 
 /// Deposit providers list — wired to GET /wallet/deposit/channels.
 final depositProvidersAvailabilityProvider =
@@ -429,9 +421,9 @@ bool _matchesSelectedCountry(
 
 ProviderData _providerDataFromJson(Map<String, dynamic> json) {
   return ProviderData(
-    id: json['code'] as String? ?? json['id'] as String? ?? '',
+    id: depositChannelIdFromJson(json),
     name: json['name'] as String? ?? '',
-    paymentMethodType: json['paymentMethodType'] as String?,
+    paymentMethodType: _paymentMethodTypeFromDepositRail(json),
     enumProvider: json['provider'] as String? ?? json['code'] as String?,
     minAmount: (json['minAmount'] as num?)?.toDouble(),
     maxAmount: (json['maxAmount'] as num?)?.toDouble(),
@@ -446,6 +438,43 @@ ProviderData _providerDataFromJson(Map<String, dynamic> json) {
     ]),
     rails: _stringList(json, const ['rails', 'type']),
   );
+}
+
+String? _paymentMethodTypeFromDepositRail(Map<String, dynamic> json) {
+  final explicit = json['paymentMethodType']?.toString();
+  if (explicit != null && explicit.isNotEmpty) {
+    return explicit;
+  }
+
+  final rail =
+      (json['rail'] ?? json['type'] ?? json['method'] ?? json['paymentRail'])
+          ?.toString()
+          .trim()
+          .toLowerCase()
+          .replaceAll('-', '_');
+  switch (rail) {
+    case 'mobile_money':
+    case 'momo':
+      return 'PUSH';
+    case 'bank':
+    case 'bank_transfer':
+    case 'ach':
+      return 'BANK_TRANSFER';
+    case 'card':
+      return 'CARD';
+    case 'crypto':
+    case 'usdc':
+    case 'usdc_crypto':
+      return 'CRYPTO';
+    case 'qr':
+    case 'qr_link':
+      return 'QR_LINK';
+    case 'otp':
+    case 'push':
+      return rail?.toUpperCase();
+    default:
+      return null;
+  }
 }
 
 bool _railMatchesCountry(String rawRail, CountryConfig selectedCountry) {

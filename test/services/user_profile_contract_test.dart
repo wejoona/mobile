@@ -130,6 +130,22 @@ void main() {
       expect(user.displayName, 'Ben Ouattara');
     });
 
+    test('core user entity accepts backend PIN aliases', () {
+      final user = User.fromJson({
+        'id': 'usr_pin_alias',
+        'phone': '+2250748805663',
+        'countryCode': 'CI',
+        'phoneVerified': true,
+        'role': 'user',
+        'status': 'active',
+        'has_pin': 'true',
+        'createdAt': '2026-06-04T10:00:00.000Z',
+        'updatedAt': '2026-06-04T10:00:00.000Z',
+      });
+
+      expect(user.hasPin, isTrue);
+    });
+
     test(
       'core user entity can clear stale avatar thumbnail after replacement',
       () {
@@ -311,11 +327,14 @@ void main() {
         expect(dio.requestHistory.single.path, '/user/avatar');
         expect(formData.files.single.key, 'avatar');
         final evidence = _decodeFaceCheckEvidence(formData);
+        final byteSize = await avatarFile.length();
         expect(evidence, containsPair('version', avatarDeviceFaceCheckVersion));
         expect(evidence, containsPair('result', avatarDeviceFaceCheckToken));
         expect(evidence, containsPair('isAvailable', true));
         expect(evidence, containsPair('faceCount', 1));
         expect(evidence['checkedAt'], isA<String>());
+        expect(evidence['imageSha256'], matches(RegExp(r'^[a-f0-9]{64}$')));
+        expect(evidence, containsPair('byteSize', byteSize));
         expect(avatar.avatarUrl, '/user/avatar/usr_face_checked');
       },
     );
@@ -533,6 +552,10 @@ void main() {
       expect(userStateSource, contains('await _clearLocalAvatarCache();'));
       expect(userStateSource, contains('clearAvatarThumb: clearAvatarThumb'));
       expect(userStateSource, contains("delete(key: 'local_avatar_path')"));
+      expect(
+        userStateSource,
+        contains('ImageCacheConfig.clearCache(ImageCacheType.profilePhoto)'),
+      );
       expect(profileProviderSource, contains('await _applyAvatarUploadResult'));
       expect(profileProviderSource, contains('applyServerAvatar('));
       expect(profileProviderSource, contains('clearAvatarThumb: hasAvatarUrl'));
@@ -544,6 +567,14 @@ void main() {
       expect(profileProviderSource, contains('updateUser(updatedUser)'));
       expect(profileProviderSource, contains('userSessionRepositoryProvider'));
       expect(profileEditSource, contains('detectFaces(compressed)'));
+      expect(profileEditSource, contains('var uploadImage = compressed'));
+      expect(profileEditSource, contains('uploadImage = faceCheckImage'));
+      expect(profileEditSource, contains('bool _shouldRetryProfileFaceCheck'));
+      expect(profileEditSource, contains('result.faceCount == 0'));
+      expect(
+        profileEditSource,
+        contains('Retrying face check on a clearer photo'),
+      );
       expect(
         profileEditSource,
         contains('AvatarDeviceFaceCheck.fromDeviceAnalysis'),
@@ -551,7 +582,10 @@ void main() {
       expect(profileEditSource, contains('Checking face on this device'));
       expect(profileEditSource, contains('_profilePhotoPickErrorMessage'));
       expect(profileEditSource, contains('PlatformException'));
-      expect(profileEditSource, contains('uploadAvatar(compressed, faceCheck'));
+      expect(
+        profileEditSource,
+        contains('uploadAvatar(uploadImage, faceCheck'),
+      );
       expect(profileEditSource, contains('_selectedImage = null'));
     });
 
@@ -564,6 +598,10 @@ void main() {
       expect(avatarSource, contains("resolvedPath.contains('/user/avatar/')"));
       expect(avatarSource, contains('pathSegments: resolvedSegments'));
       expect(avatarSource, contains('_startsWithSegments'));
+      expect(
+        avatarSource,
+        contains('cacheManager: ImageCacheConfig.profilePhotos'),
+      );
     });
 
     test('profile completion applies backend profile snapshot', () {

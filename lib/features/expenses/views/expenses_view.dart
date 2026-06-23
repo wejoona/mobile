@@ -3,7 +3,6 @@ import 'package:usdc_wallet/features/expenses/models/expenses_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/typography.dart';
@@ -13,6 +12,7 @@ import 'package:usdc_wallet/design/components/primitives/app_card.dart';
 import 'package:usdc_wallet/features/expenses/providers/expenses_provider.dart';
 import 'package:usdc_wallet/domain/entities/expense.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class ExpensesView extends ConsumerStatefulWidget {
   const ExpensesView({super.key});
@@ -30,15 +30,12 @@ class _ExpensesViewState extends ConsumerState<ExpensesView> {
     return Scaffold(
       backgroundColor: context.colors.canvas,
       appBar: AppBar(
-        title: AppText(
-          l10n.expenses_title,
-          style: AppTypography.headlineSmall,
-        ),
+        title: AppText(l10n.expenses_title, style: AppTypography.headlineSmall),
         backgroundColor: Colors.transparent,
         actions: [
           IconButton(
             icon: const Icon(Icons.assessment_outlined),
-            onPressed: () => context.push('/expenses/reports'),
+            onPressed: () => context.fsmPush('/expenses/reports'),
             tooltip: l10n.expenses_viewReports,
           ),
         ],
@@ -47,32 +44,32 @@ class _ExpensesViewState extends ConsumerState<ExpensesView> {
         child: state.isLoading
             ? const Center(child: CircularProgressIndicator())
             : state.expenses.isEmpty
-                ? _buildEmptyState(context, l10n)
-                : RefreshIndicator(
-                    onRefresh: () async { ref.invalidate(expensesProvider); },
-                    child: Column(
-                      children: [
-                        _buildSummaryCard(context, l10n, state),
-                        Expanded(
-                          child: _buildExpensesList(context, l10n, state),
-                        ),
-                      ],
-                    ),
-                  ),
+            ? _buildEmptyState(context, l10n)
+            : RefreshIndicator(
+                onRefresh: () async {
+                  ref.invalidate(expensesProvider);
+                },
+                child: Column(
+                  children: [
+                    _buildSummaryCard(context, l10n, state),
+                    Expanded(child: _buildExpensesList(context, l10n, state)),
+                  ],
+                ),
+              ),
       ),
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           FloatingActionButton(
             heroTag: 'capture',
-            onPressed: () => context.push('/expenses/capture'),
+            onPressed: () => context.fsmPush('/expenses/capture'),
             backgroundColor: context.colors.gold,
             child: const Icon(Icons.camera_alt),
           ),
           SizedBox(height: AppSpacing.sm),
           FloatingActionButton(
             heroTag: 'add',
-            onPressed: () => context.push('/expenses/add'),
+            onPressed: () => context.fsmPush('/expenses/add'),
             backgroundColor: context.colors.elevated,
             child: const Icon(Icons.add),
           ),
@@ -102,19 +99,21 @@ class _ExpensesViewState extends ConsumerState<ExpensesView> {
             SizedBox(height: AppSpacing.sm),
             AppText(
               l10n.expenses_emptyMessage,
-              style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+              style: AppTypography.bodyMedium.copyWith(
+                color: context.colors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: AppSpacing.xl),
             AppButton(
               label: l10n.expenses_captureReceipt,
-              onPressed: () => context.push('/expenses/capture'),
+              onPressed: () => context.fsmPush('/expenses/capture'),
               icon: Icons.camera_alt,
             ),
             SizedBox(height: AppSpacing.md),
             AppButton(
               label: l10n.expenses_addManually,
-              onPressed: () => context.push('/expenses/add'),
+              onPressed: () => context.fsmPush('/expenses/add'),
               variant: AppButtonVariant.secondary,
             ),
           ],
@@ -230,7 +229,8 @@ class _ExpensesViewState extends ConsumerState<ExpensesView> {
         final expense = state.expenses[index];
         return AppCard(
           margin: EdgeInsets.only(bottom: AppSpacing.md),
-          onTap: () => context.push('/expenses/detail/${expense.id}', extra: expense),
+          onTap: () =>
+              context.fsmPush('/expenses/detail/${expense.id}', extra: expense),
           child: Padding(
             padding: EdgeInsets.all(AppSpacing.md),
             child: Row(
@@ -253,7 +253,8 @@ class _ExpensesViewState extends ConsumerState<ExpensesView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       AppText(
-                        expense.vendor ?? _getCategoryLabel(l10n, expense.category),
+                        expense.vendor ??
+                            _getCategoryLabel(l10n, expense.category),
                         style: AppTypography.bodyLarge.copyWith(
                           fontWeight: FontWeight.w600,
                         ),

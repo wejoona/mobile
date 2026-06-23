@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Liveness challenge types
@@ -401,7 +402,7 @@ class ChallengeSubmitResult {
   final int challengesCompleted;
   final int challengesTotal;
   final bool? isAlive;
-  final int? confidence;
+  final double? confidence;
   final ChallengeVerificationResult? result;
   final LivenessEvidenceMetadata? evidence;
 
@@ -431,7 +432,7 @@ class ChallengeSubmitResult {
       challengesCompleted: json['challengesCompleted'] as int,
       challengesTotal: json['challengesTotal'] as int,
       isAlive: json['isAlive'] as bool?,
-      confidence: json['confidence'] as int?,
+      confidence: livenessScoreFromJson(json['confidence']),
       result: json['result'] != null
           ? ChallengeVerificationResult.fromJson(
               json['result'] as Map<String, dynamic>,
@@ -449,9 +450,9 @@ class ChallengeSubmitResult {
 /// Final verification result after all challenges
 class ChallengeVerificationResult {
   final bool isAlive;
-  final int confidence;
-  final int antiSpoofScore;
-  final int faceMatchScore;
+  final double confidence;
+  final double antiSpoofScore;
+  final double faceMatchScore;
   final String? failureReason;
 
   const ChallengeVerificationResult({
@@ -465,12 +466,33 @@ class ChallengeVerificationResult {
   factory ChallengeVerificationResult.fromJson(Map<String, dynamic> json) {
     return ChallengeVerificationResult(
       isAlive: json['isAlive'] as bool,
-      confidence: json['confidence'] as int,
-      antiSpoofScore: json['antiSpoofScore'] as int,
-      faceMatchScore: json['faceMatchScore'] as int,
+      confidence: livenessScoreFromJson(json['confidence']) ?? 0,
+      antiSpoofScore: livenessScoreFromJson(json['antiSpoofScore']) ?? 0,
+      faceMatchScore: livenessScoreFromJson(json['faceMatchScore']) ?? 0,
       failureReason: json['failureReason'] as String?,
     );
   }
+}
+
+/// Normalize provider confidence scores into the app's decision scale.
+///
+/// VerifyHQ and mock providers may return either `0..1` ratios or `0..100`
+/// percentages. Mobile liveness decisions always consume `0..1`.
+double? livenessScoreFromJson(Object? value) {
+  if (value == null) {
+    return null;
+  }
+  final score = value is num ? value.toDouble() : double.tryParse('$value');
+  if (score == null || score.isNaN) {
+    return null;
+  }
+  if (score <= 0) {
+    return 0;
+  }
+  if (score <= 1) {
+    return score;
+  }
+  return (score / 100).clamp(0, 1);
 }
 
 /// Liveness decision based on confidence score
@@ -536,13 +558,17 @@ class LivenessService {
   Future<LivenessSession> createSession({
     LivenessClientCapabilities capabilities =
         const LivenessClientCapabilities(),
+    bool useRecoveryToken = false,
   }) async {
     try {
       final response = await _dio.post(
-        '/kyc/liveness/session',
+        ApiEndpoints.kycLivenessSession,
         data: {'capabilities': capabilities.toJson()},
+        options: useRecoveryToken
+            ? Options(extra: {ApiRequestExtra.useRecoveryToken: true})
+            : null,
       );
-      return LivenessSession.fromJson(response.data as Map<String, dynamic>);
+      return LivenessSession.fromJson(apiResponsePayload(response.data));
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -556,6 +582,7 @@ class LivenessService {
     required String photoPath,
     LivenessCaptureMode captureMode = LivenessCaptureMode.photo,
     String mimeType = 'image/jpeg',
+    bool useRecoveryToken = false,
   }) async {
     try {
       final formData = FormData.fromMap({
@@ -572,12 +599,13 @@ class LivenessService {
       });
 
       final response = await _dio.post(
-        '/kyc/liveness/challenge',
+        ApiEndpoints.kycLivenessChallenge,
         data: formData,
+        options: useRecoveryToken
+            ? Options(extra: {ApiRequestExtra.useRecoveryToken: true})
+            : null,
       );
-      return ChallengeSubmitResult.fromJson(
-        response.data as Map<String, dynamic>,
-      );
+      return ChallengeSubmitResult.fromJson(apiResponsePayload(response.data));
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -586,8 +614,8 @@ class LivenessService {
   /// Get liveness status
   Future<LivenessResult?> getLivenessStatus() async {
     try {
-      final response = await _dio.get('/kyc/liveness/status');
-      final data = response.data as Map<String, dynamic>;
+      final response = await _dio.get(ApiEndpoints.kycLivenessStatus);
+      final data = apiResponsePayload(response.data);
 
       if (data['status'] == 'NOT_STARTED') return null;
 

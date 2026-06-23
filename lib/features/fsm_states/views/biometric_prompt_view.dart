@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:local_auth/local_auth.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/state/fsm/session_fsm.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
-import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
-import 'package:usdc_wallet/services/session/session_service.dart';
+import 'package:usdc_wallet/state/fsm/session_fsm.dart';
 import 'package:usdc_wallet/state/index.dart';
 
 /// Biometric Prompt View — themed lock screen with Face ID / Touch ID.
@@ -23,12 +21,13 @@ class BiometricPromptView extends ConsumerStatefulWidget {
 }
 
 class _BiometricPromptViewState extends ConsumerState<BiometricPromptView> {
-  final LocalAuthentication _localAuth = LocalAuthentication();
   bool _isAuthenticating = false;
   bool _hasFailed = false;
 
   Future<void> _authenticateWithBiometric() async {
-    if (_isAuthenticating) return;
+    if (_isAuthenticating) {
+      return;
+    }
 
     setState(() {
       _isAuthenticating = true;
@@ -37,30 +36,57 @@ class _BiometricPromptViewState extends ConsumerState<BiometricPromptView> {
     final l10n = AppLocalizations.of(context)!;
 
     try {
-      final canAuthenticate = await _localAuth.canCheckBiometrics;
+      final biometricService = ref.read(biometricServiceProvider);
+      final userId = await _currentBiometricUserId();
+      final canAuthenticate =
+          userId != null &&
+          await biometricService.isBiometricEnabled(userId: userId) &&
+          await biometricService.isAvailable();
       if (!canAuthenticate) {
-        if (mounted) _fallbackToPin();
+        if (mounted) {
+          _fallbackToPin();
+        }
         return;
       }
 
-      final didAuthenticate = await _localAuth.authenticate(
+      final result = await biometricService.authenticate(
         localizedReason: l10n.biometric_authenticateReason,
-        biometricOnly: true,
-        persistAcrossBackgrounding: true,
       );
 
       if (mounted) {
-        if (didAuthenticate) {
+        if (result.success) {
           _completeUnlock();
         } else {
           setState(() => _hasFailed = true);
         }
       }
-    } catch (e) {
-      if (mounted) setState(() => _hasFailed = true);
+    } on Object {
+      if (mounted) {
+        setState(() => _hasFailed = true);
+      }
     } finally {
-      if (mounted) setState(() => _isAuthenticating = false);
+      if (mounted) {
+        setState(() => _isAuthenticating = false);
+      }
     }
+  }
+
+  Future<String?> _currentBiometricUserId() async {
+    final authUserId = ref.read(authProvider).user?.id.trim();
+    if (authUserId != null && authUserId.isNotEmpty) {
+      return authUserId;
+    }
+
+    final stateUserId = ref.read(userStateMachineProvider).userId?.trim();
+    if (stateUserId != null && stateUserId.isNotEmpty) {
+      return stateUserId;
+    }
+
+    final storedUserId = await ref
+        .read(secureStorageProvider)
+        .read(key: StorageKeys.userId);
+    final normalized = storedUserId?.trim();
+    return normalized == null || normalized.isEmpty ? null : normalized;
   }
 
   void _fallbackToPin() {
@@ -69,16 +95,27 @@ class _BiometricPromptViewState extends ConsumerState<BiometricPromptView> {
         .dispatch(
           const AppSessionEvent(SessionLock(reason: 'Biometric unavailable')),
         );
-    if (mounted) context.go('/session-locked');
+    if (mounted) {
+      context.fsmGo('/session-locked');
+    }
   }
 
   void _completeUnlock() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      ref.read(authProvider.notifier).unlock();
-      ref.read(sessionServiceProvider.notifier).unlockSession();
-      ref.read(appFsmProvider.notifier).unlockSession();
-      context.enterAuthenticatedApp();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) {
+        return;
+      }
+      final unlocked = await ref
+          .read(authProvider.notifier)
+          .unlockWithServerValidation();
+      if (!mounted) {
+        return;
+      }
+      if (!unlocked) {
+        context.fsmGo('/session-locked');
+        return;
+      }
+      context.fsmEnterAuthenticatedApp();
     });
   }
 

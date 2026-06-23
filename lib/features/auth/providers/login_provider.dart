@@ -2,12 +2,14 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/features/auth/models/login_state.dart';
-import 'package:usdc_wallet/features/auth/providers/session_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/auth/providers/session_provider.dart';
 import 'package:usdc_wallet/features/settings/providers/devices_provider.dart';
 import 'package:usdc_wallet/services/device/device_registration_service.dart';
 import 'package:usdc_wallet/services/index.dart';
-import 'package:usdc_wallet/services/session/session_service.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
+import 'package:usdc_wallet/utils/verification_cooldown.dart';
 
 /// Login state provider
 final loginProvider = NotifierProvider<LoginNotifier, LoginState>(
@@ -27,13 +29,14 @@ class LoginNotifier extends Notifier<LoginState> {
     });
 
     // Load remembered phone number
-    _loadRememberedPhone();
+    unawaited(_loadRememberedPhone());
 
     return const LoginState();
   }
 
   FlutterSecureStorage get _storage => ref.read(secureStorageProvider);
   AuthService get _authService => ref.read(authServiceProvider);
+  AppFsmNotifier get _appFsm => ref.read(appFsmProvider.notifier);
 
   /// Load remembered phone number
   Future<void> _loadRememberedPhone() async {
@@ -42,13 +45,16 @@ class LoginNotifier extends Notifier<LoginState> {
         key: StorageKeys.rememberedPhone,
       );
       if (rememberedPhone != null) {
-        final parts = rememberedPhone.split('|');
-        if (parts.length == 2) {
-          state = state.copyWith(
-            countryCode: parts[0],
-            phoneNumber: parts[1],
-            rememberDevice: true,
-          );
+        final phoneValue = PhoneNumberValue.tryFromStorageValue(
+          rememberedPhone,
+        );
+        if (phoneValue != null) {
+          if ((state.phoneNumber ?? '').isNotEmpty) {
+            return;
+          }
+          state = state
+              .withPhoneValue(phoneValue)
+              .copyWith(rememberDevice: true);
         }
       }
     } catch (e) {
@@ -57,12 +63,22 @@ class LoginNotifier extends Notifier<LoginState> {
   }
 
   /// Update phone number
-  void updatePhoneNumber(String phoneNumber, String countryCode) {
-    state = state.copyWith(
+  void updatePhoneNumber(String phoneNumber, String dialCode) {
+    final phoneValue = PhoneNumberValue.tryFromAny(
       phoneNumber: phoneNumber,
-      countryCode: countryCode,
-      error: null,
+      countryCode: dialCode,
     );
+    final localPhoneNumber =
+        phoneValue?.localNumber ??
+        localPhoneDigits(dialCode: dialCode, phoneNumber: phoneNumber);
+    state =
+        (phoneValue == null
+                ? state.copyWith(
+                    phoneNumber: localPhoneNumber,
+                    dialCode: dialCode,
+                  )
+                : state.withPhoneValue(phoneValue))
+            .copyWith(error: null);
   }
 
   /// Toggle remember device
@@ -72,36 +88,50 @@ class LoginNotifier extends Notifier<LoginState> {
 
   /// Submit phone number for login
   Future<void> submitPhoneNumber() async {
-    if (state.phoneNumber == null || state.phoneNumber!.isEmpty) {
+    final phoneValue = _currentPhoneValue();
+    if (phoneValue == null) {
       state = state.copyWith(error: 'Phone number is required');
       return;
     }
 
     state = state.copyWith(isLoading: true, error: null);
+    _appFsm.login(phoneValue.localNumber, phoneValue.apiCountryCode);
 
     try {
       // Call login API
-      await _authService.login(phone: state.phoneNumber!);
+      final response = await _authService.login(
+        phone: phoneValue.apiPhone,
+        countryCode: phoneValue.apiCountryCode,
+      );
 
       // Save remembered phone if enabled
       if (state.rememberDevice) {
         await _storage.write(
           key: StorageKeys.rememberedPhone,
-          value: '${state.countryCode}|${state.phoneNumber}',
+          value: phoneValue.storageValue,
         );
       } else {
         await _storage.delete(key: StorageKeys.rememberedPhone);
       }
 
       state = state.copyWith(isLoading: false, currentStep: LoginStep.otp);
+      _appFsm.onOtpReceived(expiresIn: response.expiresIn);
 
-      _startResendCountdown();
+      _startResendCountdown(response.resendAvailableIn);
     } catch (e) {
+      final retryAfterSeconds = _otpRetryAfterSeconds(e);
+      if (retryAfterSeconds != null) {
+        _startResendCountdown(retryAfterSeconds);
+      }
       state = state.copyWith(
         isLoading: false,
-        // SECURITY: Generic error to prevent account enumeration attacks
-        error: 'Unable to log in. Please check your details and try again.',
+        error: _otpRequestErrorMessage(
+          e,
+          isResend: false,
+          retryAfterSeconds: retryAfterSeconds,
+        ),
       );
+      _appFsm.onAuthFailed(state.error ?? 'Unable to send verification code');
     }
   }
 
@@ -116,18 +146,26 @@ class LoginNotifier extends Notifier<LoginState> {
       state = state.copyWith(error: 'Please enter a valid 6-digit code');
       return;
     }
+    final phoneValue = _currentPhoneValue();
+    if (phoneValue == null) {
+      state = state.copyWith(error: 'Phone number is required');
+      return;
+    }
 
     state = state.copyWith(isLoading: true, error: null);
+    _appFsm.verifyOtp(state.otp!);
 
     try {
       final response = await _authService.verifyOtp(
-        phone: state.phoneNumber!,
+        phone: phoneValue.apiPhone,
+        countryCode: phoneValue.apiCountryCode,
         otp: state.otp!,
       );
+      final hasPin = response.user.hasPin;
 
       state = state.copyWith(
         isLoading: false,
-        currentStep: LoginStep.pin,
+        currentStep: hasPin ? LoginStep.pin : LoginStep.needsPinSetup,
         sessionToken: response.accessToken,
         refreshToken: response.refreshToken,
         sessionExpiresIn: response.expiresIn,
@@ -136,12 +174,53 @@ class LoginNotifier extends Notifier<LoginState> {
       );
 
       _resendTimer?.cancel();
+
+      if (!hasPin) {
+        final completed = await ref
+            .read(authProvider.notifier)
+            .completePinLogin(
+              accessToken: response.accessToken,
+              refreshToken: response.refreshToken,
+              user: response.user,
+              phone: response.user.phone,
+              countryCode: response.user.countryCode,
+              kycStatus: response.kycStatus,
+              expiresIn: response.expiresIn,
+              analyticsMethod: 'otp_pin_setup',
+            );
+        if (!completed) {
+          state = state.copyWith(
+            isLoading: false,
+            currentStep: LoginStep.otp,
+            error: 'Unable to start PIN setup. Please try again.',
+          );
+          _appFsm.onAuthFailed(state.error!);
+        }
+      }
+    } on ApiException catch (e) {
+      final retryAfterSeconds = _otpRetryAfterSeconds(e);
+      if (retryAfterSeconds != null) {
+        _startResendCountdown(retryAfterSeconds);
+      }
+      state = state.copyWith(
+        isLoading: false,
+        error: retryAfterSeconds != null
+            ? _verificationCooldownMessage(retryAfterSeconds, error: e)
+            : 'Invalid code, try again',
+      );
+      _appFsm.onAuthFailed(state.error ?? 'Invalid code, try again');
+      if (retryAfterSeconds == null) {
+        // Clear OTP after wrong-code errors, but keep it visible during cooldown.
+        Future.delayed(const Duration(milliseconds: 500), () {
+          state = state.copyWith(otp: '');
+        });
+      }
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
         error: 'Invalid code, try again',
       );
-      // Clear OTP after error
+      _appFsm.onAuthFailed(state.error ?? 'Invalid code, try again');
       Future.delayed(const Duration(milliseconds: 500), () {
         state = state.copyWith(otp: '');
       });
@@ -151,24 +230,88 @@ class LoginNotifier extends Notifier<LoginState> {
   /// Resend OTP
   Future<void> resendOtp() async {
     if (state.otpResendCountdown > 0) return;
+    final phoneValue = _currentPhoneValue();
+    if (phoneValue == null) {
+      state = state.copyWith(error: 'Phone number is required');
+      return;
+    }
 
     state = state.copyWith(isLoading: true, error: null);
+    _appFsm.login(phoneValue.localNumber, phoneValue.apiCountryCode);
 
     try {
-      await _authService.login(phone: state.phoneNumber!);
+      final response = await _authService.login(
+        phone: phoneValue.apiPhone,
+        countryCode: phoneValue.apiCountryCode,
+      );
       state = state.copyWith(isLoading: false);
-      _startResendCountdown();
+      _appFsm.onOtpReceived(expiresIn: response.expiresIn);
+      _startResendCountdown(response.resendAvailableIn);
     } catch (e) {
+      final retryAfterSeconds = _otpRetryAfterSeconds(e);
+      if (retryAfterSeconds != null) {
+        _startResendCountdown(retryAfterSeconds);
+      }
       state = state.copyWith(
         isLoading: false,
-        error: 'Failed to resend code. Please try again.',
+        error: _otpRequestErrorMessage(
+          e,
+          isResend: true,
+          retryAfterSeconds: retryAfterSeconds,
+        ),
       );
+      _appFsm.onAuthFailed(state.error ?? 'Unable to resend code');
     }
   }
 
+  int? _otpRetryAfterSeconds(Object error) {
+    if (error is ApiException) {
+      return error.resendAvailableIn ?? error.retryAfterSeconds;
+    }
+    return null;
+  }
+
+  String _otpRequestErrorMessage(
+    Object error, {
+    required bool isResend,
+    int? retryAfterSeconds,
+  }) {
+    if (error is ApiException) {
+      final message = error.message.trim();
+      final normalized = message.toLowerCase();
+      final code = error.code?.toUpperCase();
+      final isRateLimited =
+          error.statusCode == 429 ||
+          code == 'TOO_MANY_REQUESTS' ||
+          code == 'E9001' ||
+          code == 'RATE_LIMITED' ||
+          normalized.contains('too many') ||
+          normalized.contains('rate limit');
+      if (isRateLimited) {
+        if (retryAfterSeconds != null) {
+          return _verificationCooldownMessage(retryAfterSeconds, error: error);
+        }
+        return 'Verification is temporarily paused. Please wait a moment before requesting another code.';
+      }
+
+      final statusCode = error.statusCode;
+      if (statusCode != null && statusCode >= 500 && message.isNotEmpty) {
+        return message;
+      }
+    }
+
+    if (isResend) {
+      return 'Failed to resend code. Please try again.';
+    }
+
+    // SECURITY: Generic error to prevent account enumeration attacks.
+    return 'Unable to log in. Please check your details and try again.';
+  }
+
   /// Start OTP resend countdown
-  void _startResendCountdown() {
-    state = state.copyWith(otpResendCountdown: 60);
+  void _startResendCountdown([int seconds = 60]) {
+    final waitSeconds = normalizeVerificationCooldownSeconds(seconds);
+    state = state.copyWith(otpResendCountdown: waitSeconds);
     _resendTimer?.cancel();
     _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (state.otpResendCountdown > 0) {
@@ -181,6 +324,13 @@ class LoginNotifier extends Notifier<LoginState> {
     });
   }
 
+  String _verificationCooldownMessage(int seconds, {Object? error}) {
+    final reason = error is ApiException
+        ? verificationCooldownReason(error.data)
+        : null;
+    return verificationCooldownMessage(seconds: seconds, reason: reason);
+  }
+
   /// Verify PIN
   Future<bool> verifyPin(String pin) async {
     state = state.copyWith(isLoading: true, error: null);
@@ -189,6 +339,17 @@ class LoginNotifier extends Notifier<LoginState> {
       // Verify PIN with backend — returns a PIN token for subsequent requests
       final pinService = ref.read(pinServiceProvider);
       final pinResult = await pinService.verifyPinWithBackend(pin);
+
+      if (pinResult.requiresPinChange) {
+        state = state.copyWith(
+          isLoading: false,
+          currentStep: LoginStep.pin,
+          error:
+              pinResult.message ??
+              'Temporary PIN accepted. Choose a new PIN to continue.',
+        );
+        return false;
+      }
 
       if (!pinResult.success) {
         throw Exception(pinResult.message ?? 'PIN verification failed');
@@ -277,86 +438,6 @@ class LoginNotifier extends Notifier<LoginState> {
     });
   }
 
-  /// Verify biometric
-  Future<bool> verifyBiometric() async {
-    state = state.copyWith(isLoading: true, error: null);
-
-    try {
-      final biometricService = ref.read(biometricServiceProvider);
-      final result = await biometricService.authenticate(
-        localizedReason: 'Verify your identity to continue',
-      );
-
-      if (result.success) {
-        // SECURITY: Biometric passed locally — verify server-side via token refresh
-        // Local biometric alone is insufficient; validate session with backend
-        final storedRefreshToken =
-            state.refreshToken ??
-            await _storage.read(key: StorageKeys.refreshToken);
-
-        if (storedRefreshToken != null) {
-          try {
-            final authNotifier = ref.read(authProvider.notifier);
-            final refreshSuccess = await authNotifier.loginWithBiometric(
-              storedRefreshToken,
-            );
-            if (!refreshSuccess) {
-              state = state.copyWith(
-                isLoading: false,
-                error: 'Session expired. Please log in with your PIN.',
-              );
-              return false;
-            }
-          } catch (_) {
-            state = state.copyWith(
-              isLoading: false,
-              error: 'Server verification failed. Please use your PIN.',
-            );
-            return false;
-          }
-        }
-
-        final storedToken =
-            state.sessionToken ??
-            await _storage.read(key: StorageKeys.accessToken);
-
-        if (storedToken != null) {
-          await ref
-              .read(sessionProvider.notifier)
-              .setTokens(
-                accessToken: storedToken,
-                refreshToken: storedRefreshToken ?? storedToken,
-              );
-        }
-
-        // Unlock session so router doesn't redirect back to lock screen
-        try {
-          ref.read(authProvider.notifier).unlock();
-        } catch (_) {}
-        try {
-          final sessionSvc = ref.read(sessionServiceProvider.notifier);
-          sessionSvc.unlockSession();
-        } catch (_) {}
-
-        state = state.copyWith(
-          isLoading: false,
-          currentStep: LoginStep.success,
-        );
-
-        return true;
-      } else {
-        state = state.copyWith(
-          isLoading: false,
-          error: result.errorMessage ?? 'Biometric authentication failed',
-        );
-        return false;
-      }
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
-      return false;
-    }
-  }
-
   /// Navigate to specific step
   void goToStep(LoginStep step) {
     state = state.copyWith(currentStep: step, error: null);
@@ -366,9 +447,10 @@ class LoginNotifier extends Notifier<LoginState> {
   void reset() {
     _resendTimer?.cancel();
     _lockoutTimer?.cancel();
+    final phoneValue = state.phoneValue;
     state = LoginState(
-      countryCode: state.countryCode,
-      phoneNumber: state.rememberDevice ? state.phoneNumber : null,
+      dialCode: phoneValue?.dialCode ?? state.dialCode,
+      phoneNumber: state.rememberDevice ? phoneValue?.localNumber : null,
       rememberDevice: state.rememberDevice,
     );
   }
@@ -376,5 +458,9 @@ class LoginNotifier extends Notifier<LoginState> {
   /// Clear error
   void clearError() {
     state = state.copyWith(error: null);
+  }
+
+  PhoneNumberValue? _currentPhoneValue() {
+    return state.phoneValue;
   }
 }

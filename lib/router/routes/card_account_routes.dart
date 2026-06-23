@@ -1,24 +1,23 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/features/cards/views/card_detail_view.dart';
 import 'package:usdc_wallet/features/cards/views/card_settings_view.dart';
 import 'package:usdc_wallet/features/cards/views/card_transactions_view.dart';
 import 'package:usdc_wallet/features/cards/views/request_card_view.dart';
+import 'package:usdc_wallet/features/deposit/models/deposit_response.dart';
 import 'package:usdc_wallet/features/deposit/views/payment_instructions_screen.dart';
 import 'package:usdc_wallet/features/kyc/views/kyc_status_view.dart';
 import 'package:usdc_wallet/features/notifications/views/notifications_view.dart';
-import 'package:usdc_wallet/features/pin/views/confirm_pin_view.dart';
+import 'package:usdc_wallet/features/pin/models/pin_reset_route_context.dart';
 import 'package:usdc_wallet/features/pin/views/enter_pin_view.dart';
 import 'package:usdc_wallet/features/pin/views/pin_locked_view.dart';
 import 'package:usdc_wallet/features/pin/views/reset_pin_view.dart';
-import 'package:usdc_wallet/features/pin/views/set_pin_view.dart';
-import 'package:usdc_wallet/features/qr_payment/views/receive_qr_screen.dart';
 import 'package:usdc_wallet/features/qr_payment/views/scan_qr_screen.dart';
 import 'package:usdc_wallet/features/settings/views/change_pin_view.dart';
 import 'package:usdc_wallet/features/settings/views/profile_view.dart';
+import 'package:usdc_wallet/features/transactions/views/export_transactions_view.dart';
 import 'package:usdc_wallet/features/transactions/views/transaction_detail_view.dart';
-import 'package:usdc_wallet/features/wallet/views/transfer_success_view.dart';
+import 'package:usdc_wallet/features/wallet/views/receive_view.dart';
 import 'package:usdc_wallet/router/page_transitions.dart';
 
 List<RouteBase> cardAccountRoutes() => [
@@ -72,53 +71,23 @@ List<RouteBase> cardAccountRoutes() => [
     path: '/receive',
     pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
       state: state,
-      child: const ReceiveQrScreen(),
+      child: const ReceiveView(),
     ),
   ),
-  GoRoute(
-    path: '/transfer/success',
-    pageBuilder: (context, state) {
-      final extra = state.extra as Map<String, dynamic>?;
-      Widget child;
-      if (extra != null) {
-        child = TransferSuccessView(
-          amount: extra['amount'] as double,
-          recipient: extra['recipient'] as String,
-          transactionId: extra['transactionId'] as String,
-          note: extra['note'] as String?,
-        );
-      } else {
-        // Fallback - go home
-        child = const TransferSuccessView(
-          amount: 0,
-          recipient: 'Unknown',
-          transactionId: 'N/A',
-        );
-      }
-      // Scale and fade for success screens
-      return createSuccessTransition(state: state, child: child);
-    },
-  ),
-  GoRoute(
-    path: '/transfer-success',
-    pageBuilder: (context, state) {
-      final extra = state.extra as Map<String, dynamic>?;
-      return createSuccessTransition(
-        state: state,
-        child: TransferSuccessView(
-          amount: extra?['amount'] as double? ?? 0,
-          recipient: extra?['recipient'] as String? ?? 'Unknown',
-          transactionId: extra?['transactionId'] as String? ?? 'N/A',
-          note: extra?['note'] as String?,
-        ),
-      );
-    },
-  ),
+  GoRoute(path: '/transfer/success', redirect: (_, _) => '/send/result'),
+  GoRoute(path: '/transfer-success', redirect: (_, _) => '/send/result'),
   GoRoute(
     path: '/notifications',
     pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
       state: state,
       child: const NotificationsView(),
+    ),
+  ),
+  GoRoute(
+    path: '/transactions/export',
+    pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+      state: state,
+      child: const ExportTransactionsView(),
     ),
   ),
   GoRoute(
@@ -135,10 +104,14 @@ List<RouteBase> cardAccountRoutes() => [
   ),
   GoRoute(
     path: '/deposit/instructions',
-    pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
-      state: state,
-      child: const PaymentInstructionsScreen(),
-    ),
+    pageBuilder: (context, state) {
+      final extra = state.extra;
+      final initialResponse = extra is DepositResponse ? extra : null;
+      return AppPageTransitions.verticalSlide(
+        state: state,
+        child: PaymentInstructionsScreen(initialResponse: initialResponse),
+      );
+    },
   ),
   GoRoute(
     path: '/settings/profile',
@@ -150,33 +123,21 @@ List<RouteBase> cardAccountRoutes() => [
     pageBuilder: (context, state) =>
         AppPageTransitions.fade(state: state, child: const ChangePinView()),
   ),
-  // PIN Setup (post-registration)
-  GoRoute(path: '/pin/set', redirect: (_, _) => '/pin/setup'),
-  GoRoute(
-    path: '/pin/setup',
-    pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
-      state: state,
-      child: const SetPinView(),
-    ),
-  ),
   GoRoute(
     path: '/pin/reset',
-    pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
-      state: state,
-      child: const ResetPinView(),
-    ),
-  ),
-  GoRoute(
-    path: '/pin/confirm',
     pageBuilder: (context, state) {
-      final originalPin = state.extra as String? ?? '';
-      return AppPageTransitions.horizontalSlide(
+      final extra = state.extra;
+      final extraContext = extra is PinResetRouteContext ? extra : null;
+      final resetContext = _pinResetRouteContext(
+        extraContext,
+        state.uri.queryParameters,
+      );
+      return AppPageTransitions.verticalSlide(
         state: state,
-        child: ConfirmPinView(originalPin: originalPin),
+        child: ResetPinView(initialContext: resetContext),
       );
     },
   ),
-  GoRoute(path: '/pin/change', redirect: (_, _) => '/settings/pin'),
   GoRoute(
     path: '/pin/locked',
     pageBuilder: (context, state) =>
@@ -202,3 +163,14 @@ List<RouteBase> cardAccountRoutes() => [
         AppPageTransitions.fade(state: state, child: const KycStatusView()),
   ),
 ];
+
+PinResetRouteContext? _pinResetRouteContext(
+  PinResetRouteContext? extraContext,
+  Map<String, String> query,
+) {
+  final context = PinResetRouteContext.fromRouteQuery(
+    query,
+    extraContext: extraContext,
+  );
+  return context.hasData ? context : null;
+}

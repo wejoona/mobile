@@ -1,4 +1,6 @@
-/// Transfer Request Models
+// Transfer Request Models
+
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Transfer Request - for internal transfers
 class TransferRequest {
@@ -16,16 +18,36 @@ class TransferRequest {
     this.note,
   });
 
-  Map<String, dynamic> toJson() => {
-    if (recipientId != null && recipientId!.isNotEmpty)
-      'recipientId': recipientId,
-    if (recipientPhone != null && recipientPhone!.isNotEmpty)
-      'toPhone': recipientPhone,
-    if (recipientUsername != null && recipientUsername!.isNotEmpty)
-      'recipientUsername': recipientUsername,
-    'amount': amount,
-    if (note != null) 'note': note,
-  };
+  Map<String, dynamic> toJson() {
+    final body = <String, dynamic>{
+      ..._recipientIdentifierBody(),
+      'amount': amount,
+      if (note != null) 'note': note,
+    };
+
+    return body;
+  }
+
+  Map<String, String> _recipientIdentifierBody() {
+    final normalizedRecipientId = recipientId?.trim();
+    if (normalizedRecipientId != null && normalizedRecipientId.isNotEmpty) {
+      return {'recipientId': normalizedRecipientId};
+    }
+
+    final normalizedUsername = _normalizeUsername(recipientUsername);
+    if (normalizedUsername != null && normalizedUsername.isNotEmpty) {
+      return {'recipientUsername': normalizedUsername};
+    }
+
+    final normalizedPhone = PhoneNumberValue.tryFromAny(
+      phoneNumber: recipientPhone,
+    )?.e164;
+    if (normalizedPhone != null && normalizedPhone.isNotEmpty) {
+      return {'toPhone': normalizedPhone};
+    }
+
+    return const {};
+  }
 
   TransferRequest copyWith({
     String? recipientId,
@@ -148,4 +170,16 @@ class RecentRecipient {
     'lastAmount': lastAmount,
     'isKoridoUser': isKoridoUser,
   };
+}
+
+String? _normalizeUsername(String? username) {
+  final trimmed = username?.trim();
+  if (trimmed == null || trimmed.isEmpty) {
+    return null;
+  }
+
+  final withoutPrefix = trimmed.startsWith('@')
+      ? trimmed.substring(1)
+      : trimmed;
+  return withoutPrefix.toLowerCase();
 }

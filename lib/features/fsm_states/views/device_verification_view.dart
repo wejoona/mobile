@@ -9,6 +9,7 @@ import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/fsm/session_fsm.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Device Verification View
 /// Shown when a new or changed device is detected
@@ -246,20 +247,57 @@ class _DeviceVerificationViewState
   Future<String?> _currentPhone() async {
     final authState = ref.read(authProvider);
     final authPhone = authState.user?.phone ?? authState.phone;
+    final authPhoneValue = PhoneNumberValue.tryFromAny(
+      phoneNumber: authPhone,
+      countryCode: authState.user?.countryCode ?? authState.countryCode,
+    );
+    if (authPhoneValue != null) {
+      return authPhoneValue.e164;
+    }
+
+    final userState = ref.read(userStateMachineProvider);
+    final userPhoneValue = PhoneNumberValue.tryFromAny(
+      phoneNumber: userState.phone,
+      countryCode: userState.countryCode,
+    );
+    if (userPhoneValue != null) {
+      return userPhoneValue.e164;
+    }
+
+    final storage = ref.read(secureStorageProvider);
+    final storedDialCode = await storage.read(key: StorageKeys.userDialCode);
+    final storedLocalPhone = await storage.read(
+      key: StorageKeys.userLocalPhone,
+    );
+    final storedParts = storedDialCode != null && storedLocalPhone != null
+        ? PhoneNumberValue.tryFromAny(
+            phoneNumber: storedLocalPhone,
+            countryCode: storedDialCode,
+          )
+        : null;
+    if (storedParts != null) {
+      return storedParts.e164;
+    }
+
+    final storedE164 = await storage.read(key: StorageKeys.userPhoneE164);
+    final storedE164Value = PhoneNumberValue.tryFromAny(
+      phoneNumber: storedE164,
+    );
+    if (storedE164Value != null) {
+      return storedE164Value.e164;
+    }
+
     if (_hasValue(authPhone)) {
       return authPhone!.trim();
     }
 
-    final userPhone = ref.read(userStateMachineProvider).phone;
-    if (_hasValue(userPhone)) {
-      return userPhone!.trim();
+    if (_hasValue(userState.phone)) {
+      return userState.phone!.trim();
     }
 
-    final storedPhone = await ref
-        .read(secureStorageProvider)
-        .read(key: 'user_phone');
+    final storedPhone = await storage.read(key: StorageKeys.userPhone);
     if (_hasValue(storedPhone)) {
-      return storedPhone!.trim();
+      return PhoneNumberValue.tryFromAny(phoneNumber: storedPhone)?.e164;
     }
 
     return null;

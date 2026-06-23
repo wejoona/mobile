@@ -220,20 +220,6 @@ class WalletContract extends ApiContract {
     requiresAuth: true,
   );
 
-  static const setPin = ApiEndpoint(
-    path: '/pin/set',
-    method: HttpMethod.post,
-    description: 'Set or update wallet PIN',
-    requiresAuth: true,
-  );
-
-  static const verifyPin = ApiEndpoint(
-    path: '/pin/verify',
-    method: HttpMethod.post,
-    description: 'Verify wallet PIN and return a transaction token',
-    requiresAuth: true,
-  );
-
   static const getLimits = ApiEndpoint(
     path: '/limits',
     method: HttpMethod.get,
@@ -248,8 +234,6 @@ class WalletContract extends ApiContract {
     getRate,
     getKycStatus,
     submitKyc,
-    setPin,
-    verifyPin,
     getLimits,
   ];
 }

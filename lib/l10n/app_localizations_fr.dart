@@ -1076,6 +1076,13 @@ class AppLocalizationsFr extends AppLocalizations {
       'Vos documents sont en cours d\'examen. Cela prend généralement 1 à 2 jours ouvrables.';
 
   @override
+  String get kyc_status_manualReview_title => 'Revue manuelle requise';
+
+  @override
+  String get kyc_status_manualReview_description =>
+      'Un réviseur Korido vérifie vos justificatifs d\'identité. Vous pouvez continuer à utiliser les fonctionnalités éligibles pendant la revue.';
+
+  @override
   String get kyc_status_approved_title => 'Vérification terminée';
 
   @override
@@ -1119,6 +1126,13 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get kyc_info_time_description =>
       'La vérification prend généralement 1 à 2 jours ouvrables';
+
+  @override
+  String get kyc_info_manualReview_title => 'Revue humaine';
+
+  @override
+  String get kyc_info_manualReview_description =>
+      'Si les contrôles automatiques ne peuvent pas décider en toute sécurité, un réviseur termine la décision au lieu de vous laisser bloqué.';
 
   @override
   String get kyc_info_documents_title => 'Documents requis';
@@ -1742,6 +1756,30 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get pin_confirmNewPin => 'Confirmez votre nouveau code PIN';
+
+  @override
+  String get pin_temporaryReset_chooseNewDescription =>
+      'Votre code PIN temporaire a fonctionné. Choisissez maintenant votre nouveau code PIN.';
+
+  @override
+  String get pin_temporaryReset_confirmNewDescription =>
+      'Confirmez le nouveau code PIN que vous voulez utiliser pour Korido.';
+
+  @override
+  String get pin_temporaryReset_missingSession =>
+      'Code PIN temporaire accepté, mais la session de réinitialisation est introuvable. Demandez au support d\'émettre un nouveau code PIN temporaire.';
+
+  @override
+  String get pin_temporaryReset_expiredSession =>
+      'Cette session de réinitialisation a expiré. Veuillez vous reconnecter.';
+
+  @override
+  String get pin_temporaryReset_mismatch =>
+      'Les codes PIN ne correspondent pas. Confirmez-le à nouveau.';
+
+  @override
+  String get pin_temporaryReset_setFailed =>
+      'Impossible de définir le nouveau code PIN.';
 
   @override
   String get pin_requirements => 'Exigences du code PIN';
@@ -7971,4 +8009,19 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get moneyFlow_verificationRequiredMessage =>
       'Terminez la vérification d\'identité pour utiliser cette action.';
+
+  @override
+  String get forceUpdate_title => 'Mise à jour requise';
+
+  @override
+  String get forceUpdate_defaultMessage =>
+      'Une nouvelle version de Korido est requise pour garder votre portefeuille sécurisé.';
+
+  @override
+  String forceUpdate_requiredVersion(String version) {
+    return 'Version requise : $version';
+  }
+
+  @override
+  String get forceUpdate_button => 'Mettre à jour Korido';
 }

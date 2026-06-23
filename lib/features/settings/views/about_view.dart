@@ -1,12 +1,12 @@
 import 'package:usdc_wallet/design/components/primitives/list_tile_card.dart';
 import 'package:usdc_wallet/design/components/primitives/app_divider.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/utils/app_info.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Run 377: About screen with app version, legal links, and credits
 class AboutView extends StatelessWidget {
@@ -42,7 +42,10 @@ class AboutView extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                const AppText(AppStrings.appName, style: AppTextStyle.headingMedium),
+                const AppText(
+                  AppStrings.appName,
+                  style: AppTextStyle.headingMedium,
+                ),
                 const SizedBox(height: AppSpacing.xs),
                 AppText(
                   'Votre portefeuille USDC',
@@ -68,25 +71,23 @@ class AboutView extends StatelessWidget {
           _AboutLink(
             title: 'Conditions d\'utilisation',
             icon: Icons.description_outlined,
-            onTap: () => context.push('/settings/terms'),
+            onTap: () => context.fsmPush('/settings/terms'),
           ),
           _AboutLink(
             title: 'Politique de confidentialite',
             icon: Icons.privacy_tip_outlined,
-            onTap: () => context.push('/settings/privacy'),
+            onTap: () => context.fsmPush('/settings/privacy'),
           ),
           _AboutLink(
             title: 'Politique de cookies',
             icon: Icons.cookie_outlined,
-            onTap: () => context.push('/settings/cookies'),
+            onTap: () => context.fsmPush('/settings/cookies'),
           ),
           _AboutLink(
             title: 'Licences open source',
             icon: Icons.code,
-            onTap: () => showLicensePage(
-              context: context,
-              applicationName: 'Korido',
-            ),
+            onTap: () =>
+                showLicensePage(context: context, applicationName: 'Korido'),
           ),
           const AppDivider(),
           const SizedBox(height: AppSpacing.xxl),
@@ -122,10 +123,7 @@ class _AboutLink extends StatelessWidget {
       child: ListTileCard(
         leading: Icon(icon, color: context.colors.textSecondary, size: 20),
         title: title,
-        trailing: Icon(
-          Icons.chevron_right,
-          color: context.colors.textTertiary,
-        ),
+        trailing: Icon(Icons.chevron_right, color: context.colors.textTertiary),
         onTap: onTap,
       ),
     );

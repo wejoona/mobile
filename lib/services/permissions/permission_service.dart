@@ -16,9 +16,6 @@ class PermissionService {
   /// Request photo library permission.
   Future<bool> requestPhotos() => _request(Permission.photos, 'Photos');
 
-  /// Request location permission.
-  Future<bool> requestLocation() => _request(Permission.location, 'Location');
-
   /// Check if a permission is granted.
   Future<bool> isGranted(Permission permission) async {
     return permission.isGranted;

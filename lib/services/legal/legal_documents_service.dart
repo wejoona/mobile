@@ -237,6 +237,7 @@ class LegalDocumentsService {
   Future<void> recordConsent({
     required LegalDocument document,
     String? deviceId,
+    bool syncWithApi = true,
   }) async {
     final consent = LegalConsent(
       documentId: document.id,
@@ -249,6 +250,10 @@ class LegalDocumentsService {
     // Store locally
     await _storeConsent(consent);
 
+    if (!syncWithApi) {
+      return;
+    }
+
     // Send to API (fire and forget, don't block on failure)
     _sendConsentToApi(consent).catchError((e) {
       AppLogger('Failed to send consent to API').error('Failed to send consent to API', e);
@@ -260,10 +265,19 @@ class LegalDocumentsService {
     required LegalDocument terms,
     required LegalDocument privacy,
     String? deviceId,
+    bool syncWithApi = true,
   }) async {
     await Future.wait([
-      recordConsent(document: terms, deviceId: deviceId),
-      recordConsent(document: privacy, deviceId: deviceId),
+      recordConsent(
+        document: terms,
+        deviceId: deviceId,
+        syncWithApi: syncWithApi,
+      ),
+      recordConsent(
+        document: privacy,
+        deviceId: deviceId,
+        syncWithApi: syncWithApi,
+      ),
     ]);
   }
 

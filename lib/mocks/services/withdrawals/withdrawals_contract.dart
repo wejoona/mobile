@@ -1,6 +1,6 @@
-/// Withdrawals API Contract
+/// Mobile Money Cash-Out API Contract
 ///
-/// Canonical USDC to mobile money withdrawal endpoints.
+/// Canonical USDC to mobile money cash-out endpoints.
 library;
 
 import 'package:usdc_wallet/mocks/base/api_contract.dart';
@@ -51,15 +51,15 @@ class WithdrawalListContractResponse {
 
 class WithdrawalsContract extends ApiContract {
   @override
-  String get serviceName => 'Withdrawals';
+  String get serviceName => 'MobileMoneyCashOut';
 
   @override
-  String get basePath => '/withdrawals';
+  String get basePath => '/wallet/cash-out/mobile-money';
 
   static const initiate = ApiEndpoint(
-    path: '/initiate',
+    path: '',
     method: HttpMethod.post,
-    description: 'Initiate a mobile money withdrawal',
+    description: 'Initiate a mobile money cash-out',
     requestType: WithdrawalInitiateRequest,
     responseType: WithdrawalContractResponse,
     requiresAuth: true,
@@ -68,7 +68,7 @@ class WithdrawalsContract extends ApiContract {
   static const getStatus = ApiEndpoint(
     path: '/:id',
     method: HttpMethod.get,
-    description: 'Get withdrawal status',
+    description: 'Get mobile money cash-out status',
     responseType: WithdrawalContractResponse,
     pathParams: {'id': 'Withdrawal ID'},
     requiresAuth: true,

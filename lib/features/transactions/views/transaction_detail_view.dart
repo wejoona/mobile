@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -11,6 +10,8 @@ import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/receipts/views/share_receipt_sheet.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/services/transactions/transactions_service.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 final transactionByIdProvider = FutureProvider.family<Transaction, String>((
   ref,
@@ -32,47 +33,47 @@ class TransactionDetailRouteView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (initialTransaction != null) {
-      return TransactionDetailView(transaction: initialTransaction!);
-    }
-
     final transactionAsync = ref.watch(transactionByIdProvider(transactionId));
     final colors = context.colors;
 
     return transactionAsync.when(
       data: (transaction) => TransactionDetailView(transaction: transaction),
-      loading: () => Scaffold(
-        backgroundColor: colors.canvas,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          title: AppText(
-            AppLocalizations.of(context)!.transactionDetails_title,
-            variant: AppTextVariant.titleLarge,
-          ),
-        ),
-        body: const Center(child: CircularProgressIndicator()),
-      ),
-      error: (error, _) => Scaffold(
-        backgroundColor: colors.canvas,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          title: AppText(
-            AppLocalizations.of(context)!.transactionDetails_title,
-            variant: AppTextVariant.titleLarge,
-          ),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(AppSpacing.screenPadding),
-          child: Center(
-            child: AppText(
-              error.toString(),
-              variant: AppTextVariant.bodyMedium,
-              color: colors.error,
-              textAlign: TextAlign.center,
+      loading: () => initialTransaction != null
+          ? TransactionDetailView(transaction: initialTransaction!)
+          : Scaffold(
+              backgroundColor: colors.canvas,
+              appBar: AppBar(
+                backgroundColor: Colors.transparent,
+                title: AppText(
+                  AppLocalizations.of(context)!.transactionDetails_title,
+                  variant: AppTextVariant.titleLarge,
+                ),
+              ),
+              body: const Center(child: CircularProgressIndicator()),
             ),
-          ),
-        ),
-      ),
+      error: (error, _) => initialTransaction != null
+          ? TransactionDetailView(transaction: initialTransaction!)
+          : Scaffold(
+              backgroundColor: colors.canvas,
+              appBar: AppBar(
+                backgroundColor: Colors.transparent,
+                title: AppText(
+                  AppLocalizations.of(context)!.transactionDetails_title,
+                  variant: AppTextVariant.titleLarge,
+                ),
+              ),
+              body: Padding(
+                padding: const EdgeInsets.all(AppSpacing.screenPadding),
+                child: Center(
+                  child: AppText(
+                    error.toString(),
+                    variant: AppTextVariant.bodyMedium,
+                    color: colors.error,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
     );
   }
 }
@@ -99,7 +100,7 @@ class TransactionDetailView extends ConsumerWidget {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
         actions: [
           IconButton(
@@ -136,7 +137,7 @@ class TransactionDetailView extends ConsumerWidget {
 
                   // Amount
                   AmountText.fromText(
-                    '${isCredit ? '+' : '-'}\$${transaction.amount.abs().toStringAsFixed(2)}',
+                    '${transaction.amountSign}${formatCurrency(transaction.amount.abs(), transaction.currency)}',
                     currencyCode: transaction.currency,
                     size: AmountTextSize.large,
                     color: isCredit ? colors.successText : colors.textPrimary,
@@ -378,7 +379,7 @@ class TransactionDetailView extends ConsumerWidget {
             AppButton(
               label: l10n.help_needHelp,
               onPressed: () {
-                context.push('/settings/help');
+                context.fsmPush('/settings/help');
               },
               variant: AppButtonVariant.secondary,
               isFullWidth: true,
@@ -429,6 +430,10 @@ class TransactionDetailView extends ConsumerWidget {
         return colors.gold; // Brand accent for Korido-to-Korido transfers
       case TransactionType.transferExternal:
         return colors.warning; // Orange/amber for external transfers
+      case TransactionType.billPayment:
+        return colors.errorText;
+      case TransactionType.unknown:
+        return colors.textSecondary;
     }
   }
 
@@ -481,6 +486,14 @@ class TransactionDetailView extends ConsumerWidget {
             : l10n.transactions_transferSent;
       case TransactionType.transferExternal:
         return l10n.transactions_transferSent;
+      case TransactionType.billPayment:
+        return l10n.services_billPayments;
+      case TransactionType.unknown:
+        return transaction.isDebit
+            ? l10n.transactions_transferSent
+            : transaction.isCredit
+            ? l10n.transactions_transferReceived
+            : 'Transaction';
     }
   }
 }

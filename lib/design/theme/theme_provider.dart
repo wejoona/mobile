@@ -23,7 +23,7 @@ enum AppThemeMode { system, light, dark }
 class ThemeState {
   final AppThemeMode mode;
 
-  const ThemeState({this.mode = AppThemeMode.system});
+  const ThemeState({this.mode = AppThemeMode.dark});
 
   ThemeState copyWith({AppThemeMode? mode}) {
     return ThemeState(mode: mode ?? this.mode);
@@ -105,7 +105,7 @@ class ThemeNotifier extends Notifier<ThemeState> {
       if (savedMode != null) {
         final mode = AppThemeMode.values.firstWhere(
           (m) => m.name == savedMode,
-          orElse: () => AppThemeMode.system,
+          orElse: () => AppThemeMode.dark,
         );
         state = ThemeState(mode: mode);
         // Sync to native - assume system brightness for now

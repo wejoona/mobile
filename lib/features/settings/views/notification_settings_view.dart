@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,10 +7,11 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/domain/entities/notification_preferences.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/notifications/providers/notification_permission_provider.dart';
 import 'package:usdc_wallet/features/settings/providers/notification_preferences_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
+import 'package:usdc_wallet/utils/context_extensions.dart';
 
 class NotificationSettingsView extends ConsumerStatefulWidget {
   const NotificationSettingsView({super.key});
@@ -31,6 +33,7 @@ class _NotificationSettingsViewState
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
     final prefsState = ref.watch(notificationPreferencesProvider);
+    final permissionState = ref.watch(notificationPermissionProvider);
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -46,12 +49,13 @@ class _NotificationSettingsViewState
           onPressed: () => _handleBack(l10n),
         ),
       ),
-      body: _buildBody(prefsState, l10n, colors),
+      body: _buildBody(prefsState, permissionState, l10n, colors),
     );
   }
 
   Widget _buildBody(
     NotificationPreferencesState state,
+    NotificationPermissionState permissionState,
     AppLocalizations l10n,
     ThemeColors colors,
   ) {
@@ -74,7 +78,16 @@ class _NotificationSettingsViewState
       return _buildErrorState(l10n.notifications_loadError, l10n, colors);
     }
 
-    final prefs = _localPrefs ?? state.preferences!;
+    final sourcePrefs = _localPrefs ?? state.preferences!;
+    final pushAvailable = permissionState.isEnabled;
+    final prefs = pushAvailable
+        ? sourcePrefs
+        : sourcePrefs.copyWith(
+            pushEnabled: false,
+            pushTransactions: false,
+            pushSecurity: false,
+            pushMarketing: false,
+          );
     final isSaving = state.isSaving || _isSaving;
 
     return Stack(
@@ -91,14 +104,8 @@ class _NotificationSettingsViewState
                 icon: Icons.notifications,
                 title: l10n.notifications_push,
                 enabled: prefs.pushEnabled,
-                onChanged: (value) => _updateLocalState(
-                  prefs.copyWith(
-                    pushEnabled: value,
-                    pushTransactions: value ? prefs.pushTransactions : false,
-                    pushSecurity: value ? prefs.pushSecurity : false,
-                    pushMarketing: value ? prefs.pushMarketing : false,
-                  ),
-                ),
+                onChanged: (value) =>
+                    unawaited(_handlePushToggle(l10n, sourcePrefs, value)),
               ),
               if (prefs.pushEnabled) ...[
                 _buildSettingTile(
@@ -428,6 +435,54 @@ class _NotificationSettingsViewState
     });
   }
 
+  Future<void> _handlePushToggle(
+    AppLocalizations l10n,
+    UserNotificationPreferences prefs,
+    bool enabled,
+  ) async {
+    if (!enabled) {
+      _updateLocalState(
+        prefs.copyWith(
+          pushEnabled: false,
+          pushTransactions: false,
+          pushSecurity: false,
+          pushMarketing: false,
+        ),
+      );
+      return;
+    }
+
+    await ref.read(notificationPermissionProvider.notifier).refresh();
+    var permission = ref.read(notificationPermissionProvider);
+    if (!permission.isEnabled && mounted) {
+      await context.fsmPush('/notifications/permission');
+      if (!mounted) return;
+      await ref.read(notificationPermissionProvider.notifier).refresh();
+      permission = ref.read(notificationPermissionProvider);
+    }
+
+    if (!mounted) return;
+    if (!permission.isEnabled) {
+      setState(() {
+        _localPrefs = prefs.copyWith(pushEnabled: false);
+      });
+      context.showSnack(
+        l10n.notifications_permission_denied_message,
+        tone: AppSnackTone.warning,
+      );
+      return;
+    }
+
+    _updateLocalState(
+      prefs.copyWith(
+        pushEnabled: true,
+        pushTransactions: prefs.pushTransactions,
+        pushSecurity: prefs.pushSecurity,
+        pushMarketing: prefs.pushMarketing,
+      ),
+    );
+  }
+
   Future<void> _savePreferences() async {
     if (_localPrefs == null) return;
 
@@ -460,7 +515,7 @@ class _NotificationSettingsViewState
               backgroundColor: context.colors.success,
             ),
           );
-          context.safePop(fallbackRoute: '/settings');
+          context.fsmSafePop(fallbackRoute: '/settings');
         } else {
           setState(() => _isSaving = false);
           final l10n = AppLocalizations.of(context)!;
@@ -555,7 +610,7 @@ class _NotificationSettingsViewState
               TextButton(
                 onPressed: () {
                   Navigator.of(dialogContext).pop();
-                  context.safePop(fallbackRoute: '/settings');
+                  context.fsmSafePop(fallbackRoute: '/settings');
                 },
                 child: AppText(
                   l10n.action_discard,
@@ -567,7 +622,7 @@ class _NotificationSettingsViewState
         },
       );
     } else {
-      context.safePop(fallbackRoute: '/settings');
+      context.fsmSafePop(fallbackRoute: '/settings');
     }
   }
 }

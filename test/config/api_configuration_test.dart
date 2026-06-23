@@ -7,8 +7,8 @@ void main() {
       expect(ApiConfiguration.baseUrl, 'http://127.0.0.1:3401/api/v1');
     });
 
-    test('derives websocket URL from the resolved API URL', () {
-      expect(ApiConfiguration.wsUrl, 'ws://127.0.0.1:3401/api/v1');
+    test('derives Socket.IO namespace URL from the resolved API URL', () {
+      expect(ApiConfiguration.wsUrl, 'http://127.0.0.1:3401/ws');
     });
   });
 }

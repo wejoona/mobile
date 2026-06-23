@@ -115,7 +115,7 @@ RUN_E2E=true API_URL=http://127.0.0.1:3401/api/v1 flutter test test/e2e/auth_e2e
 | `health_e2e_test.dart` | `/health`, `/health/time` |
 | `auth_e2e_test.dart` | `/auth/register`, `/auth/login`, `/auth/verify-otp`, `/auth/refresh`, `/auth/logout` |
 | `user_e2e_test.dart` | `/user/profile`, `/user/locale`, `/user/pin/*`, `/user/search`, `/user/limits` |
-| `wallet_e2e_test.dart` | `/wallet`, `/wallet/limits`, `/deposits/*`, `/transfers/*`, `/withdrawals/*`, `/wallet/pin/*` |
+| `wallet_e2e_test.dart` | `/wallet`, `/user/limits`, `/deposits/*`, `/transfers/*`, `/withdrawals/*` |
 | `transfers_e2e_test.dart` | `/transfers`, `/transfers/internal`, `/transfers/external` |
 | `contacts_e2e_test.dart` | `/contacts`, `/contacts/sync`, `/contacts/lookup`, `/contacts/invite` |
 | `payment_links_e2e_test.dart` | `/payment-links` CRUD + deactivate |

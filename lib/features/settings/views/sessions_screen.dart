@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -81,12 +81,17 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
                   SizedBox(height: AppSpacing.md),
               itemBuilder: (context, index) {
                 final session = state.sessions[index];
-                final isCurrentSession = session.id == state.currentSessionId;
+                final canRevokeSession =
+                    state.currentSessionResolved &&
+                    state.currentSessionId != null;
+                final isCurrentSession =
+                    canRevokeSession && session.id == state.currentSessionId;
                 return _buildSessionCard(
                   context,
                   l10n,
                   session,
                   isCurrentSession,
+                  canRevokeSession,
                 );
               },
             ),
@@ -102,6 +107,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
     AppLocalizations l10n,
     Session session,
     bool isCurrentSession,
+    bool canRevokeSession,
   ) {
     final dateFormat = DateFormat('MMM d, yyyy • HH:mm');
 
@@ -157,7 +163,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
                   ],
                 ),
               ),
-              if (!isCurrentSession)
+              if (canRevokeSession && !isCurrentSession)
                 IconButton(
                   icon: Icon(
                     Icons.close,
@@ -306,7 +312,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
             SizedBox(height: AppSpacing.lg),
             AppButton(
               label: l10n.auth_tapToUnlock,
-              onPressed: () => context.go(
+              onPressed: () => context.fsmGo(
                 '/session-locked?returnTo=${Uri.encodeComponent('/settings/sessions')}',
               ),
               variant: AppButtonVariant.primary,
@@ -488,6 +494,6 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
         backgroundColor: context.colors.success,
       ),
     );
-    context.go('/login');
+    context.fsmGo('/login');
   }
 }

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
 import 'package:usdc_wallet/features/savings_pots/widgets/emoji_picker.dart';
 import 'package:usdc_wallet/features/savings_pots/widgets/color_picker.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Screen for creating a new savings pot
 class CreatePotView extends ConsumerStatefulWidget {
@@ -119,7 +119,9 @@ class _CreatePotViewState extends ConsumerState<CreatePotView> {
     if (_selectedEmoji == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.savingsPots_emojiRequired),
+          content: Text(
+            AppLocalizations.of(context)!.savingsPots_emojiRequired,
+          ),
           backgroundColor: colors.error,
         ),
       );
@@ -129,7 +131,9 @@ class _CreatePotViewState extends ConsumerState<CreatePotView> {
     if (_selectedColor == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.savingsPots_colorRequired),
+          content: Text(
+            AppLocalizations.of(context)!.savingsPots_colorRequired,
+          ),
           backgroundColor: colors.error,
         ),
       );
@@ -140,18 +144,23 @@ class _CreatePotViewState extends ConsumerState<CreatePotView> {
         ? null
         : double.tryParse(_targetController.text);
 
-    final success = await ref.read(savingsPotsActionsProvider).createPot(
+    final success = await ref
+        .read(savingsPotsActionsProvider)
+        .createPot(
           name: _nameController.text,
           emoji: _selectedEmoji!,
-          color: '#${_selectedColor!.toARGB32().toRadixString(16).padLeft(8, '0')}',
+          color:
+              '#${_selectedColor!.toARGB32().toRadixString(16).padLeft(8, '0')}',
           targetAmount: targetAmount,
         );
 
     if (success && mounted) {
-      context.pop();
+      context.fsmPop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.savingsPots_createSuccess),
+          content: Text(
+            AppLocalizations.of(context)!.savingsPots_createSuccess,
+          ),
           backgroundColor: context.colors.success,
         ),
       );

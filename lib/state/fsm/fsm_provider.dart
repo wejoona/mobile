@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/utils/logger.dart';
-import 'package:usdc_wallet/state/wallet_state_machine.dart';
-import 'package:usdc_wallet/state/kyc_state_machine.dart';
-import 'package:usdc_wallet/state/fsm/fsm_base.dart';
-import 'package:usdc_wallet/state/fsm/auth_fsm.dart';
-import 'package:usdc_wallet/state/fsm/wallet_fsm.dart';
-import 'package:usdc_wallet/state/fsm/kyc_fsm.dart';
+import 'package:usdc_wallet/features/pin/models/pin_reset_route_context.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
+import 'package:usdc_wallet/state/fsm/app_route_contract.dart';
+import 'package:usdc_wallet/state/fsm/auth_fsm.dart';
+import 'package:usdc_wallet/state/fsm/fsm_base.dart';
+import 'package:usdc_wallet/state/fsm/kyc_fsm.dart';
 import 'package:usdc_wallet/state/fsm/session_fsm.dart';
+import 'package:usdc_wallet/state/fsm/wallet_fsm.dart';
+import 'package:usdc_wallet/state/kyc_state_machine.dart';
+import 'package:usdc_wallet/state/wallet_state_machine.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// ┌─────────────────────────────────────────────────────────────────┐
 /// │               FSM + RIVERPOD INTEGRATION                         │
@@ -184,12 +186,13 @@ class AppFsmNotifier extends FsmNotifier<AppState, AppEvent> {
     required String userId,
     required String accessToken,
     String? refreshToken,
+    String phone = '',
   }) {
     // Force FSM to authenticated state with active session
     state = state.copyWith(
       auth: AuthAuthenticated(
         userId: userId,
-        phone: '', // not available from storage
+        phone: phone,
         accessToken: accessToken,
         refreshToken: refreshToken,
       ),
@@ -199,6 +202,24 @@ class AppFsmNotifier extends FsmNotifier<AppState, AppEvent> {
         timeout: const Duration(minutes: 30),
       ),
     );
+  }
+
+  /// Complete a trusted post-factor login path, such as local PIN or
+  /// biometric refresh-token login. This is intentionally separate from
+  /// [onAuthVerified], which belongs to the OTP FSM transition.
+  void completeAuthenticatedSession({
+    required String userId,
+    required String accessToken,
+    String? refreshToken,
+    String phone = '',
+  }) {
+    restoreSession(
+      userId: userId,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      phone: phone,
+    );
+    hydrateAuthenticatedSession();
   }
 
   /// Hydrate authenticated resources after the session is unlocked.
@@ -348,6 +369,116 @@ class AppFsmNotifier extends FsmNotifier<AppState, AppEvent> {
     return AppGuards(state).canAccessRoute(route);
   }
 
+  /// Navigate through the app FSM guard layer.
+  void goToRoute(
+    BuildContext context,
+    String route, {
+    Object? extra,
+    AppNavigationEvent event = AppNavigationEvent.routeBlocked,
+  }) {
+    _logger.debug('FSM navigation go: ${event.name} -> $route');
+    final targetRoute = _guardedRoute(route);
+    context.go(targetRoute, extra: extra);
+  }
+
+  /// Push a route through the app FSM guard layer.
+  Future<T?> pushRoute<T>(
+    BuildContext context,
+    String route, {
+    Object? extra,
+    AppNavigationEvent event = AppNavigationEvent.routeBlocked,
+  }) {
+    _logger.debug('FSM navigation push: ${event.name} -> $route');
+    final targetRoute = _guardedRoute(route);
+    if (targetRoute != route) {
+      context.go(targetRoute);
+      return Future<T?>.value();
+    }
+    return context.push<T>(route, extra: extra);
+  }
+
+  /// Pop through the app FSM guard layer, with a deterministic fallback.
+  void popRoute<T>(
+    BuildContext context, {
+    T? result,
+    String fallbackRoute = '/home',
+    AppNavigationEvent event = AppNavigationEvent.routeBlocked,
+  }) {
+    _logger.debug('FSM navigation pop: ${event.name}');
+    if (context.canPop()) {
+      context.pop<T>(result);
+      return;
+    }
+    goToRoute(context, fallbackRoute, event: event);
+  }
+
+  /// Safe pop with no result, kept separate for readability at call sites.
+  void safePopRoute(
+    BuildContext context, {
+    String fallbackRoute = '/home',
+    AppNavigationEvent event = AppNavigationEvent.routeBlocked,
+  }) {
+    popRoute<void>(context, fallbackRoute: fallbackRoute, event: event);
+  }
+
+  /// Enter the authenticated app and clear auth/security pages below it.
+  void enterAuthenticatedApp(BuildContext context, {String route = '/home'}) {
+    goToRoute(context, route, event: AppNavigationEvent.pinAccepted);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (context.mounted) {
+        goToRoute(context, route, event: AppNavigationEvent.pinAccepted);
+      }
+    });
+  }
+
+  void openLogin(BuildContext context) {
+    goToRoute(context, '/login', event: AppNavigationEvent.loginSelected);
+  }
+
+  void openSignup(BuildContext context) {
+    goToRoute(context, '/signup', event: AppNavigationEvent.signupSelected);
+  }
+
+  void openLoginOtp(BuildContext context) {
+    goToRoute(context, '/login/otp', event: AppNavigationEvent.otpRequested);
+  }
+
+  void openLoginPin(BuildContext context) {
+    goToRoute(context, '/login/pin', event: AppNavigationEvent.pinRequired);
+  }
+
+  void openPinSetup(BuildContext context) {
+    goToRoute(context, '/setup/set-pin', event: AppNavigationEvent.pinRequired);
+  }
+
+  Future<T?> openPinReset<T>(BuildContext context, {Object? extra}) {
+    final route = extra is PinResetRouteContext
+        ? extra.routePath
+        : '/pin/reset';
+    goToRoute(
+      context,
+      route,
+      extra: extra,
+      event: AppNavigationEvent.forgotPinSelected,
+    );
+    return Future<T?>.value();
+  }
+
+  void openPinLocked(BuildContext context) {
+    goToRoute(context, '/pin/locked', event: AppNavigationEvent.routeBlocked);
+  }
+
+  String _guardedRoute(String route) {
+    final result = canAccessRoute(route);
+    if (result is GuardDenied) {
+      _logger.debug(
+        'FSM navigation guard denied: $route -> ${result.redirectTo} (${result.reason})',
+      );
+      return result.redirectTo;
+    }
+    return route;
+  }
+
   /// Get redirect for current state (for router)
   String? getRedirect(String currentRoute) {
     final targetScreen = state.currentScreen;
@@ -355,6 +486,71 @@ class AppFsmNotifier extends FsmNotifier<AppState, AppEvent> {
       return targetScreen.route;
     }
     return null;
+  }
+}
+
+/// BuildContext convenience facade for FSM-owned navigation.
+extension AppFsmNavigationContext on BuildContext {
+  AppFsmNotifier get _appFsmNotifier => ProviderScope.containerOf(
+    this,
+    listen: false,
+  ).read(appFsmProvider.notifier);
+
+  void fsmGo(
+    String route, {
+    Object? extra,
+    AppNavigationEvent event = AppNavigationEvent.routeBlocked,
+  }) {
+    _appFsmNotifier.goToRoute(this, route, extra: extra, event: event);
+  }
+
+  Future<T?> fsmPush<T>(
+    String route, {
+    Object? extra,
+    AppNavigationEvent event = AppNavigationEvent.routeBlocked,
+  }) {
+    return _appFsmNotifier.pushRoute<T>(
+      this,
+      route,
+      extra: extra,
+      event: event,
+    );
+  }
+
+  void fsmPop<T>([T? result]) {
+    _appFsmNotifier.popRoute<T>(this, result: result);
+  }
+
+  void fsmPopWithResult<T>(
+    T result, {
+    String fallbackRoute = '/home',
+    AppNavigationEvent event = AppNavigationEvent.routeBlocked,
+  }) {
+    _appFsmNotifier.popRoute<T>(
+      this,
+      result: result,
+      fallbackRoute: fallbackRoute,
+      event: event,
+    );
+  }
+
+  void fsmSafePop({
+    String fallbackRoute = '/home',
+    AppNavigationEvent event = AppNavigationEvent.routeBlocked,
+  }) {
+    _appFsmNotifier.safePopRoute(
+      this,
+      fallbackRoute: fallbackRoute,
+      event: event,
+    );
+  }
+
+  void fsmEnterAuthenticatedApp({String route = '/home'}) {
+    _appFsmNotifier.enterAuthenticatedApp(this, route: route);
+  }
+
+  Future<T?> fsmOpenPinReset<T>({Object? extra}) {
+    return _appFsmNotifier.openPinReset<T>(this, extra: extra);
   }
 }
 

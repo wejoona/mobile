@@ -1,14 +1,62 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'dart:io';
 import 'package:intl/intl.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/kyc/image_quality_checker.dart';
 
 class KycService {
+  KycService(this._dio);
+
   final Dio _dio;
 
-  KycService(this._dio);
+  static const List<String> kycRequiredConsentTypes = [
+    'kyc_data_processing',
+    'kyc_data_sharing',
+    'privacy_policy',
+    'terms_of_service',
+    'aml_screening',
+  ];
+
+  Future<bool> hasRequiredKycConsents() async {
+    final response = await _dio.get('/consent/status');
+    final data = apiResponsePayload(response.data);
+    final consents = data['consents'];
+    if (data['kycReady'] == true) {
+      return true;
+    }
+    if (consents is! List) {
+      return false;
+    }
+
+    final granted = <String>{};
+    for (final item in consents) {
+      if (item is Map && item['granted'] == true) {
+        final consentType = item['consentType']?.toString();
+        if (consentType != null) {
+          granted.add(consentType);
+        }
+      }
+    }
+
+    return kycRequiredConsentTypes.every(granted.contains);
+  }
+
+  Future<void> grantRequiredKycConsents({
+    String version = 'korido-mobile-kyc-v1',
+  }) async {
+    await Future.wait(
+      kycRequiredConsentTypes.map(
+        (consentType) => _dio.post(
+          '/consent/grant',
+          data: {'consentType': consentType, 'version': version},
+        ),
+      ),
+    );
+  }
 
   /// Submit KYC following the two-step backend flow:
   /// 1. Upload documents to /kyc/documents → get S3 keys
@@ -154,11 +202,10 @@ class KycService {
     }
 
     // Upload to /kyc/documents
-    final response = await _dio.post('/kyc/documents', data: formData);
+    final response = await _dio.post(ApiEndpoints.kycUpload, data: formData);
 
-    // Extract S3 keys from response
-    // ignore: avoid_dynamic_calls
-    final documents = response.data['documents'] as Map<String, dynamic>;
+    final data = apiResponsePayload(response.data);
+    final documents = data['documents'] as Map<String, dynamic>;
     return {
       // ignore: avoid_dynamic_calls
       'idFront': documents['idFront']['key'] as String,
@@ -185,7 +232,7 @@ class KycService {
     final dateFormat = DateFormat('yyyy-MM-dd');
 
     await _dio.post(
-      '/kyc/submit',
+      ApiEndpoints.kycSubmit,
       data: {
         'firstName': firstName,
         'lastName': lastName,
@@ -201,18 +248,38 @@ class KycService {
     );
   }
 
-  Future<KycStatusResponse> getKycStatus() async {
-    final response = await _dio.get('/kyc/status');
-    final data = response.data as Map<String, dynamic>;
-    // ignore: avoid_dynamic_calls
+  Future<KycStatusResponse> getKycStatus({bool forceRefresh = false}) async {
+    final response = await _dio.get(
+      ApiEndpoints.kycStatus,
+      options: forceRefresh ? Options(extra: const {'skipCache': true}) : null,
+    );
+    final data = apiResponsePayload(response.data);
     final kycStatus = data['status'] as String? ?? 'pending';
-    // ignore: avoid_dynamic_calls
     final rejectionReason = data['rejectionReason'] as String?;
 
     return KycStatusResponse.fromJson(
       data,
       fallbackStatus: kycStatus,
     ).copyWith(rejectionReason: rejectionReason);
+  }
+
+  Future<KycManualReviewResponse> routeToManualReview({
+    required String reason,
+    required String featureReason,
+    String? provider,
+    Map<String, dynamic>? metadata,
+  }) async {
+    final response = await _dio.post(
+      ApiEndpoints.kycManualReview,
+      data: {
+        'reason': reason,
+        'featureReason': featureReason,
+        if (provider != null) 'provider': provider,
+        if (metadata != null) 'metadata': metadata,
+      },
+    );
+
+    return KycManualReviewResponse.fromJson(apiResponsePayload(response.data));
   }
 
   Future<void> submitAddressVerification({
@@ -243,7 +310,7 @@ class KycService {
       ),
     );
 
-    await _dio.post('/kyc/documents', data: formData);
+    await _dio.post(ApiEndpoints.kycUpload, data: formData);
   }
 
   // ==========================================
@@ -254,7 +321,7 @@ class KycService {
   /// Returns sessionToken + challenge info
   Future<LivenessSessionResponse> createLivenessSession() async {
     final response = await _dio.post(
-      '/kyc/liveness/session',
+      ApiEndpoints.kycLivenessSession,
       data: {
         'capabilities': {
           'supportedCaptureModes': ['photo'],
@@ -266,9 +333,7 @@ class KycService {
         },
       },
     );
-    return LivenessSessionResponse.fromJson(
-      response.data as Map<String, dynamic>,
-    );
+    return LivenessSessionResponse.fromJson(apiResponsePayload(response.data));
   }
 
   /// Submit liveness check with video + selfie S3 keys
@@ -285,8 +350,8 @@ class KycService {
 
   /// Get liveness verification status for current user
   Future<LivenessSubmitResponse?> getLivenessStatus() async {
-    final response = await _dio.get('/kyc/liveness/status');
-    final data = response.data as Map<String, dynamic>;
+    final response = await _dio.get(ApiEndpoints.kycLivenessStatus);
+    final data = apiResponsePayload(response.data);
     if (data['status'] == 'NOT_STARTED') return null;
     return LivenessSubmitResponse.fromJson(data);
   }
@@ -298,24 +363,20 @@ class KycService {
     String? backImageKey,
   }) async {
     final response = await _dio.post(
-      '/kyc/document/submit',
+      ApiEndpoints.kycDocumentSubmit,
       data: {
         'docType': docType,
         'frontImageKey': frontImageKey,
         if (backImageKey != null) 'backImageKey': backImageKey,
       },
     );
-    return DocumentSubmitResponse.fromJson(
-      response.data as Map<String, dynamic>,
-    );
+    return DocumentSubmitResponse.fromJson(apiResponsePayload(response.data));
   }
 
   /// Get full KYC verification status (doc + liveness + overall)
   Future<FullVerificationStatus> getVerificationStatus() async {
-    final response = await _dio.get('/kyc/verification/status');
-    return FullVerificationStatus.fromJson(
-      response.data as Map<String, dynamic>,
-    );
+    final response = await _dio.get(ApiEndpoints.kycVerificationStatus);
+    return FullVerificationStatus.fromJson(apiResponsePayload(response.data));
   }
 
   /// Upload a file and return its S3 key
@@ -353,8 +414,8 @@ class KycService {
       );
     }
 
-    final response = await _dio.post('/kyc/documents', data: formData);
-    final responseData = response.data as Map<String, dynamic>;
+    final response = await _dio.post(ApiEndpoints.kycUpload, data: formData);
+    final responseData = apiResponsePayload(response.data);
     final documents = responseData['documents'] as Map<String, dynamic>;
     final fieldData = documents[documentField] as Map<String, dynamic>;
     return fieldData['key'] as String;
@@ -423,8 +484,8 @@ class KycService {
     final formData = FormData.fromMap({
       documentField: await MultipartFile.fromFile(filePath),
     });
-    final response = await _dio.post('/kyc/documents', data: formData);
-    return response.data as Map<String, dynamic>;
+    final response = await _dio.post(ApiEndpoints.kycUpload, data: formData);
+    return apiResponsePayload(response.data);
   }
 
   String _documentFieldForType(String type) {
@@ -465,7 +526,34 @@ class KycService {
       selfiePath: selfiePath,
       idNumber: idNumber,
     );
-    return getKycStatus();
+    return getKycStatus(forceRefresh: true);
+  }
+}
+
+class KycManualReviewResponse {
+  final String id;
+  final KycStatus status;
+  final String message;
+  final String? slaLabel;
+
+  const KycManualReviewResponse({
+    required this.id,
+    required this.status,
+    required this.message,
+    this.slaLabel,
+  });
+
+  factory KycManualReviewResponse.fromJson(Map<String, dynamic> json) {
+    final rawStatus = json['status'] as String? ?? 'manual_review';
+    final reviewSla = json['reviewSla'];
+    return KycManualReviewResponse(
+      id: json['id']?.toString() ?? '',
+      status: KycStatus.fromString(rawStatus),
+      message:
+          json['message'] as String? ??
+          'KYC submitted. Additional review required.',
+      slaLabel: reviewSla is Map ? reviewSla['label']?.toString() : null,
+    );
   }
 }
 

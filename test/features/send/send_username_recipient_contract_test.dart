@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 import 'package:usdc_wallet/features/send/models/transfer_request.dart';
+import 'package:usdc_wallet/services/api/providers/transfers_api.dart';
 import 'package:usdc_wallet/services/contacts/contacts_service.dart';
 import 'package:usdc_wallet/services/transfers/transfers_service.dart';
 
@@ -25,6 +27,44 @@ void main() {
       expect(request.toJson().containsKey('recipientPhone'), isFalse);
     },
   );
+
+  test(
+    'transfer request keeps exactly one recipient identifier by stability order',
+    () {
+      const request = TransferRequest(
+        recipientId: ' 123e4567-e89b-12d3-a456-426614174003 ',
+        recipientPhone: '+225+2250748805663',
+        recipientUsername: '@awa_k',
+        amount: 12.5,
+      );
+
+      expect(request.toJson(), {
+        'recipientId': '123e4567-e89b-12d3-a456-426614174003',
+        'amount': 12.5,
+      });
+    },
+  );
+
+  test('transfer request normalizes phone-only recipients to E.164', () {
+    const request = TransferRequest(
+      recipientPhone: '+225+2250748805663',
+      amount: 12.5,
+    );
+
+    expect(request.toJson(), {'toPhone': '+2250748805663', 'amount': 12.5});
+  });
+
+  test('transaction headers carry completed step-up proof token', () {
+    final headers = transactionHeaders(
+      pinToken: 'pin-token',
+      idempotencyKey: 'idem-123',
+      stepUpToken: 'step-up-123',
+    );
+
+    expect(headers['X-Pin-Token'], 'pin-token');
+    expect(headers['X-Idempotency-Key'], 'idem-123');
+    expect(headers['X-Step-Up-Token'], 'step-up-123');
+  });
 
   test('Korido lookup keeps username when phone is masked', () async {
     final dio = MockDio();
@@ -78,6 +118,107 @@ void main() {
       final body = request.data as Map<String, dynamic>;
       expect(body['recipientUsername'], 'awa_k');
       expect(body.containsKey('toPhone'), isFalse);
+    },
+  );
+
+  test(
+    'internal transfer normalizes malformed phone before backend submit',
+    () async {
+      final dio = MockDio();
+      dio.queueResponse({
+        'transactionId': 'tx-phone',
+        'status': 'completed',
+        'amount': 10,
+        'currency': 'USDC',
+        'supportReference': 'tx-phone',
+      });
+
+      final service = TransfersService(dio);
+      await service.createInternalTransfer(
+        recipientPhone: '+225+2250748805663',
+        amount: 10,
+        pinToken: 'pin-token',
+        idempotencyKey: 'idem-phone',
+      );
+
+      final request = dio.requestHistory.single;
+      expect(request.path, '/wallet/transfer/internal');
+      final body = request.data as Map<String, dynamic>;
+      expect(body['toPhone'], '+2250748805663');
+      expect(body.containsKey('recipientPhone'), isFalse);
+    },
+  );
+
+  test('internal transfer forwards completed step-up token header', () async {
+    final dio = MockDio();
+    dio.queueResponse({
+      'transactionId': 'tx-step-up',
+      'status': 'completed',
+      'amount': 10,
+      'currency': 'USDC',
+      'supportReference': 'tx-step-up',
+    });
+
+    final service = TransfersService(dio);
+    await service.createInternalTransfer(
+      recipientUsername: '@awa_k',
+      amount: 10,
+      pinToken: 'pin-token',
+      idempotencyKey: 'idem-step-up',
+      stepUpToken: 'challenge-token-123',
+    );
+
+    final request = dio.requestHistory.single;
+    expect(request.path, '/wallet/transfer/internal');
+    expect(request.headers['X-Pin-Token'], 'pin-token');
+    expect(request.headers['X-Idempotency-Key'], 'idem-step-up');
+    expect(request.headers['X-Step-Up-Token'], 'challenge-token-123');
+  });
+
+  test('transfers api adapter canonicalizes legacy recipient maps', () async {
+    final dio = MockDio();
+    dio.queueResponse({'transactionId': 'tx-api', 'status': 'completed'});
+
+    await TransfersApi(dio).sendInternal(
+      {
+        'recipientId': ' 123e4567-e89b-12d3-a456-426614174003 ',
+        'recipientPhone': '+225+2250748805663',
+        'recipientUsername': '@awa_k',
+        'amount': 10,
+      },
+      pinToken: 'pin-token',
+      idempotencyKey: 'idem-legacy-map',
+    );
+
+    final request = dio.requestHistory.single;
+    expect(request.path, '/wallet/transfer/internal');
+    expect(request.data, {
+      'amount': 10,
+      'recipientId': '123e4567-e89b-12d3-a456-426614174003',
+    });
+  });
+
+  test(
+    'transfers api adapter forwards completed step-up token header',
+    () async {
+      final dio = MockDio();
+      dio.queueResponse({
+        'transactionId': 'tx-api-step-up',
+        'status': 'completed',
+      });
+
+      await TransfersApi(dio).sendInternal(
+        {'recipientUsername': '@awa_k', 'amount': 10},
+        pinToken: 'pin-token',
+        idempotencyKey: 'idem-api-step-up',
+        stepUpToken: 'api-step-up-token',
+      );
+
+      final request = dio.requestHistory.single;
+      expect(request.path, '/wallet/transfer/internal');
+      expect(request.headers['X-Pin-Token'], 'pin-token');
+      expect(request.headers['X-Idempotency-Key'], 'idem-api-step-up');
+      expect(request.headers['X-Step-Up-Token'], 'api-step-up-token');
     },
   );
 
@@ -161,6 +302,18 @@ void main() {
     expect(contactsScreen, contains("'recipientUsername': contact.username"));
     expect(picker, contains('contact.canSendInKorido'));
     expect(route, contains("extra['username'] ?? extra['recipientUsername']"));
+    expect(
+      route,
+      contains("extra['recipient']"),
+      reason:
+          'send route must accept the legacy deep-link recipient key as a phone intent',
+    );
+    expect(
+      route,
+      contains("extra['to']"),
+      reason:
+          'send route must accept deep-link to aliases without dropping recipient intent',
+    );
     expect(recipient, contains('setKnownKoridoRecipient'));
     expect(recipient, contains('_hasUsernameRecipient'));
     expect(recipient, contains('_hasUserIdRecipient'));

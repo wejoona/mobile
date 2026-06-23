@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// App-level preferences (non-sensitive, stored in SharedPreferences).
 class AppPreferences {
   final String locale;
-  final bool isDarkMode;
   final bool showBalance;
   final bool hapticFeedback;
   final bool pushNotifications;
@@ -14,7 +13,6 @@ class AppPreferences {
 
   const AppPreferences({
     this.locale = 'fr',
-    this.isDarkMode = false,
     this.showBalance = true,
     this.hapticFeedback = true,
     this.pushNotifications = true,
@@ -25,7 +23,6 @@ class AppPreferences {
 
   AppPreferences copyWith({
     String? locale,
-    bool? isDarkMode,
     bool? showBalance,
     bool? hapticFeedback,
     bool? pushNotifications,
@@ -34,7 +31,6 @@ class AppPreferences {
     String? defaultCurrency,
   }) => AppPreferences(
     locale: locale ?? this.locale,
-    isDarkMode: isDarkMode ?? this.isDarkMode,
     showBalance: showBalance ?? this.showBalance,
     hapticFeedback: hapticFeedback ?? this.hapticFeedback,
     pushNotifications: pushNotifications ?? this.pushNotifications,
@@ -58,7 +54,6 @@ class AppPreferencesNotifier extends Notifier<AppPreferences> {
     final prefs = await SharedPreferences.getInstance();
     state = AppPreferences(
       locale: prefs.getString('${_prefix}locale') ?? 'fr',
-      isDarkMode: prefs.getBool('${_prefix}darkMode') ?? false,
       showBalance: prefs.getBool('${_prefix}showBalance') ?? true,
       hapticFeedback: prefs.getBool('${_prefix}haptic') ?? true,
       pushNotifications: prefs.getBool('${_prefix}push') ?? true,
@@ -71,7 +66,6 @@ class AppPreferencesNotifier extends Notifier<AppPreferences> {
   Future<void> _save() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('${_prefix}locale', state.locale);
-    await prefs.setBool('${_prefix}darkMode', state.isDarkMode);
     await prefs.setBool('${_prefix}showBalance', state.showBalance);
     await prefs.setBool('${_prefix}haptic', state.hapticFeedback);
     await prefs.setBool('${_prefix}push', state.pushNotifications);
@@ -82,11 +76,6 @@ class AppPreferencesNotifier extends Notifier<AppPreferences> {
 
   Future<void> setLocale(String locale) async {
     state = state.copyWith(locale: locale);
-    await _save();
-  }
-
-  Future<void> toggleDarkMode() async {
-    state = state.copyWith(isDarkMode: !state.isDarkMode);
     await _save();
   }
 
@@ -111,4 +100,7 @@ class AppPreferencesNotifier extends Notifier<AppPreferences> {
   }
 }
 
-final appPreferencesProvider = NotifierProvider<AppPreferencesNotifier, AppPreferences>(AppPreferencesNotifier.new);
+final appPreferencesProvider =
+    NotifierProvider<AppPreferencesNotifier, AppPreferences>(
+      AppPreferencesNotifier.new,
+    );

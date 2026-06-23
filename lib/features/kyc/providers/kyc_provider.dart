@@ -1,13 +1,20 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/kyc_profile.dart';
 import 'package:usdc_wallet/features/kyc/models/document_type.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_document.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_tier.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
+import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart'
+    as notification_feed;
+import 'package:usdc_wallet/services/kyc/kyc_service.dart';
 import 'package:usdc_wallet/services/limits/limits_service.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/state/kyc_state_machine.dart' as kyc_machine;
+import 'package:usdc_wallet/state/user_state_machine.dart';
 
 /// KYC profile provider — wired to KycService.
 final kycProfileProvider = FutureProvider<KycProfile>((ref) async {
@@ -16,7 +23,7 @@ final kycProfileProvider = FutureProvider<KycProfile>((ref) async {
   final timer = Timer(const Duration(minutes: 5), () => link.close());
   ref.onDispose(() => timer.cancel());
 
-  final data = await service.getKycStatus();
+  final data = await service.getKycStatus(forceRefresh: true);
   TransactionLimits? limits;
   try {
     limits = await ref.read(limitsServiceProvider).getLimits();
@@ -80,6 +87,10 @@ class KycFlowState {
   final String? rejectionReason;
   final KycTier? targetTier;
   final Map<String, String> personalInfo;
+  final String? livenessProofId;
+  final bool kycConsentAccepted;
+  final String? returnIntent;
+  final String? returnTo;
 
   const KycFlowState({
     this.isLoading = false,
@@ -91,6 +102,10 @@ class KycFlowState {
     this.rejectionReason,
     this.targetTier,
     this.personalInfo = const {},
+    this.livenessProofId,
+    this.kycConsentAccepted = false,
+    this.returnIntent,
+    this.returnTo,
   });
 
   bool get hasRequiredPersonalInfo {
@@ -106,11 +121,21 @@ class KycFlowState {
     );
   }
 
-  bool get canSubmit =>
+  bool get hasIdentityEvidenceForLiveness =>
       selectedDocumentType != null &&
       capturedDocuments.isNotEmpty &&
       selfiePath != null &&
       hasRequiredPersonalInfo;
+
+  bool get hasCompletedLiveness => livenessProofId?.trim().isNotEmpty ?? false;
+
+  bool get canEnterReview =>
+      hasIdentityEvidenceForLiveness && hasCompletedLiveness;
+
+  bool get canSubmitForManualReview =>
+      hasIdentityEvidenceForLiveness && kycConsentAccepted;
+
+  bool get canSubmit => canEnterReview && kycConsentAccepted;
 
   bool get canStartVerification => status.canSubmit;
 
@@ -126,16 +151,32 @@ class KycFlowState {
     String? rejectionReason,
     KycTier? targetTier,
     Map<String, String>? personalInfo,
+    String? livenessProofId,
+    bool clearLivenessProof = false,
+    bool clearVerificationStatus = false,
+    bool? kycConsentAccepted,
+    String? returnIntent,
+    String? returnTo,
   }) => KycFlowState(
     isLoading: isLoading ?? this.isLoading,
     error: error,
     selectedDocumentType: selectedDocumentType ?? this.selectedDocumentType,
     capturedDocuments: capturedDocuments ?? this.capturedDocuments,
     selfiePath: selfiePath ?? this.selfiePath,
-    verificationStatus: verificationStatus ?? this.verificationStatus,
-    rejectionReason: rejectionReason ?? this.rejectionReason,
+    verificationStatus: clearVerificationStatus
+        ? null
+        : verificationStatus ?? this.verificationStatus,
+    rejectionReason: clearVerificationStatus
+        ? null
+        : rejectionReason ?? this.rejectionReason,
     targetTier: targetTier ?? this.targetTier,
     personalInfo: personalInfo ?? this.personalInfo,
+    livenessProofId: clearLivenessProof
+        ? null
+        : livenessProofId ?? this.livenessProofId,
+    kycConsentAccepted: kycConsentAccepted ?? this.kycConsentAccepted,
+    returnIntent: returnIntent ?? this.returnIntent,
+    returnTo: returnTo ?? this.returnTo,
   );
 }
 
@@ -149,20 +190,32 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
   }
 
   void selectDocumentType(DocumentType type) {
-    state = state.copyWith(selectedDocumentType: type);
+    state = state.copyWith(
+      selectedDocumentType: type,
+      clearLivenessProof: true,
+    );
   }
 
   void setPersonalInfo(Map<String, String> info) {
-    state = state.copyWith(personalInfo: info);
+    state = state.copyWith(personalInfo: info, clearLivenessProof: true);
   }
 
   void setSelfie(String path) {
-    state = state.copyWith(selfiePath: path);
+    state = state.copyWith(selfiePath: path, clearLivenessProof: true);
+  }
+
+  void setLivenessProof(String proofId) {
+    state = state.copyWith(livenessProofId: proofId);
+  }
+
+  void setKycConsentAccepted({required bool accepted}) {
+    state = state.copyWith(kycConsentAccepted: accepted, error: null);
   }
 
   void addDocument(KycDocument document) {
     state = state.copyWith(
       capturedDocuments: [...state.capturedDocuments, document],
+      clearLivenessProof: true,
     );
   }
 
@@ -170,32 +223,49 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
     state = const KycFlowState();
   }
 
+  void startFlowForIntent({String? intent, String? returnTo}) {
+    state = KycFlowState(returnIntent: intent, returnTo: returnTo);
+  }
+
   Future<void> loadVerificationStatus() async {
-    state = state.copyWith(isLoading: true);
+    final previousStatus = state.verificationStatus;
+    ref.invalidate(kycProfileProvider);
+    state = state.copyWith(isLoading: true, clearVerificationStatus: true);
     try {
       final service = ref.read(kycServiceProvider);
-      final data = await service.getKycStatus();
+      final data = await service.getKycStatus(forceRefresh: true);
       if (!ref.mounted) return;
       final profile = KycProfile.fromJson({
-        'status': data.status.name,
+        'status': data.status.toApiString(),
         'rejectionReason': data.rejectionReason,
       });
+      ref
+          .read(kyc_machine.kycStateMachineProvider.notifier)
+          .updateFromAuthResponse(data.status.toApiString());
+      ref
+          .read(userStateMachineProvider.notifier)
+          .updateProfile(kycStatus: data.status);
       state = state.copyWith(
         isLoading: false,
         verificationStatus: _mapStatus(profile),
         rejectionReason: data.rejectionReason,
       );
+      _refreshNotificationFeedIfStatusChanged(previousStatus, data.status);
     } catch (e) {
       if (!ref.mounted) return;
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: _friendlyKycError(e));
     }
   }
 
-  Future<void> submitKyc() async {
-    if (!state.canSubmit) {
+  Future<void> submitKyc({bool requireLivenessProof = true}) async {
+    final canSubmit = requireLivenessProof
+        ? state.canSubmit
+        : state.canSubmitForManualReview;
+    if (!canSubmit) {
       state = state.copyWith(
-        error:
-            'Complete your personal information, ID document, and selfie before submitting.',
+        error: requireLivenessProof
+            ? 'Complete your personal information, ID document, selfie, liveness check, and KYC consent before submitting.'
+            : 'Complete your personal information, ID document, selfie, and KYC consent before manual review.',
       );
       return;
     }
@@ -205,6 +275,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
     analytics.trackKycStarted();
     try {
       final service = ref.read(kycServiceProvider);
+      await service.grantRequiredKycConsents();
       // Include documents and selfie — not just personalInfo
       final documentPaths = state.capturedDocuments
           .map((doc) => doc.imagePath)
@@ -226,11 +297,11 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
         idNumber: state.personalInfo['documentNumber'],
       );
       if (!ref.mounted) return;
-      state = state.copyWith(isLoading: false);
+      await _refreshBackendStatusAfterSubmission(service);
       analytics.trackKycCompleted(success: true);
     } catch (e) {
       if (!ref.mounted) return;
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: _friendlyKycError(e));
       analytics.trackKycCompleted(success: false);
     }
   }
@@ -250,10 +321,10 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
         documentPath: address['documentPath'] ?? '',
       );
       if (!ref.mounted) return;
-      state = state.copyWith(isLoading: false);
+      await _refreshBackendStatusAfterSubmission(service);
     } catch (e) {
       if (!ref.mounted) return;
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: _friendlyKycError(e));
     }
   }
 
@@ -270,10 +341,10 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
         supportingDocuments: paths,
       );
       if (!ref.mounted) return;
-      state = state.copyWith(isLoading: false);
+      await _refreshBackendStatusAfterSubmission(service);
     } catch (e) {
       if (!ref.mounted) return;
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: _friendlyKycError(e));
     }
   }
 
@@ -286,7 +357,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
       state = state.copyWith(isLoading: false);
     } catch (e) {
       if (!ref.mounted) return;
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: _friendlyKycError(e));
     }
   }
 
@@ -303,6 +374,49 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
       return KycStatus.documentsPending;
     return profile.status;
   }
+
+  Future<void> _refreshBackendStatusAfterSubmission(KycService service) async {
+    final previousStatus = state.verificationStatus;
+    final data = await service.getKycStatus(forceRefresh: true);
+    if (!ref.mounted) return;
+
+    state = state.copyWith(
+      isLoading: false,
+      verificationStatus: data.status,
+      rejectionReason: data.rejectionReason,
+    );
+    _refreshNotificationFeedIfStatusChanged(previousStatus, data.status);
+    ref
+        .read(kyc_machine.kycStateMachineProvider.notifier)
+        .updateFromAuthResponse(data.status.toApiString());
+  }
+
+  void _refreshNotificationFeedIfStatusChanged(
+    KycStatus? previousStatus,
+    KycStatus latestStatus,
+  ) {
+    if (previousStatus == latestStatus) {
+      return;
+    }
+
+    ref
+      ..invalidate(notification_feed.notificationsProvider)
+      ..invalidate(notification_feed.unreadNotificationCountProvider);
+  }
+}
+
+String _friendlyKycError(Object error) {
+  if (error is DioException) {
+    return ApiException.fromDioError(error).message;
+  }
+  if (error is ApiException) {
+    return error.message;
+  }
+  if (error is ArgumentError) {
+    return error.message?.toString() ??
+        'Please complete the required verification details.';
+  }
+  return 'Verification could not be submitted. Please try again.';
 }
 
 /// Main KYC flow provider.

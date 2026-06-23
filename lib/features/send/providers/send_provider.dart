@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/config/countries.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
+import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
+import 'package:usdc_wallet/features/limits/utils/money_flow_limit_errors.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/contacts/contacts_service.dart';
+import 'package:usdc_wallet/services/limits/limits_service.dart';
 import 'package:usdc_wallet/services/transfers/transfers_service.dart';
 import 'package:usdc_wallet/services/wallet/wallet_service.dart';
 import 'package:usdc_wallet/services/app_review/app_review_service.dart';
@@ -16,6 +19,7 @@ import 'package:usdc_wallet/features/send/models/transfer_request.dart';
 import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Send Money State
 class SendMoneyState {
@@ -27,9 +31,13 @@ class SendMoneyState {
   final TransferResult? result;
   final List<RecentRecipient> recentRecipients;
   final double availableBalance;
+  final bool isBalanceLoading;
+  final bool hasVerifiedBalance;
+  final String? balanceError;
   final double fee;
   final String? pinToken;
   final String? idempotencyKey;
+  final String? stepUpChallengeToken;
   final String? pendingTransferId;
   final bool isSubmitting;
 
@@ -42,9 +50,13 @@ class SendMoneyState {
     this.result,
     this.recentRecipients = const [],
     this.availableBalance = 0.0,
+    this.isBalanceLoading = false,
+    this.hasVerifiedBalance = false,
+    this.balanceError,
     this.fee = 0.0,
     this.pinToken,
     this.idempotencyKey,
+    this.stepUpChallengeToken,
     this.pendingTransferId,
     this.isSubmitting = false,
   });
@@ -65,9 +77,15 @@ class SendMoneyState {
     TransferResult? result,
     List<RecentRecipient>? recentRecipients,
     double? availableBalance,
+    bool? isBalanceLoading,
+    bool? hasVerifiedBalance,
+    String? balanceError,
+    bool clearBalanceError = false,
     double? fee,
     String? pinToken,
     String? idempotencyKey,
+    String? stepUpChallengeToken,
+    bool clearStepUpChallengeToken = false,
     String? pendingTransferId,
     bool? isSubmitting,
   }) {
@@ -80,9 +98,17 @@ class SendMoneyState {
       result: result ?? this.result,
       recentRecipients: recentRecipients ?? this.recentRecipients,
       availableBalance: availableBalance ?? this.availableBalance,
+      isBalanceLoading: isBalanceLoading ?? this.isBalanceLoading,
+      hasVerifiedBalance: hasVerifiedBalance ?? this.hasVerifiedBalance,
+      balanceError: clearBalanceError
+          ? null
+          : balanceError ?? this.balanceError,
       fee: fee ?? this.fee,
       pinToken: pinToken ?? this.pinToken,
       idempotencyKey: idempotencyKey ?? this.idempotencyKey,
+      stepUpChallengeToken: clearStepUpChallengeToken
+          ? null
+          : stepUpChallengeToken ?? this.stepUpChallengeToken,
       pendingTransferId: pendingTransferId ?? this.pendingTransferId,
       isSubmitting: isSubmitting ?? this.isSubmitting,
     );
@@ -100,12 +126,26 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
 
   /// Load available balance
   Future<void> loadBalance() async {
+    state = state.copyWith(
+      isBalanceLoading: true,
+      hasVerifiedBalance: false,
+      clearBalanceError: true,
+    );
     try {
       final walletService = ref.read(walletServiceProvider);
       final balance = await walletService.getBalance();
-      state = state.copyWith(availableBalance: balance.availableBalance);
+      state = state.copyWith(
+        isBalanceLoading: false,
+        hasVerifiedBalance: true,
+        availableBalance: balance.availableBalance,
+        clearBalanceError: true,
+      );
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(
+        isBalanceLoading: false,
+        hasVerifiedBalance: false,
+        balanceError: e.toString(),
+      );
     }
   }
 
@@ -131,7 +171,12 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
   /// Validate and set recipient
   /// Uses POST /contacts/sync with hashed phone to check if Korido user
   Future<void> setRecipient(String phoneNumber, {String? name}) async {
-    state = state.copyWith(isLoading: true, error: null, clearRecipient: true);
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      clearRecipient: true,
+      clearStepUpChallengeToken: true,
+    );
     try {
       if (_isCurrentUserPhone(phoneNumber)) {
         state = state.copyWith(
@@ -219,7 +264,7 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
     String? name,
     String? userId,
   }) async {
-    final normalizedPhone = phoneNumber?.trim() ?? '';
+    final normalizedPhone = _canonicalRecipientPhone(phoneNumber);
     final normalizedUsername = _normalizeUsername(username);
     if (normalizedPhone.isEmpty &&
         (userId == null || userId.trim().isEmpty) &&
@@ -247,14 +292,36 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       return;
     }
 
-    state = state.copyWith(isLoading: false, error: null, recipient: recipient);
+    state = state.copyWith(
+      isLoading: false,
+      error: null,
+      recipient: recipient,
+      clearStepUpChallengeToken: true,
+    );
+  }
+
+  String _canonicalRecipientPhone(String? phoneNumber) {
+    final rawPhone = phoneNumber?.trim();
+    if (rawPhone == null || rawPhone.isEmpty) {
+      return '';
+    }
+
+    final phoneValue = PhoneNumberValue.tryFromAny(
+      phoneNumber: rawPhone,
+      countryCode: '+${_defaultCountryPrefix()}',
+    );
+    return phoneValue?.e164 ?? rawPhone;
   }
 
   /// Set transfer amount
   void setAmount(double amount) {
     // Calculate fee (currently 0 for internal transfers)
     const fee = 0.0;
-    state = state.copyWith(amount: amount, fee: fee);
+    state = state.copyWith(
+      amount: amount,
+      fee: fee,
+      clearStepUpChallengeToken: true,
+    );
   }
 
   /// Set optional note
@@ -310,7 +377,7 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       );
       return false;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: _friendlySendError(e));
       return false;
     }
   }
@@ -332,11 +399,31 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
     return true;
   }
 
+  void clearStepUpAuthorization() {
+    state = state.copyWith(clearStepUpChallengeToken: true);
+  }
+
+  void markStepUpAuthorized(String? challengeToken) {
+    final token = challengeToken?.trim();
+    if (token == null || token.isEmpty) {
+      state = state.copyWith(clearStepUpChallengeToken: true);
+      return;
+    }
+
+    state = state.copyWith(stepUpChallengeToken: token, error: null);
+  }
+
   /// Execute transfer. Requires verifyPin() to have been called first.
   Future<bool> executeTransfer() async {
     if (!state.canProceedToConfirm) {
       state = state.copyWith(error: 'Invalid transfer details');
       await hapticService.error();
+      return false;
+    }
+
+    if (!state.hasVerifiedBalance) {
+      state = state.copyWith(error: 'balance_unverified');
+      await hapticService.warning();
       return false;
     }
 
@@ -358,6 +445,13 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       return false;
     }
 
+    final limitError = await _verifySendLimitsBeforeSubmission();
+    if (limitError != null) {
+      state = state.copyWith(error: limitError);
+      await hapticService.warning();
+      return false;
+    }
+
     // Prevent double-submit
     if (state.isSubmitting) return false;
 
@@ -367,10 +461,6 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
     state = state.copyWith(isLoading: true, isSubmitting: true, error: null);
     try {
       final transfersService = ref.read(transfersServiceProvider);
-      final riskRecipientId =
-          state.recipient!.userId ??
-          state.recipient!.username ??
-          state.recipient!.phoneNumber;
       final result = await transfersService.createInternalTransfer(
         recipientId: state.recipient!.userId,
         recipientPhone: state.recipient!.phoneNumber.isNotEmpty
@@ -379,9 +469,9 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
         recipientUsername: state.recipient!.username,
         amount: state.amount!,
         note: state.note,
-        riskRecipientId: riskRecipientId,
         pinToken: state.pinToken!,
         idempotencyKey: state.idempotencyKey!,
+        stepUpToken: state.stepUpChallengeToken,
       );
 
       state = state.copyWith(
@@ -417,10 +507,14 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
 
       return true;
     } catch (e) {
+      final moneyFlowError = moneyFlowLimitExceptionFromError(
+        e,
+        operation: TransactionLimitOperation.send,
+      );
       state = state.copyWith(
         isLoading: false,
         isSubmitting: false,
-        error: e.toString(),
+        error: moneyFlowError?.message ?? _friendlySendError(e),
       );
       await hapticService.error();
       return false;
@@ -435,6 +529,33 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
   /// Clear error
   void clearError() {
     state = state.clearError();
+  }
+
+  Future<String?> _verifySendLimitsBeforeSubmission() async {
+    final amount = state.amount;
+    if (amount == null || amount <= 0) {
+      return 'Invalid transfer details';
+    }
+
+    try {
+      final limits = await ref.read(limitsServiceProvider).getLimits();
+      final limitHit = limits.limitHitByFor(
+        TransactionLimitOperation.send,
+        amount,
+      );
+      if (limitHit == null) {
+        return null;
+      }
+      return moneyFlowLimitErrorFor(
+        limitHit,
+        limits,
+        TransactionLimitOperation.send,
+      );
+    } on DioException {
+      return 'Unable to verify transfer limits. Please try again.';
+    } catch (_) {
+      return 'Unable to verify transfer limits. Please try again.';
+    }
   }
 
   String _defaultCountryPrefix() {
@@ -489,10 +610,10 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
     if (phone == null || phone.trim().isEmpty) {
       return false;
     }
-    return _phoneDigits(phoneNumber) == _phoneDigits(phone);
+    final dialCode = '+${_defaultCountryPrefix()}';
+    return localPhoneDigits(dialCode: dialCode, phoneNumber: phoneNumber) ==
+        localPhoneDigits(dialCode: dialCode, phoneNumber: phone);
   }
-
-  String _phoneDigits(String value) => value.replaceAll(RegExp(r'\D'), '');
 }
 
 List<Map<String, dynamic>> _extractContactSyncMatches(Object? payload) {
@@ -622,6 +743,16 @@ DateTime? _parseDate(Object? value) {
   if (value is DateTime) return value;
   if (value is String && value.isNotEmpty) return DateTime.tryParse(value);
   return null;
+}
+
+String _friendlySendError(Object error) {
+  if (error is DioException) {
+    return ApiException.fromDioError(error).message;
+  }
+  if (error is ApiException) {
+    return error.message;
+  }
+  return 'Transfer could not be completed. Please try again.';
 }
 
 /// Send Money Provider

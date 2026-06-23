@@ -2,7 +2,6 @@ import 'package:usdc_wallet/features/savings_pots/models/savings_pots_state.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:confetti/confetti.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -14,6 +13,7 @@ import 'package:usdc_wallet/features/savings_pots/widgets/add_to_pot_sheet.dart'
 import 'package:usdc_wallet/features/savings_pots/widgets/withdraw_from_pot_sheet.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Detail view for a single savings pot
 class PotDetailView extends ConsumerStatefulWidget {
@@ -31,7 +31,9 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
   @override
   void initState() {
     super.initState();
-    _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+    _confettiController = ConfettiController(
+      duration: const Duration(seconds: 3),
+    );
   }
 
   @override
@@ -59,16 +61,24 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
     );
   }
 
-  Widget _buildPotDetail(BuildContext context, WidgetRef ref, SavingsPot pot, SavingsPotsState state, AppLocalizations l10n) {
-
-    final currencyFormat = NumberFormat.currency(symbol: r'$', decimalDigits: 2);
+  Widget _buildPotDetail(
+    BuildContext context,
+    WidgetRef ref,
+    SavingsPot pot,
+    SavingsPotsState state,
+    AppLocalizations l10n,
+  ) {
+    final currencyFormat = NumberFormat.currency(
+      symbol: r'$',
+      decimalDigits: 2,
+    );
 
     // Show confetti if goal reached
-    if (pot.isGoalReached && !_confettiController.state.toString().contains('playing')) {
+    if (pot.isGoalReached &&
+        !_confettiController.state.toString().contains('playing')) {
       _confettiController.play();
     }
 
-    
     return Scaffold(
       backgroundColor: context.colors.canvas,
       appBar: AppBar(
@@ -76,7 +86,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
-            onPressed: () => context.push('/savings-pots/edit/${pot.id}'),
+            onPressed: () => context.fsmPush('/savings-pots/edit/${pot.id}'),
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline),
@@ -99,14 +109,16 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
                   Expanded(
                     child: AppButton(
                       label: l10n.savingsPots_addMoney,
-                      onPressed: () => _showAddMoneySheet(context, l10n, pot.id),
+                      onPressed: () =>
+                          _showAddMoneySheet(context, l10n, pot.id),
                     ),
                   ),
                   SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: AppButton(
                       label: l10n.savingsPots_withdraw,
-                      onPressed: () => _showWithdrawSheet(context, l10n, pot.id),
+                      onPressed: () =>
+                          _showWithdrawSheet(context, l10n, pot.id),
                       variant: AppButtonVariant.secondary,
                     ),
                   ),
@@ -141,7 +153,11 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
     );
   }
 
-  Widget _buildHeader(SavingsPot pot, NumberFormat currencyFormat, AppLocalizations l10n) {
+  Widget _buildHeader(
+    SavingsPot pot,
+    NumberFormat currencyFormat,
+    AppLocalizations l10n,
+  ) {
     return Container(
       padding: EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
@@ -175,19 +191,13 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
                       valueColor: AlwaysStoppedAnimation<Color>(pot.color),
                     ),
                   ),
-                  Text(
-                    pot.emoji,
-                    style: const TextStyle(fontSize: 56),
-                  ),
+                  Text(pot.emoji, style: const TextStyle(fontSize: 56)),
                 ],
               ),
             )
           else
             // ignore: dead_code
-            Text(
-              pot.emoji,
-              style: const TextStyle(fontSize: 80),
-            ),
+            Text(pot.emoji, style: const TextStyle(fontSize: 80)),
           SizedBox(height: AppSpacing.md),
 
           // Pot name
@@ -208,51 +218,53 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
           ),
 
           // Goal progress
-          if (pot.targetAmount != null) ...[ // ignore: unnecessary_null_comparison
-            SizedBox(height: AppSpacing.md),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(AppRadius.sm),
-              child: LinearProgressIndicator(
-                value: pot.progress,
-                minHeight: 8,
-                backgroundColor: pot.color.withValues(alpha: 0.2),
-                valueColor: AlwaysStoppedAnimation<Color>(pot.color),
-              ),
+          SizedBox(height: AppSpacing.md),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+            child: LinearProgressIndicator(
+              value: pot.progress,
+              minHeight: 8,
+              backgroundColor: pot.color.withValues(alpha: 0.2),
+              valueColor: AlwaysStoppedAnimation<Color>(pot.color),
             ),
-            SizedBox(height: AppSpacing.sm),
-            AppText(
-              '${formatXof(pot.currentAmount)} of ${formatXof(pot.targetAmount)} (${(pot.progress * 100).toStringAsFixed(0)}%)',
-              variant: AppTextVariant.bodyMedium,
-              color: context.colors.textSecondary,
-            ),
-            if (pot.isGoalReached)
-              Padding(
-                padding: EdgeInsets.only(top: AppSpacing.sm),
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
-                  decoration: BoxDecoration(
-                    color: context.colors.success.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(AppRadius.sm),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.celebration, color: context.colors.success, size: 20),
-                      SizedBox(width: AppSpacing.xs),
-                      AppText(
-                        l10n.savingsPots_goalReached,
-                        variant: AppTextVariant.bodyMedium,
-                        color: context.colors.success,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ],
-                  ),
+          ),
+          SizedBox(height: AppSpacing.sm),
+          AppText(
+            '${formatXof(pot.currentAmount)} of ${formatXof(pot.targetAmount)} (${(pot.progress * 100).toStringAsFixed(0)}%)',
+            variant: AppTextVariant.bodyMedium,
+            color: context.colors.textSecondary,
+          ),
+          if (pot.isGoalReached)
+            Padding(
+              padding: EdgeInsets.only(top: AppSpacing.sm),
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+                decoration: BoxDecoration(
+                  color: context.colors.success.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.celebration,
+                      color: context.colors.success,
+                      size: 20,
+                    ),
+                    SizedBox(width: AppSpacing.xs),
+                    AppText(
+                      l10n.savingsPots_goalReached,
+                      variant: AppTextVariant.bodyMedium,
+                      color: context.colors.success,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ],
                 ),
               ),
-          ],
+            ),
         ],
       ),
     );
@@ -263,8 +275,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
     NumberFormat currencyFormat,
     AppLocalizations l10n,
   ) {
-    // ignore: dead_null_aware_expression
-    final transactions = state.selectedPotTransactions ?? []; // ignore: dead_code
+    final transactions = state.selectedPotTransactions;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -286,11 +297,10 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
             ),
           )
         else
-          ...transactions.map((transaction) => _buildTransactionItem(
-                transaction,
-                currencyFormat,
-                l10n,
-              )),
+          ...transactions.map(
+            (transaction) =>
+                _buildTransactionItem(transaction, currencyFormat, l10n),
+          ),
       ],
     );
   }
@@ -316,13 +326,16 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: (isDeposit ? context.colors.success : context.colors.warning)
-                  .withValues(alpha: 0.2),
+              color:
+                  (isDeposit ? context.colors.success : context.colors.warning)
+                      .withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(
               isDeposit ? Icons.add : Icons.remove,
-              color: isDeposit ? context.colors.success : context.colors.warning,
+              color: isDeposit
+                  ? context.colors.success
+                  : context.colors.warning,
             ),
           ),
           SizedBox(width: AppSpacing.md),
@@ -331,7 +344,9 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppText(
-                  isDeposit ? l10n.savingsPots_deposit : l10n.savingsPots_withdrawal,
+                  isDeposit
+                      ? l10n.savingsPots_deposit
+                      : l10n.savingsPots_withdrawal,
                   variant: AppTextVariant.bodyMedium,
                   fontWeight: FontWeight.w600,
                 ),
@@ -354,7 +369,11 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
     );
   }
 
-  Future<void> _showAddMoneySheet(BuildContext context, AppLocalizations l10n, String potId) async {
+  Future<void> _showAddMoneySheet(
+    BuildContext context,
+    AppLocalizations l10n,
+    String potId,
+  ) async {
     final result = await showModalBottomSheet<bool>(
       context: context,
       backgroundColor: context.colors.container,
@@ -375,7 +394,11 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
     }
   }
 
-  Future<void> _showWithdrawSheet(BuildContext context, AppLocalizations l10n, String potId) async {
+  Future<void> _showWithdrawSheet(
+    BuildContext context,
+    AppLocalizations l10n,
+    String potId,
+  ) async {
     final result = await showModalBottomSheet<bool>(
       context: context,
       backgroundColor: context.colors.container,
@@ -422,7 +445,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
     if (confirmed == true && mounted) {
       await ref.read(savingsPotsActionsProvider).deletePot(potId);
       if (mounted) {
-        context.pop();
+        context.fsmPop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.savingsPots_deleteSuccess),

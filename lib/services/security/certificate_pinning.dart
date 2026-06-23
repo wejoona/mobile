@@ -18,15 +18,15 @@ import 'package:usdc_wallet/utils/logger.dart';
 /// To get the SHA-256 fingerprint of your server's certificate, run:
 ///
 /// ```bash
-/// # For production API
+/// # Full leaf certificate DER hash for this Dart validator
 /// openssl s_client -servername korido-api.joonapay.com -connect korido-api.joonapay.com:443 </dev/null 2>/dev/null | \
-///   openssl x509 -pubkey -noout | \
-///   openssl pkey -pubin -outform der | \
+///   openssl x509 -outform der | \
 ///   openssl dgst -sha256 -binary | \
 ///   openssl enc -base64
 ///
-/// # Alternative: Get fingerprint from certificate file
-/// openssl x509 -in certificate.pem -pubkey -noout | \
+/// # Android network-security-config uses SPKI pins instead:
+/// openssl s_client -servername korido-api.joonapay.com -connect korido-api.joonapay.com:443 </dev/null 2>/dev/null | \
+///   openssl x509 -pubkey -noout | \
 ///   openssl pkey -pubin -outform der | \
 ///   openssl dgst -sha256 -binary | \
 ///   openssl enc -base64
@@ -49,26 +49,31 @@ class CertificatePinning {
   /// [X509Certificate]. Keep these pins exact-host scoped so staging and future
   /// service hosts do not inherit production API pins by accident.
   static const Map<String, List<String>> _trustedFingerprintsByHost = {
-    'korido-api.joonapay.com': [
-      // Leaf DER SHA-256, verified against live certificate on 2026-06-14.
+    'staging-korido-api.joonapay.com': [
+      // Leaf DER SHA-256, verified against live certificate on 2026-06-20.
       'gvcwFV4jHJrKyc2rrHFNlZbenxWnWywAezu5tpkv7is=',
-      // Current wildcard/apex leaf DER SHA-256 served for joonapay.com.
-      // Keep the previous API pin above as a rollover pin.
+    ],
+    'korido-api.joonapay.com': [
+      // Leaf DER SHA-256, verified against live certificate on 2026-06-20.
+      'gvcwFV4jHJrKyc2rrHFNlZbenxWnWywAezu5tpkv7is=',
+      // Previous API/apex leaf DER SHA-256 kept as a rollover pin.
       'BWCq7vFEHnLEBB9FD9tOUTlIeFRPNHIJL7vPHgNjodc=',
     ],
     'joonapay.com': [
-      // Leaf DER SHA-256, verified against live certificate on 2026-06-14.
+      // Leaf DER SHA-256, verified against live certificate on 2026-06-20.
+      'xjdxghsWoSZ9sfkyskfb2cmBgPZ/qKozfMWw3lzb/+E=',
+      // Previous apex leaf DER SHA-256 kept as a rollover pin.
       'BWCq7vFEHnLEBB9FD9tOUTlIeFRPNHIJL7vPHgNjodc=',
     ],
   };
 
   /// Configure Dio client with certificate pinning
   /// Only applies in release mode for production API
-  static void configurePinning(Dio dio, {bool forceForTesting = false}) {
+  static bool configurePinning(Dio dio, {bool forceForTesting = false}) {
     // Skip pinning in debug mode (localhost doesn't have valid certs)
     if (kDebugMode && !forceForTesting) {
       _logger.info('Disabled in debug mode');
-      return;
+      return false;
     }
 
     // Verify fingerprints are configured
@@ -88,6 +93,7 @@ class CertificatePinning {
     _logger.security(
       'Certificate pinning enabled for ${_trustedFingerprintsByHost.keys.join(", ")}',
     );
+    return true;
   }
 
   /// Certificate validation callback
@@ -245,7 +251,5 @@ class CertificatePinning {
 /// Extension to easily apply certificate pinning to Dio
 extension DioCertificatePinning on Dio {
   /// Enable certificate pinning for this Dio instance
-  void enableCertificatePinning() {
-    CertificatePinning.configurePinning(this);
-  }
+  bool enableCertificatePinning() => CertificatePinning.configurePinning(this);
 }

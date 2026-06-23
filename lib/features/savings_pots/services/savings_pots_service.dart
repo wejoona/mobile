@@ -69,7 +69,7 @@ class SavingsPotsService {
     required String potId,
     required double amount,
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) async {
     final response = await _dio.post(
       '/savings-pots/$potId/deposit',
@@ -89,7 +89,7 @@ class SavingsPotsService {
     required String potId,
     required double amount,
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) async {
     final response = await _dio.post(
       '/savings-pots/$potId/withdraw',

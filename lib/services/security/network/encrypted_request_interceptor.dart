@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/services/security/network/request_encryptor.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
@@ -12,13 +13,11 @@ class EncryptedRequestInterceptor extends Interceptor {
   /// Paths requiring payload encryption.
   static const _encryptedPaths = [
     '/wallet/transfer',
-    '/wallet/withdraw',
+    '/wallet/cash-out/mobile-money',
     '/wallet/deposit',
-    '/transfers/',
-    '/withdrawals/',
     '/deposits/',
-    '/pin/verify',
-    '/pin/change',
+    ApiEndpoints.userPinVerify,
+    ApiEndpoints.userPinChange,
   ];
 
   EncryptedRequestInterceptor({required RequestEncryptor encryptor})
@@ -39,7 +38,16 @@ class EncryptedRequestInterceptor extends Interceptor {
         options.headers['X-Encrypted'] = '1';
       }
     } catch (e) {
-      _log.error('Request encryption failed', e);
+      _log.error('Request encryption failed, blocking sensitive request', e);
+      return handler.reject(
+        DioException(
+          requestOptions: options,
+          type: DioExceptionType.unknown,
+          error: e,
+          message:
+              'Sensitive request encryption failed; plaintext transmission blocked.',
+        ),
+      );
     }
     handler.next(options);
   }

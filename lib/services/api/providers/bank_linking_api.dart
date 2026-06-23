@@ -38,7 +38,7 @@ class BankLinkingApi {
     String id,
     Map<String, dynamic> data, {
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) => _dio.post(
     '/bank-accounts/$id/deposit',
     data: data,
@@ -55,7 +55,7 @@ class BankLinkingApi {
     String id,
     Map<String, dynamic> data, {
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) => _dio.post(
     '/bank-accounts/$id/withdraw',
     data: data,

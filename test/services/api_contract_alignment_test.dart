@@ -15,11 +15,10 @@ import 'package:usdc_wallet/features/notifications/providers/notification_count_
     as notification_count;
 import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart'
     as notification_feed;
-import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 import 'package:usdc_wallet/features/payment_links/repositories/payment_links_repository.dart';
 import 'package:usdc_wallet/features/payment_links/providers/pay_link_provider.dart';
 import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
-import 'package:usdc_wallet/features/qr_payment/models/qr_data.dart';
+import 'package:usdc_wallet/features/qr_payment/models/qr_payment_data.dart';
 import 'package:usdc_wallet/features/qr_payment/providers/qr_payment_provider.dart';
 import 'package:usdc_wallet/features/settings/repositories/devices_repository.dart';
 import 'package:usdc_wallet/features/settings/repositories/sessions_repository.dart';
@@ -27,6 +26,7 @@ import 'package:usdc_wallet/features/send/providers/send_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/wallet_actions_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/transaction_stats_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/withdraw_provider.dart';
+import 'package:usdc_wallet/features/wallet/utils/cash_out_availability.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/api/providers/contacts_api.dart';
 import 'package:usdc_wallet/services/api/providers/wallet_api.dart';
@@ -107,6 +107,10 @@ void main() {
         normalizePhoneE164(dialCode: '1', localNumber: '(415) 555-0101'),
         '+14155550101',
       );
+      expect(
+        normalizePhoneE164(dialCode: '+225', localNumber: '+225+2250748805663'),
+        '+2250748805663',
+      );
       expect(digitsOnly('+225 07-48-80-56-63'), '2250748805663');
     });
 
@@ -159,6 +163,42 @@ void main() {
         'direction': 'buy',
       });
     });
+
+    test(
+      'wallet service maps product rate directions to backend DTO',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'fromCurrency': 'XOF',
+            'toCurrency': 'USD',
+            'rate': 600,
+            'timestamp': '2026-06-04T00:00:00.000Z',
+          })
+          ..queueResponse({
+            'fromCurrency': 'USD',
+            'toCurrency': 'XOF',
+            'rate': 600,
+            'timestamp': '2026-06-04T00:00:00.000Z',
+          });
+        final service = WalletService(dio);
+
+        await service.getRate(
+          sourceCurrency: 'XOF',
+          targetCurrency: 'USD',
+          amount: 1000,
+          direction: 'deposit',
+        );
+        await service.getRate(
+          sourceCurrency: 'USD',
+          targetCurrency: 'XOF',
+          amount: 20,
+          direction: 'withdrawal',
+        );
+
+        expect(dio.requestHistory[0].queryParameters['direction'], 'buy');
+        expect(dio.requestHistory[1].queryParameters['direction'], 'sell');
+      },
+    );
 
     test('wallet KYC facade uses canonical KYC routes', () async {
       final dio = MockDio()
@@ -218,6 +258,55 @@ void main() {
       expect(response.balances.single.available, 15.5);
       expect(response.balances.single.pending, 2);
       expect(response.balances.single.total, 17.5);
+    });
+
+    test('wallet balance parser accepts receive address aliases', () {
+      final circle = WalletBalanceResponse.fromJson({
+        'walletId': 'wallet_circle',
+        'walletAddress': '0xcanonical',
+        'circleWalletAddress': '0xcircle',
+        'stellarAddress': 'G_STELLAR',
+        'currency': 'USDC',
+        'balances': [
+          {'currency': 'USDC', 'available': 1, 'pending': 0, 'total': 1},
+        ],
+      });
+      final stellarOnly = WalletBalanceResponse.fromJson({
+        'walletId': 'wallet_stellar',
+        'stellarAddress': 'G_STELLAR_ONLY',
+        'currency': 'USDC',
+        'balances': [
+          {'currency': 'USDC', 'available': 2, 'pending': 0, 'total': 2},
+        ],
+      });
+
+      expect(circle.walletAddress, '0xcanonical');
+      expect(stellarOnly.walletAddress, 'G_STELLAR_ONLY');
+    });
+
+    test('receive address is sourced from canonical wallet balance', () {
+      final endpointSource = File(
+        'lib/core/constants/api_endpoints.dart',
+      ).readAsStringSync();
+      final actionsSource = File(
+        'lib/features/wallet/providers/wallet_actions_provider.dart',
+      ).readAsStringSync();
+      final receiveViewSource = File(
+        'lib/features/wallet/views/receive_view.dart',
+      ).readAsStringSync();
+
+      expect(endpointSource, isNot(contains('/wallet/receive')));
+      expect(endpointSource, isNot(contains('/wallet/address')));
+      expect(actionsSource, isNot(contains('getReceiveInfo')));
+      expect(receiveViewSource, contains('walletState.walletAddress'));
+      expect(
+        receiveViewSource,
+        contains('else if (walletState.hasWalletAddress)'),
+      );
+      expect(receiveViewSource, contains('data: walletState.walletAddress!'));
+      expect(receiveViewSource, isNot(contains('|| userId.isNotEmpty')));
+      expect(receiveViewSource, isNot(contains('korido://pay')));
+      expect(receiveViewSource, isNot(contains('walletReceive')));
     });
 
     test(
@@ -316,6 +405,32 @@ void main() {
       },
     );
 
+    test(
+      'wallet balance parser repairs empty rows from flat live balance fields',
+      () {
+        final response = WalletBalanceResponse.fromJson({
+          'walletId': 'wallet_1',
+          'walletAddress': '0xabc',
+          'currency': 'USDC',
+          'balanceUsdc': '77.125000',
+          'availableBalance': '75.000000',
+          'pendingBalance': '2.125000',
+          'balances': [
+            {
+              'currency': 'USDC',
+              'availableDecimal': '0.000000',
+              'pendingDecimal': '0.000000',
+              'totalDecimal': '0.000000',
+            },
+          ],
+        });
+
+        expect(response.availableBalance, 75);
+        expect(response.totalBalance, 77.125);
+        expect(response.balances.single.pending, 2.125);
+      },
+    );
+
     test('wallet balance parser accepts keyed balance maps', () {
       final response = WalletBalanceResponse.fromJson({
         'walletId': 'wallet_1',
@@ -388,7 +503,7 @@ void main() {
 
       final request = dio.requestHistory.single;
       expect(request.method, 'POST');
-      expect(request.path, '/withdrawals/quote');
+      expect(request.path, '/wallet/cash-out/mobile-money/quote');
       expect(request.data, {
         'amount': 2500,
         'providerCode': 'OMCI',
@@ -422,14 +537,255 @@ void main() {
 
       final fee = await container
           .read(walletActionsProvider)
-          .estimateFee(amount: 250, type: 'withdrawal', providerCode: 'MTNCI');
+          .estimateFee(
+            amount: 250,
+            type: 'withdrawal',
+            providerCode: 'MTNCI',
+            countryCode: 'CI',
+          );
 
       final request = dio.requestHistory.single;
       expect(request.method, 'GET');
-      expect(request.path, '/wallet/withdraw/options');
+      expect(request.path, '/wallet/cash-out/mobile-money/options');
       expect(request.queryParameters, {'country': 'CI'});
       expect(fee, 5);
     });
+
+    test(
+      'wallet actions treats absent cash-out options as unavailable',
+      () async {
+        final dio = MockDio()
+          ..queueErrorResponse(statusCode: 404, message: 'Cannot GET options');
+        final container = ProviderContainer(
+          overrides: [dioProvider.overrideWithValue(dio)],
+        );
+        addTearDown(container.dispose);
+
+        final fee = await container
+            .read(walletActionsProvider)
+            .estimateFee(
+              amount: 250,
+              type: 'withdrawal',
+              providerCode: 'MTNCI',
+              countryCode: 'CI',
+            );
+
+        expect(fee, 0);
+      },
+    );
+
+    test('withdraw quote surfaces unavailable rails cleanly', () async {
+      final dio = MockDio()
+        ..queueErrorResponse(statusCode: 404, message: 'Cannot POST quote');
+      final container = ProviderContainer(
+        overrides: [dioProvider.overrideWithValue(dio)],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(withdrawProvider.notifier)
+        ..selectMethod(WithdrawMethod.orangeMoney);
+      await notifier.setAmount(25);
+
+      expect(container.read(withdrawProvider).fee, 0);
+      expect(container.read(withdrawProvider).error, cashOutUnavailableMessage);
+    });
+
+    test(
+      'withdraw notifier checks live limits before cash-out submit',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'amount': 2500,
+            'fee': 125,
+            'totalAmount': 2625,
+            'currency': 'XOF',
+            'providerCode': 'OMCI',
+          })
+          ..queueResponse({
+            'currency': 'USDC',
+            'daily': {
+              'send': {'limit': 5000, 'used': 100},
+              'withdraw': {'limit': 5000, 'used': 100},
+              'deposit': {'limit': 5000, 'used': 100},
+            },
+            'monthly': {
+              'total': {'limit': 50000, 'used': 500},
+            },
+            'perTransaction': {'send': 2500, 'withdraw': 2500},
+            'permissions': {
+              'canSend': true,
+              'canDeposit': true,
+              'canWithdraw': true,
+              'canReceive': true,
+            },
+          })
+          ..queueResponse({
+            'id': 'withdraw_123',
+            'status': 'pending',
+            'reference': 'MM-123',
+          });
+        final container = ProviderContainer(
+          overrides: [dioProvider.overrideWithValue(dio)],
+        );
+        addTearDown(container.dispose);
+
+        final notifier = container.read(withdrawProvider.notifier)
+          ..selectMethod(WithdrawMethod.orangeMoney)
+          ..setPhoneNumber('+225+2250748805663');
+        await notifier.setAmount(25);
+        await notifier.submit(
+          pinToken: 'pin_token_123',
+          idempotencyKey: 'idem-withdraw-123',
+          stepUpToken: 'step-up-withdraw-123',
+        );
+
+        expect(
+          dio.requestHistory[0].path,
+          '/wallet/cash-out/mobile-money/quote',
+        );
+        expect(dio.requestHistory[1].path, '/user/limits');
+        expect(dio.requestHistory[2].path, '/wallet/cash-out/mobile-money');
+        final cashOutRequestData =
+            dio.requestHistory[2].data as Map<String, dynamic>;
+        expect(cashOutRequestData['phoneNumber'], '+2250748805663');
+        expect(
+          dio.requestHistory[2].headers['X-Step-Up-Token'],
+          'step-up-withdraw-123',
+        );
+        expect(container.read(withdrawProvider).result?.id, 'withdraw_123');
+      },
+    );
+
+    test('wallet actions checks live limits before cash-out submit', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'currency': 'USDC',
+          'daily': {
+            'send': {'limit': 5000, 'used': 100},
+            'withdraw': {'limit': 5000, 'used': 100},
+            'deposit': {'limit': 5000, 'used': 100},
+          },
+          'monthly': {
+            'total': {'limit': 50000, 'used': 500},
+          },
+          'perTransaction': {'send': 2500, 'withdraw': 2500},
+          'permissions': {
+            'canSend': true,
+            'canDeposit': true,
+            'canWithdraw': true,
+            'canReceive': true,
+          },
+        })
+        ..queueResponse({'id': 'withdraw_123', 'status': 'pending'});
+      final container = ProviderContainer(
+        overrides: [dioProvider.overrideWithValue(dio)],
+      );
+      addTearDown(container.dispose);
+
+      await container
+          .read(walletActionsProvider)
+          .requestWithdrawal(
+            amount: 25,
+            provider: 'orangeMoney',
+            phoneNumber: '+225+2250748805663',
+            countryCode: 'CI',
+            pinToken: 'pin_token_123',
+            idempotencyKey: 'idem-withdraw-123',
+            stepUpToken: 'step-up-actions-123',
+          );
+
+      expect(dio.requestHistory[0].path, '/user/limits');
+      expect(dio.requestHistory[1].path, '/wallet/cash-out/mobile-money');
+      final withdrawalRequestData =
+          dio.requestHistory[1].data as Map<String, dynamic>;
+      expect(withdrawalRequestData['phoneNumber'], '+2250748805663');
+      expect(dio.requestHistory[1].headers['X-Pin-Token'], 'pin_token_123');
+      expect(
+        dio.requestHistory[1].headers['X-Step-Up-Token'],
+        'step-up-actions-123',
+      );
+    });
+
+    test(
+      'withdraw notifier normalizes local phones with explicit country',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'amount': 2500,
+            'fee': 125,
+            'totalAmount': 2625,
+            'currency': 'XOF',
+            'providerCode': 'OMCI',
+          })
+          ..queueResponse({
+            'currency': 'USDC',
+            'daily': {
+              'withdraw': {'limit': 5000, 'used': 100},
+            },
+            'monthly': {
+              'total': {'limit': 50000, 'used': 500},
+            },
+            'perTransaction': {'withdraw': 2500},
+            'permissions': {
+              'canSend': true,
+              'canDeposit': true,
+              'canWithdraw': true,
+              'canReceive': true,
+            },
+          })
+          ..queueResponse({'id': 'withdraw_123', 'status': 'pending'});
+        final container = ProviderContainer(
+          overrides: [dioProvider.overrideWithValue(dio)],
+        );
+        addTearDown(container.dispose);
+
+        final notifier = container.read(withdrawProvider.notifier)
+          ..selectMethod(WithdrawMethod.orangeMoney)
+          ..setPhoneNumber('(415) 555-0101', countryCode: 'US');
+        await notifier.setAmount(25);
+        await notifier.submit(
+          pinToken: 'pin_token_123',
+          idempotencyKey: 'idem-withdraw-123',
+        );
+
+        final cashOutRequestData =
+            dio.requestHistory[2].data as Map<String, dynamic>;
+        expect(cashOutRequestData['phoneNumber'], '+14155550101');
+      },
+    );
+
+    test(
+      'withdraw notifier rejects local phones without country context',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'amount': 2500,
+            'fee': 125,
+            'totalAmount': 2625,
+            'currency': 'XOF',
+            'providerCode': 'OMCI',
+          });
+        final container = ProviderContainer(
+          overrides: [dioProvider.overrideWithValue(dio)],
+        );
+        addTearDown(container.dispose);
+
+        final notifier = container.read(withdrawProvider.notifier)
+          ..selectMethod(WithdrawMethod.orangeMoney)
+          ..setPhoneNumber('0748805663');
+        await notifier.setAmount(25);
+        await notifier.submit(
+          pinToken: 'pin_token_123',
+          idempotencyKey: 'idem-invalid-phone',
+        );
+
+        expect(dio.requestHistory, hasLength(1));
+        expect(
+          container.read(withdrawProvider).error,
+          'Enter a valid mobile money phone number.',
+        );
+      },
+    );
 
     test(
       'withdrawal options provider parses backend-owned mobile rails',
@@ -469,13 +825,85 @@ void main() {
 
         final request = dio.requestHistory.single;
         expect(request.method, 'GET');
-        expect(request.path, '/wallet/withdraw/options');
+        expect(request.path, '/wallet/cash-out/mobile-money/options');
         expect(request.queryParameters, {'country': 'CI'});
         expect(options, hasLength(1));
         expect(options.single.name, 'Wave CI');
         expect(options.single.providerCode, 'WAVECI');
         expect(options.single.isMobileMoney, isTrue);
         expect(options.single.payoutCurrency, 'XOF');
+      },
+    );
+
+    test(
+      'withdrawal options provider returns no rails when route is unavailable',
+      () async {
+        final dio = MockDio()
+          ..queueErrorResponse(statusCode: 404, message: 'Cannot GET options');
+        final container = ProviderContainer(
+          overrides: [dioProvider.overrideWithValue(dio)],
+        );
+        addTearDown(container.dispose);
+
+        final options = await container.read(
+          withdrawalOptionsProvider('CI').future,
+        );
+
+        final request = dio.requestHistory.single;
+        expect(request.method, 'GET');
+        expect(request.path, '/wallet/cash-out/mobile-money/options');
+        expect(options, isEmpty);
+      },
+    );
+
+    test(
+      'wallet actions surfaces unavailable cash-out route cleanly',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'currency': 'USDC',
+            'daily': {
+              'withdraw': {'limit': 5000, 'used': 100},
+            },
+            'monthly': {
+              'total': {'limit': 50000, 'used': 500},
+            },
+            'perTransaction': {'withdraw': 2500},
+            'permissions': {
+              'canSend': true,
+              'canDeposit': true,
+              'canWithdraw': true,
+              'canReceive': true,
+            },
+          })
+          ..queueErrorResponse(
+            statusCode: 404,
+            message: 'Cannot POST cash-out',
+          );
+        final container = ProviderContainer(
+          overrides: [dioProvider.overrideWithValue(dio)],
+        );
+        addTearDown(container.dispose);
+
+        await expectLater(
+          container
+              .read(walletActionsProvider)
+              .requestWithdrawal(
+                amount: 25,
+                provider: 'orangeMoney',
+                phoneNumber: '+2250748805663',
+                countryCode: 'CI',
+                pinToken: 'pin_token_123',
+                idempotencyKey: 'idem-withdraw-123',
+              ),
+          throwsA(
+            isA<CashOutUnavailableException>().having(
+              (error) => error.message,
+              'message',
+              cashOutUnavailableMessage,
+            ),
+          ),
+        );
       },
     );
 
@@ -497,18 +925,21 @@ void main() {
         network: 'polygon',
         pinToken: 'pin_token_123',
         idempotencyKey: 'idem-withdraw-123',
+        stepUpToken: 'step-up-crypto-123',
       );
 
       final request = dio.requestHistory.single;
       expect(request.method, 'POST');
-      expect(request.path, '/wallet/withdraw');
+      expect(request.path, '/wallet/transfer/external');
       expect(request.data, {
         'amount': 25.0,
-        'destinationAddress': '0x1234567890abcdef1234567890abcdef12345678',
+        'toAddress': '0x1234567890abcdef1234567890abcdef12345678',
         'network': 'polygon',
+        'currency': 'USDC',
       });
       expect(request.headers['X-Pin-Token'], 'pin_token_123');
       expect(request.headers['X-Idempotency-Key'], 'idem-withdraw-123');
+      expect(request.headers['X-Step-Up-Token'], 'step-up-crypto-123');
       expect(response.transactionId, 'txn_withdraw_1');
     });
 
@@ -549,6 +980,7 @@ void main() {
         securityHeadersSource,
         contains('Future<Map<String, String>> buildHeadersForPath'),
       );
+      expect(securityHeadersSource, contains('requestData: options.data'));
       expect(
         securityHeadersSource,
         contains("headers['X-Device-Id']"),
@@ -558,6 +990,13 @@ void main() {
         securityHeadersSource,
         contains("headers['X-Device-Fingerprint']"),
       );
+      expect(
+        securityHeadersSource,
+        contains("operation == 'account_recovery'"),
+        reason:
+            'account recovery must not inherit transfer risk scoring when deciding OTP-only versus liveness',
+      );
+      expect(securityHeadersSource, contains('RiskAction.accountRecovery'));
 
       for (final source in [apiClientSource, sessionServiceSource]) {
         expect(source, contains('securityHeadersInterceptorProvider'));
@@ -599,25 +1038,28 @@ void main() {
       expect(expense.transactionId, isEmpty);
     });
 
-    test('transfer history uses limit and offset pagination', () async {
-      final dio = MockDio()
-        ..queueResponse({
-          'transfers': [],
-          'total': 45,
-          'limit': 20,
-          'offset': 20,
-          'hasMore': true,
-        });
-      final service = TransfersService(dio);
+    test(
+      'transfer history uses canonical wallet transaction history',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'transactions': [],
+            'total': 45,
+            'limit': 20,
+            'offset': 20,
+            'hasMore': true,
+          });
+        final service = TransfersService(dio);
 
-      final page = await service.getTransfers(page: 2, pageSize: 20);
+        final page = await service.getTransfers(page: 2, pageSize: 20);
 
-      final request = dio.requestHistory.single;
-      expect(request.path, '/transfers');
-      expect(request.queryParameters, {'limit': 20, 'offset': 20});
-      expect(page.page, 2);
-      expect(page.totalPages, 3);
-    });
+        final request = dio.requestHistory.single;
+        expect(request.path, '/wallet/transactions');
+        expect(request.queryParameters, {'limit': 20, 'offset': 20});
+        expect(page.page, 2);
+        expect(page.totalPages, 3);
+      },
+    );
 
     test('transfer result accepts backend envelopes and id aliases', () {
       final result = TransferResult.fromJson({
@@ -791,7 +1233,7 @@ void main() {
     });
 
     test(
-      'home notification badge uses backend unread count provider',
+      'home notification badge uses cached unread count refreshed from backend',
       () async {
         final container = ProviderContainer(
           overrides: [
@@ -804,9 +1246,10 @@ void main() {
         );
         addTearDown(container.dispose);
 
-        await container.read(
-          notification_feed.unreadNotificationCountProvider.future,
-        );
+        await container
+            .read(notification_count.refreshUnreadNotificationCountProvider)
+            .call();
+        await Future<void>.delayed(Duration.zero);
 
         expect(
           container.read(notification_count.unreadNotificationCountProvider),
@@ -814,6 +1257,41 @@ void main() {
         );
       },
     );
+
+    test(
+      'home notification badge preserves last known unread count while reloading',
+      () async {
+        final container = ProviderContainer(
+          overrides: [
+            notification_feed.lastKnownUnreadNotificationCountProvider
+                .overrideWith((ref) => 5),
+            notification_feed.unreadNotificationCountProvider.overrideWith((
+              ref,
+            ) {
+              return Future<int>.delayed(const Duration(seconds: 30), () => 9);
+            }),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        expect(
+          container.read(notification_count.unreadNotificationCountProvider),
+          5,
+        );
+      },
+    );
+
+    test('notification permission provider delegates unread count to feed', () {
+      final permissionProviderSource = File(
+        'lib/features/notifications/providers/notification_permission_provider.dart',
+      ).readAsStringSync();
+
+      expect(permissionProviderSource, isNot(contains('sdkProvider')));
+      expect(
+        permissionProviderSource,
+        contains('notifications.unreadNotificationCountProvider.future'),
+      );
+    });
 
     test('notifications pull refresh reloads feed and unread count', () {
       final notificationsViewSource = File(
@@ -870,6 +1348,21 @@ void main() {
         'appVersion': '1.0.0',
         'osVersion': 'iOS 26.0',
       });
+    });
+
+    test('legacy device-token helper requires explicit platform', () async {
+      final dio = MockDio()..queueResponse({'message': 'ok'});
+      final service = NotificationsService(dio);
+
+      await service.registerDeviceToken(
+        token: 'android-token-1',
+        platform: 'android',
+      );
+
+      final request = dio.requestHistory.single;
+      expect(request.method, 'POST');
+      expect(request.path, '/notifications/device-token');
+      expect(request.data, {'token': 'android-token-1', 'platform': 'android'});
     });
 
     test('runtime push lifecycle delegates through notification service', () {
@@ -1033,6 +1526,34 @@ void main() {
         contains('do not roll back'),
         reason:
             'newsletter waitlist sync must not make saved notification settings look failed',
+      );
+    });
+
+    test('push preferences require OS permission and device registration', () {
+      final settingsSource = File(
+        'lib/features/settings/views/notification_settings_view.dart',
+      ).readAsStringSync();
+      final permissionProviderSource = File(
+        'lib/features/notifications/providers/notification_permission_provider.dart',
+      ).readAsStringSync();
+
+      expect(settingsSource, contains('notificationPermissionProvider'));
+      expect(settingsSource, contains("_handlePushToggle"));
+      expect(
+        settingsSource,
+        contains("context.fsmPush('/notifications/permission')"),
+      );
+      expect(
+        settingsSource,
+        contains('permission.isEnabled'),
+        reason:
+            'Push settings must not present enabled push preferences before the OS/device-token permission path succeeds.',
+      );
+      expect(
+        permissionProviderSource,
+        contains('registerWithBackend()'),
+        reason:
+            'The permission screen must register the device token before settings can treat push as available.',
       );
     });
 
@@ -1428,6 +1949,38 @@ void main() {
       },
     );
 
+    test('merchant clients use canonical plural merchant routes only', () {
+      final apiProviderSource = File(
+        'lib/services/api/providers/api_provider.dart',
+      ).readAsStringSync();
+      final endpointConstantsSource = File(
+        'lib/core/constants/api_endpoints.dart',
+      ).readAsStringSync();
+      final merchantApiFile = File(
+        'lib/services/api/providers/merchant_api.dart',
+      );
+      final merchantServiceSource = File(
+        'lib/features/merchant_pay/services/merchant_service.dart',
+      ).readAsStringSync();
+      final qrPaymentProviderSource = File(
+        'lib/features/qr_payment/providers/qr_payment_provider.dart',
+      ).readAsStringSync();
+
+      expect(
+        merchantApiFile.existsSync(),
+        isFalse,
+        reason:
+            'merchant payments must use the feature-owned MerchantService, not the stale singular MerchantApi facade',
+      );
+      expect(apiProviderSource, isNot(contains('MerchantApi')));
+      expect(apiProviderSource, isNot(contains('merchant =')));
+      expect(endpointConstantsSource, isNot(contains('/merchant/')));
+      expect(merchantServiceSource, contains('/merchants/pay'));
+      expect(qrPaymentProviderSource, contains('/merchants/pay'));
+      expect(merchantServiceSource, isNot(contains('/merchant/payments')));
+      expect(qrPaymentProviderSource, isNot(contains('/merchant/payments')));
+    });
+
     test('PIN client contract stays on user PIN routes', () {
       final walletApiSource = File(
         'lib/services/api/providers/wallet_api.dart',
@@ -1437,6 +1990,18 @@ void main() {
       ).readAsStringSync();
       final jweSource = File(
         'lib/services/security/jwe/jwe_interceptor.dart',
+      ).readAsStringSync();
+      final encryptedRequestSource = File(
+        'lib/services/security/network/encrypted_request_interceptor.dart',
+      ).readAsStringSync();
+      final securityHeadersSource = File(
+        'lib/services/security/security_headers_interceptor.dart',
+      ).readAsStringSync();
+      final resetPinSource = File(
+        'lib/features/pin/views/reset_pin_view.dart',
+      ).readAsStringSync();
+      final endpointsSource = File(
+        'lib/core/constants/api_endpoints.dart',
       ).readAsStringSync();
       final transferContractSource = File(
         'lib/mocks/services/transfers/transfers_contract.dart',
@@ -1448,18 +2013,85 @@ void main() {
       final combinedContractText = [
         walletApiSource,
         jweSource,
+        encryptedRequestSource,
+        securityHeadersSource,
         transferContractSource,
         transferMockSource,
       ].join('\n');
 
-      expect(pinServiceSource, contains('/user/pin/verify'));
-      expect(pinServiceSource, contains('/user/pin/set'));
+      expect(endpointsSource, contains("userPinPrefix = '/user/pin/'"));
+      expect(endpointsSource, contains('userPinSet'));
+      expect(endpointsSource, contains('userPinVerify'));
+      expect(endpointsSource, contains('userPinChange'));
+      expect(endpointsSource, contains('userPinReset'));
+      expect(pinServiceSource, contains('ApiEndpoints.userPinVerify'));
+      expect(pinServiceSource, contains('ApiEndpoints.userPinSet'));
+      expect(pinServiceSource, contains('ApiEndpoints.userPinChange'));
+      expect(resetPinSource, contains('ApiEndpoints.userPinReset'));
+      expect(jweSource, contains('ApiEndpoints.userPinPrefix'));
+      expect(encryptedRequestSource, contains('ApiEndpoints.userPinVerify'));
+      expect(encryptedRequestSource, contains('ApiEndpoints.userPinChange'));
+      expect(securityHeadersSource, contains('ApiEndpoints.userPinPrefix'));
+      expect(resetPinSource, contains('cacheConfirmedPin'));
+      expect(resetPinSource, isNot(contains('.setPin(_newPin)')));
       expect(combinedContractText, isNot(contains('/wallet/pin/verify')));
       expect(combinedContractText, isNot(contains('/wallet/pin/set')));
+      expect(combinedContractText, isNot(contains('/wallet/pin/change')));
       expect(
-        '$pinServiceSource\n$combinedContractText',
-        contains('/user/pin/verify'),
+        combinedContractText,
+        isNot(contains("'/pin/")),
+        reason:
+            'Security matchers must name /user/pin/* explicitly so stale wallet/pin routes cannot look supported.',
       );
+      expect(
+        combinedContractText,
+        isNot(contains("'/pin/verify'")),
+        reason: 'The canonical PIN verification endpoint is /user/pin/verify.',
+      );
+      expect(
+        File('lib/features/pin/ROUTES.dart').existsSync(),
+        isFalse,
+        reason:
+            'Stale route snippets create a second source of truth for PIN navigation.',
+      );
+      expect(
+        '$endpointsSource\n$pinServiceSource\n$combinedContractText',
+        contains('/user/pin/'),
+      );
+    });
+
+    test('auth client contract has one phone-normalizing boundary', () {
+      final authServiceSource = File(
+        'lib/services/auth/auth_service.dart',
+      ).readAsStringSync();
+      final apiProviderSource = File(
+        'lib/services/api/providers/api_provider.dart',
+      ).readAsStringSync();
+
+      expect(
+        File('lib/services/api/providers/auth_api.dart').existsSync(),
+        isFalse,
+        reason:
+            'AuthService is the canonical auth API boundary; a second AuthApi can send raw phone state.',
+      );
+      expect(authServiceSource, contains('PhoneNumberValue.fromAny'));
+      expect(
+        authServiceSource,
+        isNot(contains('PhoneNormalizer.toE164')),
+        reason:
+            'AuthService should consume the canonical phone value object instead of rebuilding E.164 directly.',
+      );
+      expect(authServiceSource, contains('ApiEndpoints.authLogin'));
+      expect(authServiceSource, contains('ApiEndpoints.authRegister'));
+      expect(authServiceSource, contains('ApiEndpoints.authVerifyOtp'));
+      expect(
+        authServiceSource,
+        contains('ApiEndpoints.authRecoveryRequestOtp'),
+      );
+      expect(authServiceSource, contains('ApiEndpoints.authRecoveryVerifyOtp'));
+      expect(authServiceSource, contains('RecoveryOtpResponse'));
+      expect(apiProviderSource, isNot(contains('AuthApi')));
+      expect(apiProviderSource, isNot(contains('auth =')));
     });
 
     test('cards API uses backend verbs for freeze and unfreeze', () {
@@ -1467,12 +2099,12 @@ void main() {
         'lib/services/api/providers/cards_api.dart',
       ).readAsStringSync();
 
-      expect(cardsApiSource, contains("_dio.put('/cards/\$id/freeze'"));
-      expect(cardsApiSource, contains("_dio.put('/cards/\$id/unfreeze'"));
-      expect(cardsApiSource, isNot(contains("_dio.post('/cards/\$id/freeze'")));
+      expect(cardsApiSource, contains(r"_dio.put('/cards/$id/freeze'"));
+      expect(cardsApiSource, contains(r"_dio.put('/cards/$id/unfreeze'"));
+      expect(cardsApiSource, isNot(contains(r"_dio.post('/cards/$id/freeze'")));
       expect(
         cardsApiSource,
-        isNot(contains("_dio.post('/cards/\$id/unfreeze'")),
+        isNot(contains(r"_dio.post('/cards/$id/unfreeze'")),
       );
     });
 
@@ -1572,6 +2204,24 @@ void main() {
         'direction': 'debit',
         'createdAt': '2026-06-04T12:00:00.000Z',
       });
+      final billPayment = wallet_tx.Transaction.fromJson({
+        'id': 'tx_bill',
+        'walletId': 'wallet_1',
+        'type': 'bill_payment',
+        'status': 'completed',
+        'amount': 18,
+        'currency': 'USDC',
+        'createdAt': '2026-06-04T12:00:00.000Z',
+      });
+      final unknown = wallet_tx.Transaction.fromJson({
+        'id': 'tx_unknown',
+        'walletId': 'wallet_1',
+        'type': 'provider_adjustment',
+        'status': 'completed',
+        'amount': 18,
+        'currency': 'USDC',
+        'createdAt': '2026-06-04T12:00:00.000Z',
+      });
 
       expect(sent.type, TransactionType.transferInternal);
       expect(sent.isDebit, isTrue);
@@ -1584,9 +2234,17 @@ void main() {
       expect(deposit.isCredit, isTrue);
       expect(withdrawal.type, TransactionType.withdrawal);
       expect(withdrawal.isDebit, isTrue);
+      expect(billPayment.type, TransactionType.billPayment);
+      expect(billPayment.isDebit, isTrue);
+      expect(billPayment.isCredit, isFalse);
+      expect(billPayment.toJson()['type'], 'bill_payment');
+      expect(unknown.type, TransactionType.unknown);
+      expect(unknown.isDebit, isFalse);
+      expect(unknown.isCredit, isFalse);
+      expect(unknown.toJson()['type'], 'unknown');
     });
 
-    test('transaction parsers prefer backend decimal money fields', () {
+    test('transaction parser prefers backend decimal money fields', () {
       final transaction = wallet_tx.Transaction.fromJson({
         'id': 'tx_decimal',
         'walletId': 'wallet_1',
@@ -1599,19 +2257,8 @@ void main() {
         'currency': 'USDC',
         'createdAt': '2026-06-04T12:00:00.000Z',
       });
-      final item = TransactionItem.fromJson({
-        'id': 'tx_item_decimal',
-        'type': 'deposit',
-        'status': 'completed',
-        'amount': 42500000,
-        'amountDecimal': '42.500000',
-        'currency': 'USDC',
-        'createdAt': '2026-06-04T12:00:00.000Z',
-      });
-
       expect(transaction.amount, 42.5);
       expect(transaction.fee, 1);
-      expect(item.amount, 42.5);
     });
 
     test(
@@ -1712,9 +2359,10 @@ void main() {
       expect(page.transactions.single.isCredit, isTrue);
     });
 
-    test('transaction list item honors backend direction aliases', () {
-      final sent = TransactionItem.fromJson({
+    test('transaction parser honors backend direction aliases', () {
+      final sent = wallet_tx.Transaction.fromJson({
         'id': 'tx_sent',
+        'walletId': 'wallet_1',
         'type': 'internal_transfer_sent',
         'amount': 25,
         'currency': 'USDC',
@@ -1722,8 +2370,9 @@ void main() {
         'direction': 'debit',
         'createdAt': '2026-06-04T12:00:00.000Z',
       });
-      final received = TransactionItem.fromJson({
+      final received = wallet_tx.Transaction.fromJson({
         'id': 'tx_received',
+        'walletId': 'wallet_1',
         'type': 'internal_transfer_received',
         'amount': 25,
         'currency': 'USDC',
@@ -1738,30 +2387,28 @@ void main() {
       expect(received.isDebit, isFalse);
     });
 
-    test(
-      'transaction list item normalizes status and counterparty aliases',
-      () {
-        final item = TransactionItem.fromJson({
-          'transactionId': 'tx_1',
-          'type': 'transfer_in',
-          'amount': 25,
-          'currency': 'USDC',
-          'status': 'SUCCESS',
-          'note': 'Dinner',
-          'recipientPhone': '+2250748805663',
-          'recipientName': 'Awa Korido',
-          'createdAt': '2026-06-04T12:00:00.000Z',
-        });
+    test('transaction parser normalizes status and counterparty aliases', () {
+      final transaction = wallet_tx.Transaction.fromJson({
+        'transactionId': 'tx_1',
+        'walletId': 'wallet_1',
+        'type': 'transfer_in',
+        'amount': 25,
+        'currency': 'USDC',
+        'status': 'SUCCESS',
+        'note': 'Dinner',
+        'recipientPhone': '+2250748805663',
+        'recipientName': 'Awa Korido',
+        'createdAt': '2026-06-04T12:00:00.000Z',
+      });
 
-        expect(item.id, 'tx_1');
-        expect(item.type, 'transfer_in');
-        expect(item.status, 'completed');
-        expect(item.description, 'Dinner');
-        expect(item.counterpartyName, 'Awa Korido');
-        expect(item.counterpartyPhone, '+2250748805663');
-        expect(item.isCredit, isTrue);
-      },
-    );
+      expect(transaction.id, 'tx_1');
+      expect(transaction.type, TransactionType.transferInternal);
+      expect(transaction.status, TransactionStatus.completed);
+      expect(transaction.description, 'Dinner');
+      expect(transaction.counterpartyName, 'Awa Korido');
+      expect(transaction.counterpartyPhone, '+2250748805663');
+      expect(transaction.isCredit, isTrue);
+    });
 
     test(
       'devices repository accepts backend device fields used by screen',
@@ -1877,6 +2524,69 @@ void main() {
       expect(dio.requestHistory[4].data, {'name': 'Travel iPhone'});
       expect(dio.requestHistory[5].method, 'DELETE');
       expect(dio.requestHistory[5].path, '/devices/device_1');
+    });
+
+    test('devices repository maps action failures to ApiException', () async {
+      Future<void> expectDeviceApiException(
+        String expectedMethod,
+        String expectedPath,
+        Future<void> Function(DevicesRepository repository) action,
+      ) async {
+        final dio = MockDio()
+          ..queueErrorResponse(statusCode: 403, message: 'Forbidden');
+        final repository = DevicesRepository(dio);
+
+        await expectLater(
+          action(repository),
+          throwsA(
+            isA<ApiException>().having(
+              (error) => error.statusCode,
+              'statusCode',
+              403,
+            ),
+          ),
+        );
+
+        expect(dio.requestHistory.single.method, expectedMethod);
+        expect(dio.requestHistory.single.path, expectedPath);
+      }
+
+      await expectDeviceApiException('POST', '/devices/register', (
+        repository,
+      ) async {
+        await repository.registerDevice(
+          deviceId: 'ios-vendor-id',
+          platform: 'ios',
+        );
+      });
+      await expectDeviceApiException(
+        'POST',
+        '/devices/device_1/trust',
+        (repository) => repository.trustDevice('device_1'),
+      );
+      await expectDeviceApiException(
+        'POST',
+        '/devices/device_1/untrust',
+        (repository) => repository.untrustDevice('device_1'),
+      );
+      await expectDeviceApiException(
+        'POST',
+        '/devices/fcm-token',
+        (repository) => repository.updateFcmToken(
+          deviceIdentifier: 'ios-vendor-id',
+          fcmToken: 'fcm-token',
+        ),
+      );
+      await expectDeviceApiException(
+        'POST',
+        '/devices/device_1/rename',
+        (repository) => repository.renameDevice('device_1', 'Travel iPhone'),
+      );
+      await expectDeviceApiException(
+        'DELETE',
+        '/devices/device_1',
+        (repository) => repository.revokeDevice('device_1'),
+      );
     });
 
     test(
@@ -2191,6 +2901,34 @@ void main() {
       );
     });
 
+    test('contacts API check sends only canonical phone hashes', () async {
+      final validHash = 'a'.padLeft(64, 'a');
+      final dio = MockDio()..queueResponse({'registered': []});
+      final api = ContactsApi(dio);
+
+      await api.checkPhoneHashes([
+        validHash.toUpperCase(),
+        validHash,
+        '0748805663',
+        'not-a-hash',
+      ], permissionStatus: 'limited');
+
+      expect(dio.requestHistory.single.path, '/contacts/check');
+      expect(dio.requestHistory.single.data, {
+        'permissionStatus': 'limited',
+        'phoneHashes': [validHash],
+      });
+    });
+
+    test('contacts API wrapper refuses raw phone contact checks', () async {
+      final api = ContactsApi(MockDio());
+
+      expect(
+        () => api.checkContacts(['+2250748805663']),
+        throwsA(isA<UnsupportedError>()),
+      );
+    });
+
     test(
       'send recipient validation accepts nested contact sync matches',
       () async {
@@ -2272,6 +3010,19 @@ void main() {
       },
     );
 
+    test('send recipient screen derives phone country UI from metadata', () {
+      final source = File(
+        'lib/features/send/views/recipient_screen.dart',
+      ).readAsStringSync();
+
+      expect(source, contains('SupportedCountries.all'));
+      expect(source, contains('selectedCountryProvider'));
+      expect(source, contains('_selectedCountry().phoneLength'));
+      expect(source, contains('_selectedDialCode()'));
+      expect(source, isNot(contains("_selectedCountryCode = '+225'")));
+      expect(source, isNot(contains('_supportedDialCodes')));
+    });
+
     test(
       'send recipient validation rejects current user before lookup',
       () async {
@@ -2330,6 +3081,34 @@ void main() {
       expect(state.recipient, isNull);
       expect(state.error, 'recipient_is_current_user');
     });
+
+    test(
+      'known Korido recipient stores canonical E.164 phone values',
+      () async {
+        final container = ProviderContainer(
+          overrides: [
+            userStateMachineProvider.overrideWith(
+              () => _CountryUserStateMachine('CI'),
+            ),
+            auth.authProvider.overrideWith(_QuietAuthNotifier.new),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await container
+            .read(sendMoneyProvider.notifier)
+            .setKnownKoridoRecipient(
+              phoneNumber: '+225+2250748805663',
+              userId: 'user_recipient',
+              name: 'Awa Korido',
+            );
+
+        final state = container.read(sendMoneyProvider);
+        expect(state.error, isNull);
+        expect(state.recipient?.phoneNumber, '+2250748805663');
+        expect(state.recipient?.userId, 'user_recipient');
+      },
+    );
 
     test(
       'known Korido recipient rejects current username case-insensitively',
@@ -2393,15 +3172,15 @@ void main() {
       final getDeviceContactsBody = RegExp(
         r'Future<List<Contact>> getDeviceContacts\(\) async \{([\s\S]*?)\n  \}',
       ).firstMatch(contactsServiceSource)!.group(1)!;
-      final contactSyncProviderSource = File(
-        'lib/features/contacts/providers/contact_sync_provider.dart',
+      final contactsProviderSource = File(
+        'lib/features/contacts/providers/contacts_provider.dart',
       ).readAsStringSync();
       final syncContactsBody = RegExp(
-        r'Future<void> syncContacts\(\) async \{([\s\S]*?)\n  Future<void> syncIfNeeded',
-      ).firstMatch(contactSyncProviderSource)!.group(1)!;
+        r'Future<void> syncContacts\(\) async \{([\s\S]*?)\n  Future<List<SyncedContact>> _getMockContacts',
+      ).firstMatch(contactsProviderSource)!.group(1)!;
       final requestPermissionBody = RegExp(
-        r'Future<bool> requestPermission\(\) async \{([\s\S]*?)\n  /// Sync device contacts',
-      ).firstMatch(contactSyncProviderSource)!.group(1)!;
+        r'Future<bool> requestPermission\(\) async \{([\s\S]*?)\n\}',
+      ).firstMatch(contactsProviderSource)!.group(1)!;
 
       expect(getDeviceContactsBody, contains('Permission.contacts.status'));
       expect(getDeviceContactsBody, isNot(contains('requestPermission')));
@@ -2413,8 +3192,7 @@ void main() {
         syncContactsBody,
         contains('contactsService.hasContactsPermission'),
       );
-      expect(syncContactsBody, contains('defaultCountryPrefix'));
-      expect(syncContactsBody, contains('syncPhoneHashes'));
+      expect(syncContactsBody, contains('_getSyncedDeviceContacts'));
       expect(syncContactsBody, isNot(contains('await requestPermission')));
       expect(syncContactsBody, isNot(contains('Permission.contacts.request')));
       expect(syncContactsBody, isNot(contains('Permission.contacts.status')));
@@ -2430,13 +3208,8 @@ void main() {
         requestPermissionBody,
         isNot(contains('Permission.contacts.request')),
       );
-      expect(contactSyncProviderSource, isNot(contains('permission_handler')));
-
-      final contactActionsSource = File(
-        'lib/features/contacts/providers/contacts_provider.dart',
-      ).readAsStringSync();
       expect(
-        contactActionsSource,
+        contactsProviderSource,
         contains('defaultCountryPrefix: _defaultCountryPrefix'),
         reason:
             'manual contact sync must hash local numbers with the active market prefix',
@@ -2451,6 +3224,12 @@ void main() {
         isNot(contains('_requestPermissionAndSync(showSettingsDialog: false)')),
         reason:
             'screen entry should show the permission card; the OS prompt belongs to the explicit Allow action',
+      );
+      expect(
+        contactsListSource,
+        isNot(contains("context.go('/contacts/permission')")),
+        reason:
+            'contacts should keep permission handling inline while preserving Korido lookup without phone-book access',
       );
     });
 
@@ -2519,7 +3298,7 @@ void main() {
         'lib/services/realtime/realtime_service.dart',
       ).readAsStringSync();
       final refreshAfterTransactionBody = RegExp(
-        r'void refreshAfterTransaction\(\) \{([\s\S]*?)\n  // ── WebSocket ──',
+        r'void refreshAfterTransaction\(\) \{([\s\S]*?)\n  // ── Socket\.IO ──',
       ).firstMatch(realtimeSource)!.group(1)!;
       final invalidateRecipientProvidersBody = RegExp(
         r'void _invalidateRecipientProviders\(\) \{([\s\S]*?)\n  \}',
@@ -2531,15 +3310,15 @@ void main() {
       );
       expect(
         invalidateRecipientProvidersBody,
-        contains('wallet_contacts.contactsProvider'),
+        contains('wallet_recipients.savedRecipientsProvider'),
       );
       expect(
         invalidateRecipientProvidersBody,
-        contains('wallet_contacts.favoritesProvider'),
+        contains('wallet_recipients.favoriteRecipientsProvider'),
       );
       expect(
         invalidateRecipientProvidersBody,
-        contains('wallet_contacts.recentsProvider'),
+        contains('wallet_recipients.recentRecipientsProvider'),
       );
     });
   });

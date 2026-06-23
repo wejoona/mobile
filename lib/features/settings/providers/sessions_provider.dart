@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/domain/entities/device.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/settings/models/session.dart';
 import 'package:usdc_wallet/features/settings/providers/devices_provider.dart';
@@ -12,6 +13,7 @@ class SessionsState {
     this.error,
     this.sessions = const [],
     this.currentSessionId,
+    this.currentSessionResolved = false,
     this.requiresUnlock = false,
   });
 
@@ -19,6 +21,7 @@ class SessionsState {
   final String? error;
   final List<Session> sessions;
   final String? currentSessionId;
+  final bool currentSessionResolved;
   final bool requiresUnlock;
 
   SessionsState copyWith({
@@ -26,6 +29,7 @@ class SessionsState {
     String? error,
     List<Session>? sessions,
     String? currentSessionId,
+    bool? currentSessionResolved,
     bool? requiresUnlock,
     bool clearCurrentSessionId = false,
   }) => SessionsState(
@@ -35,6 +39,8 @@ class SessionsState {
     currentSessionId: clearCurrentSessionId
         ? null
         : (currentSessionId ?? this.currentSessionId),
+    currentSessionResolved:
+        currentSessionResolved ?? this.currentSessionResolved,
     requiresUnlock: requiresUnlock ?? this.requiresUnlock,
   );
 }
@@ -56,13 +62,14 @@ class SessionsNotifier extends Notifier<SessionsState> {
     try {
       final sessions = await repository.getSessions();
 
-      final currentSession = _resolveCurrentSession(sessions);
+      final currentSession = await _resolveCurrentSessionId(sessions);
 
       state = state.copyWith(
         isLoading: false,
         sessions: sessions,
-        currentSessionId: currentSession?.id,
-        clearCurrentSessionId: currentSession == null,
+        currentSessionId: currentSession.sessionId,
+        currentSessionResolved: currentSession.isResolved,
+        clearCurrentSessionId: currentSession.sessionId == null,
         requiresUnlock: false,
       );
     } on ApiException catch (e) {
@@ -73,12 +80,13 @@ class SessionsNotifier extends Notifier<SessionsState> {
       if (e.statusCode == 401 && await _refreshAuthForRetry()) {
         try {
           final sessions = await repository.getSessions();
-          final currentSession = _resolveCurrentSession(sessions);
+          final currentSession = await _resolveCurrentSessionId(sessions);
           state = state.copyWith(
             isLoading: false,
             sessions: sessions,
-            currentSessionId: currentSession?.id,
-            clearCurrentSessionId: currentSession == null,
+            currentSessionId: currentSession.sessionId,
+            currentSessionResolved: currentSession.isResolved,
+            clearCurrentSessionId: currentSession.sessionId == null,
             error: null,
             requiresUnlock: false,
           );
@@ -130,6 +138,22 @@ class SessionsNotifier extends Notifier<SessionsState> {
 
   /// Revoke a specific session
   Future<bool> revokeSession(String sessionId) async {
+    if (!state.currentSessionResolved || state.currentSessionId == null) {
+      state = state.copyWith(
+        error: 'We are still verifying this device. Refresh and try again.',
+        requiresUnlock: false,
+      );
+      return false;
+    }
+
+    if (sessionId == state.currentSessionId) {
+      state = state.copyWith(
+        error: 'Use Log out to end your current session.',
+        requiresUnlock: false,
+      );
+      return false;
+    }
+
     try {
       final repository = ref.read(sessionsRepositoryProvider);
       await repository.revokeSession(sessionId);
@@ -194,6 +218,7 @@ class SessionsNotifier extends Notifier<SessionsState> {
     state = state.copyWith(
       sessions: const [],
       currentSessionId: null,
+      currentSessionResolved: false,
       clearCurrentSessionId: true,
       error: null,
       requiresUnlock: false,
@@ -206,6 +231,7 @@ class SessionsNotifier extends Notifier<SessionsState> {
       isLoading: false,
       sessions: const [],
       currentSessionId: null,
+      currentSessionResolved: false,
       clearCurrentSessionId: true,
       error: error.message,
       requiresUnlock: false,
@@ -260,30 +286,64 @@ class SessionsNotifier extends Notifier<SessionsState> {
           ? 'Please unlock Korido again to continue.'
           : 'Please sign in again to manage active sessions.',
       requiresUnlock: authState.isLocked,
+      currentSessionResolved: false,
       clearCurrentSessionId: true,
     );
     return false;
   }
 
-  Session? _resolveCurrentSession(List<Session> sessions) {
+  Future<_CurrentSessionResolution> _resolveCurrentSessionId(
+    List<Session> sessions,
+  ) async {
     if (sessions.isEmpty) {
-      return null;
+      return const _CurrentSessionResolution(sessionId: null, isResolved: true);
     }
 
-    final currentDevice = ref.read(currentDeviceProvider);
-    final currentDeviceId = currentDevice?.id;
+    final devices = await ref
+        .read(devicesProvider.future)
+        .catchError((_) => const <Device>[]);
+    var localDeviceId = '';
+    try {
+      localDeviceId = await ref.read(localDeviceIdProvider.future);
+    } on Object {
+      localDeviceId = '';
+    }
+
+    String? currentDeviceId;
+    for (final device in devices) {
+      final isCurrentDevice =
+          device.isCurrent ||
+          (localDeviceId.isNotEmpty &&
+              device.deviceIdentifier == localDeviceId);
+      if (isCurrentDevice) {
+        currentDeviceId = device.id;
+        break;
+      }
+    }
+
     if (currentDeviceId != null && currentDeviceId.isNotEmpty) {
       for (final session in sessions) {
         if (session.deviceId == currentDeviceId) {
-          return session;
+          return _CurrentSessionResolution(
+            sessionId: session.id,
+            isResolved: true,
+          );
         }
       }
     }
 
-    return sessions.reduce(
-      (a, b) => a.lastActivityAt.isAfter(b.lastActivityAt) ? a : b,
-    );
+    return const _CurrentSessionResolution(sessionId: null, isResolved: false);
   }
+}
+
+class _CurrentSessionResolution {
+  const _CurrentSessionResolution({
+    required this.sessionId,
+    required this.isResolved,
+  });
+
+  final String? sessionId;
+  final bool isResolved;
 }
 
 /// Sessions Provider

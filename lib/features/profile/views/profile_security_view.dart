@@ -1,16 +1,16 @@
-import 'package:usdc_wallet/design/components/primitives/list_tile_card.dart';
-import 'package:usdc_wallet/design/components/primitives/gradient_card.dart';
-import 'package:usdc_wallet/design/components/primitives/section_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/gradient_card.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/design/components/primitives/list_tile_card.dart';
+import 'package:usdc_wallet/design/components/primitives/section_header.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
 import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
-import 'package:usdc_wallet/features/settings/providers/security_settings_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/biometric/biometric_provider.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart'
     show userStateMachineProvider;
 
@@ -44,14 +44,14 @@ class ProfileSecurityView extends ConsumerWidget {
             title: l10n.security_changePin,
             subtitle: l10n.security_changePinSubtitle,
             status: _SecurityStatus.active,
-            onTap: () => Navigator.of(context).pushNamed('/pin/change'),
+            onTap: () => context.fsmPush('/settings/pin'),
           ),
           _SecurityOption(
             icon: Icons.fingerprint,
             title: l10n.security_biometricLogin,
             subtitle: l10n.security_biometricSubtitle,
             status: _SecurityStatus.active,
-            onTap: () => Navigator.of(context).pushNamed('/settings/biometric'),
+            onTap: () => context.fsmPush('/settings/biometric'),
           ),
           const SizedBox(height: AppSpacing.xxl),
           SectionHeader(title: l10n.security_devices),
@@ -61,14 +61,14 @@ class ProfileSecurityView extends ConsumerWidget {
             title: l10n.security_devices,
             subtitle: l10n.security_devicesSubtitle,
             status: _SecurityStatus.info,
-            onTap: () => Navigator.of(context).pushNamed('/settings/devices'),
+            onTap: () => context.fsmPush('/settings/devices'),
           ),
           _SecurityOption(
             icon: Icons.history,
             title: l10n.security_activeSessions,
             subtitle: l10n.security_activeSessionsSubtitle,
             status: _SecurityStatus.info,
-            onTap: () => Navigator.of(context).pushNamed('/settings/sessions'),
+            onTap: () => context.fsmPush('/settings/sessions'),
           ),
         ],
       ),
@@ -85,7 +85,9 @@ class _SecurityScoreCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final profileState = ref.watch(profileProvider);
-    final securitySettings = ref.watch(securitySettingsProvider);
+    final biometricEnabled = ref
+        .watch(biometricEnabledProvider)
+        .maybeWhen(data: (value) => value, orElse: () => false);
     final kycStatus = ref.watch(kycStatusProvider);
     final userState = ref.watch(userStateMachineProvider);
 
@@ -97,7 +99,7 @@ class _SecurityScoreCard extends ConsumerWidget {
     if (user?.hasPin == true) score += 25;
 
     // Biometric enabled (+25)
-    if (securitySettings.biometricEnabled) score += 25;
+    if (biometricEnabled) score += 25;
 
     // KYC verified (+25)
     final kycVerified =

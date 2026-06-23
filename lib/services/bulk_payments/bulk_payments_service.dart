@@ -31,7 +31,7 @@ class BulkPaymentsService {
   Future<BulkBatch> submitBatch(
     BulkBatch batch, {
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) async {
     final response = await _dio.post(
       '/bulk-payments/batches',

@@ -5,6 +5,109 @@ import '../../helpers/test_utils.dart';
 
 void main() {
   group('AuthService', () {
+    test('login keeps local phone internal but sends E.164 to API', () async {
+      final dio = MockDio();
+      final authService = AuthService(dio, MockSecureStorage());
+
+      dio.queueResponse({
+        'success': true,
+        'message': 'OTP sent',
+        'expiresIn': 300,
+      });
+
+      await authService.login(phone: '0748805663', countryCode: '+225');
+
+      expect(dio.requestHistory.single.method, 'POST');
+      expect(dio.requestHistory.single.path, '/auth/login');
+      expect(dio.requestHistory.single.data, {
+        'phone': '+2250748805663',
+        'countryCode': 'CI',
+      });
+    });
+
+    test(
+      'login repairs duplicated dial code before sending API body',
+      () async {
+        final dio = MockDio();
+        final authService = AuthService(dio, MockSecureStorage());
+
+        dio.queueResponse({
+          'success': true,
+          'message': 'OTP sent',
+          'expiresIn': 300,
+        });
+
+        await authService.login(
+          phone: '+225+2250748805663',
+          countryCode: '+225',
+        );
+
+        expect(dio.requestHistory.single.method, 'POST');
+        expect(dio.requestHistory.single.path, '/auth/login');
+        expect(dio.requestHistory.single.data, {
+          'phone': '+2250748805663',
+          'countryCode': 'CI',
+        });
+      },
+    );
+
+    test('requestRecoveryOtp sends PIN reset recovery purpose', () async {
+      final dio = MockDio();
+      final authService = AuthService(dio, MockSecureStorage());
+
+      dio.queueResponse({
+        'success': true,
+        'message': 'Recovery code sent',
+        'expiresIn': 300,
+        'reused': true,
+        'resendAvailableIn': 60,
+      });
+
+      final response = await authService.requestRecoveryOtp(
+        phone: '0748805663',
+        countryCode: '+225',
+      );
+
+      expect(dio.requestHistory.single.method, 'POST');
+      expect(dio.requestHistory.single.path, '/auth/recovery/request-otp');
+      expect(dio.requestHistory.single.data, {
+        'phone': '+2250748805663',
+        'countryCode': 'CI',
+        'scope': 'pin_reset',
+      });
+      expect(response.reused, isTrue);
+      expect(response.resendAvailableIn, 60);
+    });
+
+    test('register sends E.164 phone and ISO country code to API', () async {
+      final dio = MockDio();
+      final authService = AuthService(dio, MockSecureStorage());
+
+      dio.queueResponse({
+        'success': true,
+        'message': 'OTP sent',
+        'expiresIn': 300,
+      });
+
+      await authService.register(
+        phone: '0748805663',
+        countryCode: 'CI',
+        acceptedTerms: true,
+        termsVersion: 'terms-v1',
+        privacyVersion: 'privacy-v1',
+      );
+
+      expect(dio.requestHistory.single.method, 'POST');
+      expect(dio.requestHistory.single.path, '/auth/register');
+      expect(dio.requestHistory.single.data, {
+        'phone': '+2250748805663',
+        'countryCode': 'CI',
+        'acceptedTerms': true,
+        'termsVersion': 'terms-v1',
+        'privacyVersion': 'privacy-v1',
+      });
+    });
+
     test('verifyOtp only verifies OTP and parses the auth response', () async {
       final dio = MockDio();
       final authService = AuthService(dio, MockSecureStorage());
@@ -27,7 +130,8 @@ void main() {
       });
 
       final response = await authService.verifyOtp(
-        phone: '+2250102030405',
+        phone: '0102030405',
+        countryCode: 'CI',
         otp: '123456',
       );
 
@@ -35,6 +139,11 @@ void main() {
       expect(dio.requestHistory, hasLength(1));
       expect(dio.requestHistory.single.method, 'POST');
       expect(dio.requestHistory.single.path, '/auth/verify-otp');
+      expect(dio.requestHistory.single.data, {
+        'phone': '+2250102030405',
+        'countryCode': 'CI',
+        'otp': '123456',
+      });
     });
 
     test(

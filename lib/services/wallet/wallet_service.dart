@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
+import 'package:usdc_wallet/features/deposit/models/deposit_channel_id.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
@@ -15,22 +17,25 @@ class WalletService {
   Future<WalletBalanceResponse> getBalance() async {
     try {
       final response = await _dio.get(
-        '/wallet',
+        ApiEndpoints.walletBalance,
         options: Options(
           receiveTimeout: const Duration(seconds: 10),
           sendTimeout: const Duration(seconds: 10),
           validateStatus: (status) =>
-              status != null && (status < 400 || status == 404),
+              status != null &&
+              ((status >= 200 && status < 300) || status == 404),
         ),
       );
       if (response.statusCode == 404) {
-        return createWallet();
+        throw ApiException(
+          message: 'Wallet not found',
+          statusCode: response.statusCode,
+          data: response.data,
+          code: ApiException.errorCode(response.data),
+        );
       }
       return WalletBalanceResponse.fromJson(response.data);
     } on DioException catch (e) {
-      if (e.response?.statusCode == 404) {
-        return createWallet();
-      }
       throw ApiException.fromDioError(e);
     }
   }
@@ -39,7 +44,7 @@ class WalletService {
   Future<WalletBalanceResponse> createWallet() async {
     try {
       final response = await _dio.post(
-        '/wallet/create',
+        ApiEndpoints.walletCreate,
         options: Options(
           receiveTimeout: const Duration(seconds: 15),
           sendTimeout: const Duration(seconds: 10),
@@ -55,7 +60,7 @@ class WalletService {
   Future<List<DepositChannel>> getDepositChannels({String? currency}) async {
     try {
       final response = await _dio.get(
-        '/wallet/deposit/channels',
+        ApiEndpoints.depositChannels,
         queryParameters: currency == null ? null : {'currency': currency},
       );
       final data = response.data;
@@ -81,14 +86,17 @@ class WalletService {
     required String sourceCurrency,
     required String channelId,
     required String phoneNumber,
+    String? countryCode,
   }) async {
     try {
       final response = await _dio.post(
-        '/wallet/deposit',
+        ApiEndpoints.depositInitiate,
         data: {
           'amount': amount.round(),
           'sourceCurrency': sourceCurrency,
-          'channelId': _mobileMoneyChannelId(channelId),
+          'channelId': normalizeDepositChannelId(channelId),
+          if (countryCode?.trim().isNotEmpty == true)
+            'countryCode': countryCode!.trim().toUpperCase(),
           if (phoneNumber.trim().isNotEmpty) 'phoneNumber': phoneNumber.trim(),
         },
         options: Options(
@@ -107,12 +115,12 @@ class WalletService {
     required double amount,
     required String currency,
     String? note,
-    String? pinToken,
-    String? idempotencyKey,
+    required String pinToken,
+    required String idempotencyKey,
   }) async {
     try {
       final response = await _dio.post(
-        '/wallet/transfer/internal',
+        ApiEndpoints.transfersSend,
         data: {
           'toPhone': toPhone,
           'amount': amount,
@@ -139,12 +147,12 @@ class WalletService {
     required String currency,
     String? network,
     String? note,
-    String? pinToken,
-    String? idempotencyKey,
+    required String pinToken,
+    required String idempotencyKey,
   }) async {
     try {
       final response = await _dio.post(
-        '/wallet/transfer/external',
+        ApiEndpoints.transfersExternal,
         data: {
           'toAddress': toAddress,
           'amount': amount,
@@ -173,13 +181,14 @@ class WalletService {
     String direction = 'deposit',
   }) async {
     try {
+      final canonicalDirection = _canonicalRateDirection(direction);
       final response = await _dio.get(
-        '/wallet/exchange-rate',
+        ApiEndpoints.walletExchangeRate,
         queryParameters: {
           'sourceCurrency': sourceCurrency,
           'targetCurrency': targetCurrency,
           'amount': amount,
-          'direction': direction,
+          'direction': canonicalDirection,
         },
       );
       return _exchangeRateFromPayload(
@@ -193,28 +202,31 @@ class WalletService {
     }
   }
 
-  /// POST /wallet/withdraw
+  /// POST /wallet/transfer/external
   Future<WithdrawResponse> withdraw({
     required double amount,
     required String destinationAddress,
     String? network,
     String? method,
-    String? pinToken,
-    String? idempotencyKey,
+    required String pinToken,
+    required String idempotencyKey,
+    String? stepUpToken,
   }) async {
     try {
       final response = await _dio.post(
-        '/wallet/withdraw',
+        ApiEndpoints.transfersExternal,
         data: {
           'amount': amount,
-          'destinationAddress': destinationAddress,
+          'toAddress': destinationAddress,
           'network': network ?? 'polygon',
+          'currency': 'USDC',
           if (method != null) 'method': method,
         },
         options: Options(
           headers: _transactionHeaders(
             pinToken: pinToken,
             idempotencyKey: idempotencyKey,
+            stepUpToken: stepUpToken,
           ),
         ),
       );
@@ -227,7 +239,7 @@ class WalletService {
   /// GET /kyc/status
   Future<KycStatusResponse> getKycStatus() async {
     try {
-      final response = await _dio.get('/kyc/status');
+      final response = await _dio.get(ApiEndpoints.kycStatus);
       return KycStatusResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -247,7 +259,7 @@ class WalletService {
   }) async {
     try {
       final response = await _dio.post(
-        '/kyc/submit',
+        ApiEndpoints.kycSubmit,
         data: {
           'firstName': firstName,
           'lastName': lastName,
@@ -265,14 +277,32 @@ class WalletService {
     }
   }
 
-  /// GET /wallet/limits
+  /// GET /user/limits
   Future<TransactionLimitsResponse> getTransactionLimits() async {
     try {
-      final response = await _dio.get('/wallet/limits');
+      final response = await _dio.get(ApiEndpoints.limits);
       return TransactionLimitsResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
+  }
+}
+
+String _canonicalRateDirection(String direction) {
+  switch (direction.trim().toLowerCase()) {
+    case 'sell':
+    case 'withdraw':
+    case 'withdrawal':
+    case 'cash_out':
+    case 'cash-out':
+    case 'payout':
+      return 'sell';
+    case 'buy':
+    case 'deposit':
+    case 'payin':
+    case 'pay-in':
+    default:
+      return 'buy';
   }
 }
 
@@ -391,6 +421,8 @@ class WalletBalanceResponse {
         payload['wallet_address'] as String? ??
         payload['circleWalletAddress'] as String? ??
         payload['circle_wallet_address'] as String? ??
+        payload['stellarAddress'] as String? ??
+        payload['stellar_address'] as String? ??
         payload['address'] as String? ??
         payload['publicAddress'] as String? ??
         payload['public_address'] as String? ??
@@ -404,6 +436,19 @@ class WalletBalanceResponse {
           .whereType<Map>()
           .map((e) => WalletBalance.fromJson(Map<String, dynamic>.from(e)))
           .toList();
+
+      final flatBalance = _flatBalanceFromPayload(payload);
+      if (flatBalance != null && !_hasSpendableBalance(balances)) {
+        final usdcIndex = balances.indexWhere(
+          (balance) => balance.currency.toUpperCase() == 'USDC',
+        );
+        balances = [...balances];
+        if (usdcIndex == -1) {
+          balances.add(flatBalance);
+        } else {
+          balances[usdcIndex] = flatBalance;
+        }
+      }
     } else if (payload['balance'] != null ||
         payload['available'] != null ||
         payload['availableBalance'] != null ||
@@ -494,6 +539,80 @@ List<Map<String, dynamic>> _balanceEntries(Object? raw) {
   }
 
   return const [];
+}
+
+WalletBalance? _flatBalanceFromPayload(Map<String, dynamic> payload) {
+  const balanceKeys = [
+    'availableDecimal',
+    'available_decimal',
+    'availableBalanceDecimal',
+    'available_balance_decimal',
+    'balanceDecimal',
+    'balance_decimal',
+    'available',
+    'availableBalance',
+    'available_balance',
+    'balanceUsdc',
+    'balance',
+    'total',
+  ];
+  const pendingKeys = [
+    'pendingDecimal',
+    'pending_decimal',
+    'pendingBalanceDecimal',
+    'pending_balance_decimal',
+    'pending',
+    'pendingBalance',
+    'pending_balance',
+  ];
+  const totalKeys = [
+    'totalDecimal',
+    'total_decimal',
+    'totalBalanceDecimal',
+    'total_balance_decimal',
+    'balanceDecimal',
+    'balance_decimal',
+    'total',
+    'totalBalance',
+    'total_balance',
+    'balanceUsdc',
+    'balance',
+  ];
+
+  if (!_hasAnyAmountKey(payload, balanceKeys) &&
+      !_hasAnyAmountKey(payload, pendingKeys) &&
+      !_hasAnyAmountKey(payload, totalKeys)) {
+    return null;
+  }
+
+  final balance = _readAmount(payload, balanceKeys);
+  final pending = _readAmount(payload, pendingKeys);
+  final total = _readAmount(payload, totalKeys);
+
+  return WalletBalance(
+    currency: payload['currency'] as String? ?? 'USDC',
+    available: balance,
+    pending: pending,
+    total: total == 0 ? balance + pending : total,
+  );
+}
+
+bool _hasSpendableBalance(List<WalletBalance> balances) {
+  for (final balance in balances) {
+    if (balance.available > 0 || balance.pending > 0 || balance.total > 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool _hasAnyAmountKey(Map<String, dynamic> payload, List<String> keys) {
+  for (final key in keys) {
+    if (payload.containsKey(key) && payload[key] != null) {
+      return true;
+    }
+  }
+  return false;
 }
 
 Map<String, dynamic> _walletPayload(Map<String, dynamic> json) {
@@ -703,6 +822,8 @@ class WithdrawResponse {
       amount: _readAmount(json, const ['amountDecimal', 'amount']),
       destinationAddress:
           json['destinationAddress'] as String? ??
+          json['toAddress'] as String? ??
+          json['recipientAddress'] as String? ??
           json['phoneNumber'] as String? ??
           '',
       network:
@@ -806,12 +927,15 @@ final walletServiceProvider = Provider<WalletService>((ref) {
 });
 
 Map<String, String> _transactionHeaders({
-  String? pinToken,
-  String? idempotencyKey,
+  required String pinToken,
+  required String idempotencyKey,
+  String? stepUpToken,
 }) {
   return {
-    if (pinToken != null) 'X-Pin-Token': pinToken,
-    'X-Idempotency-Key': idempotencyKey ?? generateIdempotencyKey(),
+    'X-Pin-Token': pinToken,
+    'X-Idempotency-Key': idempotencyKey,
+    if (stepUpToken != null && stepUpToken.isNotEmpty)
+      'X-Step-Up-Token': stepUpToken,
   };
 }
 
@@ -819,32 +943,4 @@ Map<String, dynamic> _asStringMap(Object? value) {
   if (value is Map<String, dynamic>) return value;
   if (value is Map) return Map<String, dynamic>.from(value);
   return const <String, dynamic>{};
-}
-
-String _mobileMoneyChannelId(String value) {
-  switch (value.replaceAll('-', '_').toLowerCase()) {
-    case 'orange_money_ci':
-    case 'omci':
-    case 'orange':
-    case 'orange_money':
-    case 'mobile_money':
-      return 'orange_money_ci';
-    case 'mtn_momo_ci':
-    case 'mtnci':
-    case 'mtn':
-    case 'mtn_momo':
-    case 'mtn_mobile_money':
-      return 'mtn_momo_ci';
-    case 'moov_money_ci':
-    case 'moovci':
-    case 'moov':
-    case 'moov_money':
-      return 'moov_money_ci';
-    case 'wave_ci':
-    case 'waveci':
-    case 'wave':
-      return 'wave_ci';
-    default:
-      return value;
-  }
 }

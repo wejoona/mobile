@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
 import 'package:usdc_wallet/features/savings_pots/widgets/savings_pot_card.dart';
@@ -8,6 +7,7 @@ import 'package:usdc_wallet/features/savings_pots/widgets/create_pot_sheet.dart'
 import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
 import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Savings pots list screen.
 class SavingsPotsListView extends ConsumerWidget {
@@ -29,8 +29,15 @@ class SavingsPotsListView extends ConsumerWidget {
         ],
       ),
       body: potsAsync.when(
-        loading: () => const Padding(padding: EdgeInsets.all(16), child: ShimmerList(itemCount: 3)),
-        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.savingsPots_error(e.toString()))),
+        loading: () => const Padding(
+          padding: EdgeInsets.all(16),
+          child: ShimmerList(itemCount: 3),
+        ),
+        error: (e, _) => Center(
+          child: Text(
+            AppLocalizations.of(context)!.savingsPots_error(e.toString()),
+          ),
+        ),
         data: (pots) {
           if (pots.isEmpty) {
             return EmptyState(
@@ -50,13 +57,28 @@ class SavingsPotsListView extends ConsumerWidget {
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
-                      Text(AppLocalizations.of(context)!.savingsGoals_totalSavings, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                      Text(
+                        AppLocalizations.of(context)!.savingsGoals_totalSavings,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      Text(formatXof(totalSavings), style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
+                      Text(
+                        formatXof(totalSavings),
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
                     ],
                   ),
                 ),
-                ...pots.map((pot) => SavingsPotCard(pot: pot, onTap: () => context.push('/savings-pots/detail/${pot.id}'))),
+                ...pots.map(
+                  (pot) => SavingsPotCard(
+                    pot: pot,
+                    onTap: () =>
+                        context.fsmPush('/savings-pots/detail/${pot.id}'),
+                  ),
+                ),
                 const SizedBox(height: 80),
               ],
             ),
@@ -74,11 +96,17 @@ class SavingsPotsListView extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       builder: (_) => CreatePotSheet(
         onCreate: (name, target, date) async {
           final actions = ref.read(savingsPotsActionsProvider);
-          await actions.create(name: name, targetAmount: target, targetDate: date);
+          await actions.create(
+            name: name,
+            targetAmount: target,
+            targetDate: date,
+          );
           ref.invalidate(savingsPotsProvider);
         },
       ),

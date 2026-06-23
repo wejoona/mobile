@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/environment_config.dart';
-import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/auth/models/login_state.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
 import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
+import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
+import 'package:usdc_wallet/services/app_version/mobile_version_policy_service.dart';
 import 'package:usdc_wallet/services/feature_flags/feature_flags_extensions.dart';
 import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
+import 'package:usdc_wallet/state/app_state.dart';
+import 'package:usdc_wallet/state/fsm/app_fsm.dart' as app_fsm;
 import 'package:usdc_wallet/state/fsm/index.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart' as kyc_machine;
 import 'package:usdc_wallet/state/user_state_machine.dart';
@@ -20,7 +25,9 @@ class RouterRefreshNotifier extends ChangeNotifier {
   RouterRefreshNotifier(Ref ref) {
     ref
       // Listen to auth state changes.
-      ..listen(authProvider, (_, _) => notifyListeners())
+      ..listen(auth.authProvider, (_, _) => notifyListeners())
+      // Login phone/OTP/PIN state is a route context source for /login/*.
+      ..listen(loginProvider, (_, _) => notifyListeners())
       // Listen to session lock/unlock changes.
       ..listen(sessionServiceProvider, (_, _) => notifyListeners())
       // Listen to wallet state changes for onboarding redirect.
@@ -31,16 +38,21 @@ class RouterRefreshNotifier extends ChangeNotifier {
           notifyListeners();
         }
       })
+      // Listen to signup/account setup state so redirects cannot miss profile,
+      // PIN, or local completion changes after OTP verification.
+      ..listen(signupFlowProvider, (_, _) => notifyListeners())
       // Listen to FSM state changes for navigation.
       ..listen(appFsmProvider, (previous, next) {
         if (previous?.currentScreen != next.currentScreen) {
           notifyListeners();
         }
       })
-      ..listen(
-        kyc_machine.kycStateMachineProvider,
-        (_, _) => notifyListeners(),
-      );
+      ..listen(kyc_machine.kycStateMachineProvider, (_, _) => notifyListeners())
+      ..listen(mobileVersionPolicyProvider, (previous, next) {
+        if (previous?.forceUpgrade != next.forceUpgrade) {
+          notifyListeners();
+        }
+      });
   }
 }
 
@@ -50,13 +62,15 @@ final routerRefreshProvider = Provider<RouterRefreshNotifier>(
 
 String? appRedirect(BuildContext context, GoRouterState state) {
   final container = ProviderScope.containerOf(context);
-  final authState = container.read(authProvider);
+  final authState = container.read(auth.authProvider);
   final userState = container.read(userStateMachineProvider);
   final flags = container.read(featureFlagsProvider);
   final sessionState = container.read(sessionServiceProvider);
   final loginState = container.read(loginProvider);
+  final signupState = container.read(signupFlowProvider);
   final appFsmState = container.read(appFsmProvider);
   final kycState = container.read(kyc_machine.kycStateMachineProvider);
+  final versionPolicyState = container.read(mobileVersionPolicyProvider);
 
   final isAuthenticated = authState.isAuthenticated;
   final location = state.matchedLocation;
@@ -73,27 +87,68 @@ String? appRedirect(BuildContext context, GoRouterState state) {
 
   final isWithinSameFlow = _isWithinSameFlow(location, fsmTargetRoute);
   final isOnboardingRoute = _isOnboardingRoute(location);
+  final isSignupRoute =
+      _isSignupRoute(location) || _isLegacySignupRoute(location);
   final isFsmRoute = _isFsmRoute(location);
+  final isPublicRoute = _isPublicRoute(location);
 
   if (location == '/') {
     return null;
   }
 
+  if (versionPolicyState.forceUpgrade && location != '/force-update') {
+    return '/force-update';
+  }
+
+  if (!versionPolicyState.forceUpgrade && location == '/force-update') {
+    return isAuthenticated ? '/home' : '/login';
+  }
+
   final isLockedState =
       !EnvironmentConfig.debugSkipPin &&
-      (authState.isLocked || sessionState.isLocked);
-  final lockRedirect = _lockRedirect(location, isLockedState);
+      (authState.isLocked ||
+          sessionState.isLocked ||
+          appFsmState.session is SessionLocked);
+  final lockRedirect = _lockRedirect(
+    location: location,
+    routeIntent: state.uri.toString(),
+    isLockedState: isLockedState,
+  );
   if (lockRedirect != null) {
     return lockRedirect;
   }
 
   final unlockedLockScreenRedirect = _unlockedLockScreenRedirect(
     location: location,
+    returnTo: state.uri.queryParameters['returnTo'],
     isAuthenticated: isAuthenticated,
     isLockedState: isLockedState,
   );
   if (unlockedLockScreenRedirect != null) {
     return unlockedLockScreenRedirect;
+  }
+
+  final otpContextRedirect = _otpContextRedirect(
+    location: location,
+    isAuthenticated: isAuthenticated,
+    authState: authState,
+    loginState: loginState,
+    signupState: signupState,
+  );
+  if (otpContextRedirect != null) {
+    return otpContextRedirect;
+  }
+
+  final setupRedirect = _authenticatedSetupRedirect(
+    location: location,
+    isAuthenticated: isAuthenticated,
+    isLockedState: isLockedState,
+    authState: authState,
+    userState: userState,
+    signupState: signupState,
+  );
+  if (setupRedirect != null) {
+    return setupRedirect;
   }
 
   if (isAuthenticated &&
@@ -117,21 +172,22 @@ String? appRedirect(BuildContext context, GoRouterState state) {
     fsmTargetRoute: fsmTargetRoute,
     isLockedState: isLockedState,
     isFsmRoute: isFsmRoute,
-    isOnboardingRoute: isOnboardingRoute,
+    isOnboardingRoute: isOnboardingRoute || isSignupRoute,
+    isPublicRoute: isPublicRoute,
     isWithinSameFlow: isWithinSameFlow,
   );
   if (fsmRedirect != null) {
     return fsmRedirect;
   }
 
-  if (!isAuthenticated && !isLockedState && !_isPublicRoute(location)) {
+  if (!isAuthenticated && !isLockedState && !isPublicRoute) {
     return '/login';
   }
 
   final profileRedirect = _profileRedirect(
     location: location,
     isAuthenticated: isAuthenticated,
-    isOnboardingRoute: isOnboardingRoute,
+    isOnboardingRoute: isOnboardingRoute || isSignupRoute,
     authFirstName: authState.user?.firstName,
     stateFirstName: userState.firstName,
     profileKnown: authState.user != null || userState.userId != null,
@@ -144,6 +200,14 @@ String? appRedirect(BuildContext context, GoRouterState state) {
     return '/home';
   }
 
+  final routeGuardRedirect = _routeGuardRedirect(
+    location: location,
+    appFsmState: appFsmState,
+  );
+  if (routeGuardRedirect != null) {
+    return routeGuardRedirect;
+  }
+
   if (isAuthenticated &&
       _requiresVerifiedKycPath(location) &&
       kycState.status.name != 'verified') {
@@ -151,6 +215,25 @@ String? appRedirect(BuildContext context, GoRouterState state) {
   }
 
   return _featureFlagRedirect(location, flags);
+}
+
+String? _routeGuardRedirect({
+  required String location,
+  required app_fsm.AppState appFsmState,
+}) {
+  if (!appFsmState.isAuthenticated) {
+    return null;
+  }
+
+  final guardResult = AppGuards(appFsmState).canAccessRoute(location);
+  if (guardResult is GuardDenied) {
+    _routerLogger.debug(
+      'Route contract denied: $location -> ${guardResult.redirectTo} '
+      '(${guardResult.reason})',
+    );
+    return guardResult.redirectTo;
+  }
+  return null;
 }
 
 String? _loadingWalletRedirect(String location, String fsmTargetRoute) {
@@ -173,24 +256,122 @@ bool _isWithinSameFlow(String location, String fsmTargetRoute) {
   return isWithinSameFlow;
 }
 
-String? _lockRedirect(String location, bool isLockedState) {
-  if (isLockedState &&
-      location != '/session-locked' &&
-      location != '/pin/reset') {
-    return '/session-locked';
+String? _lockRedirect({
+  required String location,
+  required String routeIntent,
+  required bool isLockedState,
+}) {
+  if (isLockedState && !_isAllowedWhenLockedRoute(location)) {
+    final returnTo = Uri.encodeComponent(routeIntent);
+    return '/session-locked?returnTo=$returnTo';
   }
   return null;
 }
 
 String? _unlockedLockScreenRedirect({
   required String location,
+  required String? returnTo,
   required bool isAuthenticated,
   required bool isLockedState,
 }) {
   if (location != '/session-locked' || isLockedState) {
     return null;
   }
-  return isAuthenticated ? '/home' : '/login';
+  if (!isAuthenticated) {
+    return '/login';
+  }
+
+  return _safeUnlockedReturnTo(returnTo) ?? '/home';
+}
+
+String? _safeUnlockedReturnTo(String? raw) {
+  final returnTo = raw?.trim();
+  if (returnTo == null || returnTo.isEmpty) {
+    return null;
+  }
+
+  final uri = Uri.tryParse(returnTo);
+  if (uri == null ||
+      uri.hasScheme ||
+      uri.hasAuthority ||
+      !returnTo.startsWith('/') ||
+      returnTo.startsWith('//') ||
+      returnTo.startsWith('/session-locked')) {
+    return null;
+  }
+
+  final contract = appRouteContractFor(uri.path);
+  if (contract.isSecurityRecovery ||
+      contract.isAuthDeadEnd ||
+      contract.isSignupRoute ||
+      contract.isLegacySignupRoute ||
+      contract.isFsmRoute ||
+      contract.role == AppRouteRole.securityStep) {
+    return null;
+  }
+
+  return returnTo;
+}
+
+String? _otpContextRedirect({
+  required String location,
+  required bool isAuthenticated,
+  required auth.AuthState authState,
+  required LoginState loginState,
+  required SignupFlowState signupState,
+}) {
+  if (location == '/login/otp' && !_hasLoginOtpContext(loginState)) {
+    return '/login';
+  }
+
+  if (location == '/signup/verify-phone' &&
+      !_hasSignupOtpContext(signupState, authState)) {
+    return isAuthenticated ? '/home' : '/signup';
+  }
+
+  if (location == '/otp' && !_hasLegacyOtpContext(authState)) {
+    return '/login';
+  }
+
+  return null;
+}
+
+bool _hasLoginOtpContext(LoginState state) {
+  final hasPhone = state.phoneValue != null;
+  if (!hasPhone) {
+    return false;
+  }
+  if (state.currentStep == LoginStep.otp) {
+    return true;
+  }
+  return state.currentStep == LoginStep.pin &&
+      (state.sessionToken?.isNotEmpty ?? false);
+}
+
+bool _hasSignupOtpContext(SignupFlowState state, auth.AuthState authState) {
+  final hasPhone =
+      _hasNonBlank(state.phoneNumber) || _hasNonBlank(authState.phone);
+  if (!hasPhone) {
+    return false;
+  }
+
+  if (authState.status == auth.AuthStatus.otpSent ||
+      authState.status == auth.AuthStatus.loading ||
+      authState.status == auth.AuthStatus.error) {
+    return true;
+  }
+
+  return authState.isAuthenticated &&
+      !state.isComplete &&
+      _hasActiveSignupContext(state);
+}
+
+bool _hasLegacyOtpContext(auth.AuthState state) {
+  final hasPhone = state.phone?.trim().isNotEmpty ?? false;
+  return hasPhone &&
+      (state.status == auth.AuthStatus.otpSent ||
+          state.status == auth.AuthStatus.loading ||
+          state.status == auth.AuthStatus.error);
 }
 
 String? _fsmRedirect({
@@ -199,11 +380,13 @@ String? _fsmRedirect({
   required bool isLockedState,
   required bool isFsmRoute,
   required bool isOnboardingRoute,
+  required bool isPublicRoute,
   required bool isWithinSameFlow,
 }) {
   if (!isLockedState &&
       !isFsmRoute &&
       !isOnboardingRoute &&
+      !isPublicRoute &&
       fsmTargetRoute != location &&
       fsmTargetRoute != '/home' &&
       !isWithinSameFlow) {
@@ -225,16 +408,17 @@ String? _profileRedirect({
       (authFirstName != null && authFirstName.trim().isNotEmpty) ||
       (stateFirstName?.trim().isNotEmpty ?? false);
   final isProfileCaptureRoute =
-      location == '/profile-complete' || location == '/onboarding/profile';
+      location == '/profile-complete' || location == '/signup/profile';
 
   if (isAuthenticated &&
       profileKnown &&
       !hasProfileName &&
-      location.startsWith('/onboarding/') &&
+      location.startsWith('/signup/') &&
       !isProfileCaptureRoute &&
-      location != '/onboarding/phone' &&
-      location != '/onboarding/otp') {
-    return '/onboarding/profile';
+      location != '/signup' &&
+      location != '/signup/legal-consent' &&
+      location != '/signup/verify-phone') {
+    return '/signup/profile';
   }
 
   if (isAuthenticated &&
@@ -247,6 +431,86 @@ String? _profileRedirect({
 
   return null;
 }
+
+String? _authenticatedSetupRedirect({
+  required String location,
+  required bool isAuthenticated,
+  required bool isLockedState,
+  required auth.AuthState authState,
+  required UserState userState,
+  required SignupFlowState signupState,
+}) {
+  if (!isAuthenticated ||
+      isLockedState ||
+      _isSecurityRecoveryRoute(location) ||
+      location == '/force-update') {
+    return null;
+  }
+
+  final nextRoute = _nextRequiredSetupRoute(
+    location: location,
+    authState: authState,
+    userState: userState,
+    signupState: signupState,
+  );
+  if (nextRoute == null || nextRoute == location) {
+    return null;
+  }
+
+  return nextRoute;
+}
+
+String? _nextRequiredSetupRoute({
+  required String location,
+  required auth.AuthState authState,
+  required UserState userState,
+  required SignupFlowState signupState,
+}) {
+  final inSignupRoute =
+      _isSignupRoute(location) || _isLegacySignupRoute(location);
+  final trustSignupSetupState =
+      inSignupRoute && _hasActiveSignupContext(signupState);
+
+  final hasProfileName =
+      _hasNonBlank(authState.user?.firstName) ||
+      _hasNonBlank(userState.firstName) ||
+      (trustSignupSetupState && _hasNonBlank(signupState.firstName));
+  if (!hasProfileName) {
+    if (location == '/signup/profile' || location == '/profile-complete') {
+      return null;
+    }
+    return inSignupRoute ? '/signup/profile' : '/profile-complete';
+  }
+
+  final hasPin =
+      (authState.user?.hasPin ?? false) ||
+      (trustSignupSetupState && _hasNonBlank(signupState.pin));
+  if (!hasPin) {
+    if (location == '/signup/set-pin' || location == '/setup/set-pin') {
+      return null;
+    }
+    return inSignupRoute ? '/signup/set-pin' : '/setup/set-pin';
+  }
+
+  if (inSignupRoute &&
+      !signupState.isComplete &&
+      location != '/signup/kyc-prompt' &&
+      location != '/signup/success' &&
+      !location.startsWith('/kyc')) {
+    return '/signup/kyc-prompt';
+  }
+
+  return null;
+}
+
+bool _hasActiveSignupContext(SignupFlowState state) =>
+    _hasNonBlank(state.phoneNumber) ||
+    _hasNonBlank(state.otp) ||
+    _hasNonBlank(state.firstName) ||
+    _hasNonBlank(state.lastName) ||
+    _hasNonBlank(state.pin);
+
+bool _hasNonBlank(String? value) => value != null && value.trim().isNotEmpty;
 
 String? _featureFlagRedirect(String location, Map<String, bool> flags) {
   if (flags.isEmpty) {
@@ -325,19 +589,15 @@ String? _featureFlagRedirect(String location, Map<String, bool> flags) {
 }
 
 bool _isPublicRoute(String location) =>
-    _isExplicitPublicRoute(location) ||
-    location.startsWith('/pin/reset') ||
+    isPublicAppRoute(location) ||
+    location == '/force-update' ||
     location.startsWith('/session-locked');
 
-bool _isExplicitPublicRoute(String location) =>
-    location == '/' ||
-    location == '/login' ||
-    location == '/login/otp' ||
-    location == '/otp' ||
-    location == '/onboarding' ||
-    location == '/onboarding/phone' ||
-    location == '/onboarding/otp' ||
-    location.startsWith('/pay/');
+bool _isSecurityRecoveryRoute(String location) =>
+    isSecurityRecoveryAppRoute(location);
+
+bool _isAllowedWhenLockedRoute(String location) =>
+    appRouteContractFor(location).isAllowedWhenLocked;
 
 String? _invalidPinLoginRedirect({
   required String location,
@@ -359,35 +619,21 @@ String? _invalidPinLoginRedirect({
 }
 
 bool _isOnboardingRoute(String location) =>
-    location.startsWith('/onboarding') ||
+    location == '/onboarding' ||
     location == '/profile-complete' ||
-    location.startsWith('/settings/kyc') ||
-    location.startsWith('/settings/profile');
+    isSetupAppRoute(location);
 
-bool _isFsmRoute(String location) {
-  const fsmRoutes = [
-    '/otp-expired',
-    '/auth-locked',
-    '/auth-suspended',
-    '/session-locked',
-    '/biometric-prompt',
-    '/device-verification',
-    '/session-conflict',
-    '/wallet-frozen',
-    '/wallet-under-review',
-    '/kyc-expired',
-  ];
-  return fsmRoutes.any(location.startsWith);
-}
+bool _isSignupRoute(String location) => isSignupAppRoute(location);
+
+bool _isLegacySignupRoute(String location) => isLegacySignupAppRoute(location);
+
+bool _isFsmRoute(String location) => isFsmOwnedAppRoute(location);
 
 bool _isAuthRoute(String location) =>
     location.startsWith('/login') || location == '/otp';
 
 bool _isAuthenticatedDeadEndRoute(String location) =>
-    _isAuthRoute(location) ||
-    location == '/onboarding' ||
-    location == '/onboarding/phone' ||
-    location == '/onboarding/otp';
+    isAuthDeadEndAppRoute(location);
 
 bool _isMerchantQrPath(String location) =>
     location == '/scan-to-pay' ||
@@ -396,16 +642,8 @@ bool _isMerchantQrPath(String location) =>
     location == '/create-payment-request' ||
     location == '/merchant-transactions';
 
-bool _requiresVerifiedKycPath(String location) {
-  const regulatedPrefixes = [
-    '/send-external',
-    '/withdraw',
-    '/cards/request',
-    '/bulk-payments',
-    '/payment-links/create',
-  ];
-  return regulatedPrefixes.any(location.startsWith);
-}
+bool _requiresVerifiedKycPath(String location) =>
+    requiresVerifiedKycAppRoute(location);
 
 String _routeBase(String location) =>
     '/${location.split('/').where((segment) => segment.isNotEmpty).take(1).join('/')}';

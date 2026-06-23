@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/domain/entities/notification.dart';
@@ -167,12 +169,23 @@ void main() {
       'createdAt': DateTime.utc(2026, 6, 4).toIso8601String(),
       'isUnread': true,
     });
+    final sensitiveInternalLink = AppNotification.fromJson({
+      'id': 'notif-sensitive',
+      'type': 'system',
+      'action': 'none',
+      'title': 'Sensitive',
+      'body': 'Do not open sensitive recovery routes from notification data.',
+      'actionUrl': '/pin/reset',
+      'createdAt': DateTime.utc(2026, 6, 4).toIso8601String(),
+      'isUnread': true,
+    });
 
     expect(transactionNotification.action, 'open_transaction');
     expect(transactionNotification.navigationRoute, '/transactions/txn_123');
     expect(securityNotification.navigationRoute, '/settings/security');
     expect(safeDeepLink.navigationRoute, '/transactions/txn_safe');
     expect(externalLink.navigationRoute, isNull);
+    expect(sensitiveInternalLink.navigationRoute, isNull);
   });
 
   test('push notification tap routes point to live app screens', () {
@@ -192,9 +205,17 @@ void main() {
     );
     expect(
       routeForNotificationData({'type': 'kyc', 'action': 'approved'}),
-      '/settings/kyc',
+      '/kyc',
     );
     expect(routeForNotificationData({'type': 'balance'}), '/home');
+    expect(
+      routeForNotificationData({'type': 'security', 'route': '/pin/reset'}),
+      '/settings/security',
+    );
+    expect(
+      routeForNotificationData({'type': 'system', 'actionUrl': '/pin/reset'}),
+      '/notifications',
+    );
   });
 
   test('rich notification quick actions avoid unwired routes', () {
@@ -308,5 +329,25 @@ void main() {
     );
 
     expect(dio.requestHistory, isEmpty);
+  });
+
+  test('OS notification permission is requested only from consent screen', () {
+    final root = Directory.current.path;
+    final permissionProvider = File(
+      '$root/lib/features/notifications/providers/notification_permission_provider.dart',
+    ).readAsStringSync();
+    final handler = File(
+      '$root/lib/services/notifications/notification_handler.dart',
+    ).readAsStringSync();
+    final pushService = File(
+      '$root/lib/services/notifications/push_notification_service.dart',
+    ).readAsStringSync();
+
+    expect(permissionProvider, contains('initialize(requestPermission: true)'));
+    expect(handler, isNot(contains('requestPermission: true')));
+    expect(
+      pushService,
+      contains('Future<void> initialize({bool requestPermission = false})'),
+    );
   });
 }

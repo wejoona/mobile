@@ -7,6 +7,7 @@ library;
 
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/services/security/jwe/jwe_service.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
@@ -14,11 +15,10 @@ final _log = AppLogger('JweInterceptor');
 
 /// Paths that require JWE encryption of request bodies.
 const _sensitivePathPatterns = [
-  '/user/pin/', // PIN set, verify, change, reset
+  ApiEndpoints.userPinPrefix, // PIN set, verify, change, reset
   '/wallet/deposit', // Deposit initiation
   '/wallet/transfer/', // Internal + external transfers
-  '/transfers/', // Active transfer controller
-  '/wallet/withdraw', // Withdrawals
+  '/wallet/cash-out/mobile-money', // Mobile money cash-out
 ];
 
 class JweInterceptor extends Interceptor {
@@ -63,8 +63,16 @@ class JweInterceptor extends Interceptor {
 
       _log.debug('Encrypted request body for ${options.path}');
     } catch (e) {
-      _log.error('JWE encryption failed, sending plaintext', e);
-      // Graceful degradation: send unencrypted rather than fail
+      _log.error('JWE encryption failed, blocking sensitive request', e);
+      return handler.reject(
+        DioException(
+          requestOptions: options,
+          type: DioExceptionType.unknown,
+          error: e,
+          message:
+              'Sensitive request encryption failed; plaintext transmission blocked.',
+        ),
+      );
     }
 
     handler.next(options);

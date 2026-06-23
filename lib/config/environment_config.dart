@@ -46,14 +46,17 @@ class EnvironmentConfig {
 
   static const bool _showDevOtpShortcut = bool.fromEnvironment('SHOW_DEV_OTP');
 
-  /// Enable mock data for development.
-  static const bool useMocks = bool.fromEnvironment('USE_MOCKS');
+  /// Enable mock data for local development only.
+  static bool get useMocks => isDevelopment && _useMocks;
+
+  static const bool _useMocks = bool.fromEnvironment('USE_MOCKS');
 
   /// Sentry DSN for crash reporting (empty = disabled).
   static const String sentryDsn = String.fromEnvironment('SENTRY_DSN');
 
   /// Whether crash reporting is enabled.
-  static bool get enableCrashReporting => sentryDsn.isNotEmpty && isProduction;
+  static bool get enableCrashReporting =>
+      sentryDsn.isNotEmpty && (isProduction || isStaging);
 
   /// App version override (for testing).
   static const String versionOverride = String.fromEnvironment('APP_VERSION');

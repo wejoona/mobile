@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/core/image_cache/image_cache_config.dart';
 import 'package:usdc_wallet/design/components/primitives/app_skeleton.dart';
 import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
@@ -47,7 +48,7 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 ///   size: UserAvatar.sizeLarge,
 ///   showOnlineIndicator: true,
 ///   isOnline: true,
-///   onTap: () => context.push('/profile/${user.id}'),
+///   onTap: () => context.fsmPush('/profile/${user.id}'),
 /// )
 ///
 /// // Initials only (no image)
@@ -301,6 +302,7 @@ class UserAvatar extends StatelessWidget {
   }) {
     return CachedNetworkImage(
       imageUrl: resolvedUrl,
+      cacheManager: ImageCacheConfig.profilePhotos,
       httpHeaders: httpHeaders,
       fit: BoxFit.cover,
       placeholder: (context, url) => AppSkeleton.circle(size: size),

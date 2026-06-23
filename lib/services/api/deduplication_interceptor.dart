@@ -160,16 +160,32 @@ class RequestDeduplicationInterceptor extends Interceptor {
 
   /// Generate unique key for request
   String _generateKey(RequestOptions options) {
-    final queryString = options.queryParameters.entries
+    final queryEntries = options.queryParameters.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+    final queryString = queryEntries
         .map((e) => '${e.key}=${e.value}')
         .join('&');
 
-    final headers = options.headers.entries
-        .where((e) => e.key == 'Authorization') // Include auth header in key
-        .map((e) => '${e.key}=${e.value}')
-        .join('&');
+    final authKey = _authorizationDedupKey(options.headers['Authorization']);
 
-    return '${options.method}:${options.path}${queryString.isNotEmpty ? '?$queryString' : ''}${headers.isNotEmpty ? '#$headers' : ''}';
+    return '${options.method}:${options.path}${queryString.isNotEmpty ? '?$queryString' : ''}$authKey';
+  }
+
+  String _authorizationDedupKey(Object? authorization) {
+    final token = authorization?.toString().trim();
+    if (token == null || token.isEmpty) {
+      return '';
+    }
+    return '#auth:${_stableTokenFingerprint(token)}';
+  }
+
+  String _stableTokenFingerprint(String value) {
+    var hash = 0x811c9dc5;
+    for (final codeUnit in value.codeUnits) {
+      hash ^= codeUnit;
+      hash = (hash * 0x01000193) & 0xffffffff;
+    }
+    return hash.toRadixString(16);
   }
 
   /// Clear all in-flight requests

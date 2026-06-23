@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
 import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Standalone liveness check view — wraps [LivenessCheckWidget].
 /// For KYC-specific liveness, see [KycLivenessView].
@@ -21,21 +21,25 @@ class _LivenessCheckViewState extends ConsumerState<LivenessCheckView> {
   String? _errorMessage;
 
   void _onComplete(LivenessResult result) {
-    if (result.isLive) {
+    final faceScore = result.faceMatchScore ?? 1.0;
+    if (result.isLive &&
+        result.decision == LivenessDecision.autoApprove &&
+        faceScore >= 0.85) {
       setState(() => _isComplete = true);
       Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) context.pop(true);
+        if (mounted) context.fsmPop(true);
       });
     } else {
       setState(() {
-        _errorMessage = result.failureReason ??
+        _errorMessage =
+            result.failureReason ??
             AppLocalizations.of(context)!.liveness_failed;
       });
     }
   }
 
   void _onCancel() {
-    context.pop(false);
+    context.fsmPop(false);
   }
 
   @override
@@ -79,9 +83,6 @@ class _LivenessCheckViewState extends ConsumerState<LivenessCheckView> {
       );
     }
 
-    return LivenessCheckWidget(
-      onComplete: _onComplete,
-      onCancel: _onCancel,
-    );
+    return LivenessCheckWidget(onComplete: _onComplete, onCancel: _onCancel);
   }
 }

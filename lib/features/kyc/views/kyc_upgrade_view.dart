@@ -1,9 +1,9 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/design/components/primitives/app_card.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
@@ -436,7 +436,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
             ),
             const SizedBox(height: AppSpacing.sm),
             TextButton(
-              onPressed: () => context.pop(),
+              onPressed: () => context.fsmPop(),
               child: AppText(
                 l10n.common_maybeLater,
                 variant: AppTextVariant.labelMedium,
@@ -458,14 +458,14 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
     // Navigate based on requirements
     if (selectedTier.tier.level == 1) {
       // Standard KYC flow
-      unawaited(context.push('/kyc/document-type'));
+      unawaited(context.fsmPush('/kyc/document-type'));
     } else if (selectedTier.requiresAddressProof &&
         !selectedTier.requiresVideoVerification) {
       // Tier 2 - Address verification
-      unawaited(context.push('/kyc/address'));
+      unawaited(context.fsmPush('/kyc/address'));
     } else {
       // Tier 3 - Full verification
-      unawaited(context.push('/kyc/address'));
+      unawaited(context.fsmPush('/kyc/address'));
     }
   }
 

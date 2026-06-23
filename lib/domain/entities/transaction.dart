@@ -54,8 +54,10 @@ class Transaction {
     if (direction == 'debit') return true;
     if (direction == 'credit') return false;
     return type == TransactionType.withdrawal ||
+        type == TransactionType.billPayment ||
         type == TransactionType.transferExternal ||
-        (type == TransactionType.transferInternal && amount < 0);
+        (type == TransactionType.transferInternal && amount < 0) ||
+        (type == TransactionType.unknown && amount < 0);
   }
 
   bool get isCredit {
@@ -63,6 +65,12 @@ class Transaction {
     if (direction == 'debit') return false;
     return type == TransactionType.deposit ||
         (type == TransactionType.transferInternal && amount >= 0);
+  }
+
+  String get amountSign {
+    if (isCredit) return '+';
+    if (isDebit) return '-';
+    return '';
   }
 
   bool get isPending =>
@@ -95,7 +103,7 @@ class Transaction {
     return Transaction(
       id: json['id'] as String? ?? json['transactionId'] as String? ?? '',
       walletId: _stringValue(json, const ['walletId', 'wallet_id']) ?? '',
-      type: _parseTransactionType(_stringValue(json, const ['type', 'kind'])),
+      type: parseTransactionType(_stringValue(json, const ['type', 'kind'])),
       status: _parseTransactionStatus(json['status'] as String?),
       amount:
           _numValue(json, const [
@@ -143,30 +151,6 @@ class Transaction {
     );
   }
 
-  static TransactionType _parseTransactionType(String? type) {
-    switch (type?.toLowerCase()) {
-      case 'deposit':
-      case 'mobile_money_deposit':
-        return TransactionType.deposit;
-      case 'withdrawal':
-      case 'mobile_money_withdrawal':
-        return TransactionType.withdrawal;
-      case 'transfer_internal':
-      case 'internal_transfer_sent':
-      case 'internal_transfer_received':
-      case 'transfer_in':
-      case 'transfer_out':
-      case 'internal':
-        return TransactionType.transferInternal;
-      case 'transfer_external':
-      case 'external_transfer':
-      case 'external':
-        return TransactionType.transferExternal;
-      default:
-        return TransactionType.deposit;
-    }
-  }
-
   static TransactionStatus _parseTransactionStatus(String? status) {
     switch (status?.toLowerCase()) {
       case 'pending':
@@ -199,7 +183,7 @@ class Transaction {
     return {
       'id': id,
       'walletId': walletId,
-      'type': type.name,
+      'type': type.wireName,
       'status': status.name,
       'amount': amount,
       'currency': currency,

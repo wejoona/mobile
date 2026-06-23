@@ -13,7 +13,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 ///   description: 'Your transaction history will appear here',
 ///   action: EmptyStateAction(
 ///     label: 'Send Money',
-///     onPressed: () => context.push('/send'),
+///     onPressed: () => context.fsmPush('/send'),
 ///   ),
 /// )
 /// ```
@@ -110,16 +110,9 @@ class EmptyState extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.elevated,
         shape: BoxShape.circle,
-        border: Border.all(
-          color: colors.borderSubtle,
-          width: 1,
-        ),
+        border: Border.all(color: colors.borderSubtle, width: 1),
       ),
-      child: Icon(
-        icon,
-        size: 40,
-        color: colors.iconSecondary,
-      ),
+      child: Icon(icon, size: 40, color: colors.iconSecondary),
     );
   }
 
@@ -172,10 +165,7 @@ class EmptyStateVariant {
       title: title,
       description: description,
       action: onClear != null
-          ? EmptyStateAction(
-              label: 'Effacer la recherche',
-              onPressed: onClear,
-            )
+          ? EmptyStateAction(label: 'Effacer la recherche', onPressed: onClear)
           : null,
     );
   }
@@ -191,19 +181,13 @@ class EmptyStateVariant {
       title: title,
       description: description,
       action: onAdd != null
-          ? EmptyStateAction(
-              label: 'Ajouter un bénéficiaire',
-              onPressed: onAdd,
-            )
+          ? EmptyStateAction(label: 'Ajouter un bénéficiaire', onPressed: onAdd)
           : null,
     );
   }
 
   /// No notifications
-  static Widget noNotifications({
-    required String title,
-    String? description,
-  }) {
+  static Widget noNotifications({required String title, String? description}) {
     return EmptyState(
       icon: Icons.notifications_none_outlined,
       title: title,
@@ -222,10 +206,7 @@ class EmptyStateVariant {
       title: title,
       description: description,
       action: onRetry != null
-          ? EmptyStateAction(
-              label: 'Réessayer',
-              onPressed: onRetry,
-            )
+          ? EmptyStateAction(label: 'Réessayer', onPressed: onRetry)
           : null,
     );
   }

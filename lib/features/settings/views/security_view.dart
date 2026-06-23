@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/settings/providers/notification_preferences_provider.dart';
+import 'package:usdc_wallet/features/settings/providers/security_settings_provider.dart';
 import 'package:usdc_wallet/features/settings/providers/sessions_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
 import 'package:usdc_wallet/utils/context_extensions.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class SecurityView extends ConsumerStatefulWidget {
   const SecurityView({super.key});
@@ -26,6 +26,8 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
+    final settings = ref.watch(securitySettingsProvider);
+    final settingsNotifier = ref.read(securitySettingsProvider.notifier);
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -38,7 +40,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.gold),
-          onPressed: () => context.safePop(fallbackRoute: '/settings'),
+          onPressed: () => context.fsmSafePop(fallbackRoute: '/settings'),
         ),
       ),
       body: SingleChildScrollView(
@@ -64,10 +66,30 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               icon: Icons.lock_outline,
               title: l10n.security_changePin,
               subtitle: l10n.security_changePinSubtitle,
-              onTap: () => context.push('/settings/pin'),
+              onTap: () => context.fsmPush('/settings/pin'),
             ),
             const SizedBox(height: AppSpacing.sm),
             _buildBiometricOption(l10n, colors),
+            const SizedBox(height: AppSpacing.sm),
+            _buildToggleOption(
+              l10n: l10n,
+              colors: colors,
+              icon: Icons.lock_clock_rounded,
+              title: l10n.security_pinOnAppOpen,
+              subtitle: l10n.security_pinOnAppOpenSubtitle,
+              value: settings.pinOnAppOpen,
+              onChanged: settingsNotifier.setPinOnAppOpen,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            _buildStatusOption(
+              l10n: l10n,
+              colors: colors,
+              icon: Icons.timer_rounded,
+              title: l10n.security_autoLock,
+              subtitle: l10n.security_autoLockMinutes(settings.autoLockMinutes),
+              status: l10n.security_minutesFormat(settings.autoLockMinutes),
+              onTap: () => _showAutoLockPicker(l10n),
+            ),
             const SizedBox(height: AppSpacing.sm),
             _buildFeatureSubscriptionOption(
               colors: colors,
@@ -107,6 +129,8 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.md),
+            _buildTransactionAlertOption(l10n: l10n, colors: colors),
+            const SizedBox(height: AppSpacing.sm),
             _buildSecurityAlertOption(
               l10n: l10n,
               colors: colors,
@@ -138,7 +162,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               icon: Icons.devices,
               title: l10n.security_devices,
               subtitle: l10n.security_devicesSubtitle,
-              onTap: () => context.push('/settings/devices'),
+              onTap: () => context.fsmPush('/settings/devices'),
             ),
             const SizedBox(height: AppSpacing.sm),
             _buildSecurityOption(
@@ -147,7 +171,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               icon: Icons.smartphone,
               title: l10n.security_activeSessions,
               subtitle: l10n.security_activeSessionsSubtitle,
-              onTap: () => context.push('/settings/sessions'),
+              onTap: () => context.fsmPush('/settings/sessions'),
             ),
             const SizedBox(height: AppSpacing.sm),
             _buildSecurityOption(
@@ -169,13 +193,33 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.md),
+            _buildToggleOption(
+              l10n: l10n,
+              colors: colors,
+              icon: Icons.screenshot_rounded,
+              title: l10n.security_screenshotProtection,
+              subtitle: l10n.security_screenshotProtectionSubtitle,
+              value: settings.screenshotProtection,
+              onChanged: (value) async {
+                final applied = await settingsNotifier.setScreenshotProtection(
+                  value,
+                );
+                if (!applied) {
+                  _showSecuritySnack(
+                    'Screenshot protection could not be changed on this device.',
+                    tone: AppSnackTone.error,
+                  );
+                }
+              },
+            ),
+            const SizedBox(height: AppSpacing.sm),
             _buildSecurityOption(
               l10n: l10n,
               colors: colors,
               icon: Icons.history,
-              title: l10n.security_loginHistory,
-              subtitle: l10n.security_loginHistorySubtitle,
-              onTap: () => _showLoginHistory(),
+              title: l10n.security_activeSessions,
+              subtitle: l10n.security_activeSessionsSubtitle,
+              onTap: _showSessionActivity,
             ),
             const SizedBox(height: AppSpacing.sm),
             _buildSecurityOption(
@@ -184,7 +228,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               icon: Icons.delete_forever,
               title: l10n.security_deleteAccount,
               subtitle: l10n.security_deleteAccountSubtitle,
-              onTap: () => context.push('/settings/delete-account'),
+              onTap: () => context.fsmPush('/settings/delete-account'),
               isDanger: true,
             ),
           ],
@@ -416,6 +460,66 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
     );
   }
 
+  Widget _buildToggleOption({
+    required AppLocalizations l10n,
+    required ThemeColors colors,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: AppCard(
+        variant: AppCardVariant.flat,
+        borderRadius: AppRadius.lg,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: colors.gold.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(AppRadius.md),
+              ),
+              child: Icon(icon, color: colors.gold, size: 22),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(
+                    title,
+                    variant: AppTextVariant.labelMedium,
+                    color: colors.textPrimary,
+                  ),
+                  AppText(
+                    subtitle,
+                    variant: AppTextVariant.bodySmall,
+                    color: colors.textSecondary,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Switch.adaptive(
+              value: value,
+              activeThumbColor: colors.gold,
+              activeTrackColor: colors.gold.withValues(alpha: 0.28),
+              onChanged: onChanged,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSecurityAlertOption({
     required AppLocalizations l10n,
     required ThemeColors colors,
@@ -439,7 +543,111 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
           ? subtitle
           : l10n.notifications_loadError,
       status: status,
-      onTap: () => context.push('/settings/notifications'),
+      onTap: () => context.fsmPush('/settings/notifications'),
+    );
+  }
+
+  Widget _buildTransactionAlertOption({
+    required AppLocalizations l10n,
+    required ThemeColors colors,
+  }) {
+    final prefsState = ref.watch(notificationPreferencesProvider);
+    final prefs = prefsState.preferences;
+    final enabled =
+        (prefs?.pushTransactions ?? false) ||
+        (prefs?.smsTransactions ?? false) ||
+        (prefs?.emailTransactions ?? false);
+    final status = prefsState.isLoading
+        ? l10n.security_loading
+        : (enabled
+              ? l10n.biometric_settings_status_enabled
+              : l10n.settings_preferences);
+
+    return _buildStatusOption(
+      l10n: l10n,
+      colors: colors,
+      icon: Icons.notifications_active_rounded,
+      title: l10n.security_transactionAlerts,
+      subtitle: prefsState.error == null
+          ? l10n.security_transactionAlertsSubtitle
+          : l10n.notifications_loadError,
+      status: status,
+      onTap: () => context.fsmPush('/settings/notifications'),
+    );
+  }
+
+  void _showAutoLockPicker(AppLocalizations l10n) {
+    final colors = context.colors;
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: colors.container,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  l10n.security_autoLockAfter,
+                  variant: AppTextVariant.titleMedium,
+                  color: colors.textPrimary,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                for (final minutes in const [1, 2, 5, 10, 15, 30])
+                  _buildAutoLockOption(
+                    colors: colors,
+                    label: l10n.security_minutesFormat(minutes),
+                    onTap: () async {
+                      Navigator.pop(sheetContext);
+                      await ref
+                          .read(securitySettingsProvider.notifier)
+                          .setAutoLock(minutes);
+                    },
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAutoLockOption({
+    required ThemeColors colors,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: AppCard(
+        variant: AppCardVariant.flat,
+        borderRadius: AppRadius.md,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
+        onTap: onTap,
+        child: Row(
+          children: [
+            Icon(Icons.timer_outlined, color: colors.gold, size: 20),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: AppText(
+                label,
+                variant: AppTextVariant.labelMedium,
+                color: colors.textPrimary,
+              ),
+            ),
+            Icon(Icons.chevron_right, color: colors.textTertiary),
+          ],
+        ),
+      ),
     );
   }
 
@@ -639,7 +847,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
         subtitle: enabled
             ? l10n.biometric_settings_enabled_subtitle
             : l10n.biometric_settings_disabled_subtitle,
-        onTap: () => context.push('/settings/biometric'),
+        onTap: () => context.fsmPush('/settings/biometric'),
       ),
       loading: () => _buildSecurityOption(
         l10n: l10n,
@@ -647,7 +855,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
         icon: Icons.fingerprint,
         title: l10n.security_biometricLogin,
         subtitle: l10n.security_loading,
-        onTap: () => context.push('/settings/biometric'),
+        onTap: () => context.fsmPush('/settings/biometric'),
       ),
       error: (_, __) => _buildSecurityOption(
         l10n: l10n,
@@ -655,23 +863,26 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
         icon: Icons.fingerprint,
         title: l10n.security_biometricLogin,
         subtitle: l10n.security_errorLoadingState,
-        onTap: () => context.push('/settings/biometric'),
+        onTap: () => context.fsmPush('/settings/biometric'),
       ),
     );
   }
 
   int _calculateSecurityScore() {
+    final settings = ref.watch(securitySettingsProvider);
     final biometricEnabled = ref.watch(biometricEnabledProvider);
     final biometricsOn = biometricEnabled.maybeWhen(
       data: (value) => value,
       orElse: () => false,
     );
 
-    int score = 55; // Account, device, session, and backend risk controls.
-    score += 25; // Transaction PIN is mandatory for money movement.
+    int score = 30; // Server-side auth, device, and transaction guardrails.
+    score += 20; // Transaction PIN is mandatory for money movement.
+    if (settings.pinOnAppOpen) score += 10;
+    if (settings.screenshotProtection) score += 15;
     final prefsState = ref.watch(notificationPreferencesProvider);
     final prefs = prefsState.preferences;
-    if (biometricsOn) score += 10;
+    if (biometricsOn) score += 15;
     if (prefs?.smsSecurity == true || prefs?.pushSecurity == true) score += 10;
     return score.clamp(0, 100);
   }
@@ -751,7 +962,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                   ),
                 );
                 if (success) {
-                  context.go('/login');
+                  context.fsmGo('/login');
                 }
               },
               variant: AppButtonVariant.danger,
@@ -763,7 +974,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
     );
   }
 
-  void _showLoginHistory() {
+  void _showSessionActivity() {
     final l10n = AppLocalizations.of(context)!;
 
     // Trigger loading sessions
@@ -794,7 +1005,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     AppText(
-                      l10n.security_loginHistoryTitle,
+                      l10n.settings_activeSessions,
                       variant: AppTextVariant.titleMedium,
                     ),
                     const SizedBox(height: AppSpacing.lg),
@@ -817,7 +1028,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                       Expanded(
                         child: Center(
                           child: AppText(
-                            'Aucun historique de connexion disponible.',
+                            l10n.sessions_noActiveSessionsDesc,
                             variant: AppTextVariant.bodyMedium,
                             color: colors.textSecondary,
                             textAlign: TextAlign.center,
@@ -838,9 +1049,9 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                               location:
                                   session.location ??
                                   session.ipAddress ??
-                                  'Inconnu',
+                                  l10n.sessions_unknownLocation,
                               time: _formatSessionTime(session.lastActivityAt),
-                              success: session.isActive,
+                              isActive: session.isActive,
                             );
                           },
                         ),
@@ -872,7 +1083,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
     required String time,
     required String device,
     required String location,
-    required bool success,
+    required bool isActive,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
@@ -884,14 +1095,16 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: success
+                color: isActive
                     ? context.colors.success.withValues(alpha: 0.1)
-                    : context.colors.error.withValues(alpha: 0.1),
+                    : context.colors.textSecondary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                success ? Icons.check : Icons.close,
-                color: success ? context.colors.success : context.colors.error,
+                isActive ? Icons.check : Icons.schedule,
+                color: isActive
+                    ? context.colors.success
+                    : context.colors.textSecondary,
                 size: 20,
               ),
             ),
@@ -910,9 +1123,11 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               ),
             ),
             AppText(
-              success ? l10n.security_loginSuccess : l10n.security_loginFailed,
+              isActive
+                  ? l10n.biometric_settings_active
+                  : l10n.biometric_settings_inactive,
               variant: AppTextVariant.labelSmall,
-              color: success ? context.colors.success : context.colors.error,
+              color: isActive ? context.colors.success : colors.textSecondary,
             ),
           ],
         ),

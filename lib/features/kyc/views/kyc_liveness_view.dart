@@ -3,15 +3,17 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
-import 'package:usdc_wallet/design/tokens/spacing.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/spacing.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
 import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/liveness/liveness_service.dart';
+import 'package:usdc_wallet/services/service_providers.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Écran de vérification de présence (liveness) — défi caméra uniquement.
 /// Les instructions sont affichées sur un écran séparé (KycLivenessInstructionsView)
@@ -27,8 +29,12 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
   bool _isComplete = false;
   bool _hasFailed = false;
   bool _isCreatingManualReview = false;
+  bool _manualReviewCreationFailed = false;
   String? _errorMessage;
-  String? _manualReviewTicketId;
+  String? _manualReviewKycReviewId;
+  String? _manualReviewSlaLabel;
+  String? _manualReviewFailureMessage;
+  LivenessManualReviewRequest? _pendingManualReviewRequest;
   Timer? _navigationTimer;
 
   LivenessDecision? _decision;
@@ -51,17 +57,26 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
     switch (decision) {
       case LivenessDecision.autoApprove:
         // High score — auto-approve, proceed to review
+        ref.read(kycProvider.notifier).setLivenessProof(result.stepUpProofId);
         setState(() => _isComplete = true);
         _navigationTimer = Timer(const Duration(seconds: 2), () {
-          if (mounted) context.go('/kyc/review');
+          if (mounted) {
+            context.fsmGo('/kyc/review');
+          }
         });
 
       case LivenessDecision.manualReview:
-        // Medium score — submit for manual review, show pending screen
-        setState(() => _isComplete = true);
-        _navigationTimer = Timer(const Duration(seconds: 2), () {
-          if (mounted) context.go('/kyc/submitted');
-        });
+        unawaited(
+          _routeKycToManualReview(
+            LivenessManualReviewRequest(
+              reason: 'liveness_manual_review_confidence',
+              message:
+                  'Automated liveness verification needs manual review. '
+                  'Confidence: ${result.confidence.toStringAsFixed(2)}. '
+                  'Flow: kyc_liveness.',
+            ),
+          ),
+        );
 
       case LivenessDecision.decline:
         // Low score — decline, allow retry
@@ -76,14 +91,16 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
 
   void _onCancel() {
     // Go back to selfie capture
-    context.pop();
+    context.fsmPop();
   }
 
   void _retry() {
     _navigationTimer?.cancel();
     setState(() {
       _hasFailed = false;
+      _manualReviewCreationFailed = false;
       _errorMessage = null;
+      _manualReviewFailureMessage = null;
     });
   }
 
@@ -97,6 +114,7 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
       return LivenessCheckWidget(
         onComplete: _onLivenessComplete,
         onManualReviewRequired: _routeKycToManualReview,
+        onManualReviewAcknowledged: _acknowledgeManualReview,
         onCancel: _onCancel,
       );
     }
@@ -129,7 +147,6 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
                 const SizedBox(height: AppSpacing.md),
                 AppText(
                   _errorMessage ?? l10n.liveness_tryAgain,
-                  variant: AppTextVariant.bodyMedium,
                   color: colors.textSecondary,
                   textAlign: TextAlign.center,
                 ),
@@ -163,19 +180,25 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                _isCreatingManualReview
+                _manualReviewCreationFailed
+                    ? Icons.error_outline_rounded
+                    : _isCreatingManualReview
                     ? Icons.support_agent
                     : isManualReview
                     ? Icons.hourglass_top
                     : Icons.check_circle,
                 size: 80,
-                color: isManualReview || _isCreatingManualReview
+                color: _manualReviewCreationFailed
+                    ? colors.error
+                    : isManualReview || _isCreatingManualReview
                     ? colors.warning
                     : colors.success,
               ),
               const SizedBox(height: AppSpacing.xxl),
               AppText(
-                isManualReview
+                _manualReviewCreationFailed
+                    ? 'Manual review not sent'
+                    : isManualReview
                     ? l10n.liveness_verificationInProgress
                     : l10n.liveness_identityVerified,
                 variant: AppTextVariant.headlineSmall,
@@ -183,17 +206,42 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
               ),
               const SizedBox(height: AppSpacing.md),
               AppText(
-                isManualReview
-                    ? _manualReviewTicketId == null
+                _manualReviewCreationFailed
+                    ? _manualReviewFailureMessage ??
+                          'We could not securely create your manual review. Retry from here so your identity evidence can be reviewed.'
+                    : isManualReview
+                    ? _manualReviewKycReviewId == null
                           ? l10n.liveness_manualReviewMessage
-                          : '${l10n.liveness_manualReviewMessage}\nReference $_manualReviewTicketId'
+                          : '${l10n.liveness_manualReviewMessage}\nReference $_manualReviewKycReviewId'
                     : l10n.liveness_proceedingToVerification,
-                variant: AppTextVariant.bodyMedium,
                 color: colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
+              if (isManualReview && _manualReviewSlaLabel != null) ...[
+                const SizedBox(height: AppSpacing.md),
+                AppText(
+                  _manualReviewSlaLabel!,
+                  variant: AppTextVariant.labelMedium,
+                  color: colors.textSecondary,
+                  textAlign: TextAlign.center,
+                ),
+              ],
               const SizedBox(height: AppSpacing.xxl),
-              CircularProgressIndicator(color: colors.gold),
+              if (_manualReviewCreationFailed) ...[
+                AppButton(
+                  label: 'Retry manual review',
+                  onPressed: _retryManualReviewCreation,
+                  isFullWidth: true,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                AppButton(
+                  label: l10n.liveness_goBack,
+                  variant: AppButtonVariant.secondary,
+                  onPressed: _onCancel,
+                  isFullWidth: true,
+                ),
+              ] else
+                CircularProgressIndicator(color: colors.gold),
             ],
           ),
         ),
@@ -201,56 +249,165 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
     );
   }
 
-  Future<void> _routeKycToManualReview(String reason) async {
-    if (!mounted || _isCreatingManualReview) return;
+  Future<void> _routeKycToManualReview(
+    LivenessManualReviewRequest request,
+  ) async {
+    if (!mounted || _isCreatingManualReview) {
+      return;
+    }
 
     setState(() {
       _isCreatingManualReview = true;
+      _manualReviewCreationFailed = false;
       _isComplete = true;
       _hasFailed = false;
       _decision = LivenessDecision.manualReview;
       _errorMessage = null;
+      _manualReviewFailureMessage = null;
+      _manualReviewKycReviewId = request.backendReviewId;
+      _manualReviewSlaLabel = request.slaLabel;
+      _pendingManualReviewRequest = request;
     });
 
-    try {
-      final response = await ref
-          .read(dioProvider)
-          .post(
-            '/support/tickets',
-            data: {
-              'subject': 'Manual review required for KYC liveness',
-              'category': 'kyc',
-              'priority': 'high',
-              'message':
-                  'Automated liveness verification could not complete. '
-                  'Reason: $reason. Flow: kyc_liveness. '
-                  'Please review identity document, profile photo, reference selfie, '
-                  'and any captured liveness evidence.',
-            },
-          );
-      final body = response.data is Map
-          ? Map<String, dynamic>.from(response.data as Map)
-          : const <String, dynamic>{};
-      final data = body['data'] is Map
-          ? Map<String, dynamic>.from(body['data'] as Map)
-          : body;
-
-      if (!mounted) return;
-      setState(() {
-        _manualReviewTicketId = data['id']?.toString();
-        _isCreatingManualReview = false;
-      });
-    } on DioException {
-      if (!mounted) return;
+    if (request.backendReviewAlreadyCreated) {
+      await _refreshKycManualReviewState();
+      if (!mounted) {
+        return;
+      }
       setState(() => _isCreatingManualReview = false);
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _isCreatingManualReview = false);
+      _scheduleManualReviewNavigation();
+      return;
     }
 
+    try {
+      await _submitKycEvidenceForManualReview();
+
+      final review = await ref
+          .read(kycServiceProvider)
+          .routeToManualReview(
+            reason: request.reason,
+            featureReason: request.reason,
+            metadata: {
+              'flow': 'kyc_liveness',
+              'message': request.message,
+              'evidenceGraph': [
+                'identity_document',
+                'profile_photo',
+                'reference_selfie',
+                'liveness_evidence',
+              ],
+            },
+          );
+      await _refreshKycManualReviewState();
+
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _decision = review.status.isVerified
+            ? LivenessDecision.autoApprove
+            : LivenessDecision.manualReview;
+        _manualReviewKycReviewId = review.id;
+        _manualReviewSlaLabel = review.slaLabel ?? _manualReviewSlaLabel;
+        _isCreatingManualReview = false;
+      });
+      _scheduleManualReviewNavigation();
+    } on DioException catch (error) {
+      if (!mounted) {
+        return;
+      }
+      final apiError = ApiException.fromDioError(error);
+      _markManualReviewCreationFailed(
+        'We could not securely create your manual review. ${apiError.message}',
+      );
+    } on Object catch (_) {
+      if (!mounted) {
+        return;
+      }
+      _markManualReviewCreationFailed(
+        'We could not securely create your manual review. Please try again.',
+      );
+    }
+  }
+
+  void _markManualReviewCreationFailed(String message) {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _isCreatingManualReview = false;
+      _manualReviewCreationFailed = true;
+      _isComplete = true;
+      _hasFailed = false;
+      _decision = LivenessDecision.manualReview;
+      _manualReviewFailureMessage = message;
+      _errorMessage = null;
+    });
+  }
+
+  void _retryManualReviewCreation() {
+    final request = _pendingManualReviewRequest;
+    if (request == null) {
+      _retry();
+      return;
+    }
+    unawaited(_routeKycToManualReview(request));
+  }
+
+  Future<void> _submitKycEvidenceForManualReview() async {
+    await ref.read(kycProvider.notifier).submitKyc(requireLivenessProof: false);
+    final flowState = ref.read(kycProvider);
+    if (flowState.error?.isNotEmpty ?? false) {
+      throw StateError(flowState.error!);
+    }
+  }
+
+  Future<void> _refreshKycManualReviewState() async {
+    try {
+      ref.invalidate(kycProfileProvider);
+      await ref.read(kycProvider.notifier).loadVerificationStatus();
+    } on Object catch (_) {
+      ref.invalidate(kycProfileProvider);
+    }
+  }
+
+  void _scheduleManualReviewNavigation() {
     _navigationTimer?.cancel();
     _navigationTimer = Timer(const Duration(seconds: 3), () {
-      if (mounted) context.go('/kyc/submitted');
+      if (mounted) {
+        context.fsmGo('/kyc/submitted');
+      }
+    });
+  }
+
+  void _acknowledgeManualReview() {
+    if (!mounted) {
+      return;
+    }
+    _navigationTimer?.cancel();
+    setState(() {
+      _isCreatingManualReview = false;
+      _manualReviewCreationFailed = false;
+      _isComplete = true;
+      _decision = LivenessDecision.manualReview;
+    });
+    if (_manualReviewKycReviewId == null) {
+      setState(() {
+        _isComplete = false;
+        _hasFailed = true;
+        _errorMessage =
+            'Manual review was not confirmed. Please retry so Korido can create a secure review record.';
+      });
+      return;
+    }
+    setState(() {
+      _hasFailed = false;
+      _errorMessage = null;
+    });
+    _navigationTimer = Timer(const Duration(seconds: 1), () {
+      if (mounted) {
+        context.fsmGo('/kyc/submitted');
+      }
     });
   }
 }

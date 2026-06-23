@@ -6,8 +6,8 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Minimal "What's your name?" screen shown after first login
 /// when the user profile has no firstName set.
@@ -53,7 +53,7 @@ class _ProfileCompleteViewState extends ConsumerState<ProfileCompleteView> {
       HapticFeedback.mediumImpact();
 
       if (mounted) {
-        context.enterAuthenticatedApp();
+        context.fsmEnterAuthenticatedApp();
       }
     } catch (e) {
       setState(() {

@@ -1,14 +1,13 @@
 /// Barrel exports for settings feature.
 library;
 
-export 'package:usdc_wallet/features/settings/models/device.dart';
+export 'package:usdc_wallet/domain/entities/device.dart';
 export 'package:usdc_wallet/features/settings/models/session.dart';
 export 'package:usdc_wallet/features/settings/providers/app_preferences_provider.dart';
 export 'package:usdc_wallet/features/settings/providers/devices_provider.dart';
 export 'package:usdc_wallet/features/settings/providers/notification_preferences_provider.dart';
 export 'package:usdc_wallet/features/settings/providers/security_settings_provider.dart';
 export 'package:usdc_wallet/features/settings/providers/sessions_provider.dart';
-export 'package:usdc_wallet/features/settings/providers/theme_provider.dart';
 export 'package:usdc_wallet/features/settings/repositories/devices_repository.dart';
 export 'package:usdc_wallet/features/settings/repositories/sessions_repository.dart';
 export 'package:usdc_wallet/features/settings/views/about_view.dart';
@@ -17,22 +16,17 @@ export 'package:usdc_wallet/features/settings/views/cookie_policy_view.dart';
 export 'package:usdc_wallet/features/settings/views/currency_view.dart';
 export 'package:usdc_wallet/features/settings/views/delete_account_view.dart';
 export 'package:usdc_wallet/features/settings/views/devices_screen.dart';
-export 'package:usdc_wallet/features/settings/views/devices_view.dart';
 export 'package:usdc_wallet/features/settings/views/export_data_view.dart';
-export 'package:usdc_wallet/features/settings/views/help_screen.dart';
 export 'package:usdc_wallet/features/settings/views/help_view.dart';
-export 'package:usdc_wallet/features/settings/views/kyc_view.dart';
 export 'package:usdc_wallet/features/settings/views/language_view.dart';
 export 'package:usdc_wallet/features/settings/views/limits_view.dart';
 export 'package:usdc_wallet/features/settings/views/notification_settings_view.dart';
 export 'package:usdc_wallet/features/settings/views/performance_monitor_view.dart';
 export 'package:usdc_wallet/features/settings/views/profile_edit_screen.dart';
 export 'package:usdc_wallet/features/settings/views/profile_view.dart';
-export 'package:usdc_wallet/features/settings/views/security_settings_view.dart';
 export 'package:usdc_wallet/features/settings/views/security_view.dart';
 export 'package:usdc_wallet/features/settings/views/sessions_screen.dart';
 export 'package:usdc_wallet/features/settings/views/settings_screen.dart';
-export 'package:usdc_wallet/features/settings/views/settings_view.dart';
 export 'package:usdc_wallet/features/settings/views/theme_settings_view.dart';
 export 'package:usdc_wallet/features/settings/widgets/device_tile.dart';
 export 'package:usdc_wallet/features/settings/widgets/settings_section.dart';

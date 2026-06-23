@@ -1,17 +1,28 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/index.dart';
-import 'package:usdc_wallet/services/pin/pin_service.dart';
-import 'package:usdc_wallet/services/liveness/liveness_service.dart';
-import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/kyc/widgets/kyc_instruction_screen.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
+import 'package:usdc_wallet/features/pin/models/pin_reset_route_context.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/biometric/biometric_service.dart';
+import 'package:usdc_wallet/services/liveness/liveness_service.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
+import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
-enum ChangePinPhase { livenessExplanation, livenessCheck, pinEntry }
+enum ChangePinPhase {
+  riskCheck,
+  manualReview,
+  livenessExplanation,
+  livenessCheck,
+  pinEntry,
+}
+
 enum PinStep { current, newPin, confirm }
 
 class ChangePinView extends ConsumerStatefulWidget {
@@ -22,52 +33,74 @@ class ChangePinView extends ConsumerStatefulWidget {
 }
 
 class _ChangePinViewState extends ConsumerState<ChangePinView> {
-  ChangePinPhase _phase = ChangePinPhase.livenessExplanation;
+  ChangePinPhase _phase = ChangePinPhase.riskCheck;
   PinStep _currentStep = PinStep.current;
   String _currentPin = '';
   String _newPin = '';
   String _confirmPin = '';
   String? _error;
   bool _isLoading = false;
+  StepUpDecision? _riskDecision;
+  bool _biometricVerifiedForStepUp = false;
+  String? _validatedStepUpChallengeToken;
+  String? _manualReviewMessage;
 
   static const int _pinLength = 6;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_evaluateChangePinRisk());
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
     switch (_phase) {
+      case ChangePinPhase.riskCheck:
+        return _buildRiskCheckScreen();
+
+      case ChangePinPhase.manualReview:
+        return _buildManualReviewScreen();
+
       case ChangePinPhase.livenessExplanation:
         return KycInstructionScreen(
-          title: 'Vérification d\'identité',
-          description: 'Pour changer votre PIN, nous devons d\'abord vérifier votre identité par reconnaissance faciale.',
+          title: 'Extra verification required',
+          description:
+              _riskDecision?.reason ??
+              'The risk check for this PIN change requires a face and liveness check.',
           icon: Icons.face,
           instructions: const [
             KycInstruction(
               icon: Icons.videocam_outlined,
-              title: 'Vérification vidéo',
-              subtitle: 'Nous vous demanderons d\'effectuer des actions simples',
+              title: 'Liveness check',
+              subtitle: 'Follow the secure face check before changing your PIN',
             ),
             KycInstruction(
               icon: Icons.security,
-              title: 'Sécurité renforcée',
-              subtitle: 'Cela protège votre compte contre les changements non autorisés',
+              title: 'Risk-based security',
+              subtitle: 'Only high-risk PIN changes require this extra step',
             ),
             KycInstruction(
               icon: Icons.timer_outlined,
-              title: 'Environ 30 secondes',
-              subtitle: 'Restez dans le cadre pendant toute la durée',
+              title: 'About 30 seconds',
+              subtitle: 'Keep your face in frame and follow the prompt',
             ),
           ],
           buttonLabel: l10n.common_continue,
-          onContinue: () => setState(() => _phase = ChangePinPhase.livenessCheck),
-          onBack: () => context.safePop(fallbackRoute: '/settings/security'),
+          onContinue: () =>
+              setState(() => _phase = ChangePinPhase.livenessCheck),
+          onBack: () => context.fsmSafePop(fallbackRoute: '/settings/security'),
         );
 
       case ChangePinPhase.livenessCheck:
         return LivenessCheckWidget(
           onComplete: _onLivenessComplete,
-          onCancel: () => setState(() => _phase = ChangePinPhase.livenessExplanation),
+          onManualReviewRequired: _routeLivenessManualReview,
+          onManualReviewAcknowledged: _openManualReviewStepFromLiveness,
+          onCancel: () =>
+              setState(() => _phase = ChangePinPhase.livenessExplanation),
         );
 
       case ChangePinPhase.pinEntry:
@@ -75,14 +108,410 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
     }
   }
 
+  Widget _buildRiskCheckScreen() {
+    final hasError = _error != null;
+
+    return Scaffold(
+      backgroundColor: context.colors.canvas,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: context.colors.gold),
+          onPressed: () =>
+              context.fsmSafePop(fallbackRoute: '/settings/security'),
+        ),
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (hasError)
+                Container(
+                  width: 76,
+                  height: 76,
+                  decoration: BoxDecoration(
+                    color: context.colors.goldSubtle,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: context.colors.borderGold),
+                  ),
+                  child: Icon(
+                    Icons.admin_panel_settings_outlined,
+                    color: context.colors.gold,
+                    size: 36,
+                  ),
+                )
+              else
+                CircularProgressIndicator(color: context.colors.gold),
+              const SizedBox(height: AppSpacing.lg),
+              AppText(
+                hasError ? _error! : 'Checking security requirements...',
+                variant: AppTextVariant.titleMedium,
+                color: context.colors.textPrimary,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              AppText(
+                hasError
+                    ? _manualReviewMessage ??
+                          'Try biometric verification again, or use PIN recovery if this device cannot complete biometric checks.'
+                    : 'Korido is deciding whether this PIN change needs extra verification.',
+                color: context.colors.textSecondary,
+                textAlign: TextAlign.center,
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: AppSpacing.lg),
+                InfoCallout(
+                  icon: Icons.error_outline,
+                  title: _error!,
+                  tone: InfoCalloutTone.danger,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                AppButton(
+                  label: 'Try again',
+                  onPressed: _evaluateChangePinRisk,
+                  isFullWidth: true,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                AppButton(
+                  label: 'Use PIN recovery',
+                  onPressed: _goToPinRecovery,
+                  variant: AppButtonVariant.secondary,
+                  isFullWidth: true,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildManualReviewScreen() => Scaffold(
+    backgroundColor: context.colors.canvas,
+    appBar: AppBar(
+      backgroundColor: Colors.transparent,
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back, color: context.colors.gold),
+        onPressed: () =>
+            context.fsmSafePop(fallbackRoute: '/settings/security'),
+      ),
+    ),
+    body: SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 76,
+              height: 76,
+              decoration: BoxDecoration(
+                color: context.colors.goldSubtle,
+                shape: BoxShape.circle,
+                border: Border.all(color: context.colors.borderGold),
+              ),
+              child: Icon(
+                Icons.manage_accounts_rounded,
+                color: context.colors.gold,
+                size: 36,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            AppText(
+              'Manual review required',
+              variant: AppTextVariant.titleLarge,
+              color: context.colors.textPrimary,
+              textAlign: TextAlign.center,
+              fontWeight: FontWeight.w700,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            AppText(
+              _manualReviewMessage ??
+                  _riskDecision?.reason ??
+                  'This PIN change needs review before it can continue.',
+              color: context.colors.textSecondary,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            AppButton(
+              label: 'Start PIN recovery',
+              onPressed: _goToPinRecovery,
+              isFullWidth: true,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            AppButton(
+              label: 'Return to security settings',
+              onPressed: () =>
+                  context.fsmSafePop(fallbackRoute: '/settings/security'),
+              variant: AppButtonVariant.secondary,
+              isFullWidth: true,
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+
+  Future<void> _evaluateChangePinRisk() async {
+    setState(() {
+      _phase = ChangePinPhase.riskCheck;
+      _isLoading = true;
+      _error = null;
+      _biometricVerifiedForStepUp = false;
+      _validatedStepUpChallengeToken = null;
+      _manualReviewMessage = null;
+    });
+
+    try {
+      final riskService = ref.read(riskBasedSecurityServiceProvider);
+      final decision = await riskService.evaluateOperation(
+        operation: 'pin_change',
+        metadata: const {'flow': 'change_pin'},
+      );
+      if (!mounted) {
+        return;
+      }
+
+      _riskDecision = decision;
+      if (!decision.stepUpRequired || decision.stepUpType == StepUpType.none) {
+        setState(() {
+          _phase = ChangePinPhase.manualReview;
+          _isLoading = false;
+          _error = null;
+          _manualReviewMessage =
+              'Korido could not issue a verified security challenge for this PIN change.';
+        });
+        return;
+      }
+
+      switch (decision.stepUpType) {
+        case StepUpType.biometric:
+          await _completeBiometricStepUp(decision);
+          return;
+        case StepUpType.liveness:
+          setState(() {
+            _phase = ChangePinPhase.livenessExplanation;
+            _isLoading = false;
+          });
+          return;
+        case StepUpType.biometricAndLiveness:
+          final biometricResult = await _authenticateBiometricForChangePin();
+          if (!mounted) {
+            return;
+          }
+          if (!biometricResult.success) {
+            _handleBiometricStepUpFailure(biometricResult);
+            return;
+          }
+          setState(() {
+            _biometricVerifiedForStepUp = true;
+            _phase = ChangePinPhase.livenessExplanation;
+            _isLoading = false;
+          });
+          return;
+        case StepUpType.manualReview:
+        case StepUpType.otp:
+          setState(() {
+            _phase = ChangePinPhase.manualReview;
+            _isLoading = false;
+            _manualReviewMessage = decision.reason;
+          });
+          return;
+        case StepUpType.none:
+          setState(() {
+            _phase = ChangePinPhase.manualReview;
+            _isLoading = false;
+            _manualReviewMessage =
+                'Korido could not issue a verified security challenge for this PIN change.';
+          });
+          return;
+      }
+    } on Object {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _phase = ChangePinPhase.manualReview;
+        _isLoading = false;
+        _error = null;
+        _manualReviewMessage =
+            'Korido could not evaluate this PIN change safely.';
+      });
+    }
+  }
+
+  Future<void> _completeBiometricStepUp(StepUpDecision decision) async {
+    final challengeToken = decision.challengeToken;
+    if (challengeToken == null || challengeToken.isEmpty) {
+      setState(() {
+        _phase = ChangePinPhase.manualReview;
+        _isLoading = false;
+        _manualReviewMessage =
+            'Korido could not issue a verified security challenge for this PIN change.';
+      });
+      return;
+    }
+
+    final biometricResult = await _authenticateBiometricForChangePin();
+    if (!mounted) {
+      return;
+    }
+    if (!biometricResult.success) {
+      _handleBiometricStepUpFailure(biometricResult);
+      return;
+    }
+
+    final validated = await ref
+        .read(riskBasedSecurityServiceProvider)
+        .validateStepUp(
+          challengeToken: challengeToken,
+          biometricVerified: true,
+        );
+    if (!mounted) {
+      return;
+    }
+    if (validated) {
+      setState(() {
+        _validatedStepUpChallengeToken = challengeToken;
+        _phase = ChangePinPhase.pinEntry;
+        _isLoading = false;
+      });
+    } else {
+      setState(() {
+        _phase = ChangePinPhase.manualReview;
+        _isLoading = false;
+        _manualReviewMessage =
+            'The security verification could not be completed.';
+      });
+    }
+  }
+
+  Future<BiometricResult> _authenticateBiometricForChangePin() => ref
+      .read(biometricServiceProvider)
+      .authenticate(localizedReason: 'Confirm your identity to change PIN');
+
+  void _handleBiometricStepUpFailure(BiometricResult result) {
+    final reason = result.failureReason;
+    setState(() {
+      _phase = ChangePinPhase.riskCheck;
+      _isLoading = false;
+      _error = switch (reason) {
+        BiometricFailureReason.notAvailable ||
+        BiometricFailureReason.notEnrolled =>
+          'Biometric verification is not available on this device.',
+        BiometricFailureReason.lockedOut =>
+          'Biometric verification is temporarily locked.',
+        BiometricFailureReason.cancelled =>
+          'Biometric verification was cancelled.',
+        BiometricFailureReason.unknown ||
+        null => 'Biometric verification was not completed.',
+      };
+      _manualReviewMessage = switch (reason) {
+        BiometricFailureReason.cancelled =>
+          'Try again, or use PIN recovery if you cannot complete biometric verification on this device.',
+        BiometricFailureReason.lockedOut =>
+          'Use PIN recovery while device biometric verification is locked, or try again after unlocking biometrics in system settings.',
+        BiometricFailureReason.notAvailable ||
+        BiometricFailureReason.notEnrolled ||
+        BiometricFailureReason.unknown ||
+        null =>
+          'Use PIN recovery so Korido can verify you with OTP, liveness, or manual review before changing this security credential.',
+      };
+    });
+  }
+
+  void _goToPinRecovery() {
+    const resetContext = PinResetRouteContext(returnTo: '/settings/security');
+    unawaited(context.fsmPush(resetContext.routePath));
+  }
+
   void _onLivenessComplete(LivenessResult result) {
-    if (result.isLive && result.decision != LivenessDecision.decline) {
-      setState(() => _phase = ChangePinPhase.pinEntry);
+    unawaited(_handleLivenessComplete(result));
+  }
+
+  void _routeLivenessManualReview(LivenessManualReviewRequest request) {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _phase = ChangePinPhase.manualReview;
+      _isLoading = false;
+      _manualReviewMessage = _manualReviewCopyForLiveness(request);
+    });
+  }
+
+  void _openManualReviewStepFromLiveness() {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _phase = ChangePinPhase.manualReview;
+      _isLoading = false;
+      _manualReviewMessage ??=
+          'Automated liveness could not continue this PIN change. Use PIN recovery so Korido can verify you and stage a new PIN for review.';
+    });
+  }
+
+  String _manualReviewCopyForLiveness(LivenessManualReviewRequest request) {
+    final reason = request.reason.replaceAll('_', ' ');
+    final detail = request.message.trim();
+    final suffix = detail.isEmpty ? '' : '\n\n$detail';
+
+    return 'Automated liveness could not continue this PIN change. Use PIN recovery so Korido can verify you and stage a new PIN for review.\n\nReason: $reason$suffix';
+  }
+
+  Future<void> _handleLivenessComplete(LivenessResult result) async {
+    if (!mounted) {
+      return;
+    }
+    final faceScore = result.faceMatchScore ?? 1.0;
+    if (result.isLive &&
+        result.decision == LivenessDecision.autoApprove &&
+        faceScore >= 0.85) {
+      final challengeToken = _riskDecision?.challengeToken;
+      if (challengeToken == null || challengeToken.isEmpty) {
+        setState(() {
+          _phase = ChangePinPhase.manualReview;
+          _manualReviewMessage =
+              'Korido could not issue a verified security challenge for this PIN change.';
+        });
+        return;
+      }
+
+      final validated = await ref
+          .read(riskBasedSecurityServiceProvider)
+          .validateStepUp(
+            challengeToken: challengeToken,
+            livenessSessionId: result.stepUpProofId,
+            biometricVerified:
+                _riskDecision?.stepUpType == StepUpType.biometricAndLiveness
+                ? _biometricVerifiedForStepUp
+                : null,
+          );
+      if (!mounted) {
+        return;
+      }
+      if (validated) {
+        setState(() {
+          _validatedStepUpChallengeToken = challengeToken;
+          _phase = ChangePinPhase.pinEntry;
+        });
+      } else {
+        setState(() {
+          _phase = ChangePinPhase.manualReview;
+          _manualReviewMessage =
+              'The security verification could not be completed.';
+        });
+      }
     } else {
       // Liveness failed — go back to explanation
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.settings_verificationFailed),
+          content: Text(
+            AppLocalizations.of(context)!.settings_verificationFailed,
+          ),
           backgroundColor: context.colors.error,
         ),
       );
@@ -90,102 +519,98 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
     }
   }
 
-  Widget _buildPinEntryScreen(AppLocalizations l10n) {
-    return Scaffold(
-      backgroundColor: context.colors.canvas,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: AppText(
-          _getTitle(l10n),
-          variant: AppTextVariant.titleLarge,
-          color: context.colors.textPrimary,
-        ),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: context.colors.gold),
-          onPressed: () {
-            if (_currentStep == PinStep.current) {
-              context.safePop(fallbackRoute: '/settings/security');
-            } else {
-              _goBack();
-            }
-          },
+  Widget _buildPinEntryScreen(AppLocalizations l10n) => Scaffold(
+    backgroundColor: context.colors.canvas,
+    appBar: AppBar(
+      backgroundColor: Colors.transparent,
+      title: AppText(
+        _getTitle(l10n),
+        variant: AppTextVariant.titleLarge,
+        color: context.colors.textPrimary,
+      ),
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back, color: context.colors.gold),
+        onPressed: () {
+          if (_currentStep == PinStep.current) {
+            context.fsmSafePop(fallbackRoute: '/settings/security');
+          } else {
+            _goBack();
+          }
+        },
+      ),
+    ),
+    body: SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Column(
+          children: [
+            const Spacer(),
+
+            // Lock Icon
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: context.colors.container,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                _currentStep == PinStep.current ? Icons.lock : Icons.lock_open,
+                color: context.colors.gold,
+                size: 40,
+              ),
+            ),
+
+            const SizedBox(height: AppSpacing.xxl),
+
+            // Title
+            AppText(
+              _getStepTitle(l10n),
+              variant: AppTextVariant.titleMedium,
+              color: context.colors.textPrimary,
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: AppSpacing.sm),
+
+            // Subtitle
+            AppText(
+              _getStepSubtitle(l10n),
+              color: context.colors.textSecondary,
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: AppSpacing.xxxl),
+
+            // PIN Dots
+            _buildPinDots(),
+
+            // Error
+            if (_error != null)
+              Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.lg),
+                child: AppText(
+                  _error!,
+                  color: context.colors.error,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+
+            const Spacer(),
+
+            // PIN Pad
+            PinPad(
+              onDigitPressed: _onDigitPressed,
+              onDeletePressed: _onDeletePressed,
+              showBiometric: false,
+            ),
+
+            const SizedBox(height: AppSpacing.lg),
+          ],
         ),
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            children: [
-              const Spacer(),
-
-              // Lock Icon
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: context.colors.container,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  _currentStep == PinStep.current ? Icons.lock : Icons.lock_open,
-                  color: context.colors.gold,
-                  size: 40,
-                ),
-              ),
-
-              const SizedBox(height: AppSpacing.xxl),
-
-              // Title
-              AppText(
-                _getStepTitle(l10n),
-                variant: AppTextVariant.titleMedium,
-                color: context.colors.textPrimary,
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: AppSpacing.sm),
-
-              // Subtitle
-              AppText(
-                _getStepSubtitle(l10n),
-                variant: AppTextVariant.bodyMedium,
-                color: context.colors.textSecondary,
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: AppSpacing.xxxl),
-
-              // PIN Dots
-              _buildPinDots(),
-
-              // Error
-              if (_error != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: AppSpacing.lg),
-                  child: AppText(
-                    _error!,
-                    variant: AppTextVariant.bodyMedium,
-                    color: context.colors.error,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-
-              const Spacer(),
-
-              // PIN Pad
-              PinPad(
-                onDigitPressed: _onDigitPressed,
-                onDeletePressed: _onDeletePressed,
-                showBiometric: false,
-              ),
-
-              const SizedBox(height: AppSpacing.lg),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+    ),
+  );
 
   String _getTitle(AppLocalizations l10n) {
     switch (_currentStep) {
@@ -252,7 +677,9 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
             border: Border.all(
               color: hasError
                   ? context.colors.error
-                  : (isFilled ? context.colors.gold : context.colors.textSecondary),
+                  : (isFilled
+                        ? context.colors.gold
+                        : context.colors.textSecondary),
               width: 2,
             ),
           ),
@@ -262,7 +689,9 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
   }
 
   void _onDigitPressed(int digit) {
-    if (_isLoading) return;
+    if (_isLoading) {
+      return;
+    }
 
     setState(() {
       _error = null;
@@ -273,7 +702,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
           if (_currentPin.length < _pinLength) {
             _currentPin += number;
             if (_currentPin.length == _pinLength) {
-              _validateCurrentPin();
+              unawaited(_validateCurrentPin());
             }
           }
           break;
@@ -298,7 +727,9 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
   }
 
   void _onDeletePressed() {
-    if (_isLoading) return;
+    if (_isLoading) {
+      return;
+    }
 
     setState(() {
       _error = null;
@@ -343,7 +774,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
           _isLoading = false;
         });
       }
-    } catch (e) {
+    } on Object {
       setState(() {
         _error = l10n.changePin_errorUnableToVerify;
         _currentPin = '';
@@ -380,7 +811,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
   void _validateConfirmPin() {
     final l10n = AppLocalizations.of(context)!;
     if (_confirmPin == _newPin) {
-      _saveNewPin();
+      unawaited(_saveNewPin());
     } else {
       setState(() {
         _error = l10n.changePin_errorPinMismatch;
@@ -391,18 +822,26 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
 
   bool _isWeakPin(String pin) {
     // Check for sequential digits (ascending)
-    bool ascending = true;
-    bool descending = true;
-    for (int i = 1; i < pin.length; i++) {
+    var ascending = true;
+    var descending = true;
+    for (var i = 1; i < pin.length; i++) {
       final curr = int.parse(pin[i]);
       final prev = int.parse(pin[i - 1]);
-      if (curr != prev + 1) ascending = false;
-      if (curr != prev - 1) descending = false;
+      if (curr != prev + 1) {
+        ascending = false;
+      }
+      if (curr != prev - 1) {
+        descending = false;
+      }
     }
-    if (ascending || descending) return true;
+    if (ascending || descending) {
+      return true;
+    }
 
     // Check for repeated digits
-    if (pin.split('').toSet().length == 1) return true;
+    if (pin.split('').toSet().length == 1) {
+      return true;
+    }
 
     return false;
   }
@@ -413,7 +852,19 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
 
     try {
       final pinService = ref.read(pinServiceProvider);
-      final success = await pinService.setPin(_newPin);
+      final challengeToken = _validatedStepUpChallengeToken;
+      if (challengeToken == null || challengeToken.isEmpty) {
+        setState(() {
+          _isLoading = false;
+          _error = 'Security verification is required before changing PIN.';
+        });
+        return;
+      }
+      final success = await pinService.changePin(
+        _currentPin,
+        _newPin,
+        stepUpChallengeToken: challengeToken,
+      );
 
       setState(() => _isLoading = false);
 
@@ -425,7 +876,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
               backgroundColor: context.colors.success,
             ),
           );
-          context.safePop(fallbackRoute: '/settings/security');
+          context.fsmSafePop(fallbackRoute: '/settings/security');
         } else {
           setState(() {
             _error = l10n.changePin_errorFailedToSet;
@@ -435,7 +886,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
           });
         }
       }
-    } catch (e) {
+    } on Object {
       setState(() {
         _isLoading = false;
         _error = l10n.changePin_errorFailedToSave;

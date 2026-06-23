@@ -38,7 +38,7 @@ class RecurringTransfersService {
   Future<RecurringTransfer> createRecurringTransfer(
     CreateRecurringTransferRequest request, {
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) async {
     final response = await _dio.post(
       '/recurring-transfers',

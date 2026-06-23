@@ -22,6 +22,7 @@ void main() {
   tearDown(() {
     TestHelpers.clearMockImagePicker();
     _clearMockIosImagePicker();
+    _clearMockImageAnalysis();
   });
 
   testWidgets(
@@ -32,6 +33,7 @@ void main() {
       );
       TestHelpers.setupMockImagePicker(imagePath);
       _setupMockIosImagePicker(imagePath);
+      _setupMockImageAnalysis();
 
       final driver = KoridoFlowDriver(tester);
       await driver.launchApp();
@@ -106,9 +108,7 @@ void main() {
         () => find.byType(AppButton).evaluate().isNotEmpty,
         reason: 'profile edit save button after image selection',
       );
-      await tester.ensureVisible(find.byType(AppButton).last);
-      await tester.pump(const Duration(milliseconds: 250));
-      await tester.tap(find.byType(AppButton).last);
+      await driver.tapText(['Save', 'Enregistrer']);
 
       await driver.pumpUntil(
         () => driver.hasAnyText([
@@ -263,4 +263,25 @@ void _clearMockIosImagePicker() {
   );
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
       .setMockDecodedMessageHandler<Object?>(channel, null);
+}
+
+void _setupMockImageAnalysis() {
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(
+        const MethodChannel('com.joonapay.usdc_wallet/image_analysis'),
+        (call) async {
+          if (call.method == 'detectFaces') {
+            return <String, Object?>{'faceCount': 1, 'available': true};
+          }
+          return null;
+        },
+      );
+}
+
+void _clearMockImageAnalysis() {
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(
+        const MethodChannel('com.joonapay.usdc_wallet/image_analysis'),
+        null,
+      );
 }

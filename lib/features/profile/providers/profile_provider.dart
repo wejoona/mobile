@@ -13,17 +13,17 @@ import 'package:usdc_wallet/state/user_state_machine.dart';
 
 /// User profile state.
 class ProfileState {
-  final User? user;
-  final bool isLoading;
-  final String? error;
-  final bool isUploading;
-
   const ProfileState({
     this.user,
     this.isLoading = false,
     this.error,
     this.isUploading = false,
   });
+
+  final User? user;
+  final bool isLoading;
+  final String? error;
+  final bool isUploading;
 
   ProfileState copyWith({
     User? user,
@@ -54,7 +54,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
       state = state.copyWith(user: user, isLoading: false, clearError: true);
     } on ApiException catch (e) {
       state = state.copyWith(isLoading: false, error: _friendlyError(e));
-    } catch (e) {
+    } on Object {
       state = state.copyWith(
         isLoading: false,
         error: 'Unable to load your profile. Please try again.',
@@ -69,7 +69,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
       await loadProfile();
     } on ApiException catch (e) {
       state = state.copyWith(error: _friendlyError(e));
-    } catch (e) {
+    } on Object {
       state = state.copyWith(error: 'Unable to update your profile.');
     }
   }
@@ -93,7 +93,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
     } on ApiException catch (e) {
       state = state.copyWith(isUploading: false, error: _friendlyError(e));
       return null;
-    } catch (e) {
+    } on Object {
       state = state.copyWith(
         isUploading: false,
         error: 'Unable to upload your photo. Please try another image.',
@@ -141,7 +141,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
       await loadProfile();
     } on ApiException catch (e) {
       state = state.copyWith(error: _friendlyError(e));
-    } catch (e) {
+    } on Object {
       state = state.copyWith(error: 'Unable to remove your photo.');
     }
   }
@@ -153,7 +153,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
       state = state.copyWith(clearError: true);
     } on ApiException catch (e) {
       state = state.copyWith(error: _friendlyError(e));
-    } catch (e) {
+    } on Object {
       state = state.copyWith(error: 'Unable to update your language.');
     }
   }
@@ -254,6 +254,12 @@ class ProfileNotifier extends Notifier<ProfileState> {
     }
     if (error.statusCode == 401) {
       return 'Your session has expired. Please sign in again.';
+    }
+    final normalizedMessage = error.message.toLowerCase();
+    if (error.statusCode == 400 &&
+        (normalizedMessage.contains('single-face device check') ||
+            normalizedMessage.contains('profile photo must pass'))) {
+      return 'We could not verify this photo securely. Please choose a clear selfie with only your face visible and try again.';
     }
     if (error.statusCode == 413) {
       return 'This image is too large. Please choose a smaller photo.';

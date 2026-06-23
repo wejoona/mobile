@@ -1,13 +1,18 @@
-import 'package:usdc_wallet/core/utils/formatters.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
+
+import 'package:usdc_wallet/core/utils/formatters.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/send/widgets/send_flow_visuals.dart';
 import 'package:usdc_wallet/features/send_external/providers/external_transfer_provider.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/features/wallet/widgets/risk_step_up_dialog.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class ExternalConfirmScreen extends ConsumerStatefulWidget {
   const ExternalConfirmScreen({super.key});
@@ -27,7 +32,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
 
     if (!state.canProceedToConfirm) {
       // Navigate back if invalid state
-      Future.microtask(() => context.go('/send-external'));
+      Future.microtask(() => context.fsmGo('/send-external'));
       return const SizedBox.shrink();
     }
 
@@ -339,9 +344,24 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
   }
 
   Future<void> _handleConfirm() async {
+    final notifier = ref.read(externalTransferProvider.notifier);
+    notifier.clearStepUpAuthorization();
+
     // Require PIN/biometric verification before executing irreversible blockchain transfer
     final verified = await _verifyIdentity();
-    if (!verified || !mounted) return;
+    if (!verified || !mounted) {
+      return;
+    }
+
+    final latestState = ref.read(externalTransferProvider);
+    final stepUp = await _authorizeExternalTransferRisk(
+      amount: latestState.amount!,
+      destinationAddress: latestState.address!,
+    );
+    if (!stepUp.canProceed || !mounted) {
+      return;
+    }
+    notifier.markStepUpAuthorized(stepUp.stepUpToken);
 
     setState(() => _isLoading = true);
     try {
@@ -351,7 +371,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
 
       if (mounted) {
         if (success) {
-          context.go('/send-external/result');
+          context.fsmGo('/send-external/result');
         } else {
           // Error is already set in state and displayed
           setState(() => _isLoading = false);
@@ -366,7 +386,9 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
 
   /// Verify user identity via PIN or biometric before executing external transfer
   Future<bool> _verifyIdentity() async {
-    if (!mounted) return false;
+    if (!mounted) {
+      return false;
+    }
     final pinResult = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -374,6 +396,94 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
     );
 
     return pinResult == true;
+  }
+
+  Future<({bool canProceed, String? stepUpToken})>
+  _authorizeExternalTransferRisk({
+    required double amount,
+    required String destinationAddress,
+  }) async {
+    try {
+      final securityService = ref.read(riskBasedSecurityServiceProvider);
+      final decision = await securityService.evaluateTransaction(
+        type: 'payout',
+        amount: amount,
+        currency: 'USDC',
+        recipientId: destinationAddress,
+        recipientType: 'external',
+        isFirstTransactionToRecipient: true,
+      );
+
+      if (!decision.stepUpRequired) {
+        return (canProceed: true, stepUpToken: null);
+      }
+
+      if (decision.stepUpType == StepUpType.manualReview) {
+        if (mounted) {
+          unawaited(HapticFeedback.heavyImpact());
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                localizedSendCopy(
+                  context,
+                  en: 'This external transfer needs manual review before it can continue.',
+                  fr: 'Ce transfert externe nécessite une revue manuelle avant de continuer.',
+                ),
+              ),
+              backgroundColor: context.colors.error,
+            ),
+          );
+        }
+        return (canProceed: false, stepUpToken: null);
+      }
+
+      if (!mounted) {
+        return (canProceed: false, stepUpToken: null);
+      }
+      final passed = await RiskStepUpDialog.show(context, decision: decision);
+      if (!passed) {
+        return (canProceed: false, stepUpToken: null);
+      }
+
+      final token = decision.challengeToken?.trim();
+      if (token == null || token.isEmpty) {
+        if (mounted) {
+          unawaited(HapticFeedback.heavyImpact());
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                localizedSendCopy(
+                  context,
+                  en: 'Security challenge is incomplete. Please try again before sending externally.',
+                  fr: 'La vérification de sécurité est incomplète. Réessayez avant le transfert externe.',
+                ),
+              ),
+              backgroundColor: context.colors.error,
+            ),
+          );
+        }
+        return (canProceed: false, stepUpToken: null);
+      }
+
+      return (canProceed: true, stepUpToken: token);
+    } on Object {
+      if (mounted) {
+        unawaited(HapticFeedback.heavyImpact());
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              localizedSendCopy(
+                context,
+                en: 'Security check unavailable. Please try again before sending externally.',
+                fr: 'La vérification de sécurité est indisponible. Réessayez avant le transfert externe.',
+              ),
+            ),
+            backgroundColor: context.colors.error,
+          ),
+        );
+      }
+      return (canProceed: false, stepUpToken: null);
+    }
   }
 }
 
@@ -523,7 +633,7 @@ class _PinVerificationDialogState extends State<_PinVerificationDialog> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = e.toString();
+          _error = 'PIN verification failed. Please try again.';
           _isVerifying = false;
           _pinController.clear();
         });

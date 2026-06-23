@@ -1,9 +1,13 @@
+import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/features/biometric/views/biometric_enrollment_view.dart';
 import 'package:usdc_wallet/features/biometric/views/biometric_settings_view.dart';
 import 'package:usdc_wallet/features/business/views/business_profile_view.dart';
 import 'package:usdc_wallet/features/business/views/business_setup_view.dart';
+import 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_tier.dart' as kyc_models;
+import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
 import 'package:usdc_wallet/features/kyc/views/document_capture_view.dart';
 import 'package:usdc_wallet/features/kyc/views/document_type_view.dart';
 import 'package:usdc_wallet/features/kyc/views/kyc_additional_docs_view.dart';
@@ -25,7 +29,6 @@ import 'package:usdc_wallet/features/settings/views/cookie_policy_view.dart';
 import 'package:usdc_wallet/features/settings/views/currency_view.dart';
 import 'package:usdc_wallet/features/settings/views/delete_account_view.dart';
 import 'package:usdc_wallet/features/settings/views/devices_screen.dart';
-import 'package:usdc_wallet/features/settings/views/help_screen.dart';
 import 'package:usdc_wallet/features/settings/views/help_view.dart';
 import 'package:usdc_wallet/features/settings/views/language_view.dart';
 import 'package:usdc_wallet/features/settings/views/limits_view.dart';
@@ -35,17 +38,24 @@ import 'package:usdc_wallet/features/settings/views/security_view.dart';
 import 'package:usdc_wallet/features/settings/views/sessions_screen.dart';
 import 'package:usdc_wallet/features/settings/views/theme_settings_view.dart';
 import 'package:usdc_wallet/router/page_transitions.dart';
+import 'package:usdc_wallet/state/kyc_state_machine.dart';
 
 List<RouteBase> kycSettingsRoutes() => [
   // KYC Flow Routes
   GoRoute(
     path: '/kyc',
-    pageBuilder: (context, state) =>
-        AppPageTransitions.fade(state: state, child: const KycStatusView()),
+    pageBuilder: (context, state) => AppPageTransitions.fade(
+      state: state,
+      child: KycStatusView(
+        intent: state.uri.queryParameters['intent'],
+        returnTo: state.uri.queryParameters['returnTo'],
+      ),
+    ),
   ),
-  GoRoute(path: '/kyc/start', redirect: (_, _) => '/kyc/document-type'),
+  GoRoute(path: '/kyc/start', redirect: _kycStartRedirect),
   GoRoute(
     path: '/kyc/document-type',
+    redirect: _kycWizardRedirect,
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const DocumentTypeView(),
@@ -53,6 +63,7 @@ List<RouteBase> kycSettingsRoutes() => [
   ),
   GoRoute(
     path: '/kyc/personal-info',
+    redirect: _kycWizardRedirect,
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const KycPersonalInfoView(),
@@ -60,6 +71,7 @@ List<RouteBase> kycSettingsRoutes() => [
   ),
   GoRoute(
     path: '/kyc/document-capture',
+    redirect: _kycWizardRedirect,
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const DocumentCaptureView(),
@@ -67,6 +79,7 @@ List<RouteBase> kycSettingsRoutes() => [
   ),
   GoRoute(
     path: '/kyc/selfie',
+    redirect: _kycWizardRedirect,
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const SelfieView(),
@@ -74,6 +87,7 @@ List<RouteBase> kycSettingsRoutes() => [
   ),
   GoRoute(
     path: '/kyc/liveness-instructions',
+    redirect: _kycEvidenceRedirect,
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const KycLivenessInstructionsView(),
@@ -81,6 +95,7 @@ List<RouteBase> kycSettingsRoutes() => [
   ),
   GoRoute(
     path: '/kyc/liveness',
+    redirect: _kycEvidenceRedirect,
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const KycLivenessView(),
@@ -88,6 +103,7 @@ List<RouteBase> kycSettingsRoutes() => [
   ),
   GoRoute(
     path: '/kyc/review',
+    redirect: _kycWizardRedirect,
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const ReviewView(),
@@ -95,8 +111,14 @@ List<RouteBase> kycSettingsRoutes() => [
   ),
   GoRoute(
     path: '/kyc/submitted',
-    pageBuilder: (context, state) =>
-        AppPageTransitions.fade(state: state, child: const SubmittedView()),
+    redirect: _kycSubmittedRedirect,
+    pageBuilder: (context, state) => AppPageTransitions.fade(
+      state: state,
+      child: SubmittedView(
+        intent: state.uri.queryParameters['intent'],
+        returnTo: state.uri.queryParameters['returnTo'],
+      ),
+    ),
   ),
   GoRoute(
     path: '/kyc/upgrade',
@@ -118,6 +140,7 @@ List<RouteBase> kycSettingsRoutes() => [
   ),
   GoRoute(
     path: '/kyc/address',
+    redirect: _kycWizardRedirect,
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const KycAddressView(),
@@ -125,6 +148,7 @@ List<RouteBase> kycSettingsRoutes() => [
   ),
   GoRoute(
     path: '/kyc/video',
+    redirect: _kycWizardRedirect,
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const KycVideoView(),
@@ -132,6 +156,7 @@ List<RouteBase> kycSettingsRoutes() => [
   ),
   GoRoute(
     path: '/kyc/additional-docs',
+    redirect: _kycWizardRedirect,
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const KycAdditionalDocsView(),
@@ -223,18 +248,15 @@ List<RouteBase> kycSettingsRoutes() => [
     path: '/profile/verify-email',
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
-      child: const EmailVerificationScreen(),
+      child: EmailVerificationScreen(
+        successRoute: state.uri.queryParameters['successRoute'],
+      ),
     ),
   ),
   GoRoute(
     path: '/settings/profile/edit',
     pageBuilder: (context, state) =>
         AppPageTransitions.fade(state: state, child: const ProfileEditScreen()),
-  ),
-  GoRoute(
-    path: '/settings/help-screen',
-    pageBuilder: (context, state) =>
-        AppPageTransitions.fade(state: state, child: const HelpScreen()),
   ),
   GoRoute(
     path: '/settings/business-setup',
@@ -267,3 +289,188 @@ List<RouteBase> kycSettingsRoutes() => [
         AppPageTransitions.fade(state: state, child: const ReferralsView()),
   ),
 ];
+
+String? _kycStartRedirect(BuildContext context, GoRouterState state) =>
+    _kycDurableStatusRedirect(context, state) ?? '/kyc/document-type';
+
+String? _kycWizardRedirect(BuildContext context, GoRouterState state) {
+  final durableRedirect = _kycDurableStatusRedirect(context, state);
+  if (durableRedirect != null) {
+    return durableRedirect;
+  }
+
+  final flow = ProviderScope.containerOf(context).read(kycProvider);
+  final statusRedirect = _kycFlowStatusRedirect(state.uri, flow.status);
+  if (statusRedirect != null) {
+    return statusRedirect;
+  }
+
+  return _kycPrerequisiteRedirectForPath(state.uri.path, flow);
+}
+
+String? _kycEvidenceRedirect(BuildContext context, GoRouterState state) {
+  final durableRedirect = _kycDurableStatusRedirect(context, state);
+  if (durableRedirect != null) {
+    return durableRedirect;
+  }
+
+  final flow = ProviderScope.containerOf(context).read(kycProvider);
+  final statusRedirect = _kycFlowStatusRedirect(state.uri, flow.status);
+  if (statusRedirect != null) {
+    return statusRedirect;
+  }
+  if (flow.selectedDocumentType == null) {
+    return '/kyc/document-type';
+  }
+  if (!flow.hasRequiredPersonalInfo) {
+    return '/kyc/personal-info';
+  }
+  if (flow.capturedDocuments.isEmpty) {
+    return '/kyc/document-capture';
+  }
+  if (flow.selfiePath == null) {
+    return '/kyc/selfie';
+  }
+  if (flow.canEnterReview) {
+    return '/kyc/review';
+  }
+  return null;
+}
+
+// The submitted view owns backend reconciliation and displays pending,
+// manual-review, approved, rejected, or restart states. Redirecting away from
+// this terminal route can create loops with evidence-step guards while API
+// status and local wizard state are settling.
+String? _kycSubmittedRedirect(BuildContext context, GoRouterState state) =>
+    null;
+
+String? _kycPrerequisiteRedirectForPath(String path, KycFlowState flow) {
+  switch (path) {
+    case '/kyc/document-type':
+      return null;
+    case '/kyc/personal-info':
+      if (flow.selectedDocumentType == null) {
+        return '/kyc/document-type';
+      }
+      return null;
+    case '/kyc/document-capture':
+      if (flow.selectedDocumentType == null) {
+        return '/kyc/document-type';
+      }
+      if (!flow.hasRequiredPersonalInfo) {
+        return '/kyc/personal-info';
+      }
+      return null;
+    case '/kyc/selfie':
+      if (flow.selectedDocumentType == null) {
+        return '/kyc/document-type';
+      }
+      if (!flow.hasRequiredPersonalInfo) {
+        return '/kyc/personal-info';
+      }
+      if (flow.capturedDocuments.isEmpty) {
+        return '/kyc/document-capture';
+      }
+      return null;
+    case '/kyc/address':
+      if (flow.selectedDocumentType == null) {
+        return '/kyc/document-type';
+      }
+      if (!flow.hasRequiredPersonalInfo) {
+        return '/kyc/personal-info';
+      }
+      return null;
+    case '/kyc/video':
+    case '/kyc/additional-docs':
+      if (flow.selectedDocumentType == null) {
+        return '/kyc/document-type';
+      }
+      if (!flow.hasRequiredPersonalInfo) {
+        return '/kyc/personal-info';
+      }
+      if (flow.capturedDocuments.isEmpty) {
+        return '/kyc/document-capture';
+      }
+      if (flow.selfiePath == null) {
+        return '/kyc/selfie';
+      }
+      return null;
+    case '/kyc/review':
+      if (flow.selectedDocumentType == null) {
+        return '/kyc/document-type';
+      }
+      if (!flow.hasRequiredPersonalInfo) {
+        return '/kyc/personal-info';
+      }
+      if (flow.capturedDocuments.isEmpty) {
+        return '/kyc/document-capture';
+      }
+      if (flow.selfiePath == null) {
+        return '/kyc/selfie';
+      }
+      if (!flow.hasCompletedLiveness) {
+        return '/kyc/liveness-instructions';
+      }
+      return null;
+    default:
+      return null;
+  }
+}
+
+String? _kycDurableStatusRedirect(BuildContext context, GoRouterState state) {
+  final currentPath = state.uri.path;
+  final durableState = ProviderScope.containerOf(
+    context,
+  ).read(kycStateMachineProvider);
+  if (!durableState.hasLoaded) {
+    return null;
+  }
+  final status = durableState.status;
+
+  if (status.isSubmitted) {
+    return currentPath == '/kyc/submitted'
+        ? null
+        : _kycSubmittedRouteFrom(state.uri);
+  }
+
+  if (status.isVerified && currentPath != '/kyc') {
+    if (currentPath == '/kyc/submitted') {
+      return null;
+    }
+    return '/kyc';
+  }
+
+  return null;
+}
+
+bool _isKycReviewOrApprovalStatus(KycStatus status) =>
+    status.isSubmitted || status.isVerified;
+
+String? _kycFlowStatusRedirect(Uri uri, KycStatus status) {
+  if (!_isKycReviewOrApprovalStatus(status)) {
+    return null;
+  }
+
+  if (uri.path == '/kyc/submitted') {
+    return null;
+  }
+
+  if (status.isVerified) {
+    return '/kyc';
+  }
+
+  return _kycSubmittedRouteFrom(uri);
+}
+
+String _kycSubmittedRouteFrom(Uri uri) {
+  final intent = uri.queryParameters['intent']?.trim();
+  final returnTo = uri.queryParameters['returnTo']?.trim();
+  final query = <String, String>{
+    if (intent != null && intent.isNotEmpty) 'intent': intent,
+    if (returnTo != null && returnTo.startsWith('/')) 'returnTo': returnTo,
+  };
+  return Uri(
+    path: '/kyc/submitted',
+    queryParameters: query.isEmpty ? null : query,
+  ).toString();
+}

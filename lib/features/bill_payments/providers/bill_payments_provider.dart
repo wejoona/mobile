@@ -264,7 +264,7 @@ class BillPaymentNotifier extends Notifier<BillPaymentState> {
     String? phone,
     String? email,
     required String pinToken,
-    String? idempotencyKey,
+    required String idempotencyKey,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
 

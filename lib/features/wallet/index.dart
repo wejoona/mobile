@@ -2,7 +2,7 @@
 library;
 
 export 'package:usdc_wallet/features/wallet/providers/balance_visibility_provider.dart';
-export 'package:usdc_wallet/features/wallet/providers/contacts_provider.dart';
+export 'package:usdc_wallet/features/wallet/providers/saved_recipients_provider.dart';
 export 'package:usdc_wallet/features/wallet/providers/currency_converter_provider.dart';
 export 'package:usdc_wallet/features/wallet/providers/transaction_stats_provider.dart';
 export 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
@@ -13,7 +13,6 @@ export 'package:usdc_wallet/features/wallet/views/budget_view.dart';
 export 'package:usdc_wallet/features/wallet/views/buy_airtime_view.dart';
 export 'package:usdc_wallet/features/wallet/views/currency_converter_view.dart';
 export 'package:usdc_wallet/features/wallet/views/deposit_instructions_view.dart';
-export 'package:usdc_wallet/features/wallet/views/deposit_view.dart';
 export 'package:usdc_wallet/features/wallet/views/receive_view.dart';
 export 'package:usdc_wallet/features/wallet/views/request_money_view.dart';
 export 'package:usdc_wallet/features/wallet/views/saved_recipients_view.dart';

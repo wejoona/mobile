@@ -2,8 +2,9 @@
 library;
 
 import 'package:dio/dio.dart';
-import 'package:usdc_wallet/core/utils/idempotency.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/core/utils/transaction_headers.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 class TransfersApi {
   TransfersApi(this._dio);
@@ -12,34 +13,38 @@ class TransfersApi {
   /// POST /wallet/transfer/internal
   Future<Response> sendInternal(
     Map<String, dynamic> data, {
-    String? pinToken,
-    String? idempotencyKey,
+    required String pinToken,
+    required String idempotencyKey,
+    String? stepUpToken,
   }) => _dio.post(
-    '/wallet/transfer/internal',
+    ApiEndpoints.transfersSend,
     data: _internalTransferPayload(data),
     options: _transferOptions(
       pinToken: pinToken,
       idempotencyKey: idempotencyKey,
+      stepUpToken: stepUpToken,
     ),
   );
 
   /// POST /wallet/transfer/external
   Future<Response> sendExternal(
     Map<String, dynamic> data, {
-    String? pinToken,
-    String? idempotencyKey,
+    required String pinToken,
+    required String idempotencyKey,
+    String? stepUpToken,
   }) => _dio.post(
-    '/wallet/transfer/external',
+    ApiEndpoints.transfersExternal,
     data: _externalTransferPayload(data),
     options: _transferOptions(
       pinToken: pinToken,
       idempotencyKey: idempotencyKey,
+      stepUpToken: stepUpToken,
     ),
   );
 
-  /// GET /transfers — list transfer history
+  /// GET /wallet/transactions — list canonical money-movement history.
   Future<Response> list({int? page, int? limit}) => _dio.get(
-    '/transfers',
+    ApiEndpoints.walletTransactions,
     queryParameters: {
       if (limit != null) 'limit': limit,
       if (page != null && limit != null)
@@ -47,31 +52,45 @@ class TransfersApi {
     },
   );
 
-  /// GET /transfers/:id
-  Future<Response> getById(String id) => _dio.get('/transfers/$id');
+  /// GET /wallet/transactions/:id
+  Future<Response> getById(String id) =>
+      _dio.get(ApiEndpoints.walletTransactionById(id));
 
-  Options _transferOptions({String? pinToken, String? idempotencyKey}) {
-    if (pinToken == null || pinToken.isEmpty) {
-      return Options(
-        headers: {
-          'X-Idempotency-Key': idempotencyKey ?? generateIdempotencyKey(),
-        },
-      );
-    }
-
-    return Options(
-      headers: transactionHeaders(
-        pinToken: pinToken,
-        idempotencyKey: idempotencyKey,
-      ),
-    );
-  }
+  Options _transferOptions({
+    required String pinToken,
+    required String idempotencyKey,
+    String? stepUpToken,
+  }) => Options(
+    headers: transactionHeaders(
+      pinToken: pinToken,
+      idempotencyKey: idempotencyKey,
+      stepUpToken: stepUpToken,
+    ),
+  );
 }
 
 Map<String, dynamic> _internalTransferPayload(Map<String, dynamic> data) {
   final payload = Map<String, dynamic>.from(data);
+  final recipientId = _stringValue(payload.remove('recipientId'));
+  final recipientUsername = _normalizeUsername(
+    _stringValue(payload.remove('recipientUsername')),
+  );
   final recipientPhone = payload.remove('recipientPhone');
-  payload['toPhone'] = payload['toPhone'] ?? recipientPhone;
+  final toPhone = payload.remove('toPhone') ?? recipientPhone;
+
+  if (recipientId != null && recipientId.isNotEmpty) {
+    payload['recipientId'] = recipientId;
+  } else if (recipientUsername != null && recipientUsername.isNotEmpty) {
+    payload['recipientUsername'] = recipientUsername;
+  } else {
+    final normalizedPhone = PhoneNumberValue.tryFromAny(
+      phoneNumber: _stringValue(toPhone),
+    )?.e164;
+    if (normalizedPhone != null && normalizedPhone.isNotEmpty) {
+      payload['toPhone'] = normalizedPhone;
+    }
+  }
+
   return payload;
 }
 
@@ -80,4 +99,20 @@ Map<String, dynamic> _externalTransferPayload(Map<String, dynamic> data) {
   final recipientAddress = payload.remove('recipientAddress');
   payload['toAddress'] = payload['toAddress'] ?? recipientAddress;
   return payload;
+}
+
+String? _stringValue(Object? value) {
+  final string = value?.toString().trim();
+  return string == null || string.isEmpty ? null : string;
+}
+
+String? _normalizeUsername(String? username) {
+  if (username == null || username.isEmpty) {
+    return null;
+  }
+
+  final withoutPrefix = username.startsWith('@')
+      ? username.substring(1)
+      : username;
+  return withoutPrefix.toLowerCase();
 }

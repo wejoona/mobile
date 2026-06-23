@@ -12,12 +12,14 @@ class KycStateMachineState {
   final String? rejectionReason;
   final bool isLoading;
   final String? error;
+  final bool hasLoaded;
 
   const KycStateMachineState({
-    this.status = KycStatus.pending,
+    this.status = KycStatus.none,
     this.rejectionReason,
     this.isLoading = false,
     this.error,
+    this.hasLoaded = false,
   });
 
   KycStateMachineState copyWith({
@@ -25,12 +27,14 @@ class KycStateMachineState {
     String? rejectionReason,
     bool? isLoading,
     String? error,
+    bool? hasLoaded,
   }) {
     return KycStateMachineState(
       status: status ?? this.status,
       rejectionReason: rejectionReason ?? this.rejectionReason,
       isLoading: isLoading ?? this.isLoading,
       error: error,
+      hasLoaded: hasLoaded ?? this.hasLoaded,
     );
   }
 }
@@ -44,16 +48,20 @@ class KycStateMachine extends Notifier<KycStateMachineState> {
 
   KycService get _service => ref.read(kycServiceProvider);
 
-  /// Map API status string to FSM status string
+  /// Map API status string to FSM status string.
+  ///
+  /// Review states are deliberately explicit. Mapping submitted/manual review
+  /// to a generic pending value makes route guards treat a terminal review
+  /// state as if the wizard can continue collecting evidence.
   String _mapToFsmStatus(String apiStatus) {
-    // API returns: none, pending, documents_pending, submitted, verified, rejected
-    // FSM expects: none, pending, verified, rejected, expired, manual_review
+    // API returns: none, pending, documents_pending, submitted,
+    // pending_verification, manual_review, verified/approved, rejected.
     //
     // Mapping:
     // - "none" = never started → 'none' (should show KYC screen)
     // - "documents_pending" = needs to submit docs → 'none' (should show KYC screen)
     // - "pending" = user has status but not verified → 'none' for new signup flow
-    // - "submitted" = submitted, awaiting review → 'pending' (can proceed to wallet)
+    // - "submitted" = submitted, awaiting review → 'submitted'
     // - "verified" / "approved" / "auto_approved" = verified → 'verified'
     // - "rejected" = rejected → 'rejected'
     switch (apiStatus.toLowerCase()) {
@@ -62,8 +70,9 @@ class KycStateMachine extends Notifier<KycStateMachineState> {
       case 'pending': // New signups have "pending" status, need KYC
         return 'none';
       case 'submitted':
+      case 'pending_verification':
       case 'in_review':
-        return 'pending';
+        return 'submitted';
       case 'verified':
       case 'approved':
       case 'auto_approved':
@@ -89,13 +98,14 @@ class KycStateMachine extends Notifier<KycStateMachineState> {
     state = state.copyWith(isLoading: true);
 
     try {
-      final response = await _service.getKycStatus();
+      final response = await _service.getKycStatus(forceRefresh: true);
 
       state = state.copyWith(
         status: response.status,
         rejectionReason: response.rejectionReason,
         isLoading: false,
         error: null,
+        hasLoaded: true,
       );
 
       // Sync with FSM: notify KYC status loaded
@@ -113,6 +123,13 @@ class KycStateMachine extends Notifier<KycStateMachineState> {
 
       // If 404 or similar, treat as "none" (no KYC submitted)
       if (e.statusCode == 404) {
+        state = state.copyWith(
+          status: KycStatus.none,
+          rejectionReason: null,
+          isLoading: false,
+          error: null,
+          hasLoaded: true,
+        );
         ref
             .read(appFsmProvider.notifier)
             .onKycStatusLoaded(tier: KycTier.none, status: 'none');
@@ -130,7 +147,7 @@ class KycStateMachine extends Notifier<KycStateMachineState> {
     debugPrint('[KycStateMachine] Updating from auth response: $kycStatus');
 
     final status = KycStatus.fromString(kycStatus);
-    state = state.copyWith(status: status, isLoading: false);
+    state = state.copyWith(status: status, isLoading: false, hasLoaded: true);
 
     // Sync with FSM
     final fsmStatus = _mapToFsmStatus(kycStatus);

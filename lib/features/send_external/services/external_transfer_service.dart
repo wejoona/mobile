@@ -1,8 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
-import 'package:usdc_wallet/features/send_external/models/external_transfer_request.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/core/utils/transaction_headers.dart';
+import 'package:usdc_wallet/features/send_external/models/external_transfer_request.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// External Transfer Service - handles crypto transfers to wallet addresses
 class ExternalTransferService {
@@ -43,7 +44,7 @@ class ExternalTransferService {
   Future<double> estimateFee(double amount, NetworkOption network) async {
     try {
       final response = await _dio.get(
-        '/wallet/transfer/external/estimate-fee',
+        ApiEndpoints.transfersEstimateFee,
         queryParameters: {'network': network.value, 'amount': amount},
       );
       final data = response.data;
@@ -64,6 +65,7 @@ class ExternalTransferService {
     ExternalTransferRequest request, {
     required String pinToken,
     required String idempotencyKey,
+    String? stepUpToken,
   }) async {
     try {
       final data = request.toJson();
@@ -72,12 +74,13 @@ class ExternalTransferService {
       data['amount'] = request.amount;
 
       final response = await _dio.post(
-        '/wallet/transfer/external',
+        ApiEndpoints.transfersExternal,
         data: data,
         options: Options(
           headers: transactionHeaders(
             pinToken: pinToken,
             idempotencyKey: idempotencyKey,
+            stepUpToken: stepUpToken,
           ),
         ),
       );
@@ -110,12 +113,7 @@ class ExternalTransferService {
   }
 
   Exception _handleError(DioException e) {
-    if (e.response?.data != null && e.response!.data is Map) {
-      // ignore: avoid_dynamic_calls
-      final message = e.response!.data['message'] ?? 'Transfer failed';
-      return Exception(message);
-    }
-    return Exception('Network error. Please try again.');
+    return ApiException.fromDioError(e);
   }
 }
 

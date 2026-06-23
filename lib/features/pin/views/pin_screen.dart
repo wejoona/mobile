@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -10,13 +9,15 @@ import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
+import 'package:usdc_wallet/features/pin/models/pin_reset_route_context.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/state/transaction_state_machine.dart';
 import 'package:usdc_wallet/state/fsm/index.dart' hide AuthState, SessionState;
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Where the PIN screen was opened from — determines what happens on success.
 enum PinContext {
@@ -29,6 +30,8 @@ enum PinContext {
   /// Confirm action: verify before transfer/settings → pop with result
   confirmAction,
 }
+
+enum _TemporaryPinResetStep { none, newPin, confirmPin }
 
 /// Single unified PIN screen. Knows its context and navigates accordingly.
 class PinScreen extends ConsumerStatefulWidget {
@@ -64,6 +67,10 @@ class _PinScreenState extends ConsumerState<PinScreen>
   bool _hasCompletedSuccess = false;
   bool _queuedUnlockedRedirect = false;
   int _biometricAttempt = 0;
+  _TemporaryPinResetStep _temporaryPinResetStep = _TemporaryPinResetStep.none;
+  String? _temporaryPinToken;
+  String _replacementPin = '';
+  String _replacementPinConfirmation = '';
   ProviderSubscription<AuthState>? _authSubscription;
   ProviderSubscription<SessionState>? _sessionSubscription;
 
@@ -121,7 +128,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
     }
 
     final bio = ref.read(biometricServiceProvider);
-    final enabled = await bio.isBiometricEnabled();
+    final userId = await _currentBiometricUserId();
+    final enabled =
+        userId != null && await bio.isBiometricEnabled(userId: userId);
     final available = await bio.isAvailable();
     final type = await bio.getAvailableType();
     if (mounted) {
@@ -155,7 +164,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
             if (!mounted) {
               return;
             }
-            context.enterAuthenticatedApp(
+            context.fsmEnterAuthenticatedApp(
               route: widget.successRoute ?? '/home',
             );
           });
@@ -165,7 +174,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
         // Show brief transition, then unlock + navigate together.
         if (mounted) {
           _transitionThen(() async {
-            final unlocked = _applySessionUnlock();
+            final unlocked = await _applySessionUnlock();
             if (!unlocked) {
               _showUnlockFailure();
               return;
@@ -185,7 +194,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
                 } on Object {}
               }),
             );
-            context.enterAuthenticatedApp(
+            context.fsmEnterAuthenticatedApp(
               route: widget.successRoute ?? '/home',
             );
           });
@@ -193,7 +202,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
       case PinContext.confirmAction:
         // Just pop with true — caller decides what to do
-        if (mounted) context.pop(true);
+        if (mounted) context.fsmPop(true);
     }
   }
 
@@ -206,13 +215,15 @@ class _PinScreenState extends ConsumerState<PinScreen>
       if (accessToken == null || accessToken.isEmpty) {
         return false;
       }
+      final loginPhoneValue = loginState.phoneValue;
       return ref
           .read(authProvider.notifier)
           .completePinLogin(
             accessToken: accessToken,
             refreshToken: loginState.refreshToken,
             user: loginState.user,
-            phone: loginState.phoneNumber,
+            phone: loginPhoneValue?.apiPhone ?? loginState.phoneNumber,
+            countryCode: loginPhoneValue?.apiCountryCode ?? loginState.dialCode,
             kycStatus: loginState.kycStatus,
             expiresIn: loginState.sessionExpiresIn,
           );
@@ -221,17 +232,12 @@ class _PinScreenState extends ConsumerState<PinScreen>
     return _applySessionUnlock();
   }
 
-  bool _applySessionUnlock() {
+  Future<bool> _applySessionUnlock() async {
     try {
-      ref.read(authProvider.notifier).unlock();
-    } catch (_) {}
-    try {
-      ref.read(sessionServiceProvider.notifier).unlockSession();
-    } catch (_) {}
-    try {
-      ref.read(appFsmProvider.notifier).unlockSession();
-    } catch (_) {}
-    return true;
+      return ref.read(authProvider.notifier).unlockWithServerValidation();
+    } catch (_) {
+      return false;
+    }
   }
 
   /// Brief unlock animation before navigating away
@@ -248,6 +254,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
       await navigate();
     }
 
+    _queuedUnlockedRedirect = true;
     setState(() => _showUnlockTransition = true);
     unawaited(
       Future.delayed(const Duration(milliseconds: 220), () {
@@ -319,17 +326,45 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
   Future<void> _verifyPin() async {
     if (_isVerifying) return;
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _isVerifying = true;
       _errorMessage = null;
     });
 
     final pinService = ref.read(pinServiceProvider);
-    final result = await pinService.verifyPinLocally(_pin);
+    final result = widget.pinContext == PinContext.login
+        ? await _verifyLoginPinWithBackend(pinService, l10n)
+        : await pinService.verifyPinLocally(_pin);
 
     if (!mounted) return;
 
-    if (result.success) {
+    if (result.requiresPinChange) {
+      final temporaryPinToken = result.temporaryPinToken;
+      if (temporaryPinToken == null || temporaryPinToken.isEmpty) {
+        setState(() {
+          _isVerifying = false;
+          _hasError = true;
+          _pin = '';
+          _errorMessage = l10n.pin_temporaryReset_missingSession;
+        });
+        return;
+      }
+
+      setState(() {
+        _isVerifying = false;
+        _pin = '';
+        _hasError = false;
+        _temporaryPinToken = temporaryPinToken;
+        _temporaryPinResetStep = _TemporaryPinResetStep.newPin;
+        _replacementPin = '';
+        _replacementPinConfirmation = '';
+        _errorMessage = null;
+      });
+    } else if (result.success) {
+      if (widget.pinContext == PinContext.login) {
+        await pinService.cacheConfirmedPin(_pin);
+      }
       _onSuccess();
     } else {
       setState(() {
@@ -350,9 +385,39 @@ class _PinScreenState extends ConsumerState<PinScreen>
     }
   }
 
+  Future<PinVerificationResult> _verifyLoginPinWithBackend(
+    PinService pinService,
+    AppLocalizations l10n,
+  ) async {
+    final accessToken = ref.read(loginProvider).sessionToken;
+    if (accessToken == null || accessToken.isEmpty) {
+      return PinVerificationResult(
+        success: false,
+        message: l10n.error_sessionExpired,
+      );
+    }
+
+    return pinService.verifyPinWithBackend(_pin, accessToken: accessToken);
+  }
+
   Future<void> _handleBiometric() async {
     if (_isVerifying) return;
+    final l10n = AppLocalizations.of(context)!;
     final attempt = ++_biometricAttempt;
+    final userId = await _currentBiometricUserId();
+    final bio = ref.read(biometricServiceProvider);
+    if (userId == null || !await bio.isBiometricEnabled(userId: userId)) {
+      if (mounted) {
+        setState(() {
+          _biometricEnabled = false;
+          _isVerifying = false;
+          _errorMessage =
+              'Biometric unlock is unavailable. Please use your PIN.';
+        });
+      }
+      return;
+    }
+
     setState(() {
       _isVerifying = true;
       _errorMessage = null;
@@ -375,10 +440,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
       }),
     );
 
-    final bio = ref.read(biometricServiceProvider);
     try {
       final result = await bio.authenticate(
-        localizedReason: AppLocalizations.of(context)!.biometric_reason,
+        localizedReason: l10n.biometric_reason,
       );
       if (attempt != _biometricAttempt) {
         return;
@@ -407,6 +471,34 @@ class _PinScreenState extends ConsumerState<PinScreen>
     }
   }
 
+  Future<String?> _currentBiometricUserId() async {
+    final authUserId = ref.read(authProvider).user?.id.trim();
+    if (authUserId != null && authUserId.isNotEmpty) {
+      return authUserId;
+    }
+    final storedUserId = await ref
+        .read(secureStorageProvider)
+        .read(key: StorageKeys.userId);
+    final normalized = storedUserId?.trim();
+    return normalized == null || normalized.isEmpty ? null : normalized;
+  }
+
+  void _openPinReset() {
+    final loginState = ref.read(loginProvider);
+    final authState = ref.read(authProvider);
+    final authPhone = PhoneNumberValue.tryFromAny(
+      phoneNumber: authState.user?.phone ?? authState.phone,
+      countryCode: authState.user?.countryCode ?? authState.countryCode,
+    );
+
+    context.fsmOpenPinReset(
+      extra: PinResetRouteContext.fromOptionalPhoneValue(
+        phone: loginState.phoneValue ?? authPhone,
+        returnTo: widget.successRoute,
+      ),
+    );
+  }
+
   void _dismissIfAlreadyUnlocked() {
     if (_queuedUnlockedRedirect ||
         widget.pinContext == PinContext.confirmAction) {
@@ -414,13 +506,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
     }
 
     final authState = ref.read(authProvider);
-    final loginState = ref.read(loginProvider);
     final sessionState = ref.read(sessionServiceProvider);
     final shouldDismiss = switch (widget.pinContext) {
-      PinContext.login =>
-        authState.isAuthenticated ||
-            (loginState.sessionToken == null ||
-                loginState.sessionToken!.isEmpty),
+      PinContext.login => authState.isAuthenticated,
       PinContext.sessionLock =>
         authState.isAuthenticated &&
             !authState.isLocked &&
@@ -436,10 +524,10 @@ class _PinScreenState extends ConsumerState<PinScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       if (widget.pinContext == PinContext.login && !authState.isAuthenticated) {
-        context.go('/login');
+        context.fsmGo('/login');
         return;
       }
-      context.enterAuthenticatedApp(route: widget.successRoute ?? '/home');
+      context.fsmEnterAuthenticatedApp(route: widget.successRoute ?? '/home');
     });
   }
 
@@ -473,7 +561,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
     } on Object {
       await ref.read(authProvider.notifier).clearLocalSession();
     }
-    if (mounted) context.go('/login');
+    if (mounted) context.fsmGo('/login');
   }
 
   @override
@@ -483,6 +571,10 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
     if (_queuedUnlockedRedirect) {
       return Scaffold(backgroundColor: colors.canvas);
+    }
+
+    if (_temporaryPinResetStep != _TemporaryPinResetStep.none) {
+      return _buildTemporaryPinResetView(l10n, colors);
     }
 
     if (_isLocked) return _buildLockedView(l10n, colors);
@@ -633,7 +725,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
                       const SizedBox(height: AppSpacing.xxl),
                       TextButton(
-                        onPressed: () => context.push('/pin/reset'),
+                        onPressed: _openPinReset,
                         child: AppText(
                           l10n.login_forgotPin,
                           variant: AppTextVariant.bodyMedium,
@@ -658,7 +750,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
         alignment: Alignment.centerLeft,
         child: IconButton(
           tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-          onPressed: () => context.pop(false),
+          onPressed: () => context.fsmPop(false),
           icon: Icon(Icons.arrow_back, color: colors.textPrimary),
         ),
       );
@@ -675,6 +767,205 @@ class _PinScreenState extends ConsumerState<PinScreen>
         ),
       ),
     );
+  }
+
+  Widget _buildTemporaryPinResetView(
+    AppLocalizations l10n,
+    ThemeColors colors,
+  ) {
+    final isConfirm =
+        _temporaryPinResetStep == _TemporaryPinResetStep.confirmPin;
+    final filled = isConfirm
+        ? _replacementPinConfirmation.length
+        : _replacementPin.length;
+
+    return Scaffold(
+      backgroundColor: colors.canvas,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.screenPadding,
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: AppSpacing.lg),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: _isVerifying ? null : _handleLogout,
+                  child: AppText(
+                    l10n.common_logout,
+                    variant: AppTextVariant.labelMedium,
+                    color: colors.textSecondary,
+                  ),
+                ),
+              ),
+              const Spacer(flex: 1),
+              _buildLogo(colors, size: 64),
+              const SizedBox(height: AppSpacing.xl),
+              AppText(
+                l10n.appName,
+                variant: AppTextVariant.headlineLarge,
+                color: colors.textPrimary,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              AppText(
+                isConfirm ? l10n.pin_confirmNewPin : l10n.pin_enterNewPin,
+                variant: AppTextVariant.titleLarge,
+                color: colors.textPrimary,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: AppText(
+                  isConfirm
+                      ? l10n.pin_temporaryReset_confirmNewDescription
+                      : l10n.pin_temporaryReset_chooseNewDescription,
+                  variant: AppTextVariant.bodyMedium,
+                  color: colors.textSecondary,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xxxl),
+              PinDots(length: 6, filled: filled, error: _hasError),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: AppSpacing.md),
+                AppText(
+                  _errorMessage!,
+                  variant: AppTextVariant.bodySmall,
+                  color: _hasError ? colors.errorText : colors.textSecondary,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+              const Spacer(flex: 1),
+              if (_isVerifying)
+                CircularProgressIndicator(color: colors.gold, strokeWidth: 2)
+              else
+                PinPad(
+                  onDigitPressed: _handleReplacementPinDigit,
+                  onDeletePressed: _handleReplacementPinDelete,
+                ),
+              const SizedBox(height: AppSpacing.xxl),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleReplacementPinDigit(int digit) {
+    if (_temporaryPinResetStep == _TemporaryPinResetStep.newPin) {
+      if (_replacementPin.length >= 6) return;
+      setState(() {
+        _replacementPin += digit.toString();
+        _hasError = false;
+        _errorMessage = null;
+      });
+      if (_replacementPin.length == 6) {
+        setState(() {
+          _temporaryPinResetStep = _TemporaryPinResetStep.confirmPin;
+          _replacementPinConfirmation = '';
+        });
+      }
+      return;
+    }
+
+    if (_replacementPinConfirmation.length >= 6) return;
+    setState(() {
+      _replacementPinConfirmation += digit.toString();
+      _hasError = false;
+      _errorMessage = null;
+    });
+
+    if (_replacementPinConfirmation.length == 6) {
+      unawaited(_completeTemporaryPinReset());
+    }
+  }
+
+  void _handleReplacementPinDelete() {
+    if (_temporaryPinResetStep == _TemporaryPinResetStep.newPin) {
+      if (_replacementPin.isEmpty) return;
+      setState(() {
+        _replacementPin = _replacementPin.substring(
+          0,
+          _replacementPin.length - 1,
+        );
+        _hasError = false;
+      });
+      return;
+    }
+
+    if (_replacementPinConfirmation.isEmpty) return;
+    setState(() {
+      _replacementPinConfirmation = _replacementPinConfirmation.substring(
+        0,
+        _replacementPinConfirmation.length - 1,
+      );
+      _hasError = false;
+    });
+  }
+
+  Future<void> _completeTemporaryPinReset() async {
+    final l10n = AppLocalizations.of(context)!;
+    if (_replacementPin != _replacementPinConfirmation) {
+      setState(() {
+        _hasError = true;
+        _replacementPinConfirmation = '';
+        _errorMessage = l10n.pin_temporaryReset_mismatch;
+      });
+      return;
+    }
+
+    final temporaryPinToken = _temporaryPinToken;
+    final accessToken = ref.read(loginProvider).sessionToken;
+    if (temporaryPinToken == null ||
+        temporaryPinToken.isEmpty ||
+        accessToken == null ||
+        accessToken.isEmpty) {
+      setState(() {
+        _hasError = true;
+        _errorMessage = l10n.pin_temporaryReset_expiredSession;
+        _temporaryPinResetStep = _TemporaryPinResetStep.none;
+        _pin = '';
+      });
+      return;
+    }
+
+    setState(() => _isVerifying = true);
+    final result = await ref
+        .read(pinServiceProvider)
+        .completeTemporaryPinReset(
+          temporaryPinToken: temporaryPinToken,
+          newPin: _replacementPin,
+          accessToken: accessToken,
+        );
+
+    if (!mounted) return;
+
+    if (!result.success) {
+      setState(() {
+        _isVerifying = false;
+        _hasError = true;
+        _replacementPin = '';
+        _replacementPinConfirmation = '';
+        _temporaryPinResetStep = _TemporaryPinResetStep.newPin;
+        _errorMessage = result.message ?? l10n.pin_temporaryReset_setFailed;
+      });
+      return;
+    }
+
+    setState(() {
+      _isVerifying = false;
+      _hasError = false;
+      _temporaryPinResetStep = _TemporaryPinResetStep.none;
+      _temporaryPinToken = null;
+      _pin = _replacementPin;
+      _replacementPin = '';
+      _replacementPinConfirmation = '';
+      _errorMessage = null;
+    });
+    _onSuccess();
   }
 
   Widget _buildLogo(ThemeColors colors, {required double size}) {
@@ -744,9 +1035,18 @@ class _PinScreenState extends ConsumerState<PinScreen>
                 const SizedBox(height: AppSpacing.xxl),
                 AppButton(
                   label: l10n.common_ok,
-                  onPressed: () => context.go('/login'),
+                  onPressed: () => context.fsmGo('/login'),
                   variant: AppButtonVariant.primary,
                   isFullWidth: true,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                TextButton(
+                  onPressed: _openPinReset,
+                  child: AppText(
+                    l10n.login_forgotPin,
+                    variant: AppTextVariant.bodyMedium,
+                    color: colors.gold,
+                  ),
                 ),
               ],
             ),

@@ -1051,6 +1051,13 @@ class AppLocalizationsAr extends AppLocalizations {
       'يتم مراجعة مستنداتك. عادة ما يستغرق ذلك 1-2 يوم عمل.';
 
   @override
+  String get kyc_status_manualReview_title => 'مراجعة يدوية مطلوبة';
+
+  @override
+  String get kyc_status_manualReview_description =>
+      'يراجع فريق Korido أدلة هويتك. يمكنك الاستمرار في استخدام الميزات المؤهلة أثناء إكمال المراجعة.';
+
+  @override
   String get kyc_status_approved_title => 'اكتمل التحقق';
 
   @override
@@ -1092,6 +1099,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get kyc_info_time_description => 'عادةً ما يستغرق التحقق 1-2 يوم عمل';
+
+  @override
+  String get kyc_info_manualReview_title => 'مراجعة بشرية';
+
+  @override
+  String get kyc_info_manualReview_description =>
+      'إذا لم تتمكن الفحوصات الآلية من اتخاذ قرار آمن، يكمل المراجع القرار بدلاً من إبقائك عالقاً.';
 
   @override
   String get kyc_info_documents_title => 'المستندات المطلوبة';
@@ -1704,6 +1718,29 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get pin_confirmNewPin => 'أكد رمزك السري الجديد';
+
+  @override
+  String get pin_temporaryReset_chooseNewDescription =>
+      'تم قبول الرمز السري المؤقت. اختر رمزاً سرياً جديداً للمتابعة.';
+
+  @override
+  String get pin_temporaryReset_confirmNewDescription =>
+      'أكد الرمز السري الجديد الذي تريد استخدامه في Korido.';
+
+  @override
+  String get pin_temporaryReset_missingSession =>
+      'تم قبول الرمز السري المؤقت، لكن جلسة إعادة التعيين غير موجودة. اطلب من الدعم إصدار رمز سري مؤقت جديد.';
+
+  @override
+  String get pin_temporaryReset_expiredSession =>
+      'انتهت صلاحية جلسة إعادة التعيين هذه. الرجاء تسجيل الدخول مرة أخرى.';
+
+  @override
+  String get pin_temporaryReset_mismatch =>
+      'الرمزان السريان غير متطابقين. أكد مرة أخرى.';
+
+  @override
+  String get pin_temporaryReset_setFailed => 'تعذر تعيين الرمز السري الجديد.';
 
   @override
   String get pin_requirements => 'متطلبات الرمز السري';
@@ -7810,4 +7847,19 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get moneyFlow_verificationRequiredMessage =>
       'أكمل التحقق من الهوية لاستخدام هذه العملية.';
+
+  @override
+  String get forceUpdate_title => 'Update required';
+
+  @override
+  String get forceUpdate_defaultMessage =>
+      'A newer version of Korido is required to keep your wallet secure.';
+
+  @override
+  String forceUpdate_requiredVersion(String version) {
+    return 'Required version: $version';
+  }
+
+  @override
+  String get forceUpdate_button => 'Update Korido';
 }

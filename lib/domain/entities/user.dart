@@ -17,6 +17,7 @@ class User {
   final bool isPhoneVerified;
   final UserRole role;
   final UserStatus status;
+  final KycStatus? kycStatus;
   final bool hasPin;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -35,6 +36,7 @@ class User {
     required this.isPhoneVerified,
     required this.role,
     required this.status,
+    this.kycStatus,
     this.hasPin = false,
     required this.createdAt,
     required this.updatedAt,
@@ -112,7 +114,8 @@ class User {
         (e) => e.name == json['status'],
         orElse: () => UserStatus.active,
       ),
-      hasPin: json['hasPin'] as bool? ?? false,
+      kycStatus: _readKycStatus(json),
+      hasPin: _readBool(json, const ['hasPin', 'has_pin']) ?? false,
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)
           : DateTime.now(),
@@ -137,6 +140,7 @@ class User {
       'isPhoneVerified': isPhoneVerified,
       'role': role.name,
       'status': status.name,
+      if (kycStatus != null) 'kycStatus': kycStatus!.toApiString(),
       'hasPin': hasPin,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
@@ -158,6 +162,7 @@ class User {
     bool? isPhoneVerified,
     UserRole? role,
     UserStatus? status,
+    KycStatus? kycStatus,
     bool? hasPin,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -180,9 +185,42 @@ class User {
       isPhoneVerified: isPhoneVerified ?? this.isPhoneVerified,
       role: role ?? this.role,
       status: status ?? this.status,
+      kycStatus: kycStatus ?? this.kycStatus,
       hasPin: hasPin ?? this.hasPin,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
+}
+
+KycStatus? _readKycStatus(Map<String, dynamic> json) {
+  final value = json['kycStatus'] ?? json['kyc_status'];
+  return value is String && value.trim().isNotEmpty
+      ? KycStatus.fromString(value)
+      : null;
+}
+
+bool? _readBool(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    if (!json.containsKey(key)) {
+      continue;
+    }
+    final value = json[key];
+    if (value is bool) {
+      return value;
+    }
+    if (value is num) {
+      return value != 0;
+    }
+    if (value is String) {
+      final normalized = value.trim().toLowerCase();
+      if (normalized == 'true' || normalized == '1' || normalized == 'yes') {
+        return true;
+      }
+      if (normalized == 'false' || normalized == '0' || normalized == 'no') {
+        return false;
+      }
+    }
+  }
+  return null;
 }

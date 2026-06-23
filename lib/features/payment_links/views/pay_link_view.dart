@@ -1,21 +1,22 @@
-import 'package:usdc_wallet/utils/currency_utils.dart';
-import 'package:usdc_wallet/services/service_providers.dart';
-import 'package:usdc_wallet/services/pin/pin_service.dart';
-import 'package:usdc_wallet/core/utils/idempotency.dart';
-import 'package:usdc_wallet/core/utils/formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/design/components/primitives/index.dart';
+
 import 'package:usdc_wallet/design/components/composed/pin_confirmation_sheet.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/core/utils/formatters.dart';
+import 'package:usdc_wallet/core/utils/idempotency.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/payment_links/models/index.dart';
 import 'package:usdc_wallet/features/payment_links/providers/payment_links_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
-import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
-import 'package:usdc_wallet/features/payment_links/models/index.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
+import 'package:usdc_wallet/services/service_providers.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/state/wallet_state_machine.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Screen for paying via a received payment link
 /// Shows link details and allows user to complete payment
@@ -82,6 +83,12 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
 
   Future<void> _handlePayment() async {
     if (_link == null) return;
+
+    final authState = ref.read(authProvider);
+    if (!authState.isAuthenticated) {
+      _openAuthenticationForPayment(authState);
+      return;
+    }
 
     final l10n = AppLocalizations.of(context)!;
     final usdcBalance = ref.read(usdcBalanceProvider);
@@ -153,7 +160,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
         if (!mounted) return;
 
         // Show success and navigate to receipt
-        context.go(
+        context.fsmGo(
           '/send/result',
           extra: {
             'success': true,
@@ -170,6 +177,17 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
         _showErrorDialog(l10n.common_error, e.toString());
       }
     }
+  }
+
+  void _openAuthenticationForPayment(AuthState authState) {
+    if (authState.isLocked) {
+      final returnTo = Uri.encodeComponent('/pay/${widget.linkCode}');
+      context.fsmGo('/session-locked?returnTo=$returnTo');
+      return;
+    }
+
+    final returnTo = Uri.encodeComponent('/pay/${widget.linkCode}');
+    context.fsmGo('/login?returnTo=$returnTo');
   }
 
   void _showErrorDialog(String title, String message) {
@@ -230,7 +248,8 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
       return _buildCancelled(l10n);
     }
 
-    return _buildPaymentForm(l10n);
+    final authState = ref.watch(authProvider);
+    return _buildPaymentForm(l10n, isAuthenticated: authState.isAuthenticated);
   }
 
   Widget _buildLoading() {
@@ -261,7 +280,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
             SizedBox(height: AppSpacing.xl),
             AppButton(
               label: l10n.common_close,
-              onPressed: () => context.pop(),
+              onPressed: () => context.fsmPop(),
               variant: AppButtonVariant.secondary,
             ),
           ],
@@ -294,7 +313,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
             SizedBox(height: AppSpacing.xl),
             AppButton(
               label: l10n.common_close,
-              onPressed: () => context.pop(),
+              onPressed: () => context.fsmPop(),
               variant: AppButtonVariant.secondary,
             ),
           ],
@@ -351,7 +370,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
             SizedBox(height: AppSpacing.xl),
             AppButton(
               label: l10n.common_close,
-              onPressed: () => context.pop(),
+              onPressed: () => context.fsmPop(),
               variant: AppButtonVariant.secondary,
             ),
           ],
@@ -384,7 +403,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
             SizedBox(height: AppSpacing.xl),
             AppButton(
               label: l10n.common_close,
-              onPressed: () => context.pop(),
+              onPressed: () => context.fsmPop(),
               variant: AppButtonVariant.secondary,
             ),
           ],
@@ -393,7 +412,10 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
     );
   }
 
-  Widget _buildPaymentForm(AppLocalizations l10n) {
+  Widget _buildPaymentForm(
+    AppLocalizations l10n, {
+    required bool isAuthenticated,
+  }) {
     final payableUsdcAmount = _payableUsdcAmount;
 
     return SafeArea(
@@ -423,7 +445,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
                   child: Column(
                     children: [
                       AppText(
-                        l10n.wallet_balance,
+                        l10n.paymentLinks_requestedAmount,
                         variant: AppTextVariant.bodyMedium,
                         color: context.colors.textSecondary,
                       ),
@@ -522,44 +544,73 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
                 ),
                 SizedBox(height: AppSpacing.lg),
 
-                // Current Balance
-                Container(
-                  padding: EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: context.colors.container.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                    border: Border.all(
-                      color: context.colors.textSecondary.withValues(
-                        alpha: 0.1,
+                if (isAuthenticated) ...[
+                  // Current Balance
+                  Container(
+                    padding: EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: context.colors.container.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                      border: Border.all(
+                        color: context.colors.textSecondary.withValues(
+                          alpha: 0.1,
+                        ),
                       ),
                     ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        AppText(
+                          l10n.wallet_balance,
+                          variant: AppTextVariant.bodyMedium,
+                          color: context.colors.textSecondary,
+                        ),
+                        Consumer(
+                          builder: (context, ref, child) {
+                            final usdcBalance = ref.watch(usdcBalanceProvider);
+                            return AppText(
+                              formatUsdc(usdcBalance),
+                              variant: AppTextVariant.bodyLarge,
+                              fontWeight: FontWeight.w600,
+                              color:
+                                  payableUsdcAmount != null &&
+                                      usdcBalance >= payableUsdcAmount
+                                  ? context.colors.success
+                                  : context.colors.error,
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      AppText(
-                        l10n.wallet_balance,
-                        variant: AppTextVariant.bodyMedium,
-                        color: context.colors.textSecondary,
-                      ),
-                      Consumer(
-                        builder: (context, ref, child) {
-                          final usdcBalance = ref.watch(usdcBalanceProvider);
-                          return AppText(
-                            formatUsdc(usdcBalance),
+                ] else ...[
+                  AppCard(
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: context.colors.gold.withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(AppRadius.md),
+                          ),
+                          child: Icon(
+                            Icons.lock_outline,
+                            color: context.colors.gold,
+                          ),
+                        ),
+                        SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: AppText(
+                            l10n.auth_signIn,
                             variant: AppTextVariant.bodyLarge,
                             fontWeight: FontWeight.w600,
-                            color:
-                                payableUsdcAmount != null &&
-                                    usdcBalance >= payableUsdcAmount
-                                ? context.colors.success
-                                : context.colors.error,
-                          );
-                        },
-                      ),
-                    ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -568,13 +619,15 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
           Padding(
             padding: EdgeInsets.all(AppSpacing.md),
             child: AppButton(
-              label: l10n.paymentLinks_payAmount(
-                formatCurrency(_link!.amount, _link!.currency),
-              ),
+              label: isAuthenticated
+                  ? l10n.paymentLinks_payAmount(
+                      formatCurrency(_link!.amount, _link!.currency),
+                    )
+                  : l10n.auth_signIn,
               onPressed: _isProcessing ? null : _handlePayment,
               isLoading: _isProcessing,
               isFullWidth: true,
-              icon: Icons.send,
+              icon: isAuthenticated ? Icons.send : Icons.login,
             ),
           ),
         ],

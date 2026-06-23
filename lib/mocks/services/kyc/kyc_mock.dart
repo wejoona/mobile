@@ -67,20 +67,6 @@ class KycMock {
       handler: _handleGetFullVerificationStatus,
     );
 
-    // GET /wallet/kyc/status - Wallet KYC status endpoint
-    interceptor.register(
-      method: 'GET',
-      path: '/wallet/kyc/status',
-      handler: _handleGetStatus,
-    );
-
-    // POST /wallet/kyc/submit - Wallet KYC submit
-    interceptor.register(
-      method: 'POST',
-      path: '/wallet/kyc/submit',
-      handler: _handleSubmitKyc,
-    );
-
     // POST /kyc/address - KYC address verification
     interceptor.register(
       method: 'POST',

@@ -92,24 +92,27 @@ workflows:
           export JAVA_HOME=$(/usr/libexec/java_home -v 17)
           export PATH="$JAVA_HOME/bin:$PATH"
           java -version
+          APPLICATION_ID=$(grep -E 'applicationId = "[^"]+"' "$CM_BUILD_DIR/android/app/build.gradle.kts" | head -1 | sed -E 's/.*applicationId = "([^"]+)".*/\1/')
+          if [ -z "$APPLICATION_ID" ]; then
+            echo "Could not resolve Android applicationId from build.gradle.kts"
+            exit 1
+          fi
           LATEST=$(google-play get-latest-build-number \
-            --package-name "com.joonapay.usdc_wallet" \
+            --package-name "$APPLICATION_ID" \
             --tracks="internal" 2>/dev/null || echo 0)
           if [ -z "$LATEST" ]; then LATEST=0; fi
           BUILD_NUMBER=$(($LATEST + 1))
           echo "Building Android with number: $BUILD_NUMBER"
+          APP_VERSION_NAME=$(grep '^version:' "$CM_BUILD_DIR/pubspec.yaml" | awk '{print $2}' | cut -d+ -f1)
+          echo "Android version name: $APP_VERSION_NAME"
 
-          printf '\nflutter.buildMode=release\nflutter.versionName=1.0.0\nflutter.versionCode=%s\n' \
-            "$BUILD_NUMBER" >> "$CM_BUILD_DIR/android/local.properties"
-
-          REGISTRANT="$CM_BUILD_DIR/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java"
-          if [ -f "$REGISTRANT" ]; then
-            perl -0pi -e 's/\n    try \{\n      flutterEngine\.getPlugins\(\)\.add\(new dev\.flutter\.plugins\.integration_test\.IntegrationTestPlugin\(\)\);\n    \} catch \(Exception e\) \{\n      Log\.e\(TAG, "Error registering plugin integration_test, dev\.flutter\.plugins\.integration_test\.IntegrationTestPlugin", e\);\n    \}//g' "$REGISTRANT"
-          fi
+          printf '\nflutter.buildMode=release\nflutter.versionName=%s\nflutter.versionCode=%s\n' \
+            "$APP_VERSION_NAME" "$BUILD_NUMBER" >> "$CM_BUILD_DIR/android/local.properties"
 
           ENV_DEFINE=$(printf 'ENV=staging' | base64 | tr -d '\n')
           API_DEFINE=$(printf 'API_URL=https://staging-korido-api.joonapay.com/api/v1' | base64 | tr -d '\n')
-          DART_DEFINES="$ENV_DEFINE,$API_DEFINE"
+          SENTRY_DEFINE=$(printf 'SENTRY_DSN=https://e940855066e902eafd3bf67348d625e7@sentry.wejoona.com/7' | base64 | tr -d '\n')
+          DART_DEFINES="$ENV_DEFINE,$API_DEFINE,$SENTRY_DEFINE"
 
           cd "$CM_BUILD_DIR/android"
           ./gradlew :app:bundleRelease \

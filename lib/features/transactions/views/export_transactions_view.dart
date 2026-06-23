@@ -2,24 +2,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 enum ExportFormat { csv, pdf }
+
 enum ExportPeriod { week, month, quarter, year, custom }
 
 class ExportTransactionsView extends ConsumerStatefulWidget {
   const ExportTransactionsView({super.key});
 
   @override
-  ConsumerState<ExportTransactionsView> createState() => _ExportTransactionsViewState();
+  ConsumerState<ExportTransactionsView> createState() =>
+      _ExportTransactionsViewState();
 }
 
-class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView> {
+class _ExportTransactionsViewState
+    extends ConsumerState<ExportTransactionsView> {
   ExportFormat _selectedFormat = ExportFormat.csv;
   ExportPeriod _selectedPeriod = ExportPeriod.month;
   DateTime? _customStartDate;
@@ -38,13 +41,10 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
       backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: AppText(
-          l10n.export_title,
-          variant: AppTextVariant.titleLarge,
-        ),
+        title: AppText(l10n.export_title, variant: AppTextVariant.titleLarge),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
       ),
       body: SingleChildScrollView(
@@ -170,7 +170,11 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.info_outline, color: context.colors.info, size: 20),
+                      Icon(
+                        Icons.info_outline,
+                        color: context.colors.info,
+                        size: 20,
+                      ),
                       SizedBox(width: AppSpacing.sm),
                       AppText(
                         'About Export',
@@ -211,11 +215,7 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
                   color: colors.gold.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
-                child: Icon(
-                  Icons.download,
-                  color: colors.gold,
-                  size: 28,
-                ),
+                child: Icon(Icons.download, color: colors.gold, size: 28),
               ),
               const SizedBox(width: AppSpacing.lg),
               Expanded(
@@ -257,7 +257,9 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: isSelected ? colors.gold.withValues(alpha: 0.1) : colors.container,
+          color: isSelected
+              ? colors.gold.withValues(alpha: 0.1)
+              : colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
             color: isSelected ? colors.gold : colors.borderSubtle,
@@ -289,7 +291,11 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
     );
   }
 
-  Widget _buildPeriodChip(ExportPeriod period, String label, ThemeColors colors) {
+  Widget _buildPeriodChip(
+    ExportPeriod period,
+    String label,
+    ThemeColors colors,
+  ) {
     final isSelected = _selectedPeriod == period;
 
     return GestureDetector(
@@ -364,7 +370,9 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
                   AppText(
                     date != null ? _formatDate(date) : 'Select date',
                     variant: AppTextVariant.bodyMedium,
-                    color: date != null ? colors.textPrimary : colors.textTertiary,
+                    color: date != null
+                        ? colors.textPrimary
+                        : colors.textTertiary,
                   ),
                 ],
               ),
@@ -404,11 +412,7 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
               ],
             ),
           ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeColor: colors.gold,
-          ),
+          Switch(value: value, onChanged: onChanged, activeColor: colors.gold),
         ],
       ),
     );
@@ -438,7 +442,8 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
 
   Future<void> _selectDate({required bool isStart}) async {
     final initialDate = isStart
-        ? (_customStartDate ?? DateTime.now().subtract(const Duration(days: 30)))
+        ? (_customStartDate ??
+              DateTime.now().subtract(const Duration(days: 30)))
         : (_customEndDate ?? DateTime.now());
 
     final picked = await showDatePicker(
@@ -483,7 +488,9 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
       final format = _selectedFormat == ExportFormat.csv ? 'CSV' : 'PDF';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.transactions_exported(format)),
+          content: Text(
+            AppLocalizations.of(context)!.transactions_exported(format),
+          ),
           backgroundColor: context.colors.success,
           action: SnackBarAction(
             label: 'Share',
@@ -497,15 +504,23 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
 
   void _shareExport() {
     final format = _selectedFormat == ExportFormat.csv ? 'CSV' : 'PDF';
-    SharePlus.instance.share(ShareParams(text: 
-      'Korido Transaction Export ($format)\n\nPeriod: ${_getDateRangeText()}\n\n[Export file would be attached]', title: 'Korido Transaction Export',
-    ));
+    SharePlus.instance.share(
+      ShareParams(
+        text:
+            'Korido Transaction Export ($format)\n\nPeriod: ${_getDateRangeText()}\n\n[Export file would be attached]',
+        title: 'Korido Transaction Export',
+      ),
+    );
   }
 
   void _shareViaEmail() {
     final format = _selectedFormat == ExportFormat.csv ? 'CSV' : 'PDF';
-    SharePlus.instance.share(ShareParams(text: 
-      'Please find attached my Korido transaction export in $format format.\n\nPeriod: ${_getDateRangeText()}', title: 'Korido Transaction Export',
-    ));
+    SharePlus.instance.share(
+      ShareParams(
+        text:
+            'Please find attached my Korido transaction export in $format format.\n\nPeriod: ${_getDateRangeText()}',
+        title: 'Korido Transaction Export',
+      ),
+    );
   }
 }

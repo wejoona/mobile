@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/sub_business/providers/sub_business_provider.dart';
 import 'package:usdc_wallet/features/sub_business/models/sub_business.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Screen for creating a new sub-business
 class CreateSubBusinessView extends ConsumerStatefulWidget {
@@ -54,7 +54,8 @@ class _CreateSubBusinessViewState extends ConsumerState<CreateSubBusinessView> {
               AppInput(
                 label: l10n.subBusiness_nameLabel,
                 controller: _nameController,
-                validator: (v) => v?.isEmpty == true ? l10n.error_required : null,
+                validator: (v) =>
+                    v?.isEmpty == true ? l10n.error_required : null,
               ),
               SizedBox(height: AppSpacing.md),
 
@@ -149,13 +150,17 @@ class _CreateSubBusinessViewState extends ConsumerState<CreateSubBusinessView> {
                 Icon(
                   _getIconForType(type),
                   size: 16,
-                  color: isSelected ? context.colors.gold : context.colors.textSecondary,
+                  color: isSelected
+                      ? context.colors.gold
+                      : context.colors.textSecondary,
                 ),
                 SizedBox(width: AppSpacing.xs),
                 AppText(
                   _getTypeLabel(type, l10n),
                   variant: AppTextVariant.bodyMedium,
-                  color: isSelected ? context.colors.gold : context.colors.textSecondary,
+                  color: isSelected
+                      ? context.colors.gold
+                      : context.colors.textSecondary,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 ),
               ],
@@ -197,7 +202,9 @@ class _CreateSubBusinessViewState extends ConsumerState<CreateSubBusinessView> {
 
     setState(() => _isLoading = true);
     try {
-      final subBusiness = await ref.read(subBusinessProvider.notifier).createSubBusiness(
+      final subBusiness = await ref
+          .read(subBusinessProvider.notifier)
+          .createSubBusiness(
             name: _nameController.text,
             description: _descriptionController.text.isEmpty
                 ? null
@@ -207,10 +214,12 @@ class _CreateSubBusinessViewState extends ConsumerState<CreateSubBusinessView> {
 
       if (mounted) {
         if (subBusiness != null) {
-          context.pop();
+          context.fsmPop();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.subBusiness_createSuccess),
+              content: Text(
+                AppLocalizations.of(context)!.subBusiness_createSuccess,
+              ),
               backgroundColor: context.colors.success,
             ),
           );

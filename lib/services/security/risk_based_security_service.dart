@@ -19,6 +19,39 @@ enum StepUpType {
 }
 
 /// Step-up decision from backend
+class StepUpReviewSla {
+  final String? label;
+  final int? firstResponseMinutes;
+  final int? resolutionMinutes;
+  final bool manualReview;
+
+  const StepUpReviewSla({
+    this.label,
+    this.firstResponseMinutes,
+    this.resolutionMinutes,
+    this.manualReview = false,
+  });
+
+  factory StepUpReviewSla.fromJson(Object? json) {
+    if (json is! Map) {
+      return const StepUpReviewSla();
+    }
+
+    return StepUpReviewSla(
+      label: json['label']?.toString(),
+      firstResponseMinutes: _parseInt(json['firstResponseMinutes']),
+      resolutionMinutes: _parseInt(json['resolutionMinutes']),
+      manualReview: json['manualReview'] == true,
+    );
+  }
+
+  static int? _parseInt(Object? value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '');
+  }
+}
+
 class StepUpDecision {
   final RiskFlow flow;
   final int riskScore;
@@ -29,6 +62,11 @@ class StepUpDecision {
   final List<String> factors;
   final String? challengeToken;
   final DateTime expiresAt;
+  final bool supportReviewRequired;
+  final String? nextAction;
+  final String? nextEndpoint;
+  final bool requiresPendingPinReset;
+  final StepUpReviewSla? reviewSla;
 
   StepUpDecision({
     required this.flow,
@@ -41,6 +79,11 @@ class StepUpDecision {
     required this.factors,
     this.challengeToken,
     required this.expiresAt,
+    this.supportReviewRequired = false,
+    this.nextAction,
+    this.nextEndpoint,
+    this.requiresPendingPinReset = false,
+    this.reviewSla,
   });
 
   factory StepUpDecision.fromJson(Map<String, dynamic> json) {
@@ -54,6 +97,13 @@ class StepUpDecision {
       factors: List<String>.from(json['factors'] ?? []),
       challengeToken: json['challengeToken'],
       expiresAt: DateTime.parse(json['expiresAt']),
+      supportReviewRequired: json['supportReviewRequired'] == true,
+      nextAction: json['nextAction']?.toString(),
+      nextEndpoint: json['nextEndpoint']?.toString(),
+      requiresPendingPinReset: json['requiresPendingPinReset'] == true,
+      reviewSla: json.containsKey('reviewSla')
+          ? StepUpReviewSla.fromJson(json['reviewSla'])
+          : null,
     );
   }
 
@@ -171,17 +221,20 @@ class RiskBasedSecurityService {
       throw Exception('Failed to evaluate transaction risk');
     } catch (e) {
       AppLogger(
-        'Risk evaluation failed, defaulting to biometric',
-      ).error('Risk evaluation failed, defaulting to biometric', e);
-      // Fallback to yellow flow on error
+        'Transaction risk evaluation failed, routing to manual review',
+      ).error(
+        'Transaction risk evaluation failed, routing to manual review',
+        e,
+      );
       return StepUpDecision(
-        flow: RiskFlow.yellow,
-        riskScore: 50,
-        riskLevel: 'medium',
+        flow: RiskFlow.red,
+        riskScore: 100,
+        riskLevel: 'critical',
         stepUpRequired: true,
-        stepUpType: StepUpType.biometric,
-        localizedReason: 'Unable to assess risk, verification required',
-        factors: ['risk_service_unavailable'],
+        stepUpType: StepUpType.manualReview,
+        reason:
+            'Security risk service is unavailable. This money movement needs manual review before it can continue.',
+        factors: ['risk_service_unavailable', 'transaction_risk_unavailable'],
         expiresAt: DateTime.now().add(const Duration(minutes: 5)),
       );
     }
@@ -191,11 +244,13 @@ class RiskBasedSecurityService {
   Future<StepUpDecision> evaluateOperation({
     required String operation,
     Map<String, dynamic>? metadata,
+    bool useRecoveryToken = false,
   }) async {
     try {
       final response = await _dio.post(
         '/step-up/operation',
         data: {'operation': operation, 'metadata': metadata},
+        options: _recoveryOptions(useRecoveryToken),
       );
 
       // ignore: avoid_dynamic_calls
@@ -290,15 +345,18 @@ class RiskBasedSecurityService {
     required String challengeToken,
     String? livenessSessionId,
     bool? biometricVerified,
+    bool useRecoveryToken = false,
   }) async {
     try {
       final response = await _dio.post(
         '/step-up/validate',
         data: {
           'challengeToken': challengeToken,
+          'livenessProofId': livenessSessionId,
           'livenessSessionId': livenessSessionId,
           'biometricVerified': biometricVerified,
         },
+        options: _recoveryOptions(useRecoveryToken),
       );
 
       final body = response.data is Map
@@ -323,6 +381,13 @@ class RiskBasedSecurityService {
       ).error('Step-up validation failed', e);
       return false;
     }
+  }
+
+  Options? _recoveryOptions(bool useRecoveryToken) {
+    if (!useRecoveryToken) {
+      return null;
+    }
+    return Options(extra: {ApiRequestExtra.useRecoveryToken: true});
   }
 
   bool _requiresSupportReview(Object? data) {
@@ -359,7 +424,8 @@ class RiskBasedSecurityService {
     final stepUpType = defaults[operation] ?? StepUpType.biometric;
     final flow =
         stepUpType == StepUpType.liveness ||
-            stepUpType == StepUpType.biometricAndLiveness
+            stepUpType == StepUpType.biometricAndLiveness ||
+            stepUpType == StepUpType.manualReview
         ? RiskFlow.red
         : stepUpType == StepUpType.biometric
         ? RiskFlow.yellow
@@ -472,117 +538,15 @@ class RiskBasedSecurityService {
     return await evaluateOperation(operation: 'kyc_selfie');
   }
 
-  /// Guard for account recovery - always requires liveness
+  /// Guard for account recovery.
+  ///
+  /// The backend owns the recovery risk decision: low-risk recovery uses an
+  /// OTP user ceremony with a scoped recovery challenge token, high-risk
+  /// recovery requires liveness, and critical or unavailable provider cases
+  /// move to manual review.
   Future<StepUpDecision> guardAccountRecovery() async {
     return await evaluateOperation(operation: 'account_recovery');
   }
-
-  /// Pre-screen a blockchain address before showing transfer form
-  /// This provides early feedback to users about blocked addresses
-  Future<AddressScreeningResult> screenAddress({
-    required String address,
-    String blockchain = 'polygon',
-  }) async {
-    try {
-      final response = await _dio.post(
-        '/risk/screen-address',
-        data: {'address': address, 'blockchain': blockchain},
-      );
-
-      // ignore: avoid_dynamic_calls
-      if (response.data['success'] == true) {
-        // ignore: avoid_dynamic_calls
-        return AddressScreeningResult.fromJson(response.data['data']);
-      }
-
-      // If API returns success: false, treat as error
-      return AddressScreeningResult(
-        address: address,
-        decision: 'DENIED',
-        riskSignals: ['Screening service error'],
-        provider: 'error',
-      );
-    } catch (e) {
-      AppLogger(
-        'Address screening failed',
-      ).error('Address screening failed', e);
-      // On network error, return unknown - let backend block at transfer time
-      return AddressScreeningResult(
-        address: address,
-        decision: 'UNKNOWN',
-        riskSignals: ['Screening unavailable'],
-        provider: 'error',
-      );
-    }
-  }
-
-  /// Check if an address is safe for transactions
-  /// Returns user-friendly result
-  Future<({bool safe, String? warning})> isAddressSafe(String address) async {
-    final result = await screenAddress(address: address);
-
-    if (result.decision == 'DENIED') {
-      return (
-        safe: false,
-        warning:
-            'This address has been flagged by our compliance system. '
-            'Transfers to this address are not allowed.',
-      );
-    }
-
-    if (result.decision == 'UNKNOWN') {
-      return (
-        safe: true, // Let backend handle final decision
-        warning: null,
-      );
-    }
-
-    // Check for warning signals
-    if (result.riskSignals.isNotEmpty) {
-      final warnings = result.riskSignals
-          .where((s) => s.contains('HIGH_RISK') || s.contains('PEP'))
-          .toList();
-
-      if (warnings.isNotEmpty) {
-        return (
-          safe: true,
-          warning:
-              'This address has elevated risk signals. '
-              'Additional verification may be required.',
-        );
-      }
-    }
-
-    return (safe: true, warning: null);
-  }
-}
-
-/// Address screening result
-class AddressScreeningResult {
-  final String address;
-  final String decision; // APPROVED, DENIED, UNKNOWN
-  final List<String> riskSignals;
-  final String provider;
-
-  AddressScreeningResult({
-    required this.address,
-    required this.decision,
-    required this.riskSignals,
-    required this.provider,
-  });
-
-  factory AddressScreeningResult.fromJson(Map<String, dynamic> json) {
-    return AddressScreeningResult(
-      address: json['address'] ?? '',
-      decision: json['decision'] ?? 'UNKNOWN',
-      riskSignals: List<String>.from(json['riskSignals'] ?? []),
-      provider: json['provider'] ?? 'unknown',
-    );
-  }
-
-  bool get isApproved => decision == 'APPROVED';
-  bool get isDenied => decision == 'DENIED';
-  bool get isUnknown => decision == 'UNKNOWN';
 }
 
 /// Exception for compliance blocked address

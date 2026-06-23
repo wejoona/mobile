@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/features/insights/providers/insights_provider.dart';
 
 void main() {
@@ -10,7 +11,8 @@ void main() {
         'lib/features/insights/providers/insights_provider.dart',
       ).readAsStringSync();
 
-      expect(provider, contains("'/wallet/transactions/stats'"));
+      expect(ApiEndpoints.walletTransactionStats, '/wallet/transactions/stats');
+      expect(provider, contains('ApiEndpoints.walletTransactionStats'));
       expect(provider, isNot(contains("'/insights")));
       expect(provider, isNot(contains("'/analytics")));
     });

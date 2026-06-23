@@ -1,109 +1,93 @@
-/// Deposit Request Models
+import 'package:usdc_wallet/features/deposit/models/deposit_channel_id.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
+import 'package:usdc_wallet/utils/phone_normalizer.dart';
+
+// Deposit request models.
+export 'package:usdc_wallet/features/deposit/models/deposit_channel_id.dart'
+    show
+        depositChannelIdFromJson,
+        normalizeDepositChannelId,
+        normalizeDepositProviderCode;
 
 /// Initiate Deposit Request
 class InitiateDepositRequest {
-  final int amount;
+  final double amount;
   final String provider;
   final String phoneNumber;
   final String currency;
+  final String? countryCode;
 
   const InitiateDepositRequest({
     required this.amount,
     required this.provider,
     required this.phoneNumber,
     required this.currency,
+    this.countryCode,
   });
 
-  Map<String, dynamic> toJson() => {
-    'amount': amount,
-    'currency': currency,
-    'providerCode': normalizeDepositProviderCode(provider),
-    if (phoneNumber.isNotEmpty)
-      'phoneNumber': _normalizePhoneNumber(phoneNumber, currency),
-  };
+  Map<String, dynamic> toJson() {
+    final normalizedCountryCode = _normalizeCountryCode(countryCode);
+    final normalizedPhoneNumber = _normalizePhoneNumber(
+      phoneNumber,
+      currency,
+      normalizedCountryCode,
+    );
+    return {
+      'amount': amount,
+      'currency': currency,
+      'providerCode': normalizeDepositProviderCode(provider),
+      if (normalizedCountryCode != null) 'countryCode': normalizedCountryCode,
+      if (normalizedPhoneNumber != null) 'phoneNumber': normalizedPhoneNumber,
+    };
+  }
 
-  Map<String, dynamic> toWalletDepositJson() => {
-    'amount': amount,
-    'sourceCurrency': currency,
-    'channelId': normalizeDepositChannelId(provider),
-    if (phoneNumber.isNotEmpty)
-      'phoneNumber': _normalizePhoneNumber(phoneNumber, currency),
-  };
+  Map<String, dynamic> toWalletDepositJson() {
+    final normalizedCountryCode = _normalizeCountryCode(countryCode);
+    final normalizedPhoneNumber = _normalizePhoneNumber(
+      phoneNumber,
+      currency,
+      normalizedCountryCode,
+    );
+    return {
+      'amount': amount,
+      'sourceCurrency': currency,
+      'channelId': normalizeDepositChannelId(provider),
+      if (normalizedCountryCode != null) 'countryCode': normalizedCountryCode,
+      if (normalizedPhoneNumber != null) 'phoneNumber': normalizedPhoneNumber,
+    };
+  }
 }
 
-String normalizeDepositChannelId(String value) {
-  switch (value.replaceAll('-', '_').toLowerCase()) {
-    case 'orange_money_ci':
-    case 'omci':
-    case 'orange':
-    case 'orange_money':
-    case 'mobile_money':
-      return 'orange_money_ci';
-    case 'mtn_momo_ci':
-    case 'mtnci':
-    case 'mtn':
-    case 'mtn_momo':
-    case 'mtn_mobile_money':
-      return 'mtn_momo_ci';
-    case 'moov_money_ci':
-    case 'moovci':
-    case 'moov':
-    case 'moov_money':
-      return 'moov_money_ci';
-    case 'wave_ci':
-    case 'waveci':
-    case 'wave':
-      return 'wave_ci';
+String? _normalizePhoneNumber(
+  String phoneNumber,
+  String currency,
+  String? countryCode,
+) {
+  final phoneValue = PhoneNumberValue.tryFromAny(
+    phoneNumber: phoneNumber,
+    countryCode: countryCode ?? _countryCodeForDepositCurrency(currency),
+  );
+  return phoneValue?.e164;
+}
+
+String? _normalizeCountryCode(String? countryCode) {
+  final value = countryCode?.trim();
+  if (value == null || value.isEmpty) {
+    return null;
+  }
+  final country = PhoneNormalizer.countryFromCode(value);
+  return country?.code ?? value.toUpperCase();
+}
+
+String? _countryCodeForDepositCurrency(String currency) {
+  switch (currency.trim().toUpperCase()) {
+    case 'XOF':
+      return 'CI';
+    case 'USD':
+      return 'US';
     default:
-      return value;
+      return null;
   }
-}
-
-String normalizeDepositProviderCode(String value) {
-  switch (value.replaceAll('-', '_').toLowerCase()) {
-    case 'omci':
-    case 'orange':
-    case 'orange_money':
-    case 'orange_money_ci':
-    case 'mobile_money':
-      return 'OMCI';
-    case 'mtnci':
-    case 'mtn':
-    case 'mtn_momo':
-    case 'mtn_momo_ci':
-    case 'mtn_mobile_money':
-      return 'MTNCI';
-    case 'moovci':
-    case 'moov':
-    case 'moov_money':
-    case 'moov_money_ci':
-      return 'MOOVCI';
-    case 'waveci':
-    case 'wave':
-    case 'wave_ci':
-      return 'WAVECI';
-    default:
-      return value.toUpperCase();
-  }
-}
-
-String _normalizePhoneNumber(String phoneNumber, String currency) {
-  final trimmed = phoneNumber.trim().replaceAll(' ', '');
-  if (trimmed.startsWith('+')) return trimmed;
-
-  final digits = trimmed.replaceAll(RegExp(r'\D'), '');
-  if (digits.isEmpty) return '';
-
-  if (currency == 'XOF') {
-    if (digits.startsWith('225')) return '+$digits';
-    return '+225$digits';
-  }
-
-  if (currency == 'USD' && digits.length == 10) {
-    return '+1$digits';
-  }
-
-  return '+$digits';
 }
 
 /// Legacy DepositRequest (keeping for backward compatibility)

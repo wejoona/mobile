@@ -1,13 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/payment_links/providers/payment_links_provider.dart';
 import 'package:usdc_wallet/features/payment_links/widgets/share_link_sheet.dart';
 import 'package:usdc_wallet/features/qr_payment/widgets/branded_qr_image.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class LinkCreatedView extends ConsumerWidget {
   const LinkCreatedView({required this.linkId, super.key});
@@ -31,7 +31,7 @@ class LinkCreatedView extends ConsumerWidget {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.close),
-            onPressed: () => context.go('/payment-links'),
+            onPressed: () => context.fsmGo('/payment-links'),
           ),
         ),
         body: const Center(child: CircularProgressIndicator()),
@@ -47,7 +47,7 @@ class LinkCreatedView extends ConsumerWidget {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.close),
-            onPressed: () => context.go('/payment-links'),
+            onPressed: () => context.fsmGo('/payment-links'),
           ),
         ),
         body: Center(
@@ -71,7 +71,7 @@ class LinkCreatedView extends ConsumerWidget {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.close),
-            onPressed: () => context.go('/payment-links'),
+            onPressed: () => context.fsmGo('/payment-links'),
           ),
         ),
         body: SafeArea(
@@ -160,7 +160,7 @@ class LinkCreatedView extends ConsumerWidget {
               AppButton(
                 label: l10n.paymentLinks_viewDetails,
                 variant: AppButtonVariant.secondary,
-                onPressed: () => context.go('/payment-links/${link.id}'),
+                onPressed: () => context.fsmGo('/payment-links/${link.id}'),
                 isFullWidth: true,
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -169,7 +169,7 @@ class LinkCreatedView extends ConsumerWidget {
               AppButton(
                 label: l10n.common_done,
                 variant: AppButtonVariant.ghost,
-                onPressed: () => context.go('/payment-links'),
+                onPressed: () => context.fsmGo('/payment-links'),
                 isFullWidth: true,
               ),
             ],

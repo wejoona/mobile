@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/services/connectivity/connectivity_provider.dart';
 
 const offlineQueueableErrorPrefix = 'OFFLINE_QUEUEABLE:';
@@ -20,8 +21,8 @@ class OfflineQueueInterceptor extends Interceptor {
 
   /// Endpoints éligibles à la file d'attente hors ligne
   static const _queueableEndpoints = [
-    '/wallet/transfer/internal',
-    '/wallet/transfer/external',
+    ApiEndpoints.transfersSend,
+    ApiEndpoints.transfersExternal,
   ];
 
   OfflineQueueInterceptor(this._ref);

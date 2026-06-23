@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/countries.dart';
@@ -14,9 +13,10 @@ import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/input_formatters.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Login screen with two modes:
@@ -39,6 +39,7 @@ class _LoginViewState extends ConsumerState<LoginView>
   _LoginMode _mode = _LoginMode.checking;
   bool _biometricInProgress = false;
   String? _biometricError;
+  String? _biometricUserId;
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -59,7 +60,7 @@ class _LoginViewState extends ConsumerState<LoginView>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Pre-fetch countries from API
       ref.read(countriesProvider);
-      _determineLoginMode();
+      unawaited(_determineLoginMode());
     });
   }
 
@@ -67,30 +68,38 @@ class _LoginViewState extends ConsumerState<LoginView>
     final biometricService = ref.read(biometricServiceProvider);
     final storage = ref.read(secureStorageProvider);
 
-    // Pre-fill remembered phone number
-    final rememberedPhone = await storage.read(
-      key: StorageKeys.rememberedPhone,
-    );
-    if (rememberedPhone != null && rememberedPhone.isNotEmpty && mounted) {
-      _phoneController.text = rememberedPhone;
-    }
-
-    final isEnabled = await biometricService.isBiometricEnabled();
+    final storedUserId = await storage.read(key: StorageKeys.userId);
+    final boundUserId = await biometricService.getBoundUserId();
+    final isEnabled =
+        storedUserId != null &&
+        storedUserId.isNotEmpty &&
+        boundUserId == storedUserId &&
+        await biometricService.isBiometricEnabled(userId: storedUserId);
     final refreshToken = await storage.read(key: StorageKeys.refreshToken);
 
     if (isEnabled && refreshToken != null && mounted) {
-      setState(() => _mode = _LoginMode.biometric);
-      _animationController.forward();
+      setState(() {
+        _biometricUserId = storedUserId;
+        _mode = _LoginMode.biometric;
+      });
+      unawaited(_animationController.forward());
       // Don't auto-prompt biometric on boot — let user tap the button
     } else {
       if (mounted) {
-        setState(() => _mode = _LoginMode.phone);
-        _animationController.forward();
+        setState(() {
+          _biometricUserId = null;
+          _mode = _LoginMode.phone;
+        });
+        unawaited(_animationController.forward());
+        _focusPhoneInputSoon();
       }
     }
   }
 
-  Future<void> _doBiometricAuth(String refreshToken) async {
+  Future<void> _doBiometricAuth({
+    required String refreshToken,
+    required String expectedUserId,
+  }) async {
     if (_biometricInProgress) return;
     final l10n = AppLocalizations.of(context)!;
     setState(() {
@@ -107,9 +116,9 @@ class _LoginViewState extends ConsumerState<LoginView>
       if (authenticatedBio.success && mounted) {
         final success = await ref
             .read(authProvider.notifier)
-            .loginWithBiometric(refreshToken);
+            .loginWithBiometric(refreshToken, expectedUserId: expectedUserId);
         if (success && mounted) {
-          context.enterAuthenticatedApp();
+          context.fsmEnterAuthenticatedApp();
           return;
         }
         if (mounted) {
@@ -131,6 +140,15 @@ class _LoginViewState extends ConsumerState<LoginView>
       _mode = _LoginMode.phone;
       _biometricError = null;
     });
+    _focusPhoneInputSoon();
+  }
+
+  void _focusPhoneInputSoon() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _mode == _LoginMode.phone) {
+        _phoneFocusNode.requestFocus();
+      }
+    });
   }
 
   @override
@@ -145,6 +163,11 @@ class _LoginViewState extends ConsumerState<LoginView>
   Widget build(BuildContext context) {
     final colors = context.colors;
     final loginState = ref.watch(loginProvider);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _syncPhoneViewFromLoginState(ref.read(loginProvider));
+      }
+    });
 
     ref.listen<AuthState>(authProvider, (prev, next) {
       if (next.error != null) {
@@ -163,9 +186,19 @@ class _LoginViewState extends ConsumerState<LoginView>
       }
     });
     ref.listen<LoginState>(loginProvider, (prev, next) {
+      if (next.phoneNumber != prev?.phoneNumber ||
+          next.dialCode != prev?.dialCode) {
+        _syncPhoneViewFromLoginState(next);
+      }
       if (next.currentStep == LoginStep.otp &&
           prev?.currentStep != LoginStep.otp) {
-        context.go('/login/otp');
+        final returnTo = GoRouterState.of(
+          context,
+        ).uri.queryParameters['returnTo']?.trim();
+        final otpRoute = returnTo == null || returnTo.isEmpty
+            ? '/login/otp'
+            : '/login/otp?returnTo=${Uri.encodeComponent(returnTo)}';
+        context.fsmGo(otpRoute);
       } else if (next.error != null && next.error != prev?.error) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -264,7 +297,15 @@ class _LoginViewState extends ConsumerState<LoginView>
                     final refreshToken = await storage.read(
                       key: StorageKeys.refreshToken,
                     );
-                    if (refreshToken != null) _doBiometricAuth(refreshToken);
+                    final expectedUserId = _biometricUserId;
+                    if (refreshToken != null && expectedUserId != null) {
+                      unawaited(
+                        _doBiometricAuth(
+                          refreshToken: refreshToken,
+                          expectedUserId: expectedUserId,
+                        ),
+                      );
+                    }
                   },
                   child: Container(
                     width: 80,
@@ -381,7 +422,7 @@ class _LoginViewState extends ConsumerState<LoginView>
 
                   // Toggle register/login
                   GestureDetector(
-                    onTap: () => context.go('/onboarding'),
+                    onTap: () => context.fsmGo('/signup'),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                         vertical: AppSpacing.sm,
@@ -506,8 +547,8 @@ class _LoginViewState extends ConsumerState<LoginView>
         const SizedBox(height: AppSpacing.sm),
         GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: () => _phoneFocusNode.requestFocus(),
-          child: Container(
+          onTap: _phoneFocusNode.requestFocus,
+          child: DecoratedBox(
             decoration: BoxDecoration(
               color: colors.elevated,
               borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -521,27 +562,38 @@ class _LoginViewState extends ConsumerState<LoginView>
             ),
             child: Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.lg,
-                    vertical: AppSpacing.lg + 2,
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      right: BorderSide(color: colors.borderSubtle),
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _phoneFocusNode.requestFocus,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.lg + 2,
                     ),
-                  ),
-                  child: AppText(
-                    _selectedCountry.fullPrefix,
-                    variant: AppTextVariant.bodyLarge,
-                    color: colors.textSecondary,
+                    decoration: BoxDecoration(
+                      border: Border(
+                        right: BorderSide(color: colors.borderSubtle),
+                      ),
+                    ),
+                    child: AppText(
+                      _selectedCountry.fullPrefix,
+                      variant: AppTextVariant.bodyLarge,
+                      color: colors.textSecondary,
+                    ),
                   ),
                 ),
                 Expanded(
                   child: TextField(
+                    key: const ValueKey('login_phone_field'),
                     controller: _phoneController,
                     focusNode: _phoneFocusNode,
                     keyboardType: TextInputType.phone,
+                    textInputAction: TextInputAction.done,
+                    autofillHints: const [
+                      AutofillHints.telephoneNumberNational,
+                    ],
+                    autocorrect: false,
+                    enableSuggestions: false,
                     style: AppTypography.bodyLarge.copyWith(
                       color: colors.textPrimary,
                       letterSpacing: 1.2,
@@ -560,13 +612,17 @@ class _LoginViewState extends ConsumerState<LoginView>
                       ),
                     ),
                     inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(
-                        _selectedCountry.phoneLength,
+                      LocalPhoneInputFormatter(
+                        dialCode: _selectedCountry.fullPrefix,
+                        maxLocalDigits: _selectedCountry.phoneLength,
                       ),
                     ],
+                    onTap: _phoneFocusNode.requestFocus,
                     onTapOutside: (_) => _phoneFocusNode.unfocus(),
-                    onChanged: (_) => setState(() {}),
+                    onChanged: (_) {
+                      _syncPhoneControllerToLocal();
+                      setState(() {});
+                    },
                   ),
                 ),
                 if (hasText)
@@ -616,9 +672,7 @@ class _LoginViewState extends ConsumerState<LoginView>
         onSelect: (country) {
           setState(() {
             _selectedCountry = country;
-            if (_phoneController.text.length > country.phoneLength) {
-              _phoneController.clear();
-            }
+            _syncPhoneControllerToLocal();
           });
           ref.read(selectedCountryProvider.notifier).select(country);
         },
@@ -627,16 +681,14 @@ class _LoginViewState extends ConsumerState<LoginView>
   }
 
   bool _isPhoneValid() {
-    final phone = digitsOnly(_phoneController.text);
+    final phone = _currentLocalPhone();
     return _selectedCountry.isValidLength(phone);
   }
 
   Future<void> _submit() async {
     if (!_isPhoneValid()) return;
-    final phone = normalizePhoneE164(
-      dialCode: _selectedCountry.fullPrefix,
-      localNumber: _phoneController.text,
-    );
+    final phone = _currentLocalPhone();
+    _setPhoneControllerText(phone);
     ref.read(selectedCountryProvider.notifier).select(_selectedCountry);
     ref
         .read(loginProvider.notifier)
@@ -649,9 +701,72 @@ class _LoginViewState extends ConsumerState<LoginView>
       _selectedCountry =
           SupportedCountries.findByCode('CI') ??
           SupportedCountries.defaultCountry;
-      _phoneController.text = '0748805663';
+      _setPhoneControllerText('0748805663');
     });
     unawaited(_submit());
+  }
+
+  String _currentLocalPhone() {
+    return localPhoneInputDigits(
+      dialCode: _selectedCountry.fullPrefix,
+      phoneNumber: _phoneController.text,
+      maxLocalDigits: _selectedCountry.phoneLength,
+    );
+  }
+
+  void _syncPhoneControllerToLocal() {
+    final localPhone = _currentLocalPhone();
+    if (localPhone != _phoneController.text) {
+      _setPhoneControllerText(localPhone);
+    }
+  }
+
+  void _syncPhoneViewFromLoginState(LoginState loginState) {
+    final phoneValue = loginState.phoneValue;
+    if (phoneValue == null) {
+      return;
+    }
+
+    final country =
+        SupportedCountries.findByPrefix(phoneValue.dialCode) ??
+        _selectedCountry;
+    final currentFieldText = _phoneController.text;
+    final shouldRespectFocusedInput =
+        _phoneFocusNode.hasFocus &&
+        !_looksLikeInternationalPhoneInput(currentFieldText, country);
+    if (shouldRespectFocusedInput) {
+      return;
+    }
+
+    final localPhone = phoneValue.localNumber.length > country.phoneLength
+        ? phoneValue.localNumber.substring(0, country.phoneLength)
+        : phoneValue.localNumber;
+    final needsCountryUpdate = country.code != _selectedCountry.code;
+    final needsPhoneUpdate = localPhone != currentFieldText;
+    if (!needsCountryUpdate && !needsPhoneUpdate) {
+      return;
+    }
+
+    setState(() {
+      _selectedCountry = country;
+      _setPhoneControllerText(localPhone);
+    });
+  }
+
+  bool _looksLikeInternationalPhoneInput(String value, CountryConfig country) {
+    if (value.contains('|') || value.trim().startsWith('+')) {
+      return true;
+    }
+    final digits = digitsOnly(value);
+    return digits.startsWith(country.prefix) &&
+        digits.length > country.phoneLength;
+  }
+
+  void _setPhoneControllerText(String value) {
+    _phoneController.value = TextEditingValue(
+      text: value,
+      selection: TextSelection.collapsed(offset: value.length),
+    );
   }
 }
 
@@ -773,7 +888,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                 return GestureDetector(
                   onTap: () {
                     widget.onSelect(country);
-                    Navigator.pop(context);
+                    context.fsmPop();
                   },
                   child: Container(
                     margin: const EdgeInsets.symmetric(

@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/deposit/models/deposit_request.dart';
 import 'package:usdc_wallet/features/deposit/models/deposit_response.dart';
 import 'package:usdc_wallet/features/deposit/models/mobile_money_provider.dart';
+import 'package:usdc_wallet/features/deposit/models/provider_data.dart';
 import 'package:usdc_wallet/domain/entities/wallet.dart';
 import 'package:usdc_wallet/services/deposit/deposit_service.dart';
 
@@ -43,6 +44,38 @@ void main() {
       expect(request.toWalletDepositJson(), isNot(contains('providerCode')));
     });
 
+    test('deposit request normalizes duplicated country prefixes', () {
+      const request = InitiateDepositRequest(
+        amount: 5000,
+        provider: 'OMCI',
+        phoneNumber: '+225+2250748805663',
+        currency: 'XOF',
+      );
+
+      expect(request.toWalletDepositJson()['phoneNumber'], '+2250748805663');
+    });
+
+    test(
+      'deposit request posts country so backend resolves shared-currency channels',
+      () {
+        const request = InitiateDepositRequest(
+          amount: 5000,
+          provider: 'orange_money_sn',
+          phoneNumber: '77 123 45 67',
+          currency: 'XOF',
+          countryCode: 'SN',
+        );
+
+        expect(request.toWalletDepositJson(), {
+          'amount': 5000,
+          'sourceCurrency': 'XOF',
+          'channelId': 'orange_money_sn',
+          'countryCode': 'SN',
+          'phoneNumber': '+221771234567',
+        });
+      },
+    );
+
     test('normalizes marketing provider names to backend enum codes', () {
       const request = InitiateDepositRequest(
         amount: 5000,
@@ -60,6 +93,39 @@ void main() {
       expect(normalizeDepositChannelId('moov-money'), 'moov_money_ci');
       expect(normalizeDepositProviderCode('wave_ci'), 'WAVECI');
       expect(normalizeDepositChannelId('wave_ci'), 'wave_ci');
+      expect(normalizeDepositChannelId('mobile_money'), 'mobile_money');
+      expect(
+        normalizeDepositChannelId('payswitch_wave_route_wave_primary_ci'),
+        'payswitch_wave_route_wave_primary_ci',
+      );
+      expect(
+        depositChannelIdFromJson({'id': 'us_ach', 'code': 'ACH'}),
+        'us_ach',
+      );
+      expect(depositChannelIdFromJson({'code': 'OMCI'}), 'orange_money_ci');
+    });
+
+    test('derives provider branding from PaySwitch-discovered channels', () {
+      expect(
+        const ProviderData(
+          id: 'payswitch_wave_route_wave_primary_ci',
+          name: 'Wave',
+          enumProvider: 'wave',
+        ).brandKey,
+        'wave',
+      );
+      expect(
+        const ProviderData(
+          id: 'payswitch_orange_money_ci',
+          name: 'Mobile money',
+          enumProvider: 'orange',
+        ).brandKey,
+        'orange_money',
+      );
+      expect(
+        const ProviderData(id: 'us_ach', name: 'ACH transfer').brandKey,
+        'ach',
+      );
     });
 
     test('deposit service sends canonical backend initiate payload', () async {
@@ -78,6 +144,7 @@ void main() {
           provider: 'orange_money',
           phoneNumber: '07 48 80 56 63',
           currency: 'XOF',
+          countryCode: 'CI',
         ),
       );
 
@@ -87,9 +154,43 @@ void main() {
         'amount': 5000,
         'sourceCurrency': 'XOF',
         'channelId': 'orange_money_ci',
+        'countryCode': 'CI',
         'phoneNumber': '+2250748805663',
       });
     });
+
+    test(
+      'mobile money helper preserves explicit PaySwitch channel over provider',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'id': 'dep_456',
+            'amount': 25000,
+            'paymentMethodType': 'PUSH',
+            'status': 'INITIATED',
+          }, statusCode: 201);
+        final service = DepositService(dio);
+
+        await service.initiateMobileMoneyDeposit({
+          'amount': 25000,
+          'sourceCurrency': 'XOF',
+          'channelId': 'payswitch_wave_route_wave_primary_ci',
+          'provider': 'wave',
+          'phoneNumber': '+2250748805663',
+          'countryCode': 'CI',
+        });
+
+        final request = dio.requestHistory.single;
+        expect(request.path, '/wallet/deposit');
+        expect(request.data, {
+          'amount': 25000,
+          'sourceCurrency': 'XOF',
+          'channelId': 'payswitch_wave_route_wave_primary_ci',
+          'countryCode': 'CI',
+          'phoneNumber': '+2250748805663',
+        });
+      },
+    );
 
     test('preserves unavailable deposit capability metadata', () async {
       final dio = MockDio()

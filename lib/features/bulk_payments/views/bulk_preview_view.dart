@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/bulk_payments/providers/bulk_payments_provider.dart';
@@ -12,6 +11,7 @@ import 'package:usdc_wallet/features/bulk_payments/widgets/payment_row.dart';
 import 'package:usdc_wallet/design/components/composed/pin_confirmation_sheet.dart';
 import 'package:usdc_wallet/utils/formatting.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class BulkPreviewView extends ConsumerStatefulWidget {
   const BulkPreviewView({super.key});
@@ -29,7 +29,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
     final batch = ref.watch(draftBatchProvider);
 
     if (batch == null) {
-      Future.microtask(() => context.go('/bulk-payments'));
+      Future.microtask(() => context.fsmGo('/bulk-payments'));
       return const SizedBox.shrink();
     }
 
@@ -210,7 +210,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
           Expanded(
             child: AppButton(
               label: l10n.action_cancel,
-              onPressed: () => context.pop(),
+              onPressed: () => context.fsmPop(),
               variant: AppButtonVariant.secondary,
             ),
           ),
@@ -294,7 +294,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
       ref.invalidate(bulkPaymentsProvider);
 
       if (mounted) {
-        context.go('/bulk-payments');
+        context.fsmGo('/bulk-payments');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.bulkPayments_submitSuccess),

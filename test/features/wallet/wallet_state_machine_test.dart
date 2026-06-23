@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/state/app_state.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_base.dart';
@@ -16,12 +16,34 @@ class _NoopAppFsmNotifier extends AppFsmNotifier {
 
   @override
   void handleEffects(List<FsmEffect> effects) {}
+
+  @override
+  void fetchWallet() {}
+
+  @override
+  void onWalletLoaded({
+    required String walletId,
+    String? walletAddress,
+    String blockchain = 'polygon',
+    required double usdcBalance,
+    double pendingBalance = 0,
+  }) {}
+
+  @override
+  void onWalletCreated({
+    required String walletId,
+    String? walletAddress,
+    String blockchain = 'polygon',
+  }) {}
+
+  @override
+  void onWalletFailed(String message, {dynamic data}) {}
 }
 
 void main() {
   group('WalletStateMachine', () {
     test('availableBalance exposes the spendable USDC balance', () {
-      const state = WalletState(usdBalance: 0, usdcBalance: 42.25);
+      const state = WalletState(usdcBalance: 42.25);
 
       expect(state.availableBalance, 42.25);
     });
@@ -262,6 +284,57 @@ void main() {
     );
 
     test(
+      'treats degraded local mirror zero balance as a loaded wallet',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'walletId': 'wallet-local-mirror',
+            'currency': 'USDC',
+            'source': 'local_mirror',
+            'sourceOfTruth': 'local_mirror',
+            'readStatus': 'degraded',
+            'isStale': true,
+            'degraded': true,
+            'warning':
+                'Ledger balance is temporarily unavailable. Showing local mirror balance.',
+            'balances': [
+              {
+                'currency': 'USDC',
+                'available': 0,
+                'pending': 0,
+                'total': 0,
+                'availableDecimal': '0.000000',
+                'pendingDecimal': '0.000000',
+                'totalDecimal': '0.000000',
+              },
+            ],
+          });
+
+        final container = ProviderContainer(
+          overrides: [
+            dioProvider.overrideWithValue(dio),
+            appFsmProvider.overrideWith(_NoopAppFsmNotifier.new),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await container.read(walletStateMachineProvider.notifier).fetch();
+
+        final state = container.read(walletStateMachineProvider);
+        expect(state.status, WalletStatus.loaded);
+        expect(state.hasBalanceData, isTrue);
+        expect(state.walletId, 'wallet-local-mirror');
+        expect(state.usdcBalance, 0);
+        expect(state.pendingBalance, 0);
+        expect(state.isDegraded, isTrue);
+        expect(state.isStale, isTrue);
+        expect(state.balanceSourceOfTruth, 'local_mirror');
+        expect(state.balanceReadStatus, 'degraded');
+        expect(state.balanceWarning, contains('Ledger balance'));
+      },
+    );
+
+    test(
       'uses total-only USDC rows when the backend omits available fields',
       () async {
         final dio = MockDio()
@@ -289,6 +362,46 @@ void main() {
         expect(state.status, WalletStatus.loaded);
         expect(state.walletId, 'wallet-total-only');
         expect(state.usdcBalance, 88.125);
+      },
+    );
+
+    test(
+      'manual refresh displays flat live balance when stale rows are empty',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'walletId': 'wallet-flat-live',
+            'walletAddress': '0xabc',
+            'blockchain': 'polygon',
+            'currency': 'USDC',
+            'balanceUsdc': '77.125000',
+            'availableBalance': '75.000000',
+            'pendingBalance': '2.125000',
+            'balances': [
+              {
+                'currency': 'USDC',
+                'availableDecimal': '0.000000',
+                'pendingDecimal': '0.000000',
+                'totalDecimal': '0.000000',
+              },
+            ],
+          });
+
+        final container = ProviderContainer(
+          overrides: [
+            dioProvider.overrideWithValue(dio),
+            appFsmProvider.overrideWith(_NoopAppFsmNotifier.new),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await container.read(walletStateMachineProvider.notifier).refresh();
+
+        final state = container.read(walletStateMachineProvider);
+        expect(state.status, WalletStatus.loaded);
+        expect(state.usdcBalance, 75);
+        expect(state.pendingBalance, 2.125);
+        expect(state.availableBalance, 75);
       },
     );
 
@@ -434,7 +547,6 @@ void main() {
           status: WalletStatus.loaded,
           walletId: 'wallet-existing',
           walletAddress: '0xabc',
-          blockchain: 'polygon',
           usdcBalance: 42,
           pendingBalance: 1,
           lastUpdated: DateTime.utc(2026, 6, 14),
@@ -457,5 +569,37 @@ void main() {
         expect(state.balanceWarning, contains('Live balance'));
       },
     );
+
+    test('delayed refresh settles the balance card on last known data', () {
+      final dio = MockDio();
+      final container = ProviderContainer(
+        overrides: [
+          dioProvider.overrideWithValue(dio),
+          appFsmProvider.overrideWith(_NoopAppFsmNotifier.new),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.read(walletStateMachineProvider.notifier).state = WalletState(
+        status: WalletStatus.refreshing,
+        walletId: 'wallet-slow-refresh',
+        walletAddress: '0xabc',
+        usdcBalance: 64,
+        pendingBalance: 2,
+        lastUpdated: DateTime.utc(2026, 6, 17),
+      );
+
+      container.read(walletStateMachineProvider.notifier).markRefreshDelayed();
+
+      final state = container.read(walletStateMachineProvider);
+      expect(state.status, WalletStatus.loaded);
+      expect(state.walletId, 'wallet-slow-refresh');
+      expect(state.usdcBalance, 64);
+      expect(state.pendingBalance, 2);
+      expect(state.isCached, isTrue);
+      expect(state.isDegraded, isTrue);
+      expect(state.isStale, isTrue);
+      expect(state.balanceReadStatus, 'cached_degraded');
+    });
   });
 }

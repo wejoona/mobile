@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/send_external/providers/external_transfer_provider.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 class AddressInputScreen extends ConsumerStatefulWidget {
   const AddressInputScreen({super.key});
@@ -249,7 +249,7 @@ class _AddressInputScreenState extends ConsumerState<AddressInputScreen> {
   }
 
   Future<void> _scanQrCode() async {
-    final result = await context.push<String>('/qr/scan-address');
+    final result = await context.fsmPush<String>('/qr/scan-address');
     if (result != null && mounted) {
       setState(() {
         _addressController.text = result;
@@ -265,7 +265,7 @@ class _AddressInputScreenState extends ConsumerState<AddressInputScreen> {
     try {
       // Address already validated via provider
       if (mounted) {
-        context.push('/send-external/amount');
+        context.fsmPush('/send-external/amount');
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

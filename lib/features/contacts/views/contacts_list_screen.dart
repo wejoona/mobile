@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
@@ -22,7 +22,8 @@ class ContactsListScreen extends ConsumerStatefulWidget {
   ConsumerState<ContactsListScreen> createState() => _ContactsListScreenState();
 }
 
-class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
+class _ContactsListScreenState extends ConsumerState<ContactsListScreen>
+    with WidgetsBindingObserver {
   final _searchController = TextEditingController();
   String _searchQuery = '';
   List<SyncedContact> _lookupResults = [];
@@ -34,19 +35,34 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) {
         return;
       }
-      unawaited(_loadContactsOrRouteToPermission());
+      unawaited(_loadContacts());
     });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _lookupDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed || !mounted) {
+      return;
+    }
+
+    final contactsState = ref.read(contactsProvider);
+    if (contactsState.permissionRequired ||
+        contactsState.permissionRequiresSettings) {
+      unawaited(_loadContacts());
+    }
   }
 
   void _handleSearchChanged(String value) {
@@ -129,27 +145,11 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
     }
   }
 
-  Future<void> _loadContactsOrRouteToPermission() async {
-    final routed = await _routeToPermissionPromptIfNeeded();
-    if (!routed && mounted) {
-      await ref.read(contactsProvider.notifier).syncContacts();
+  Future<void> _loadContacts() async {
+    if (!mounted) {
+      return;
     }
-  }
-
-  Future<bool> _routeToPermissionPromptIfNeeded() async {
-    final contactsService = ref.read(contactsServiceProvider);
-    final hasPermission = await contactsService.hasContactsPermission();
-    if (hasPermission || !mounted) {
-      return false;
-    }
-
-    final requiresSettings = await contactsService
-        .contactsPermissionRequiresSettings();
-    if (!requiresSettings && mounted) {
-      context.go('/contacts/permission');
-      return true;
-    }
-    return false;
+    await ref.read(contactsProvider.notifier).syncContacts();
   }
 
   Future<void> _requestPermissionAndSync({
@@ -459,7 +459,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   void _handleContactTap(SyncedContact contact) {
     if (contact.isKoridoUser) {
       // Navigate to send screen with pre-filled recipient
-      unawaited(context.push('/send', extra: _sendExtra(contact)));
+      unawaited(context.fsmPush('/send', extra: _sendExtra(contact)));
     } else {
       _handleInvite(contact);
     }
@@ -483,7 +483,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   }
 
   void _handleSend(SyncedContact contact) {
-    unawaited(context.push('/send', extra: _sendExtra(contact)));
+    unawaited(context.fsmPush('/send', extra: _sendExtra(contact)));
   }
 
   Map<String, String?> _sendExtra(SyncedContact contact) => {

@@ -1,18 +1,15 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/state/index.dart';
+import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
 import 'package:usdc_wallet/features/qr_payment/widgets/qr_display.dart';
-import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/state/index.dart';
 
 class ReceiveView extends ConsumerStatefulWidget {
   const ReceiveView({super.key});
@@ -22,46 +19,12 @@ class ReceiveView extends ConsumerStatefulWidget {
 }
 
 class _ReceiveViewState extends ConsumerState<ReceiveView> {
-  Timer? _refreshTimer;
-  String _nonce = _generateNonce();
-  int _timestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-
-  static String _generateNonce() {
-    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    final rng = Random();
-    return String.fromCharCodes(
-      Iterable.generate(4, (_) => chars.codeUnitAt(rng.nextInt(chars.length))),
-    );
-  }
-
   @override
   void initState() {
     super.initState();
-    _refreshTimer = Timer.periodic(const Duration(seconds: 10), (_) {
-      if (mounted) {
-        setState(() {
-          _nonce = _generateNonce();
-          _timestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-        });
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _refreshTimer?.cancel();
-    super.dispose();
-  }
-
-  String _buildQrData(String userId, String? phone) {
-    final data = {
-      'type': 'payment',
-      'userId': userId,
-      if (phone != null) 'phone': phone,
-      'timestamp': _timestamp,
-      'nonce': _nonce,
-    };
-    return 'korido://pay?data=${base64Url.encode(utf8.encode(jsonEncode(data)))}';
+    unawaited(
+      Future.microtask(() => ref.read(limitsProvider.notifier).fetchLimits()),
+    );
   }
 
   @override
@@ -69,9 +32,15 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
     final walletState = ref.watch(walletStateMachineProvider);
-    final authState = ref.watch(authProvider);
-    final userId = authState.user?.id ?? walletState.walletId;
-    final phone = authState.phone ?? authState.user?.phone;
+    final limitsState = ref.watch(limitsProvider);
+    final receivePermissions = limitsState.limits?.permissions;
+    final canReceive = receivePermissions?.canReceive == true;
+    final receiveBlockReason =
+        receivePermissions?.blockReason?.trim().isNotEmpty == true
+        ? receivePermissions!.blockReason!.trim()
+        : receivePermissions?.reviewRequired == true
+        ? l10n.moneyFlow_reviewRequiredMessage
+        : l10n.moneyFlow_verificationRequiredMessage;
 
     return Scaffold(
       backgroundColor: context.colors.canvas,
@@ -84,7 +53,7 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.textPrimary),
-          onPressed: () => context.pop(),
+          onPressed: () => context.fsmPop(),
         ),
       ),
       body: SingleChildScrollView(
@@ -94,9 +63,23 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
             const SizedBox(height: AppSpacing.xxl),
 
             // Dynamic QR Code
-            if (walletState.hasWalletAddress || userId.isNotEmpty)
+            if (receivePermissions == null && limitsState.isLoading)
+              Container(
+                width: 268,
+                height: 268,
+                decoration: BoxDecoration(
+                  color: context.colors.container,
+                  borderRadius: BorderRadius.circular(AppRadius.xxl),
+                ),
+                child: Center(
+                  child: CircularProgressIndicator(color: context.colors.gold),
+                ),
+              )
+            else if (!canReceive)
+              _buildReceiveBlockedState(context, receiveBlockReason)
+            else if (walletState.hasWalletAddress)
               QrCodeDisplay(
-                data: _buildQrData(userId, phone),
+                data: walletState.walletAddress!,
                 size: 220,
                 title: l10n.receive_receiveUsdc,
                 subtitle: l10n.receive_onlySendUsdc,
@@ -238,6 +221,29 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
             const SizedBox(height: AppSpacing.xxl),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildReceiveBlockedState(BuildContext context, String message) {
+    return AppCard(
+      variant: AppCardVariant.elevated,
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      child: Column(
+        children: [
+          Icon(
+            Icons.verified_user_outlined,
+            color: context.colors.gold,
+            size: 48,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          AppText(
+            message,
+            variant: AppTextVariant.bodyMedium,
+            color: context.colors.textSecondary,
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }

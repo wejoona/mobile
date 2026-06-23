@@ -75,27 +75,101 @@ void main() {
     expect(logoutAllDevices, contains('_clearLocalSessionAfterLogoutAll'));
   });
 
-  test('devices 401 preserves unlock state instead of showing empty list', () {
+  test('active sessions cannot revoke until current session is resolved', () {
+    final providerSource = File(
+      'lib/features/settings/providers/sessions_provider.dart',
+    ).readAsStringSync();
+    final screenSource = File(
+      'lib/features/settings/views/sessions_screen.dart',
+    ).readAsStringSync();
+
+    expect(providerSource, contains('currentSessionResolved'));
+    expect(providerSource, contains('!state.currentSessionResolved'));
+    expect(providerSource, contains('session.deviceId == currentDeviceId'));
+    expect(screenSource, contains('canRevokeSession'));
+    expect(screenSource, contains('canRevokeSession && !isCurrentSession'));
+  });
+
+  test('devices waits for auth before reading and preserves unlock state', () {
     final source = File(
       'lib/features/settings/providers/devices_provider.dart',
     ).readAsStringSync();
 
+    expect(source, contains('_ensureAuthenticatedForDeviceRead'));
+    expect(source, contains('checkAuth()'));
+    expect(source, contains('refreshAccessTokenForForegroundRequest'));
     expect(source, contains('setLocked()'));
-    expect(source, isNot(contains('return const <Device>[];')));
     expect(source, contains('requiresUnlock'));
     expect(source, contains('authState.isLocked'));
     expect(source, contains('error.statusCode == 401'));
   });
 
-  test('security settings account actions navigate to real screens', () {
-    final source = File(
-      'lib/features/settings/views/security_settings_view.dart',
+  test('devices fail closed when current device cannot be resolved', () {
+    final providerSource = File(
+      'lib/features/settings/providers/devices_provider.dart',
+    ).readAsStringSync();
+    final screenSource = File(
+      'lib/features/settings/views/devices_screen.dart',
     ).readAsStringSync();
 
-    expect(source, isNot(contains('onTap: () {}')));
-    expect(source, contains("context.push('/settings/pin')"));
-    expect(source, contains("context.push('/settings/devices')"));
+    expect(providerSource, contains('currentDeviceResolved'));
+    expect(providerSource, contains('Current device could not be resolved'));
+    expect(screenSource, contains('currentDeviceResolved'));
+    expect(screenSource, contains('_UnresolvedCurrentDeviceCard'));
+    expect(
+      screenSource,
+      contains("'/session-locked?returnTo=/settings/devices'"),
+    );
   });
+
+  test('device actions preserve auth state on security failures', () {
+    final source = File(
+      'lib/features/settings/providers/devices_provider.dart',
+    ).readAsStringSync();
+
+    expect(source, contains('_runDeviceAction'));
+    expect(source, contains('_handleApiActionError'));
+    expect(source, contains('error.isDeviceBlacklisted'));
+    expect(source, contains('clearLocalSession()'));
+    expect(source, contains('error.statusCode == 401'));
+    expect(source, contains('setLocked()'));
+    expect(source, contains('_ref.invalidate(devicesProvider)'));
+  });
+
+  test(
+    'security settings account actions and persisted controls live in canonical screen',
+    () {
+      final source = File(
+        'lib/features/settings/views/security_view.dart',
+      ).readAsStringSync();
+      final profileSecuritySource = File(
+        'lib/features/profile/views/profile_security_view.dart',
+      ).readAsStringSync();
+
+      expect(source, isNot(contains('onTap: () {}')));
+      expect(source, isNot(contains('context.push(')));
+      expect(source, contains("context.fsmPush('/settings/pin')"));
+      expect(source, contains("context.fsmPush('/settings/devices')"));
+      expect(source, contains('securitySettingsProvider'));
+      expect(source, contains('notificationPreferencesProvider'));
+      expect(source, contains('setPinOnAppOpen'));
+      expect(source, contains('setScreenshotProtection'));
+      expect(source, isNot(contains('setTransactionAlerts')));
+      expect(source, contains("context.fsmPush('/settings/notifications')"));
+      expect(source, contains('setAutoLock'));
+      expect(profileSecuritySource, isNot(contains('context.push(')));
+      expect(
+        profileSecuritySource,
+        contains("context.fsmPush('/settings/pin')"),
+      );
+      expect(
+        profileSecuritySource,
+        isNot(contains("pushNamed('/pin/change')")),
+        reason:
+            'Profile security must use the canonical settings PIN route, not legacy /pin/change.',
+      );
+    },
+  );
 
   test('DevicesRepository parses bare backend array', () async {
     final dio = MockDio();

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:screenshot/screenshot.dart';
@@ -12,6 +11,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/qr_payment/widgets/qr_display.dart';
 import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Merchant QR View
 /// Displays the merchant's static QR code for customers to scan
@@ -207,7 +207,7 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
                   Expanded(
                     child: AppButton(
                       label: 'Request Amount',
-                      onPressed: () => context.push(
+                      onPressed: () => context.fsmPush(
                         '/create-payment-request',
                         extra: widget.merchant,
                       ),

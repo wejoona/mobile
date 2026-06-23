@@ -1,12 +1,12 @@
-import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
-/// Encrypts and decrypts sensitive API request/response payloads.
+/// Legacy request encryption boundary.
 ///
-/// Uses AES-256-GCM for payload encryption. The server and client
-/// share a session key derived during authentication.
+/// Active sensitive API encryption uses the JWE interceptor. This class stays
+/// fail-closed so older imports cannot accidentally ship reversible encoding as
+/// encryption.
 class RequestEncryptor {
   static const _tag = 'RequestEncryptor';
   final AppLogger _log = AppLogger(_tag);
@@ -35,13 +35,10 @@ class RequestEncryptor {
     if (_sessionKey == null) {
       throw StateError('No session key set');
     }
-    final json = jsonEncode(plaintext);
-    // Placeholder: in production use AES-GCM via pointycastle or platform channel
-    final encrypted = base64Encode(utf8.encode(json));
-    return {
-      'encrypted': encrypted,
-      'v': 1,
-    };
+    _log.error('Legacy request encryption requested before implementation');
+    throw UnsupportedError(
+      'Legacy request encryption is not implemented; use JWE for sensitive API payloads.',
+    );
   }
 
   /// Decrypt a response payload from the server.
@@ -49,10 +46,9 @@ class RequestEncryptor {
     if (_sessionKey == null) {
       throw StateError('No session key set');
     }
-    final encrypted = ciphertext['encrypted'] as String;
-    // Placeholder decryption
-    final json = utf8.decode(base64Decode(encrypted));
-    return jsonDecode(json) as Map<String, dynamic>;
+    throw UnsupportedError(
+      'Legacy response decryption is not implemented; use JWE for sensitive API payloads.',
+    );
   }
 }
 

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/services/security/client_risk_score_service.dart';
 import 'package:usdc_wallet/services/security/device_fingerprint_service.dart';
 import 'package:usdc_wallet/utils/logger.dart';
@@ -22,18 +23,16 @@ class SecurityHeadersInterceptor extends Interceptor {
 
   /// Paths that are considered sensitive and receive full headers.
   static const _sensitivePaths = [
-    '/transfers/',
-    '/withdrawals/',
+    '/wallet/cash-out/mobile-money',
     '/deposits/',
     '/step-up/',
     '/wallet/transfer',
-    '/wallet/withdraw',
     '/wallet/deposit',
     '/auth/login',
     '/auth/verify-otp',
     '/auth/register',
     '/devices',
-    '/pin/',
+    ApiEndpoints.userPinPrefix,
     '/risk/',
   ];
 
@@ -51,7 +50,10 @@ class SecurityHeadersInterceptor extends Interceptor {
     RequestInterceptorHandler handler,
   ) async {
     try {
-      final headers = await buildHeadersForPath(options.path);
+      final headers = await buildHeadersForPath(
+        options.path,
+        requestData: options.data,
+      );
       for (final entry in headers.entries) {
         if (entry.key == 'User-Agent' &&
             options.headers.containsKey('User-Agent')) {
@@ -72,7 +74,10 @@ class SecurityHeadersInterceptor extends Interceptor {
   /// Build the same security headers for requests made by temporary Dio
   /// clients, such as token refresh retries that do not pass through the
   /// normal interceptor chain.
-  Future<Map<String, String>> buildHeadersForPath(String path) async {
+  Future<Map<String, String>> buildHeadersForPath(
+    String path, {
+    Object? requestData,
+  }) async {
     // Eagerly collect fingerprint on first request (cached after that).
     if (_fingerprintService.cachedDeviceId == null && !_collecting) {
       _collecting = true;
@@ -99,12 +104,16 @@ class SecurityHeadersInterceptor extends Interceptor {
           'Korido/${device.appVersion} '
           '(${device.os}; ${device.model ?? device.platform}; '
           '${device.osVersion ?? 'unknown'})';
+      headers['X-Device-Platform'] = device.platform;
+      headers['X-Device-Physical'] = device.isPhysicalDevice.toString();
+      headers['X-Device-Compromised'] = device.isCompromised.toString();
+      headers['X-Biometrics-Available'] = device.biometricsAvailable.toString();
     }
     if (sessionRiskToken != null) {
       headers['X-Risk-Session'] = sessionRiskToken!;
     }
     if (_isSensitive(path)) {
-      final action = _inferAction(path);
+      final action = _inferAction(path, requestData);
       final score = await _riskScoreService.calculateRiskScore(action: action);
       headers['X-Risk-Score'] = score.toStringAsFixed(2);
     }
@@ -116,7 +125,16 @@ class SecurityHeadersInterceptor extends Interceptor {
     return _sensitivePaths.any((p) => path.contains(p));
   }
 
-  RiskAction _inferAction(String path) {
+  RiskAction _inferAction(String path, Object? requestData) {
+    if (path.contains('/step-up/operation')) {
+      final operation = _operationFromRequestData(requestData);
+      if (operation == 'account_recovery') {
+        return RiskAction.accountRecovery;
+      }
+      if (operation == 'delete_account' || operation == 'export_keys') {
+        return RiskAction.largeTransaction;
+      }
+    }
     if (path.contains('login') ||
         path.contains('register') ||
         path.contains('verify-otp')) {
@@ -125,6 +143,13 @@ class SecurityHeadersInterceptor extends Interceptor {
     if (path.contains('withdraw')) return RiskAction.withdrawal;
     if (path.contains('transfer')) return RiskAction.transfer;
     return RiskAction.transfer;
+  }
+
+  String? _operationFromRequestData(Object? data) {
+    if (data is Map) {
+      return data['operation']?.toString();
+    }
+    return null;
   }
 }
 

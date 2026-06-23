@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/core/constants/api_endpoints.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Transaction statistics from GET /wallet/transactions/stats — wired to Dio.
@@ -57,6 +58,6 @@ final transactionStatsProvider = FutureProvider<TransactionStats>((ref) async {
   final timer = Timer(const Duration(minutes: 5), () => link.close());
   ref.onDispose(() => timer.cancel());
 
-  final response = await dio.get('/wallet/transactions/stats');
+  final response = await dio.get(ApiEndpoints.walletTransactionStats);
   return TransactionStats.fromJson(response.data as Map<String, dynamic>);
 });

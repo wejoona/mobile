@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
 import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
 import 'package:usdc_wallet/features/payment_links/providers/payment_links_provider.dart';
 import 'package:usdc_wallet/features/payment_links/widgets/payment_link_card.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Payment links list screen.
 class PaymentLinksListView extends ConsumerWidget {
@@ -22,7 +22,7 @@ class PaymentLinksListView extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.add_rounded),
             tooltip: AppLocalizations.of(context)!.paymentLinks_createLink,
-            onPressed: () => context.push('/payment-links/create'),
+            onPressed: () => context.fsmPush('/payment-links/create'),
           ),
         ],
       ),
@@ -47,7 +47,7 @@ class PaymentLinksListView extends ConsumerWidget {
               actionLabel: AppLocalizations.of(
                 context,
               )!.paymentLinks_createLink,
-              onAction: () => context.push('/payment-links/create'),
+              onAction: () => context.fsmPush('/payment-links/create'),
             );
           }
           return RefreshIndicator(
@@ -57,7 +57,7 @@ class PaymentLinksListView extends ConsumerWidget {
               itemCount: links.length,
               itemBuilder: (_, i) => PaymentLinkCard(
                 link: links[i],
-                onTap: () => context.push('/payment-links/${links[i].id}'),
+                onTap: () => context.fsmPush('/payment-links/${links[i].id}'),
               ),
             ),
           );

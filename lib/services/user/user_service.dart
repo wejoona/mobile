@@ -53,9 +53,11 @@ class UserService {
     required AvatarDeviceFaceCheck faceCheck,
   }) async {
     try {
+      final file = File(filePath);
+      final boundFaceCheck = await faceCheck.bindToFile(file);
       final formData = FormData.fromMap({
-        avatarDeviceFaceCheckField: faceCheck.token,
-        'avatar': await avatarMultipartFile(File(filePath)),
+        avatarDeviceFaceCheckField: boundFaceCheck.token,
+        'avatar': await avatarMultipartFile(file),
       });
 
       final response = await _dio.post('/user/avatar', data: formData);
