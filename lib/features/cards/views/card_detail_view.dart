@@ -198,11 +198,10 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
                         variant: AppTextVariant.bodyMedium,
                         color: colors.textSecondary,
                       ),
-                      AppText(
+                      AmountText.fromText(
                         '${card.currency} ${card.spentAmount.toStringAsFixed(2)}',
-                        variant: AppTextVariant.labelLarge,
+                        size: AmountTextSize.small,
                         color: colors.textPrimary,
-                        fontWeight: FontWeight.w600,
                       ),
                     ],
                   ),

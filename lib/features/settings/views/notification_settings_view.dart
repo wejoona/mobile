@@ -11,6 +11,7 @@ import 'package:usdc_wallet/features/notifications/providers/notification_permis
 import 'package:usdc_wallet/features/settings/providers/notification_preferences_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
+import 'package:usdc_wallet/utils/context_extensions.dart';
 
 class NotificationSettingsView extends ConsumerStatefulWidget {
   const NotificationSettingsView({super.key});
@@ -465,11 +466,9 @@ class _NotificationSettingsViewState
       setState(() {
         _localPrefs = prefs.copyWith(pushEnabled: false);
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: AppText(l10n.notifications_permission_denied_message),
-          backgroundColor: context.colors.warning,
-        ),
+      context.showSnack(
+        l10n.notifications_permission_denied_message,
+        tone: AppSnackTone.warning,
       );
       return;
     }

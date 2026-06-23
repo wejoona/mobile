@@ -318,9 +318,9 @@ class _CardTransactionsViewState extends ConsumerState<CardTransactionsView> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              AppText(
+              AmountText.fromText(
                 '-$currency ${amount.toStringAsFixed(2)}',
-                variant: AppTextVariant.labelLarge,
+                size: AmountTextSize.small,
                 color: colors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.xxs),

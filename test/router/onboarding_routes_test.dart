@@ -318,7 +318,7 @@ void main() {
           signupState: signupState,
         );
         addTearDown(container.dispose);
-        final router = container.read(routerProvider);
+        final router = container.read(routerProvider)..go('/home');
 
         await tester.pumpWidget(
           UncontrolledProviderScope(
@@ -491,13 +491,13 @@ void main() {
       expect(continueBody, contains("context.fsmGo('/home')"));
     });
 
-    test('starts anonymous users on login instead of registration', () {
+    test('starts anonymous users on the animated splash before login', () {
       final container = buildContainer();
       addTearDown(container.dispose);
 
       final router = container.read(routerProvider);
 
-      expect(router.routeInformationProvider.value.uri.path, '/login');
+      expect(router.routeInformationProvider.value.uri.path, '/');
     });
 
     testWidgets(
@@ -510,7 +510,7 @@ void main() {
         final sharedPreferences = await SharedPreferences.getInstance();
         final container = buildContainer(sharedPreferences: sharedPreferences);
         addTearDown(container.dispose);
-        final router = container.read(routerProvider);
+        final router = container.read(routerProvider)..go('/login');
 
         await tester.pumpWidget(
           UncontrolledProviderScope(
@@ -559,7 +559,7 @@ void main() {
         final sharedPreferences = await SharedPreferences.getInstance();
         final container = buildContainer(sharedPreferences: sharedPreferences);
         addTearDown(container.dispose);
-        final router = container.read(routerProvider);
+        final router = container.read(routerProvider)..go('/pin/reset');
 
         await tester.pumpWidget(
           UncontrolledProviderScope(
@@ -578,8 +578,6 @@ void main() {
           ),
         );
 
-        await tester.pump();
-        router.go('/pin/reset');
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 500));
 
@@ -632,7 +630,8 @@ void main() {
           ),
         );
         addTearDown(container.dispose);
-        final router = container.read(routerProvider);
+        final router = container.read(routerProvider)
+          ..go('/signup/verify-phone');
 
         await tester.pumpWidget(
           UncontrolledProviderScope(
@@ -651,8 +650,6 @@ void main() {
           ),
         );
 
-        await tester.pump();
-        router.go('/signup/verify-phone');
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
 
@@ -676,7 +673,7 @@ void main() {
         locked: true,
       );
       addTearDown(container.dispose);
-      final router = container.read(routerProvider);
+      final router = container.read(routerProvider)..go('/pin/enter');
 
       await tester.pumpWidget(
         UncontrolledProviderScope(
@@ -695,8 +692,6 @@ void main() {
         ),
       );
 
-      await tester.pump();
-      router.go('/pin/enter');
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 

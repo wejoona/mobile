@@ -10,9 +10,6 @@ class CardVisual extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) => KoridoCardSurface(
-    card: card,
-    onTap: onTap,
-    margin: const EdgeInsets.symmetric(horizontal: 16),
-  );
+  Widget build(BuildContext context) =>
+      KoridoCardSurface(card: card, onTap: onTap, margin: EdgeInsets.zero);
 }

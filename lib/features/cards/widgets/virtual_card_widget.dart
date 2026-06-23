@@ -20,6 +20,6 @@ class VirtualCardWidget extends StatelessWidget {
     card: card,
     showDetails: showDetails,
     onTap: onTap,
-    margin: const EdgeInsets.symmetric(horizontal: 16),
+    margin: EdgeInsets.zero,
   );
 }

@@ -217,6 +217,7 @@ class ReferralsView extends ConsumerWidget {
                       colors: colors,
                       icon: Icons.attach_money,
                       value: formatXof(totalEarned),
+                      isMoney: true,
                       label: l10n.referrals_totalEarned,
                     ),
                   ),
@@ -329,8 +330,9 @@ class ReferralsView extends ConsumerWidget {
                             ),
                           ),
                           if (entry.reward != null)
-                            AppText(
+                            AmountText.fromText(
                               '+${formatXof(entry.reward!)}',
+                              size: AmountTextSize.medium,
                               color: colors.success,
                             ),
                         ],
@@ -465,12 +467,14 @@ class _StatCard extends StatelessWidget {
     required this.icon,
     required this.value,
     required this.label,
+    this.isMoney = false,
   });
 
   final ThemeColors colors;
   final IconData icon;
   final String value;
   final String label;
+  final bool isMoney;
 
   @override
   Widget build(BuildContext context) => AppCard(
@@ -479,11 +483,18 @@ class _StatCard extends StatelessWidget {
       children: [
         Icon(icon, color: colors.gold, size: 28),
         const SizedBox(height: AppSpacing.md),
-        AppText(
-          value,
-          variant: AppTextVariant.titleLarge,
-          color: colors.textPrimary,
-        ),
+        if (isMoney)
+          AmountText.fromText(
+            value,
+            size: AmountTextSize.medium,
+            color: colors.textPrimary,
+          )
+        else
+          AppText(
+            value,
+            variant: AppTextVariant.titleLarge,
+            color: colors.textPrimary,
+          ),
         const SizedBox(height: AppSpacing.xs),
         AppText(
           label,
@@ -501,7 +512,8 @@ class _StatCard extends StatelessWidget {
       ..add(DiagnosticsProperty<ThemeColors>('colors', colors))
       ..add(DiagnosticsProperty<IconData>('icon', icon))
       ..add(StringProperty('value', value))
-      ..add(StringProperty('label', label));
+      ..add(StringProperty('label', label))
+      ..add(FlagProperty('isMoney', value: isMoney, ifTrue: 'money'));
   }
 }
 

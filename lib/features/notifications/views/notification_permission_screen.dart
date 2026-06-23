@@ -5,8 +5,8 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/notifications/providers/notification_permission_provider.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/context_extensions.dart';
 
 /// Notification Permission Screen
 ///
@@ -180,26 +180,19 @@ class NotificationPermissionScreen extends ConsumerWidget {
     final success = await notifier.requestPermission();
 
     if (context.mounted) {
-      final colors = context.colors;
       if (success) {
         // Permission granted - navigate back or to next screen
         context.fsmPop();
 
         // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(context)!.notifications_enabled_success,
-            ),
-            backgroundColor: colors.success,
-          ),
+        context.showSnack(
+          AppLocalizations.of(context)!.notifications_enabled_success,
+          tone: AppSnackTone.success,
         );
       } else if (ref.read(notificationPermissionProvider).error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.common_errorTryAgain),
-            backgroundColor: colors.error,
-          ),
+        context.showSnack(
+          AppLocalizations.of(context)!.common_errorTryAgain,
+          tone: AppSnackTone.error,
         );
       } else {
         // Permission denied - show settings guidance

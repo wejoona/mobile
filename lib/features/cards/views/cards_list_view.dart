@@ -80,7 +80,6 @@ class CardsListView extends ConsumerWidget {
           }
           return PageView.builder(
             itemCount: cards.length,
-            controller: PageController(viewportFraction: 0.92),
             itemBuilder: (_, index) {
               final card = cards[index];
               return Column(
