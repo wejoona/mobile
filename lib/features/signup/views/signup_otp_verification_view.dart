@@ -8,8 +8,8 @@ import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/auth/widgets/otp_progress_cue.dart';
 import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Phone OTP verification screen for explicit account signup.
 class SignupOtpVerificationView extends ConsumerStatefulWidget {
@@ -200,6 +200,14 @@ class _SignupOtpVerificationViewState
   }
 
   Future<void> _goToNextStep() async {
+    final signupState = ref.read(signupFlowProvider);
+    if (signupState.requiresLoginPin) {
+      if (mounted) {
+        context.fsmGo('/login/pin');
+      }
+      return;
+    }
+
     final user = ref.read(auth.authProvider).user;
     final hasName = user?.firstName?.trim().isNotEmpty ?? false;
     final hasPin = user?.hasPin ?? false;

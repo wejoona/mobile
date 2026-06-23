@@ -193,15 +193,23 @@ void main() {
         source.indexOf('if (limits == null) {'),
         source.indexOf('final reason = permissions?.blockReason?.trim();'),
       );
+      final unresolvedPermissionsBlock = unknownPermissionsBlock.substring(
+        unknownPermissionsBlock.indexOf('context.showSnack('),
+      );
 
       expect(unknownPermissionsBlock, contains('fetchLimits()'));
       expect(
-        unknownPermissionsBlock,
+        unresolvedPermissionsBlock,
         isNot(contains('context.fsmPush(route)')),
         reason:
-            'Home quick actions must not enter send/deposit/receive routes before /user/limits permissions are known.',
+            'Home quick actions must not enter send/deposit/withdraw/receive routes before /user/limits permissions are known.',
       );
-      expect(unknownPermissionsBlock, contains('Checking account permissions'));
+      expect(
+        unresolvedPermissionsBlock,
+        contains('Checking account permissions'),
+      );
+      expect(source, contains('operation: TransactionLimitOperation.withdraw'));
+      expect(source, contains("route: '/withdraw'"));
     });
 
     test(

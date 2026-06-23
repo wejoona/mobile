@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -92,5 +94,27 @@ void main() {
         expect(container.read(signupFlowProvider).isComplete, isFalse);
       },
     );
+  });
+
+  group('Signup OTP auth boundary', () {
+    test('existing accounts are staged into the login PIN gate', () {
+      final providerSource = File(
+        'lib/features/signup/providers/signup_flow_provider.dart',
+      ).readAsStringSync();
+      final otpViewSource = File(
+        'lib/features/signup/views/signup_otp_verification_view.dart',
+      ).readAsStringSync();
+
+      expect(providerSource, contains('authServiceProvider'));
+      expect(providerSource, contains('stageVerifiedOtpSession(response)'));
+      expect(providerSource, contains('requiresLoginPin: true'));
+      expect(
+        providerSource,
+        isNot(
+          contains('.read(auth.authProvider.notifier)\n          .verifyOtp'),
+        ),
+      );
+      expect(otpViewSource, contains("context.fsmGo('/login/pin')"));
+    });
   });
 }
