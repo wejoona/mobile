@@ -33,11 +33,9 @@ abstract final class ApiEndpoints {
 
   // Wallet
   static const walletBalance = '/wallet';
-  static const walletAddress = '/wallet/address';
   static const walletTransactions = '/wallet/transactions';
   static const walletExchangeRate = '/wallet/exchange-rate';
   static const walletCreate = '/wallet/create';
-  static const walletReceive = '/wallet/receive';
   static const walletTransactionStats = '/wallet/transactions/stats';
   static String walletTransactionById(String id) => '/wallet/transactions/$id';
   static String walletDepositTransactionStatus(String depositId) =>

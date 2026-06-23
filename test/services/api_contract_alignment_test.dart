@@ -284,6 +284,24 @@ void main() {
       expect(stellarOnly.walletAddress, 'G_STELLAR_ONLY');
     });
 
+    test('receive address is sourced from canonical wallet balance', () {
+      final endpointSource = File(
+        'lib/core/constants/api_endpoints.dart',
+      ).readAsStringSync();
+      final actionsSource = File(
+        'lib/features/wallet/providers/wallet_actions_provider.dart',
+      ).readAsStringSync();
+      final receiveViewSource = File(
+        'lib/features/wallet/views/receive_view.dart',
+      ).readAsStringSync();
+
+      expect(endpointSource, isNot(contains('/wallet/receive')));
+      expect(endpointSource, isNot(contains('/wallet/address')));
+      expect(actionsSource, isNot(contains('getReceiveInfo')));
+      expect(receiveViewSource, contains('walletState.walletAddress'));
+      expect(receiveViewSource, isNot(contains('walletReceive')));
+    });
+
     test(
       'wallet balance parser keeps balances beside nested wallet object',
       () {

@@ -347,15 +347,6 @@ class MockInterceptor extends Interceptor {
       });
     }
 
-    if (path == '/wallet/receive') {
-      return MockResponse.success({
-        'walletAddress': '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
-        'address': '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
-        'network': 'polygon',
-        'currency': 'USDC',
-      });
-    }
-
     if (path.contains('/rate') || path.contains('/rates')) {
       return MockResponse.success({
         'sourceCurrency': 'XOF',

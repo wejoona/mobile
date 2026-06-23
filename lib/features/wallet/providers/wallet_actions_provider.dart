@@ -66,14 +66,6 @@ class WalletActions {
     return response.data as Map<String, dynamic>;
   }
 
-  /// Generate a receive address/QR for the wallet.
-  Future<Map<String, dynamic>> getReceiveInfo() async {
-    // ignore: avoid_dynamic_calls
-    final response = await _dio.get(ApiEndpoints.walletReceive);
-    // ignore: avoid_dynamic_calls
-    return response.data as Map<String, dynamic>;
-  }
-
   /// Get fee estimate for a transfer.
   Future<double> estimateFee({
     required double amount,
