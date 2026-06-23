@@ -45,16 +45,17 @@ void main() {
     expect(topLevelPaths.take(5), [
       '/',
       '/profile-complete',
+      '/setup/set-pin',
       '/onboarding',
       '/signup',
-      '/signup/legal-consent',
     ]);
     expect(topLevelPaths.skip(5).take(4), [
+      '/signup/legal-consent',
       '/legal/terms',
       '/legal/privacy',
       '/signup/verify-phone',
-      '/signup/profile',
     ]);
+    expect(topLevelPaths.skip(9).first, '/signup/profile');
     expect(
       topLevelPaths,
       containsAll(['/onboarding/phone', '/onboarding/otp']),

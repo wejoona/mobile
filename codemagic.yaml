@@ -34,6 +34,9 @@ workflows:
       - name: Installer les dépendances
         script: flutter pub get
 
+      - name: Hydrate Firebase config
+        script: bash scripts/ensure_firebase_config.sh
+
       - name: Gate analyzer warnings
         script: |
           set +e
