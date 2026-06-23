@@ -140,6 +140,7 @@ List<RouteBase> kycSettingsRoutes() => [
   ),
   GoRoute(
     path: '/kyc/address',
+    redirect: _kycWizardRedirect,
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const KycAddressView(),
@@ -147,6 +148,7 @@ List<RouteBase> kycSettingsRoutes() => [
   ),
   GoRoute(
     path: '/kyc/video',
+    redirect: _kycWizardRedirect,
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const KycVideoView(),
@@ -154,6 +156,7 @@ List<RouteBase> kycSettingsRoutes() => [
   ),
   GoRoute(
     path: '/kyc/additional-docs',
+    redirect: _kycWizardRedirect,
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
       child: const KycAdditionalDocsView(),
@@ -334,13 +337,12 @@ String? _kycEvidenceRedirect(BuildContext context, GoRouterState state) {
   return null;
 }
 
-String? _kycSubmittedRedirect(BuildContext _, GoRouterState __) {
-  // The submitted view owns backend reconciliation and displays pending,
-  // manual-review, approved, rejected, or restart states. Redirecting away from
-  // this terminal route can create loops with evidence-step guards while API
-  // status and local wizard state are settling.
-  return null;
-}
+// The submitted view owns backend reconciliation and displays pending,
+// manual-review, approved, rejected, or restart states. Redirecting away from
+// this terminal route can create loops with evidence-step guards while API
+// status and local wizard state are settling.
+String? _kycSubmittedRedirect(BuildContext context, GoRouterState state) =>
+    null;
 
 String? _kycPrerequisiteRedirectForPath(String path, KycFlowState flow) {
   switch (path) {
@@ -368,6 +370,29 @@ String? _kycPrerequisiteRedirectForPath(String path, KycFlowState flow) {
       }
       if (flow.capturedDocuments.isEmpty) {
         return '/kyc/document-capture';
+      }
+      return null;
+    case '/kyc/address':
+      if (flow.selectedDocumentType == null) {
+        return '/kyc/document-type';
+      }
+      if (!flow.hasRequiredPersonalInfo) {
+        return '/kyc/personal-info';
+      }
+      return null;
+    case '/kyc/video':
+    case '/kyc/additional-docs':
+      if (flow.selectedDocumentType == null) {
+        return '/kyc/document-type';
+      }
+      if (!flow.hasRequiredPersonalInfo) {
+        return '/kyc/personal-info';
+      }
+      if (flow.capturedDocuments.isEmpty) {
+        return '/kyc/document-capture';
+      }
+      if (flow.selfiePath == null) {
+        return '/kyc/selfie';
       }
       return null;
     case '/kyc/review':

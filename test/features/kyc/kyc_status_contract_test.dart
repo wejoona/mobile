@@ -246,15 +246,14 @@ void main() {
       );
       expect(
         routeSource,
-        contains(
-          'String? _kycSubmittedRedirect(BuildContext _, GoRouterState __)',
-        ),
-        reason:
-            'The submitted route should render its reconciliation screen instead of redirecting into the wizard.',
+        contains('String? _kycSubmittedRedirect'),
+        reason: 'The submitted route should keep its own redirect owner.',
       );
       expect(
         routeSource,
         contains('The submitted view owns backend reconciliation'),
+        reason:
+            'The submitted route should render its reconciliation screen instead of redirecting into the wizard.',
       );
       expect(
         routeSource,
@@ -269,6 +268,37 @@ void main() {
       );
       expect(routeSource, contains('_kycSubmittedRouteFrom(state.uri)'));
       expect(routeSource, contains("'returnTo': returnTo"));
+    });
+
+    test('secondary KYC evidence routes use wizard prerequisites', () {
+      final routeSource = File(
+        'lib/router/routes/kyc_settings_routes.dart',
+      ).readAsStringSync();
+
+      for (final path in [
+        '/kyc/address',
+        '/kyc/video',
+        '/kyc/additional-docs',
+      ]) {
+        final routeBlock = RegExp(
+          "path: '$path',[\\s\\S]*?pageBuilder:",
+        ).firstMatch(routeSource)?.group(0);
+
+        expect(routeBlock, isNotNull, reason: path);
+        expect(
+          routeBlock,
+          contains('redirect: _kycWizardRedirect'),
+          reason: '$path must not bypass the KYC wizard state guard.',
+        );
+      }
+
+      expect(routeSource, contains("case '/kyc/address':"));
+      expect(routeSource, contains("case '/kyc/video':"));
+      expect(routeSource, contains("case '/kyc/additional-docs':"));
+      expect(routeSource, contains('if (flow.capturedDocuments.isEmpty)'));
+      expect(routeSource, contains("return '/kyc/document-capture';"));
+      expect(routeSource, contains('if (flow.selfiePath == null)'));
+      expect(routeSource, contains("return '/kyc/selfie';"));
     });
 
     test('KYC liveness is mandatory before review and final submit', () {

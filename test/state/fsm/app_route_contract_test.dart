@@ -248,6 +248,12 @@ void main() {
       () {
         final kycStart = appRouteContractFor('/kyc/start');
         final kycDocumentType = appRouteContractFor('/kyc/document-type');
+        final kycPersonalInfo = appRouteContractFor('/kyc/personal-info');
+        final kycDocumentCapture = appRouteContractFor('/kyc/document-capture');
+        final kycSelfie = appRouteContractFor('/kyc/selfie');
+        final kycAddress = appRouteContractFor('/kyc/address');
+        final kycVideo = appRouteContractFor('/kyc/video');
+        final kycAdditionalDocs = appRouteContractFor('/kyc/additional-docs');
         final kycLivenessInstructions = appRouteContractFor(
           '/kyc/liveness-instructions',
         );
@@ -263,6 +269,20 @@ void main() {
 
         expect(kycDocumentType.role, AppRouteRole.setupStep);
         expect(kycDocumentType.isSetupRoute, isTrue);
+        expect(kycPersonalInfo.role, AppRouteRole.setupStep);
+        expect(kycPersonalInfo.isSetupRoute, isTrue);
+        expect(kycDocumentCapture.role, AppRouteRole.setupStep);
+        expect(kycDocumentCapture.isSetupRoute, isTrue);
+
+        expect(kycSelfie.role, AppRouteRole.verificationStep);
+        expect(kycSelfie.isSetupRoute, isTrue);
+
+        expect(kycAddress.role, AppRouteRole.setupStep);
+        expect(kycAddress.isSetupRoute, isTrue);
+        expect(kycVideo.role, AppRouteRole.verificationStep);
+        expect(kycVideo.isSetupRoute, isTrue);
+        expect(kycAdditionalDocs.role, AppRouteRole.setupStep);
+        expect(kycAdditionalDocs.isSetupRoute, isTrue);
 
         expect(kycLivenessInstructions.role, AppRouteRole.verificationStep);
         expect(kycLivenessInstructions.requiresAuth, isTrue);

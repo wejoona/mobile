@@ -499,6 +499,78 @@ const appRouteContracts = <AppRouteContract>[
     events: {AppNavigationEvent.kycStarted},
   ),
   AppRouteContract(
+    pattern: '/kyc/start',
+    role: AppRouteRole.setupStep,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.setupFlow,
+    },
+    events: {AppNavigationEvent.kycStarted},
+  ),
+  AppRouteContract(
+    pattern: '/kyc/document-type',
+    role: AppRouteRole.setupStep,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.setupFlow,
+    },
+    events: {AppNavigationEvent.kycStarted},
+  ),
+  AppRouteContract(
+    pattern: '/kyc/personal-info',
+    role: AppRouteRole.setupStep,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.setupFlow,
+    },
+    events: {AppNavigationEvent.kycStarted},
+  ),
+  AppRouteContract(
+    pattern: '/kyc/document-capture',
+    role: AppRouteRole.setupStep,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.setupFlow,
+    },
+    events: {AppNavigationEvent.kycStarted},
+  ),
+  AppRouteContract(
+    pattern: '/kyc/selfie',
+    role: AppRouteRole.verificationStep,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.setupFlow,
+    },
+    events: {AppNavigationEvent.kycStarted},
+  ),
+  AppRouteContract(
+    pattern: '/kyc/address',
+    role: AppRouteRole.setupStep,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.setupFlow,
+    },
+    events: {AppNavigationEvent.kycStarted},
+  ),
+  AppRouteContract(
+    pattern: '/kyc/video',
+    role: AppRouteRole.verificationStep,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.setupFlow,
+    },
+    events: {AppNavigationEvent.kycStarted},
+  ),
+  AppRouteContract(
+    pattern: '/kyc/additional-docs',
+    role: AppRouteRole.setupStep,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.setupFlow,
+    },
+    events: {AppNavigationEvent.kycStarted},
+  ),
+  AppRouteContract(
     pattern: '/kyc/liveness-instructions',
     role: AppRouteRole.verificationStep,
     capabilities: {
