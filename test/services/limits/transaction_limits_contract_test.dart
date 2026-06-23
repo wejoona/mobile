@@ -67,8 +67,13 @@ void main() {
       expect(source, contains('evaluateTransaction('));
       expect(source, contains("context.fsmPush('/send/pin')"));
       expect(source, contains('Security check unavailable'));
-      expect(riskSource, contains('transaction_risk_unavailable'));
-      expect(riskSource, contains('StepUpType.manualReview'));
+      expect(riskSource, contains('RiskEvaluationUnavailableException'));
+      expect(
+        riskSource,
+        isNot(contains('routing to manual review')),
+        reason:
+            'a transport or risk-service outage must stay retryable; only a backend manual_review decision can enter the manual-review ceremony.',
+      );
       expect(
         source,
         isNot(contains('still allow proceeding to PIN')),
