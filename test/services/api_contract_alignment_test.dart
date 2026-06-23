@@ -299,6 +299,13 @@ void main() {
       expect(endpointSource, isNot(contains('/wallet/address')));
       expect(actionsSource, isNot(contains('getReceiveInfo')));
       expect(receiveViewSource, contains('walletState.walletAddress'));
+      expect(
+        receiveViewSource,
+        contains('else if (walletState.hasWalletAddress)'),
+      );
+      expect(receiveViewSource, contains('data: walletState.walletAddress!'));
+      expect(receiveViewSource, isNot(contains('|| userId.isNotEmpty')));
+      expect(receiveViewSource, isNot(contains('korido://pay')));
       expect(receiveViewSource, isNot(contains('walletReceive')));
     });
 
