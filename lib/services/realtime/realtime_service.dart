@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'package:usdc_wallet/config/api_config.dart';
 import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
+import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
 import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart';
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
@@ -327,8 +328,10 @@ class RealtimeService {
 
   void _refreshKycState() {
     _ref.invalidate(kycProfileProvider);
+    _ref.invalidate(transactionLimitsProvider);
     unawaited(_ref.read(kycProvider.notifier).loadVerificationStatus());
     unawaited(_ref.read(kycStateMachineProvider.notifier).fetch());
+    unawaited(_ref.read(limitsProvider.notifier).fetchLimits());
     _refreshNotificationSurfaces();
   }
 

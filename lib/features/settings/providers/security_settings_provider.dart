@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/services/security/screenshot_protection.dart';
 import 'package:usdc_wallet/services/storage/secure_prefs.dart';
 
 /// Security settings state.
@@ -38,18 +39,33 @@ class SecuritySettingsNotifier extends Notifier<SecuritySettings> {
       final screenshot = await prefs.read('security_screenshot');
       final pinOnOpen = await prefs.read('security_pin_open');
       final autoLock = await prefs.read('security_auto_lock');
+      final screenshotProtection = screenshot != 'false';
+      final screenshotApplied = screenshotProtection
+          ? await ref.read(screenshotProtectionProvider).enableSecureMode()
+          : await ref.read(screenshotProtectionProvider).disableSecureMode();
 
       state = SecuritySettings(
-        screenshotProtection: screenshot != 'false',
+        screenshotProtection: screenshotApplied && screenshotProtection,
         pinOnAppOpen: pinOnOpen != 'false',
         autoLockMinutes: int.tryParse(autoLock ?? '5') ?? 5,
       );
     } catch (_) {}
   }
 
-  Future<void> setScreenshotProtection(bool value) async {
+  Future<bool> setScreenshotProtection(bool value) async {
+    final previous = state.screenshotProtection;
+    state = state.copyWith(screenshotProtection: value);
+    final applied = value
+        ? await ref.read(screenshotProtectionProvider).enableSecureMode()
+        : await ref.read(screenshotProtectionProvider).disableSecureMode();
+    if (!applied) {
+      state = state.copyWith(screenshotProtection: previous);
+      return false;
+    }
+
     state = state.copyWith(screenshotProtection: value);
     await _save('security_screenshot', value.toString());
+    return true;
   }
 
   Future<void> setPinOnAppOpen(bool value) async {

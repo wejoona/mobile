@@ -200,7 +200,17 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               title: l10n.security_screenshotProtection,
               subtitle: l10n.security_screenshotProtectionSubtitle,
               value: settings.screenshotProtection,
-              onChanged: settingsNotifier.setScreenshotProtection,
+              onChanged: (value) async {
+                final applied = await settingsNotifier.setScreenshotProtection(
+                  value,
+                );
+                if (!applied) {
+                  _showSecuritySnack(
+                    'Screenshot protection could not be changed on this device.',
+                    tone: AppSnackTone.error,
+                  );
+                }
+              },
             ),
             const SizedBox(height: AppSpacing.sm),
             _buildSecurityOption(
@@ -859,17 +869,20 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
   }
 
   int _calculateSecurityScore() {
+    final settings = ref.watch(securitySettingsProvider);
     final biometricEnabled = ref.watch(biometricEnabledProvider);
     final biometricsOn = biometricEnabled.maybeWhen(
       data: (value) => value,
       orElse: () => false,
     );
 
-    int score = 55; // Account, device, session, and backend risk controls.
-    score += 25; // Transaction PIN is mandatory for money movement.
+    int score = 30; // Server-side auth, device, and transaction guardrails.
+    score += 20; // Transaction PIN is mandatory for money movement.
+    if (settings.pinOnAppOpen) score += 10;
+    if (settings.screenshotProtection) score += 15;
     final prefsState = ref.watch(notificationPreferencesProvider);
     final prefs = prefsState.preferences;
-    if (biometricsOn) score += 10;
+    if (biometricsOn) score += 15;
     if (prefs?.smsSecurity == true || prefs?.pushSecurity == true) score += 10;
     return score.clamp(0, 100);
   }

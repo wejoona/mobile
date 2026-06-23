@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
+import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
 import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart';
 import 'package:usdc_wallet/services/notifications/notification_route_intent.dart';
 import 'package:usdc_wallet/services/notifications/push_notification_service.dart';
@@ -110,8 +111,10 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
     }
 
     ref.invalidate(kycProfileProvider);
+    ref.invalidate(transactionLimitsProvider);
     unawaited(ref.read(kycProvider.notifier).loadVerificationStatus());
     unawaited(ref.read(kycStateMachineProvider.notifier).fetch());
+    unawaited(ref.read(limitsProvider.notifier).fetchLimits());
   }
 
   bool _isKycNotification(Map<String, dynamic> data) {

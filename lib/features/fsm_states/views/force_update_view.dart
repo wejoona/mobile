@@ -58,7 +58,18 @@ class ForceUpdateView extends ConsumerWidget {
               const Spacer(),
               AppButton(
                 label: l10n.forceUpdate_button,
-                onPressed: () => _openStore(policy?.appUrl),
+                onPressed: () async {
+                  final opened = await _openStore(policy?.appUrl);
+                  if (!opened && context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Could not open the store link. Please try again from TestFlight or your app store.',
+                        ),
+                      ),
+                    );
+                  }
+                },
                 isFullWidth: true,
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -69,12 +80,14 @@ class ForceUpdateView extends ConsumerWidget {
     );
   }
 
-  Future<void> _openStore(String? configuredUrl) async {
+  Future<bool> _openStore(String? configuredUrl) async {
     final url =
         configuredUrl ?? (Platform.isIOS ? _appStoreUrl : _playStoreUrl);
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
+      return true;
     }
+    return false;
   }
 }
