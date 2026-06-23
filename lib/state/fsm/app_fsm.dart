@@ -381,6 +381,10 @@ class AppGuards {
       return const GuardDenied('/login', 'Authentication required');
     }
 
+    if (contract.role == AppRouteRole.unknown) {
+      return const GuardDenied('/home', 'Unknown route');
+    }
+
     if (contract.requiresWallet) {
       if (!state.hasWallet) {
         if (state.needsWalletCreation) {

@@ -27,9 +27,8 @@ String? safeKycReturnRoute({required String? raw, String? intent}) {
   }
 
   if (intent == 'deposit') {
-    return returnTo == '/deposit' || returnTo == '/deposit/amount'
-        ? returnTo
-        : null;
+    final path = uri.path;
+    return path == '/deposit' || path.startsWith('/deposit/') ? returnTo : null;
   }
 
   return returnTo;

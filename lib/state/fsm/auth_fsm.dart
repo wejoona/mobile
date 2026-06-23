@@ -129,10 +129,7 @@ class AuthOtpExpired extends AuthState {
 
 /// Token refresh in progress
 class AuthTokenRefreshing extends AuthState {
-  const AuthTokenRefreshing({
-    required this.userId,
-    required this.phone,
-  });
+  const AuthTokenRefreshing({required this.userId, required this.phone});
 
   final String userId;
   final String phone;
@@ -319,10 +316,7 @@ class AuthRefreshToken extends AuthEvent {
 
 /// Token refreshed successfully
 class AuthTokenRefreshed extends AuthEvent {
-  const AuthTokenRefreshed({
-    required this.accessToken,
-    this.refreshToken,
-  });
+  const AuthTokenRefreshed({required this.accessToken, this.refreshToken});
 
   final String accessToken;
   final String? refreshToken;
@@ -333,10 +327,7 @@ class AuthTokenRefreshed extends AuthEvent {
 
 /// Account locked event
 class AuthAccountLocked extends AuthEvent {
-  const AuthAccountLocked({
-    required this.lockDuration,
-    required this.reason,
-  });
+  const AuthAccountLocked({required this.lockDuration, required this.reason});
 
   final Duration lockDuration;
   final String reason;
@@ -347,10 +338,7 @@ class AuthAccountLocked extends AuthEvent {
 
 /// Account suspended event
 class AuthAccountSuspended extends AuthEvent {
-  const AuthAccountSuspended({
-    required this.reason,
-    this.suspendedUntil,
-  });
+  const AuthAccountSuspended({required this.reason, this.suspendedUntil});
 
   final String reason;
   final DateTime? suspendedUntil;
@@ -431,9 +419,7 @@ class AuthFsm extends FsmDefinition<AuthState, AuthEvent> {
           lockDuration: event.lockDuration,
           reason: event.reason,
         ),
-        effects: [
-          NotifyEffect(event.reason, type: NotifyType.error),
-        ],
+        effects: [NotifyEffect(event.reason, type: NotifyType.error)],
       );
     }
     if (event is AuthAccountSuspended) {
@@ -445,9 +431,7 @@ class AuthFsm extends FsmDefinition<AuthState, AuthEvent> {
           suspendedAt: DateTime.now(),
           suspendedUntil: event.suspendedUntil,
         ),
-        effects: [
-          NotifyEffect(event.reason, type: NotifyType.error),
-        ],
+        effects: [NotifyEffect(event.reason, type: NotifyType.error)],
       );
     }
     if (event is AuthFailed) {
@@ -481,9 +465,7 @@ class AuthFsm extends FsmDefinition<AuthState, AuthEvent> {
     if (event is AuthOtpExpiredEvent) {
       return TransitionSuccess(
         AuthOtpExpired(phone: state.phone),
-        effects: [
-          const NotifyEffect('OTP expired', type: NotifyType.warning),
-        ],
+        effects: [const NotifyEffect('OTP expired', type: NotifyType.warning)],
       );
     }
     return const TransitionNotApplicable();
@@ -545,10 +527,7 @@ class AuthFsm extends FsmDefinition<AuthState, AuthEvent> {
   ) {
     if (event is AuthRefreshToken) {
       return TransitionSuccess(
-        AuthTokenRefreshing(
-          userId: state.userId,
-          phone: state.phone,
-        ),
+        AuthTokenRefreshing(userId: state.userId, phone: state.phone),
         effects: [const FetchEffect('auth/refresh')],
       );
     }
@@ -563,7 +542,7 @@ class AuthFsm extends FsmDefinition<AuthState, AuthEvent> {
         ),
         effects: [
           NotifyEffect(event.reason, type: NotifyType.error),
-          const NavigateEffect('/suspended'),
+          const NavigateEffect('/auth-suspended'),
         ],
       );
     }
@@ -591,17 +570,17 @@ class AuthFsm extends FsmDefinition<AuthState, AuthEvent> {
         effects: [
           const ClearEffect('tokens'),
           const NavigateEffect('/login'),
-          const NotifyEffect('Session expired. Please log in again.', type: NotifyType.warning),
+          const NotifyEffect(
+            'Session expired. Please log in again.',
+            type: NotifyType.warning,
+          ),
         ],
       );
     }
     return const TransitionNotApplicable();
   }
 
-  TransitionResult<AuthState> _handleLocked(
-    AuthLocked state,
-    AuthEvent event,
-  ) {
+  TransitionResult<AuthState> _handleLocked(AuthLocked state, AuthEvent event) {
     if (event is AuthLogin && state.isUnlocked) {
       return TransitionSuccess(
         AuthSubmitting(phone: event.phone),
@@ -619,10 +598,7 @@ class AuthFsm extends FsmDefinition<AuthState, AuthEvent> {
     return const TransitionNotApplicable();
   }
 
-  TransitionResult<AuthState> _handleError(
-    AuthError state,
-    AuthEvent event,
-  ) {
+  TransitionResult<AuthState> _handleError(AuthError state, AuthEvent event) {
     if (event is AuthClearError) {
       return TransitionSuccess(state.previousState);
     }
