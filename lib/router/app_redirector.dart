@@ -106,7 +106,9 @@ String? appRedirect(BuildContext context, GoRouterState state) {
 
   final isLockedState =
       !EnvironmentConfig.debugSkipPin &&
-      (authState.isLocked || sessionState.isLocked);
+      (authState.isLocked ||
+          sessionState.isLocked ||
+          appFsmState.session is SessionLocked);
   final lockRedirect = _lockRedirect(
     location: location,
     routeIntent: state.uri.toString(),

@@ -577,9 +577,13 @@ void main() {
       'lib/router/app_redirector.dart',
     ).readAsStringSync();
     expect(redirectorSource, contains('sessionServiceProvider'));
+    expect(redirectorSource, contains('authState.isLocked'));
+    expect(redirectorSource, contains('sessionState.isLocked'));
     expect(
       redirectorSource,
-      contains('authState.isLocked || sessionState.isLocked'),
+      contains('appFsmState.session is SessionLocked'),
+      reason:
+          'FSM-originated locks from API, biometric, and lifecycle paths must also hold the lock screen.',
     );
     expect(
       recordActivityBody,
