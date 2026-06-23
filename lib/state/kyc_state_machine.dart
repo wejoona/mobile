@@ -133,10 +133,15 @@ class KycStateMachine extends Notifier<KycStateMachineState> {
         ref
             .read(appFsmProvider.notifier)
             .onKycStatusLoaded(tier: KycTier.none, status: 'none');
+      } else {
+        ref
+            .read(appFsmProvider.notifier)
+            .onKycFailed(e.message, data: {'statusCode': e.statusCode});
       }
     } catch (e) {
       debugPrint('[KycStateMachine] Error: $e');
       state = state.copyWith(isLoading: false, error: e.toString());
+      ref.read(appFsmProvider.notifier).onKycFailed(e.toString());
     }
   }
 
