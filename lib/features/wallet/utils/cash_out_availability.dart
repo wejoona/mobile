@@ -17,5 +17,20 @@ bool isCashOutUnavailableError(Object error) {
     return false;
   }
   final statusCode = error.response?.statusCode;
-  return statusCode == 404 || statusCode == 501;
+  if (statusCode == 404 || statusCode == 501) {
+    return true;
+  }
+  if (statusCode != 503) {
+    return false;
+  }
+
+  final data = error.response?.data;
+  if (data is Map) {
+    final reason = data['reason']?.toString();
+    final featureReason = data['featureReason']?.toString();
+    return reason == 'provider_not_implemented' ||
+        featureReason == 'payout_provider_not_connected';
+  }
+
+  return false;
 }

@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/state/fsm/kyc_fsm.dart';
 import 'package:usdc_wallet/state/app_state.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart';
@@ -70,9 +71,14 @@ class _LoadingViewState extends ConsumerState<LoadingView> {
     final l10n = AppLocalizations.of(context)!;
     final appState = ref.watch(appFsmProvider);
     final walletState = ref.watch(walletStateMachineProvider);
+    final kycError = appState.kyc is KycError
+        ? (appState.kyc as KycError).errorMessage
+        : null;
 
-    final hasError = walletState.status == WalletStatus.error ||
-        walletState.error != null;
+    final hasError =
+        walletState.status == WalletStatus.error ||
+        walletState.error != null ||
+        kycError != null;
 
     // Show retry immediately on error
     final showRetryNow = _showRetry || hasError;
@@ -137,7 +143,9 @@ class _LoadingViewState extends ConsumerState<LoadingView> {
 
                 AppText(
                   hasError
-                      ? (walletState.error ?? l10n.common_errorTryAgain)
+                      ? (walletState.error ??
+                            kycError ??
+                            l10n.common_errorTryAgain)
                       : 'Veuillez patienter pendant que nous récupérons vos données.',
                   variant: AppTextVariant.bodyMedium,
                   color: colors.textSecondary,
@@ -156,11 +164,30 @@ class _LoadingViewState extends ConsumerState<LoadingView> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        AppText('FSM: ${appState.name}', variant: AppTextVariant.bodySmall),
-                        AppText('${walletState.status.name}', variant: AppTextVariant.bodySmall),
-                        AppText('KYC: ${appState.kyc.name}', variant: AppTextVariant.bodySmall),
+                        AppText(
+                          'FSM: ${appState.name}',
+                          variant: AppTextVariant.bodySmall,
+                        ),
+                        AppText(
+                          '${walletState.status.name}',
+                          variant: AppTextVariant.bodySmall,
+                        ),
+                        AppText(
+                          'KYC: ${appState.kyc.name}',
+                          variant: AppTextVariant.bodySmall,
+                        ),
                         if (walletState.error != null)
-                          AppText(walletState.error ?? '', variant: AppTextVariant.bodySmall, color: colors.error),
+                          AppText(
+                            walletState.error ?? '',
+                            variant: AppTextVariant.bodySmall,
+                            color: colors.error,
+                          ),
+                        if (kycError != null)
+                          AppText(
+                            kycError,
+                            variant: AppTextVariant.bodySmall,
+                            color: colors.error,
+                          ),
                       ],
                     ),
                   ),

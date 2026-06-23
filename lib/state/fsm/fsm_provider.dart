@@ -360,6 +360,10 @@ class AppFsmNotifier extends FsmNotifier<AppState, AppEvent> {
     );
   }
 
+  void onKycFailed(String message, {dynamic data}) {
+    dispatch(AppKycEvent(KycFailed(message: message, data: data)));
+  }
+
   // ─────────────────────────────────────────────────────────────────
   // Route guards
   // ─────────────────────────────────────────────────────────────────

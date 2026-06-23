@@ -492,6 +492,16 @@ class KycFsm extends FsmDefinition<KycState, KycEvent> {
 
   @override
   TransitionResult<KycState> handle(KycState currentState, KycEvent event) {
+    if (event is KycFailed) {
+      return TransitionSuccess(
+        KycError(
+          errorMessage: event.message,
+          errorData: event.data,
+          previousState: currentState,
+        ),
+      );
+    }
+
     return switch (currentState) {
       KycInitial() => _handleInitial(currentState, event),
       KycLoading() => _handleLoading(currentState, event),
