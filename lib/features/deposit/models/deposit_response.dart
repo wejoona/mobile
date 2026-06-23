@@ -178,6 +178,8 @@ class DepositResponse {
   bool get isCompleted => status == DepositStatus.completed;
   bool get isFailed =>
       status == DepositStatus.failed || status == DepositStatus.expired;
+  String get statusLookupId =>
+      transactionId.trim().isNotEmpty ? transactionId.trim() : depositId.trim();
   bool get isPending =>
       status == DepositStatus.initiated ||
       status == DepositStatus.pendingOtp ||

@@ -1100,12 +1100,13 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
 
       context.showSnack(
         _localizedText(
-          en: 'Checking account permissions failed. Please try again.',
-          fr: 'La verification des permissions a echoue. Veuillez reessayer.',
+          en: 'We will verify account permissions before completion. You can continue for now.',
+          fr: 'Nous verifierons vos permissions avant la finalisation. Vous pouvez continuer.',
         ),
         tone: AppSnackTone.warning,
         duration: const Duration(seconds: 4),
       );
+      unawaited(context.fsmPush(route));
       return;
     }
 
