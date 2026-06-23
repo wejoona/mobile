@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,33 +37,36 @@ class _SplashViewState extends ConsumerState<SplashView>
     super.initState();
 
     // Main entrance animation
+    // Native launch is a static capture of this composed frame; start visible
+    // so Flutter feels like that frame came alive instead of restarting.
     _logoController = AnimationController(
       duration: const Duration(milliseconds: 2000),
+      value: 1,
       vsync: this,
     );
 
-    _logoFade = Tween<double>(begin: 0.0, end: 1.0).animate(
+    _logoFade = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _logoController,
-        curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
+        curve: const Interval(0, 0.4, curve: Curves.easeOut),
       ),
     );
 
-    _logoScale = Tween<double>(begin: 0.5, end: 1.0).animate(
+    _logoScale = Tween<double>(begin: 0.5, end: 1).animate(
       CurvedAnimation(
         parent: _logoController,
-        curve: const Interval(0.0, 0.5, curve: Curves.elasticOut),
+        curve: const Interval(0, 0.5, curve: Curves.elasticOut),
       ),
     );
 
-    _textFade = Tween<double>(begin: 0.0, end: 1.0).animate(
+    _textFade = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _logoController,
         curve: const Interval(0.35, 0.65, curve: Curves.easeOut),
       ),
     );
 
-    _taglineFade = Tween<double>(begin: 0.0, end: 1.0).animate(
+    _taglineFade = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _logoController,
         curve: const Interval(0.5, 0.8, curve: Curves.easeOut),
@@ -73,7 +77,8 @@ class _SplashViewState extends ConsumerState<SplashView>
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
-    )..repeat(reverse: true);
+    );
+    unawaited(_pulseController.repeat(reverse: true));
 
     _pulseAnimation = Tween<double>(begin: 0.2, end: 0.5).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
@@ -83,24 +88,28 @@ class _SplashViewState extends ConsumerState<SplashView>
     _shimmerController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
-    )..repeat();
+    );
+    unawaited(_shimmerController.repeat());
 
-    _shimmerAnimation = Tween<double>(begin: -1.0, end: 2.0).animate(
+    _shimmerAnimation = Tween<double>(begin: -1, end: 2).animate(
       CurvedAnimation(parent: _shimmerController, curve: Curves.linear),
     );
 
-    _logoController.forward();
-    _waitForAnimationThenListen();
+    unawaited(_waitForAnimationThenListen());
   }
 
   Future<void> _waitForAnimationThenListen() async {
     await Future.delayed(const Duration(milliseconds: 2200));
-    if (!mounted || _hasNavigated) return;
+    if (!mounted || _hasNavigated) {
+      return;
+    }
 
     // Returning users skip onboarding
     final currentState = ref.read(auth.authProvider);
     if (currentState.isAuthenticated || currentState.isLocked) {
-      if (_tryNavigate(currentState)) return;
+      if (_tryNavigate(currentState)) {
+        return;
+      }
     }
 
     // New users should land on login. Product intro/onboarding stays opt-in from
@@ -109,7 +118,9 @@ class _SplashViewState extends ConsumerState<SplashView>
     final onboardingCompleted =
         prefs.getBool(PreferenceKeys.productIntroCompleted) ?? false;
 
-    if (!mounted || _hasNavigated) return;
+    if (!mounted || _hasNavigated) {
+      return;
+    }
 
     if (!onboardingCompleted &&
         !currentState.isAuthenticated &&
@@ -119,21 +130,29 @@ class _SplashViewState extends ConsumerState<SplashView>
       return;
     }
 
-    if (_tryNavigate(currentState)) return;
+    if (_tryNavigate(currentState)) {
+      return;
+    }
 
     ref.listenManual(auth.authProvider, (_, next) {
       _tryNavigate(next);
     });
 
-    Future.delayed(const Duration(seconds: 5), () {
-      if (!mounted || _hasNavigated) return;
-      _hasNavigated = true;
-      context.fsmGo('/login');
-    });
+    unawaited(
+      Future.delayed(const Duration(seconds: 5), () {
+        if (!mounted || _hasNavigated) {
+          return;
+        }
+        _hasNavigated = true;
+        context.fsmGo('/login');
+      }),
+    );
   }
 
   bool _tryNavigate(auth.AuthState authState) {
-    if (_hasNavigated || !mounted) return true;
+    if (_hasNavigated || !mounted) {
+      return true;
+    }
     if (authState.status == auth.AuthStatus.initial ||
         authState.status == auth.AuthStatus.loading) {
       return false;
@@ -171,15 +190,13 @@ class _SplashViewState extends ConsumerState<SplashView>
           Positioned.fill(
             child: AnimatedBuilder(
               animation: _pulseAnimation,
-              builder: (context, _) {
-                return CustomPaint(
-                  painter: _RadialGlowPainter(
-                    color: colors.gold,
-                    opacity: _pulseAnimation.value * 0.15,
-                    center: Offset(size.width / 2, size.height * 0.4),
-                  ),
-                );
-              },
+              builder: (context, _) => CustomPaint(
+                painter: _RadialGlowPainter(
+                  color: colors.gold,
+                  opacity: _pulseAnimation.value * 0.15,
+                  center: Offset(size.width / 2, size.height * 0.4),
+                ),
+              ),
             ),
           ),
 
@@ -202,94 +219,90 @@ class _SplashViewState extends ConsumerState<SplashView>
                 _pulseController,
                 _shimmerController,
               ]),
-              builder: (context, _) {
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Logo with glow
-                    Transform.scale(
-                      scale: _logoScale.value,
-                      child: Opacity(
-                        opacity: _logoFade.value,
-                        child: Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(34),
-                            boxShadow: [
-                              BoxShadow(
-                                color: colors.gold.withValues(
-                                  alpha: _pulseAnimation.value,
-                                ),
-                                blurRadius: 40,
-                                spreadRadius: 8,
+              builder: (context, _) => Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Logo with glow
+                  Transform.scale(
+                    scale: _logoScale.value,
+                    child: Opacity(
+                      opacity: _logoFade.value,
+                      child: Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(34),
+                          boxShadow: [
+                            BoxShadow(
+                              color: colors.gold.withValues(
+                                alpha: _pulseAnimation.value,
                               ),
-                              BoxShadow(
-                                color: colors.gold.withValues(
-                                  alpha: _pulseAnimation.value * 0.5,
-                                ),
-                                blurRadius: 80,
-                                spreadRadius: 20,
+                              blurRadius: 40,
+                              spreadRadius: 8,
+                            ),
+                            BoxShadow(
+                              color: colors.gold.withValues(
+                                alpha: _pulseAnimation.value * 0.5,
                               ),
-                            ],
-                          ),
-                          child: const KoridoMark(size: 120),
+                              blurRadius: 80,
+                              spreadRadius: 20,
+                            ),
+                          ],
                         ),
+                        child: const KoridoMark(size: 120),
                       ),
                     ),
+                  ),
 
-                    const SizedBox(height: 32),
+                  const SizedBox(height: 32),
 
-                    // "Korido" with shimmer
-                    Opacity(
-                      opacity: _textFade.value,
-                      child: ShaderMask(
-                        shaderCallback: (bounds) {
-                          return LinearGradient(
-                            colors: [
-                              colors.gold,
-                              colors.gold.withValues(alpha: 0.5),
-                              Colors.white,
-                              colors.gold.withValues(alpha: 0.5),
-                              colors.gold,
-                            ],
-                            stops: const [0.0, 0.35, 0.5, 0.65, 1.0],
-                            begin: Alignment(_shimmerAnimation.value - 1, 0),
-                            end: Alignment(_shimmerAnimation.value, 0),
-                          ).createShader(bounds);
-                        },
-                        child: const AppText(
-                          'Korido',
-                          variant: AppTextVariant.headlineLarge,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
+                  // "Korido" with shimmer
+                  Opacity(
+                    opacity: _textFade.value,
+                    child: ShaderMask(
+                      shaderCallback: (bounds) => LinearGradient(
+                        colors: [
+                          colors.gold,
+                          colors.gold.withValues(alpha: 0.5),
+                          Colors.white,
+                          colors.gold.withValues(alpha: 0.5),
+                          colors.gold,
+                        ],
+                        stops: const [0, 0.35, 0.5, 0.65, 1],
+                        begin: Alignment(_shimmerAnimation.value - 1, 0),
+                        end: Alignment(_shimmerAnimation.value, 0),
+                      ).createShader(bounds),
+                      child: const AppText(
+                        'Korido',
+                        variant: AppTextVariant.headlineLarge,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
+                  ),
 
-                    const SizedBox(height: 12),
+                  const SizedBox(height: 12),
 
-                    // Tagline
-                    Opacity(
-                      opacity: _taglineFade.value,
-                      child: AppText(
-                        l10n.splash_tagline,
-                        variant: AppTextVariant.bodyLarge,
-                        color: colors.textSecondary.withValues(alpha: 0.8),
-                        textAlign: TextAlign.center,
-                      ),
+                  // Tagline
+                  Opacity(
+                    opacity: _taglineFade.value,
+                    child: AppText(
+                      l10n.splash_tagline,
+                      variant: AppTextVariant.bodyLarge,
+                      color: colors.textSecondary.withValues(alpha: 0.8),
+                      textAlign: TextAlign.center,
                     ),
+                  ),
 
-                    const SizedBox(height: 80),
+                  const SizedBox(height: 80),
 
-                    // Minimal loading dots
-                    Opacity(
-                      opacity: _taglineFade.value,
-                      child: _LoadingDots(colors: colors),
-                    ),
-                  ],
-                );
-              },
+                  // Minimal loading dots
+                  Opacity(
+                    opacity: _taglineFade.value,
+                    child: _LoadingDots(colors: colors),
+                  ),
+                ],
+              ),
             ),
           ),
 
@@ -319,8 +332,9 @@ class _SplashViewState extends ConsumerState<SplashView>
 
 /// Animated loading dots (3 dots pulsing in sequence)
 class _LoadingDots extends StatefulWidget {
-  const _LoadingDots({required this.colors});
-  final ThemeColors colors;
+  const _LoadingDots({required ThemeColors colors}) : _colors = colors;
+
+  final ThemeColors _colors;
 
   @override
   State<_LoadingDots> createState() => _LoadingDotsState();
@@ -336,7 +350,8 @@ class _LoadingDotsState extends State<_LoadingDots>
     _controller = AnimationController(
       duration: const Duration(milliseconds: 1200),
       vsync: this,
-    )..repeat();
+    );
+    unawaited(_controller.repeat());
   }
 
   @override
@@ -346,57 +361,56 @@ class _LoadingDotsState extends State<_LoadingDots>
   }
 
   @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, _) {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(3, (i) {
-            final delay = i * 0.2;
-            final value = ((_controller.value - delay) % 1.0).clamp(0.0, 1.0);
-            final scale = 0.5 + 0.5 * math.sin(value * math.pi);
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: widget.colors.gold.withValues(alpha: 0.3 + 0.7 * scale),
-              ),
-            );
-          }),
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: _controller,
+    builder: (context, _) => Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(3, (i) {
+        final delay = i * 0.2;
+        final value = ((_controller.value - delay) % 1).clamp(0, 1);
+        final scale = 0.5 + 0.5 * math.sin(value * math.pi);
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: widget._colors.gold.withValues(alpha: 0.3 + 0.7 * scale),
+          ),
         );
-      },
-    );
-  }
+      }),
+    ),
+  );
 }
 
 /// Floating ambient particle
 class _FloatingParticle extends StatelessWidget {
   const _FloatingParticle({
-    required this.colors,
-    required this.index,
-    required this.screenSize,
-    required this.pulseController,
-  });
+    required ThemeColors colors,
+    required int index,
+    required Size screenSize,
+    required AnimationController pulseController,
+  }) : _colors = colors,
+       _index = index,
+       _screenSize = screenSize,
+       _pulseController = pulseController;
 
-  final ThemeColors colors;
-  final int index;
-  final Size screenSize;
-  final AnimationController pulseController;
+  final ThemeColors _colors;
+  final int _index;
+  final Size _screenSize;
+  final AnimationController _pulseController;
 
   @override
   Widget build(BuildContext context) {
-    final random = math.Random(index * 42);
-    final startX = random.nextDouble() * screenSize.width;
-    final startY = random.nextDouble() * screenSize.height;
+    final random = math.Random(_index * 42);
+    final startX = random.nextDouble() * _screenSize.width;
+    final startY = random.nextDouble() * _screenSize.height;
     final size = 3.0 + random.nextDouble() * 4;
 
     return AnimatedBuilder(
-      animation: pulseController,
+      animation: _pulseController,
       builder: (context, _) {
-        final phase = (pulseController.value + index * 0.15) % 1.0;
+        final phase = (_pulseController.value + _index * 0.15) % 1;
         final yOffset = math.sin(phase * math.pi * 2) * 20;
         final opacity = 0.1 + 0.15 * math.sin(phase * math.pi);
 
@@ -408,7 +422,7 @@ class _FloatingParticle extends StatelessWidget {
             height: size,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: colors.gold.withValues(alpha: opacity),
+              color: _colors.gold.withValues(alpha: opacity),
             ),
           ),
         );
@@ -419,32 +433,37 @@ class _FloatingParticle extends StatelessWidget {
 
 /// Radial glow painter for background ambience
 class _RadialGlowPainter extends CustomPainter {
-  final Color color;
-  final double opacity;
-  final Offset center;
-
   _RadialGlowPainter({
-    required this.color,
-    required this.opacity,
-    required this.center,
-  });
+    required Color color,
+    required double opacity,
+    required Offset center,
+  }) : _color = color,
+       _opacity = opacity,
+       _center = center;
+
+  final Color _color;
+  final double _opacity;
+  final Offset _center;
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          color.withValues(alpha: opacity),
-          color.withValues(alpha: opacity * 0.3),
-          Colors.transparent,
-        ],
-        stops: const [0.0, 0.4, 1.0],
-      ).createShader(Rect.fromCircle(center: center, radius: size.width * 0.6));
+      ..shader =
+          RadialGradient(
+            colors: [
+              _color.withValues(alpha: _opacity),
+              _color.withValues(alpha: _opacity * 0.3),
+              Colors.transparent,
+            ],
+            stops: const [0, 0.4, 1],
+          ).createShader(
+            Rect.fromCircle(center: _center, radius: size.width * 0.6),
+          );
 
     canvas.drawRect(Offset.zero & size, paint);
   }
 
   @override
   bool shouldRepaint(covariant _RadialGlowPainter old) =>
-      opacity != old.opacity;
+      _opacity != old._opacity;
 }
