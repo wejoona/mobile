@@ -1556,15 +1556,22 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     _manualReviewStatus = data['status']?.toString();
     _manualReviewPinApplied =
         data['pinResetApplied'] == true || _manualReviewStatus == 'approved';
+    final isTerminalReviewStatus =
+        _manualReviewStatus == 'rejected' ||
+        _manualReviewStatus == 'expired' ||
+        _manualReviewStatus == 'closed';
+    final hasActiveReviewTicket =
+        _manualReviewTicketId != null &&
+        _manualReviewTicketId!.isNotEmpty &&
+        !isTerminalReviewStatus;
     _manualReviewPinQueued =
-        data['hasPendingPinReset'] == true && !_manualReviewPinApplied;
+        !_manualReviewPinApplied &&
+        (data['hasPendingPinReset'] == true || hasActiveReviewTicket);
     _manualReviewCreating = false;
     _manualReviewCreationFailed =
         !_manualReviewPinQueued &&
         !_manualReviewPinApplied &&
-        _manualReviewStatus != 'rejected' &&
-        _manualReviewStatus != 'expired' &&
-        _manualReviewStatus != 'closed';
+        !isTerminalReviewStatus;
 
     final reviewSla = data['reviewSla'];
     if (reviewSla is Map) {

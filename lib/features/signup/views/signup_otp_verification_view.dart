@@ -34,8 +34,8 @@ class _SignupOtpVerificationViewState
     final isBusy = state.isLoading || _isSubmittingOtp;
     final otpCueLabel = _localizedOtpCopy(
       context,
-      en: 'Code accepted. Creating your secure wallet...',
-      fr: 'Code accepté. Création de votre wallet sécurisé...',
+      en: 'Verifying code. Creating your secure wallet...',
+      fr: 'Vérification du code. Création de votre wallet sécurisé...',
     );
 
     return Scaffold(

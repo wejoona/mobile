@@ -33,8 +33,8 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
     final isBusy = state.isLoading || _isSubmittingOtp;
     final otpCueLabel = _localizedOtpCopy(
       context,
-      en: 'Code accepted. Securing your session...',
-      fr: 'Code accepté. Sécurisation de la session...',
+      en: 'Verifying code. Securing your session...',
+      fr: 'Vérification du code. Sécurisation de la session...',
     );
 
     return Scaffold(

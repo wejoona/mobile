@@ -33,10 +33,6 @@ class TransactionDetailRouteView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (initialTransaction != null) {
-      return TransactionDetailView(transaction: initialTransaction!);
-    }
-
     final transactionAsync = ref.watch(transactionByIdProvider(transactionId));
     final colors = context.colors;
 

@@ -11,7 +11,7 @@ export 'package:usdc_wallet/features/deposit/models/deposit_channel_id.dart'
 
 /// Initiate Deposit Request
 class InitiateDepositRequest {
-  final int amount;
+  final double amount;
   final String provider;
   final String phoneNumber;
   final String currency;

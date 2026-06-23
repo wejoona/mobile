@@ -51,13 +51,16 @@ class DepositService {
 
   /// Initiate a deposit — returns payment method type + instructions
   Future<DepositResponse> initiateDeposit(
-    InitiateDepositRequest request,
-  ) async {
+    InitiateDepositRequest request, {
+    String? idempotencyKey,
+  }) async {
     final response = await _dio.post(
       ApiEndpoints.depositInitiate,
       data: request.toWalletDepositJson(),
       options: Options(
-        headers: {'X-Idempotency-Key': generateIdempotencyKey()},
+        headers: {
+          'X-Idempotency-Key': idempotencyKey ?? generateIdempotencyKey(),
+        },
       ),
     );
     return DepositResponse.fromJson(response.data as Map<String, dynamic>);

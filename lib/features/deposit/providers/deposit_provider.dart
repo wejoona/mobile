@@ -2,8 +2,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
-import 'package:usdc_wallet/features/limits/utils/money_flow_limit_errors.dart';
+import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/services/realtime/realtime_service.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
 import 'package:usdc_wallet/services/limits/limits_service.dart';
@@ -16,6 +15,8 @@ import 'package:usdc_wallet/features/deposit/models/deposit_channel_id.dart';
 import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
 import 'package:usdc_wallet/features/deposit/models/mobile_money_provider.dart';
 import 'package:usdc_wallet/features/deposit/models/provider_data.dart';
+import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
+import 'package:usdc_wallet/features/limits/utils/money_flow_limit_errors.dart';
 
 /// Steps in the deposit flow.
 enum DepositFlowStep {
@@ -72,6 +73,10 @@ class DepositState {
   bool get hasSourceAmount => (sourceAmount ?? 0) > 0;
 
   String? get activeDepositId {
+    final depositId = response?.depositId.trim();
+    if (depositId != null && depositId.isNotEmpty) {
+      return depositId;
+    }
     final resultId = result?.id.trim();
     if (resultId != null && resultId.isNotEmpty) {
       return resultId;
@@ -79,10 +84,6 @@ class DepositState {
     final transactionId = response?.transactionId.trim();
     if (transactionId != null && transactionId.isNotEmpty) {
       return transactionId;
-    }
-    final depositId = response?.depositId.trim();
-    if (depositId != null && depositId.isNotEmpty) {
-      return depositId;
     }
     return null;
   }
@@ -165,9 +166,9 @@ class DepositResult {
   );
 
   factory DepositResult.fromResponse(DepositResponse response) => DepositResult(
-    id: response.transactionId.isNotEmpty
-        ? response.transactionId
-        : response.depositId,
+    id: response.depositId.isNotEmpty
+        ? response.depositId
+        : response.transactionId,
     status: response.status.value,
     paymentUrl: response.deepLinkUrl,
     instructions: response.instructions,
@@ -180,6 +181,7 @@ class DepositResult {
 /// Deposit notifier — wired to Dio (mock interceptor handles fallback).
 class DepositNotifier extends Notifier<DepositState> {
   Timer? _pollingTimer;
+  String? _depositAttemptIdempotencyKey;
   int _pollAttempts = 0;
   static const int _maxPollAttempts = 60; // ~5 minutes at 5s intervals
   static const Duration _pollInterval = Duration(seconds: 5);
@@ -197,6 +199,7 @@ class DepositNotifier extends Notifier<DepositState> {
   }
 
   void selectMethod(DepositMethod method) {
+    _depositAttemptIdempotencyKey = null;
     state = state.copyWith(
       selectedMethod: method,
       step: DepositFlowStep.enterAmount,
@@ -204,6 +207,7 @@ class DepositNotifier extends Notifier<DepositState> {
   }
 
   void setAmount(double amount) {
+    _depositAttemptIdempotencyKey = null;
     state = state.copyWith(amount: amount, step: DepositFlowStep.instructions);
   }
 
@@ -272,15 +276,18 @@ class DepositNotifier extends Notifier<DepositState> {
     state = state.copyWith(isLoading: true, step: DepositFlowStep.processing);
     try {
       final service = ref.read(depositServiceProvider);
+      _depositAttemptIdempotencyKey ??= generateIdempotencyKey();
       final response = await service.initiateDeposit(
         InitiateDepositRequest(
-          amount: sourceAmount.round(),
+          amount: sourceAmount,
           provider: providerCode,
           phoneNumber: phoneNumber ?? '',
           currency: sourceCurrency,
           countryCode: state.sourceCountryCode,
         ),
+        idempotencyKey: _depositAttemptIdempotencyKey,
       );
+      _depositAttemptIdempotencyKey = null;
       final result = DepositResult.fromResponse(response);
       state = state.copyWith(
         isLoading: false,
@@ -313,6 +320,7 @@ class DepositNotifier extends Notifier<DepositState> {
   }
 
   void setAmountXOF(double amount, [dynamic rate, String? countryCode]) {
+    _depositAttemptIdempotencyKey = null;
     final converted = rate is ExchangeRate ? rate.convert(amount) : null;
     state = state.copyWith(
       amount: amount,
@@ -324,6 +332,7 @@ class DepositNotifier extends Notifier<DepositState> {
   }
 
   void setAmountUSD(double amount, [dynamic rate, String? countryCode]) {
+    _depositAttemptIdempotencyKey = null;
     final converted = rate is ExchangeRate ? rate.convertBack(amount) : null;
     state = state.copyWith(
       amount: converted ?? amount,
@@ -368,6 +377,7 @@ class DepositNotifier extends Notifier<DepositState> {
 
       if (status == DepositStatus.completed) {
         _pollingTimer?.cancel();
+        _depositAttemptIdempotencyKey = null;
         state = state.copyWith(
           result: DepositResult.fromResponse(response),
           step: DepositFlowStep.completed,
@@ -377,6 +387,7 @@ class DepositNotifier extends Notifier<DepositState> {
       } else if (status == DepositStatus.failed ||
           status == DepositStatus.expired) {
         _pollingTimer?.cancel();
+        _depositAttemptIdempotencyKey = null;
         state = state.copyWith(
           error: response.failureReason ?? 'Deposit failed',
           step: DepositFlowStep.failed,
@@ -442,6 +453,7 @@ class DepositNotifier extends Notifier<DepositState> {
 
   void reset() {
     _pollingTimer?.cancel();
+    _depositAttemptIdempotencyKey = null;
     state = const DepositState();
   }
 
@@ -510,6 +522,7 @@ class DepositNotifier extends Notifier<DepositState> {
   }
 
   void selectProviderData(dynamic data) {
+    _depositAttemptIdempotencyKey = null;
     final code = normalizeDepositChannelId(
       data is ProviderData ? data.id : data.toString(),
     );
