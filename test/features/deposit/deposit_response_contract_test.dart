@@ -76,6 +76,20 @@ void main() {
       },
     );
 
+    test('deposit status polling prefers backend transaction id', () {
+      final response = DepositResponse.fromJson({
+        'transactionId': 'txn_123',
+        'depositId': 'dep_provider_123',
+        'paymentMethodType': 'PUSH',
+        'expiresAt': DateTime.utc(2026, 6, 2, 0, 15).toIso8601String(),
+        'amount': 10000,
+        'status': 'processing',
+      });
+
+      expect(response.statusLookupId, 'txn_123');
+      expect(response.depositId, 'dep_provider_123');
+    });
+
     test('normalizes marketing provider names to backend enum codes', () {
       const request = InitiateDepositRequest(
         amount: 5000,

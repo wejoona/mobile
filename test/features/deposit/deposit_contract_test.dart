@@ -153,6 +153,7 @@ void main() {
         expect(state.response?.paymentMethodType, PaymentMethodType.otp);
         expect(state.response?.token, 'tok_dep_123');
         expect(state.result?.id, 'dep_123');
+        expect(state.activeDepositId, 'txn_123');
         expect(dio.requestHistory.first.path, '/user/limits');
         expect(
           dio.requestHistory.last.headers['X-Idempotency-Key'],
@@ -311,6 +312,7 @@ Map<String, dynamic> _limitsResponse() {
 
 Map<String, dynamic> _initiateResponse({required String paymentMethodType}) {
   return {
+    'transactionId': 'txn_123',
     'depositId': 'dep_123',
     'token': 'tok_dep_123',
     'paymentMethodType': paymentMethodType,

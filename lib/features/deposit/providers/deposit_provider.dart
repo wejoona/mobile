@@ -75,6 +75,10 @@ class DepositState {
   bool get hasSourceAmount => (sourceAmount ?? 0) > 0;
 
   String? get activeDepositId {
+    final transactionId = response?.transactionId.trim();
+    if (transactionId != null && transactionId.isNotEmpty) {
+      return transactionId;
+    }
     final depositId = response?.depositId.trim();
     if (depositId != null && depositId.isNotEmpty) {
       return depositId;
@@ -82,10 +86,6 @@ class DepositState {
     final resultId = result?.id.trim();
     if (resultId != null && resultId.isNotEmpty) {
       return resultId;
-    }
-    final transactionId = response?.transactionId.trim();
-    if (transactionId != null && transactionId.isNotEmpty) {
-      return transactionId;
     }
     return null;
   }
@@ -302,7 +302,7 @@ class DepositNotifier extends Notifier<DepositState> {
           .read(analyticsServiceProvider)
           .trackDeposit(method: providerCode, success: true);
       // Start polling for status updates
-      _startPolling(result.id);
+      _startPolling(response.statusLookupId);
     } catch (e) {
       final moneyFlowError = moneyFlowLimitExceptionFromError(
         e,
@@ -449,8 +449,8 @@ class DepositNotifier extends Notifier<DepositState> {
       step: step,
     );
 
-    if (response.isPending && result.id.isNotEmpty) {
-      _startPolling(result.id);
+    if (response.isPending && response.statusLookupId.isNotEmpty) {
+      _startPolling(response.statusLookupId);
     }
   }
 
