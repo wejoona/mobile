@@ -8,9 +8,13 @@ import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/signup/providers/signup_flow_provider.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
-/// PIN setup screen for explicit account signup.
+enum SignupPinSetupMode { signup, accountSetup }
+
+/// PIN setup screen for explicit account signup or post-login account setup.
 class SignupPinSetupView extends ConsumerStatefulWidget {
-  const SignupPinSetupView({super.key});
+  const SignupPinSetupView({super.key, this.mode = SignupPinSetupMode.signup});
+
+  final SignupPinSetupMode mode;
 
   @override
   ConsumerState<SignupPinSetupView> createState() => _SignupPinSetupViewState();
@@ -21,6 +25,8 @@ class _SignupPinSetupViewState extends ConsumerState<SignupPinSetupView> {
   String? _confirmPin;
   bool _showError = false;
   String? _errorMessage;
+
+  bool get _isSignupMode => widget.mode == SignupPinSetupMode.signup;
 
   @override
   Widget build(BuildContext context) {
@@ -43,10 +49,13 @@ class _SignupPinSetupViewState extends ConsumerState<SignupPinSetupView> {
                   child: Column(
                     children: [
                       const SizedBox(height: AppSpacing.lg),
-                      AuthTopBar(onBack: _handleBack),
-                      const SizedBox(height: AppSpacing.lg),
-                      const FlowStepProgress(currentStep: 4, totalSteps: 5),
-                      const SizedBox(height: AppSpacing.xxl),
+                      if (_isSignupMode) ...[
+                        AuthTopBar(onBack: _handleBack),
+                        const SizedBox(height: AppSpacing.lg),
+                        const FlowStepProgress(currentStep: 4, totalSteps: 5),
+                        const SizedBox(height: AppSpacing.xxl),
+                      ] else
+                        const SizedBox(height: AppSpacing.xxl),
                       AuthScreenHeader(
                         appName: l10n.appName,
                         title: _confirmPin == null
@@ -165,7 +174,7 @@ class _SignupPinSetupViewState extends ConsumerState<SignupPinSetupView> {
         _showError = false;
       });
     } else {
-      context.fsmGo('/signup/profile');
+      context.fsmGo(_isSignupMode ? '/signup/profile' : '/profile-complete');
     }
   }
 
@@ -241,7 +250,11 @@ class _SignupPinSetupViewState extends ConsumerState<SignupPinSetupView> {
     await ref.read(signupFlowProvider.notifier).submitPin(_pin);
 
     if (mounted && ref.read(signupFlowProvider).error == null) {
-      context.fsmGo('/signup/kyc-prompt');
+      if (_isSignupMode) {
+        context.fsmGo('/signup/kyc-prompt');
+      } else {
+        context.fsmEnterAuthenticatedApp();
+      }
     }
   }
 

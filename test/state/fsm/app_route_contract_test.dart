@@ -95,6 +95,7 @@ void main() {
     test('declared PIN and security routes are explicitly contracted', () {
       const routes = {
         '/settings/pin': AppRouteRole.settingsStep,
+        '/setup/set-pin': AppRouteRole.setupStep,
         '/signup/set-pin': AppRouteRole.setupStep,
         '/pin/enter': AppRouteRole.securityStep,
         '/pin/locked': AppRouteRole.securityStep,
@@ -113,6 +114,8 @@ void main() {
       }
 
       expect(appRouteContractFor('/settings/pin').isAllowedWhenLocked, isFalse);
+      expect(appRouteContractFor('/setup/set-pin').isSignupRoute, isFalse);
+      expect(appRouteContractFor('/setup/set-pin').isSetupRoute, isTrue);
       expect(appRouteContractFor('/pin/enter').isAllowedWhenLocked, isTrue);
       expect(
         appRouteContractFor('/pin/locked').events,

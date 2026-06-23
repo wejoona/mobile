@@ -320,6 +320,15 @@ const appRouteContracts = <AppRouteContract>[
     events: _signupEvents,
   ),
   AppRouteContract(
+    pattern: '/setup/set-pin',
+    role: AppRouteRole.setupStep,
+    capabilities: {
+      AppRouteCapability.requiresAuth,
+      AppRouteCapability.setupFlow,
+    },
+    events: {AppNavigationEvent.pinRequired, AppNavigationEvent.pinAccepted},
+  ),
+  AppRouteContract(
     pattern: '/signup/kyc-prompt',
     role: AppRouteRole.setupStep,
     capabilities: {

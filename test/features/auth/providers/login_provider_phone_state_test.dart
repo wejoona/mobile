@@ -177,7 +177,7 @@ void main() {
       expect(providerSource, contains('LoginStep.needsPinSetup'));
       expect(providerSource, contains("analyticsMethod: 'otp_pin_setup'"));
       expect(viewSource, contains('LoginStep.needsPinSetup'));
-      expect(viewSource, contains("context.fsmGo('/signup/set-pin')"));
+      expect(viewSource, contains("context.fsmGo('/setup/set-pin')"));
     });
   });
 }

@@ -135,6 +135,7 @@ void main() {
       final routePaths = _declaredRoutePaths();
 
       expect(routePaths, contains('/settings/pin'));
+      expect(routePaths, contains('/setup/set-pin'));
       expect(routePaths, contains('/signup/set-pin'));
       expect(routePaths, isNot(contains('/pin/setup')));
       expect(routePaths, isNot(contains('/pin/confirm')));

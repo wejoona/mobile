@@ -34,6 +34,13 @@ List<RouteBase> authStateRoutes() => [
       child: const ProfileCompleteView(),
     ),
   ),
+  GoRoute(
+    path: '/setup/set-pin',
+    pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+      state: state,
+      child: const SignupPinSetupView(mode: SignupPinSetupMode.accountSetup),
+    ),
+  ),
 
   // Product introduction route. This is not account creation.
   GoRoute(
@@ -96,7 +103,7 @@ List<RouteBase> authStateRoutes() => [
     path: '/signup/set-pin',
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
       state: state,
-      child: const SignupPinSetupView(),
+      child: const SignupPinSetupView(mode: SignupPinSetupMode.signup),
     ),
   ),
   GoRoute(

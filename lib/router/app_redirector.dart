@@ -484,10 +484,10 @@ String? _nextRequiredSetupRoute({
       (authState.user?.hasPin ?? false) ||
       (trustSignupSetupState && _hasNonBlank(signupState.pin));
   if (!hasPin) {
-    if (location == '/signup/set-pin') {
+    if (location == '/signup/set-pin' || location == '/setup/set-pin') {
       return null;
     }
-    return '/signup/set-pin';
+    return inSignupRoute ? '/signup/set-pin' : '/setup/set-pin';
   }
 
   if (inSignupRoute &&

@@ -134,6 +134,7 @@ void main() {
       final router = container.read(routerProvider);
 
       const expectedPaths = [
+        '/setup/set-pin',
         '/signup',
         '/signup/legal-consent',
         '/legal/terms',
@@ -365,7 +366,7 @@ void main() {
             lastName: 'Ouattara',
           ),
         ),
-        '/signup/set-pin',
+        '/setup/set-pin',
       );
 
       final staleCompleteSignupRoute = await initialRouteFor(
