@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'package:usdc_wallet/config/api_config.dart';
+import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
 import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart';
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
@@ -75,7 +76,8 @@ class RealtimeService {
         ..invalidate(walletBalanceProvider)
         ..invalidate(transactionsProvider)
         ..invalidate(notificationsProvider)
-        ..invalidate(unreadNotificationCountProvider);
+        ..invalidate(unreadNotificationCountProvider)
+        ..invalidate(kycProfileProvider);
       _invalidateRecipientProviders();
       unawaited(_ref.read(walletStateMachineProvider.notifier).refresh());
       unawaited(_ref.read(transactionStateMachineProvider.notifier).refresh());
@@ -323,6 +325,7 @@ class RealtimeService {
   }
 
   void _refreshKycState() {
+    _ref.invalidate(kycProfileProvider);
     unawaited(_ref.read(kycStateMachineProvider.notifier).fetch());
     _refreshNotificationSurfaces();
   }
