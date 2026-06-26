@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/deposit/models/deposit_request.dart';
@@ -161,6 +163,61 @@ void main() {
         );
       },
     );
+
+    test(
+      'back keeps unresolved deposit status instead of rewinding amount',
+      () async {
+        final dio = MockDio()
+          ..queueResponse(_limitsResponse())
+          ..queueResponse(
+            _initiateResponse(paymentMethodType: 'OTP'),
+            statusCode: 201,
+          );
+        final container = ProviderContainer(
+          overrides: [dioProvider.overrideWithValue(dio)],
+        );
+        addTearDown(container.dispose);
+
+        final notifier = container.read(depositProvider.notifier)
+          ..setAmountXOF(
+            10000,
+            ExchangeRate(
+              fromCurrency: 'XOF',
+              toCurrency: 'USD',
+              rate: 655.957,
+              timestamp: DateTime.utc(2026, 6, 2),
+            ),
+          )
+          ..selectProviderData(
+            const ProviderData(
+              id: 'BANK',
+              name: 'Korido Bank Rail',
+              paymentMethodType: 'BANK_TRANSFER',
+            ),
+          );
+
+        await notifier.initiate();
+        notifier.goBack();
+
+        final state = container.read(depositProvider);
+        expect(state.step, DepositFlowStep.processing);
+        expect(state.hasUnresolvedDeposit, isTrue);
+        expect(state.activeDepositId, 'txn_123');
+      },
+    );
+
+    test('instructions back sends unresolved deposits to status route', () {
+      final source = File(
+        'lib/features/deposit/views/payment_instructions_screen.dart',
+      ).readAsStringSync();
+
+      expect(source, contains('state.hasUnresolvedDeposit'));
+      expect(source, contains("context.fsmGo('/deposit/status')"));
+      expect(
+        source,
+        contains("context.fsmSafePop(fallbackRoute: '/deposit/provider')"),
+      );
+    });
 
     test(
       'initiate blocks mobile-money deposits without a phone number',

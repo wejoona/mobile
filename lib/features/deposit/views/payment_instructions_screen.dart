@@ -565,9 +565,14 @@ class _PaymentInstructionsScreenState
   }
 
   void _handleBack() {
-    // Stop polling and go back
+    final state = ref.read(depositProvider);
+    if (state.hasUnresolvedDeposit) {
+      context.fsmGo('/deposit/status');
+      return;
+    }
+
     ref.read(depositProvider.notifier).goBack();
-    context.fsmPop();
+    context.fsmSafePop(fallbackRoute: '/deposit/provider');
   }
 }
 

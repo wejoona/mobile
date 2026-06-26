@@ -90,6 +90,11 @@ class DepositState {
     return null;
   }
 
+  bool get hasUnresolvedDeposit =>
+      activeDepositId != null &&
+      (step == DepositFlowStep.processing ||
+          step == DepositFlowStep.statusUnknown);
+
   DepositState copyWith({
     bool? isLoading,
     String? error,
@@ -221,9 +226,10 @@ class DepositNotifier extends Notifier<DepositState> {
         state = state.copyWith(step: DepositFlowStep.enterAmount);
       case DepositFlowStep.processing:
       case DepositFlowStep.statusUnknown:
-        // Cancel polling when user navigates back from processing
-        _pollingTimer?.cancel();
-        state = state.copyWith(step: DepositFlowStep.enterAmount);
+        if (!state.hasUnresolvedDeposit) {
+          _pollingTimer?.cancel();
+          state = state.copyWith(step: DepositFlowStep.enterAmount);
+        }
       default:
         break;
     }
