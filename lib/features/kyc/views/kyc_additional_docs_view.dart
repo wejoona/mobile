@@ -506,12 +506,19 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
     try {
       await ref
           .read(kycProvider.notifier)
-          .submitAdditionalDocuments(_uploadedDocuments);
+          .submitAdditionalDocuments(
+            occupation: _occupationController.text.trim(),
+            employer: _employerController.text.trim(),
+            monthlyIncome: _monthlyIncomeController.text.trim(),
+            sourceOfFunds: _selectedSourceType!.toApiString(),
+            sourceDetails: _sourceDetailsController.text.trim(),
+            paths: _uploadedDocuments,
+          );
 
-      if (!mounted) return;
+      if (!mounted || !context.mounted) return;
       context.fsmGo('/kyc/submitted');
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || !context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.kyc_additionalDocs_error),

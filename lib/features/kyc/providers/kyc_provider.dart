@@ -328,16 +328,23 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
     }
   }
 
-  Future<void> submitAdditionalDocuments(List<String> paths) async {
+  Future<void> submitAdditionalDocuments({
+    required String occupation,
+    required String employer,
+    required String monthlyIncome,
+    required String sourceOfFunds,
+    required String sourceDetails,
+    required List<String> paths,
+  }) async {
     state = state.copyWith(isLoading: true);
     try {
       final service = ref.read(kycServiceProvider);
       await service.submitAdditionalDocuments(
-        occupation: '',
-        employer: '',
-        monthlyIncome: '',
-        sourceOfFunds: '',
-        sourceDetails: '',
+        occupation: occupation,
+        employer: employer,
+        monthlyIncome: monthlyIncome,
+        sourceOfFunds: sourceOfFunds,
+        sourceDetails: sourceDetails,
         supportingDocuments: paths,
       );
       if (!ref.mounted) return;

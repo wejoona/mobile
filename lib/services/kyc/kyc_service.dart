@@ -292,7 +292,30 @@ class KycService {
     required String documentType,
     required String documentPath,
   }) async {
-    await uploadDocument(type: 'idBack', filePath: documentPath);
+    final upload = await uploadDocument(
+      type: 'addressProof',
+      filePath: documentPath,
+    );
+    final documents = upload['documents'] as Map<String, dynamic>? ?? {};
+    final addressProof = documents['addressProof'] as Map<String, dynamic>?;
+
+    await routeToManualReview(
+      reason: 'Additional address verification submitted',
+      featureReason: 'address_verification',
+      provider: 'mobile',
+      metadata: {
+        'address': {
+          'addressLine1': addressLine1,
+          'addressLine2': addressLine2,
+          'city': city,
+          'state': state,
+          'postalCode': postalCode,
+          'country': country,
+        },
+        'documentType': documentType,
+        'addressProofKey': addressProof?['key'],
+      },
+    );
   }
 
   Future<void> submitVideoVerification({required String videoPath}) async {
@@ -429,9 +452,35 @@ class KycService {
     required String sourceDetails,
     required List<String> supportingDocuments,
   }) async {
+    final uploadedKeys = <String>[];
     for (final path in supportingDocuments) {
-      await uploadDocument(type: 'idBack', filePath: path);
+      final upload = await uploadDocument(
+        type: 'supportingDocument',
+        filePath: path,
+      );
+      final documents = upload['documents'] as Map<String, dynamic>? ?? {};
+      final document =
+          documents['supportingDocument1'] as Map<String, dynamic>?;
+      final key = document?['key'] as String?;
+      if (key != null && key.isNotEmpty) {
+        uploadedKeys.add(key);
+      }
     }
+
+    await routeToManualReview(
+      reason: 'Additional KYC documents submitted',
+      featureReason: 'additional_documents',
+      provider: 'mobile',
+      metadata: {
+        'employment': {
+          'occupation': occupation,
+          'employer': employer,
+          'monthlyIncome': monthlyIncome,
+        },
+        'sourceOfFunds': {'type': sourceOfFunds, 'details': sourceDetails},
+        'supportingDocumentKeys': uploadedKeys,
+      },
+    );
   }
 
   /// Submit KYC from collected form data map.
@@ -500,6 +549,12 @@ class KycService {
         return 'selfie';
       case 'video':
         return 'video';
+      case 'addressproof':
+      case 'proofofaddress':
+        return 'addressProof';
+      case 'supportingdocument':
+      case 'supporting':
+        return 'supportingDocument';
       default:
         throw ArgumentError('Unsupported KYC document type: $type');
     }
