@@ -1,11 +1,11 @@
 {
-    "name": "usdc_wallet",
-    "short_name": "usdc_wallet",
+    "name": "Korido",
+    "short_name": "Korido",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#050507",
+    "theme_color": "#E2C15B",
+    "description": "Korido mobile wallet for secure USDC, XOF, and cross-border money flows.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
