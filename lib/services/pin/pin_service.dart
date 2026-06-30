@@ -17,6 +17,7 @@ class PinService {
   static const String _pinSaltKey = 'pin_salt';
   static const String _pinAttemptsKey = 'pin_attempts';
   static const String _pinLockedUntilKey = 'pin_locked_until';
+  static const String _pinScopeIndexKey = 'pin_scope_index';
 
   static const int maxAttempts = 5;
   static const Duration lockoutDuration = Duration(minutes: 15);
@@ -25,8 +26,7 @@ class PinService {
 
   /// Check if PIN is set
   Future<bool> hasPin() async {
-    final hash = await _storage.read(key: _pinHashKey);
-    return hash != null && hash.isNotEmpty;
+    return (await _readStoredPin()) != null;
   }
 
   /// Set a new PIN
@@ -60,8 +60,14 @@ class PinService {
   /// Verify PIN locally (for session unlock)
   /// SECURITY: Returns false for wrong PIN, tracks attempts, locks after max attempts
   Future<PinVerificationResult> verifyPinLocally(String pin) async {
+    final storedPin = await _readStoredPin();
+    if (storedPin == null) {
+      return PinVerificationResult(success: false, message: 'PIN not set');
+    }
+    final keys = storedPin.keys;
+
     // Check if locked
-    final lockedUntil = await _storage.read(key: _pinLockedUntilKey);
+    final lockedUntil = await _storage.read(key: keys.lockedUntilKey);
     if (lockedUntil != null) {
       final lockTime = DateTime.parse(lockedUntil);
       if (DateTime.now().isBefore(lockTime)) {
@@ -75,36 +81,29 @@ class PinService {
         );
       } else {
         // Lock expired, reset
-        await _storage.delete(key: _pinLockedUntilKey);
-        await _storage.write(key: _pinAttemptsKey, value: '0');
+        await _storage.delete(key: keys.lockedUntilKey);
+        await _storage.write(key: keys.attemptsKey, value: '0');
       }
     }
 
-    final storedHash = await _storage.read(key: _pinHashKey);
-    final salt = await _storage.read(key: _pinSaltKey);
+    final inputHash = _hashPin(pin, storedPin.salt);
 
-    if (storedHash == null || salt == null) {
-      return PinVerificationResult(success: false, message: 'PIN not set');
-    }
-
-    final inputHash = _hashPin(pin, salt);
-
-    if (inputHash == storedHash) {
+    if (inputHash == storedPin.hash) {
       // Reset attempts on success
-      await _storage.write(key: _pinAttemptsKey, value: '0');
+      await _storage.write(key: keys.attemptsKey, value: '0');
       return PinVerificationResult(success: true);
     }
 
     // Track failed attempt
-    final attemptsStr = await _storage.read(key: _pinAttemptsKey) ?? '0';
+    final attemptsStr = await _storage.read(key: keys.attemptsKey) ?? '0';
     final attempts = int.parse(attemptsStr) + 1;
-    await _storage.write(key: _pinAttemptsKey, value: attempts.toString());
+    await _storage.write(key: keys.attemptsKey, value: attempts.toString());
 
     if (attempts >= maxAttempts) {
       // Lock the PIN
       final lockUntil = DateTime.now().add(lockoutDuration);
       await _storage.write(
-        key: _pinLockedUntilKey,
+        key: keys.lockedUntilKey,
         value: lockUntil.toIso8601String(),
       );
 
@@ -172,12 +171,14 @@ class PinService {
           final expiresIn = data['expiresIn'] as int? ?? 300;
 
           if (pinToken != null) {
-            await _storage.write(key: _pinTokenKey, value: pinToken);
+            final keys = await _primaryPinKeys();
+            await _storage.write(key: keys.tokenKey, value: pinToken);
             final expiry = DateTime.now().add(Duration(seconds: expiresIn));
             await _storage.write(
-              key: _pinTokenExpiryKey,
+              key: keys.tokenExpiryKey,
               value: expiry.toIso8601String(),
             );
+            await _rememberPinScope(keys);
           }
 
           return PinVerificationResult(
@@ -261,16 +262,13 @@ class PinService {
     String newPin, {
     required String stepUpChallengeToken,
   }) async {
-    if (!_isValidPin(newPin) || _isWeakPin(newPin)) {
+    if (!_isValidPin(currentPin) ||
+        !_isValidPin(newPin) ||
+        _isWeakPin(newPin)) {
       return false;
     }
 
     if (currentPin == newPin) {
-      return false;
-    }
-
-    final verification = await verifyPinLocally(currentPin);
-    if (!verification.success) {
       return false;
     }
 
@@ -308,11 +306,12 @@ class PinService {
 
   /// Clear PIN (on logout)
   Future<void> clearPin() async {
-    await _storage.delete(key: _pinHashKey);
-    await _storage.delete(key: _pinSaltKey);
-    await _storage.delete(key: _pinAttemptsKey);
-    await _storage.delete(key: _pinLockedUntilKey);
-    await clearPinToken();
+    final keysToClear = await _allKnownPinKeys();
+    for (final keys in keysToClear) {
+      await _deletePinKeys(keys);
+      await _deletePinTokenKeys(keys);
+    }
+    await _storage.delete(key: _pinScopeIndexKey);
   }
 
   /// Hash PIN for transmission to backend
@@ -341,16 +340,22 @@ class PinService {
   Future<void> _storePinLocally(String pin) async {
     final salt = _generateSalt();
     final hash = _hashPin(pin, salt);
+    final keys = await _primaryPinKeys();
 
-    await _storage.write(key: _pinHashKey, value: hash);
-    await _storage.write(key: _pinSaltKey, value: salt);
-    await _storage.write(key: _pinAttemptsKey, value: '0');
-    await _storage.delete(key: _pinLockedUntilKey);
+    await _storage.write(key: keys.hashKey, value: hash);
+    await _storage.write(key: keys.saltKey, value: salt);
+    await _storage.write(key: keys.attemptsKey, value: '0');
+    await _storage.delete(key: keys.lockedUntilKey);
+    await _rememberPinScope(keys);
+
+    if (!keys.isLegacy) {
+      await _deletePinKeys(_legacyPinKeys);
+    }
   }
 
   /// Hash PIN with salt using PBKDF2
   /// SECURITY: PBKDF2 with high iterations to resist brute-force attacks
-  /// Since PINs are only 4 digits (10,000 combinations), we need strong KDF
+  /// Since PINs are short numeric secrets, we need a strong local KDF.
   String _hashPin(String pin, String salt) {
     // Use PBKDF2 with HMAC-SHA256
     // 100,000 iterations makes brute-force significantly slower
@@ -416,20 +421,23 @@ class PinService {
   /// Get stored PIN token for transfer operations
   /// Returns null if no token or if expired
   Future<String?> getPinToken() async {
-    final token = await _storage.read(key: _pinTokenKey);
-    if (token == null) return null;
+    for (final keys in await _candidatePinKeys()) {
+      final token = await _storage.read(key: keys.tokenKey);
+      if (token == null) continue;
 
-    final expiryStr = await _storage.read(key: _pinTokenExpiryKey);
-    if (expiryStr != null) {
-      final expiry = DateTime.parse(expiryStr);
-      if (DateTime.now().isAfter(expiry)) {
-        // Token expired, clear it
-        await clearPinToken();
-        return null;
+      final expiryStr = await _storage.read(key: keys.tokenExpiryKey);
+      if (expiryStr != null) {
+        final expiry = DateTime.parse(expiryStr);
+        if (DateTime.now().isAfter(expiry)) {
+          await _deletePinTokenKeys(keys);
+          continue;
+        }
       }
+
+      return token;
     }
 
-    return token;
+    return null;
   }
 
   /// Check if a valid PIN token exists
@@ -440,8 +448,152 @@ class PinService {
 
   /// Clear the PIN token (after use or on logout)
   Future<void> clearPinToken() async {
-    await _storage.delete(key: _pinTokenKey);
-    await _storage.delete(key: _pinTokenExpiryKey);
+    for (final keys in await _allKnownPinKeys()) {
+      await _deletePinTokenKeys(keys);
+    }
+  }
+
+  _PinStorageKeys get _legacyPinKeys => const _PinStorageKeys.legacy(
+    hashKey: _pinHashKey,
+    saltKey: _pinSaltKey,
+    attemptsKey: _pinAttemptsKey,
+    lockedUntilKey: _pinLockedUntilKey,
+    tokenKey: _pinTokenKey,
+    tokenExpiryKey: _pinTokenExpiryKey,
+  );
+
+  Future<_PinStorageKeys> _primaryPinKeys() async {
+    final scope = await _currentPinScope();
+    if (scope == null) {
+      return _legacyPinKeys;
+    }
+    return _PinStorageKeys.scoped(
+      scope,
+      hashKey: _pinHashKey,
+      saltKey: _pinSaltKey,
+      attemptsKey: _pinAttemptsKey,
+      lockedUntilKey: _pinLockedUntilKey,
+      tokenKey: _pinTokenKey,
+      tokenExpiryKey: _pinTokenExpiryKey,
+    );
+  }
+
+  Future<List<_PinStorageKeys>> _candidatePinKeys() async {
+    final primary = await _primaryPinKeys();
+    if (primary.isLegacy) {
+      return [primary];
+    }
+    return [primary];
+  }
+
+  Future<List<_PinStorageKeys>> _allKnownPinKeys() async {
+    final byId = <String, _PinStorageKeys>{};
+    void add(_PinStorageKeys keys) => byId[keys.id] = keys;
+
+    for (final keys in await _candidatePinKeys()) {
+      add(keys);
+    }
+
+    final stored = await _storage.read(key: _pinScopeIndexKey);
+    if (stored != null && stored.isNotEmpty) {
+      try {
+        final scopes = jsonDecode(stored);
+        if (scopes is List) {
+          for (final scope in scopes.whereType<String>()) {
+            add(
+              _PinStorageKeys.scoped(
+                scope,
+                hashKey: _pinHashKey,
+                saltKey: _pinSaltKey,
+                attemptsKey: _pinAttemptsKey,
+                lockedUntilKey: _pinLockedUntilKey,
+                tokenKey: _pinTokenKey,
+                tokenExpiryKey: _pinTokenExpiryKey,
+              ),
+            );
+          }
+        }
+      } on Object {
+        await _storage.delete(key: _pinScopeIndexKey);
+      }
+    }
+
+    add(_legacyPinKeys);
+    return byId.values.toList(growable: false);
+  }
+
+  Future<_StoredPin?> _readStoredPin() async {
+    for (final keys in await _candidatePinKeys()) {
+      final hash = await _storage.read(key: keys.hashKey);
+      final salt = await _storage.read(key: keys.saltKey);
+      if (hash != null && hash.isNotEmpty && salt != null && salt.isNotEmpty) {
+        return _StoredPin(keys: keys, hash: hash, salt: salt);
+      }
+    }
+    return null;
+  }
+
+  Future<String?> _currentPinScope() async {
+    final userId = await _readTrimmed(StorageKeys.userId);
+    if (userId != null) {
+      return 'user:$userId';
+    }
+
+    final e164 = await _readTrimmed(StorageKeys.userPhoneE164);
+    if (e164 != null) {
+      return 'phone:$e164';
+    }
+
+    final dialCode = await _readTrimmed(StorageKeys.userDialCode);
+    final localPhone = await _readTrimmed(StorageKeys.userLocalPhone);
+    if (dialCode != null && localPhone != null) {
+      return 'phone:$dialCode$localPhone';
+    }
+
+    final phone = await _readTrimmed(StorageKeys.userPhone);
+    return phone == null ? null : 'phone:$phone';
+  }
+
+  Future<String?> _readTrimmed(String key) async {
+    final value = (await _storage.read(key: key))?.trim();
+    return value == null || value.isEmpty ? null : value;
+  }
+
+  Future<void> _rememberPinScope(_PinStorageKeys keys) async {
+    final scope = keys.scope;
+    if (scope == null) {
+      return;
+    }
+
+    final scopes = <String>{};
+    final stored = await _storage.read(key: _pinScopeIndexKey);
+    if (stored != null && stored.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(stored);
+        if (decoded is List) {
+          scopes.addAll(decoded.whereType<String>());
+        }
+      } on Object {
+        // Replace invalid scope index below.
+      }
+    }
+    scopes.add(scope);
+    await _storage.write(
+      key: _pinScopeIndexKey,
+      value: jsonEncode(scopes.toList()),
+    );
+  }
+
+  Future<void> _deletePinKeys(_PinStorageKeys keys) async {
+    await _storage.delete(key: keys.hashKey);
+    await _storage.delete(key: keys.saltKey);
+    await _storage.delete(key: keys.attemptsKey);
+    await _storage.delete(key: keys.lockedUntilKey);
+  }
+
+  Future<void> _deletePinTokenKeys(_PinStorageKeys keys) async {
+    await _storage.delete(key: keys.tokenKey);
+    await _storage.delete(key: keys.tokenExpiryKey);
   }
 
   /// Check for weak PINs
@@ -523,6 +675,71 @@ class PinService {
 
     return false;
   }
+}
+
+class _StoredPin {
+  const _StoredPin({
+    required this.keys,
+    required this.hash,
+    required this.salt,
+  });
+
+  final _PinStorageKeys keys;
+  final String hash;
+  final String salt;
+}
+
+class _PinStorageKeys {
+  const _PinStorageKeys.legacy({
+    required this.hashKey,
+    required this.saltKey,
+    required this.attemptsKey,
+    required this.lockedUntilKey,
+    required this.tokenKey,
+    required this.tokenExpiryKey,
+  }) : scope = null;
+
+  factory _PinStorageKeys.scoped(
+    String scope, {
+    required String hashKey,
+    required String saltKey,
+    required String attemptsKey,
+    required String lockedUntilKey,
+    required String tokenKey,
+    required String tokenExpiryKey,
+  }) {
+    final suffix = base64Url.encode(utf8.encode(scope)).replaceAll('=', '');
+    return _PinStorageKeys._(
+      scope: scope,
+      hashKey: '$hashKey.$suffix',
+      saltKey: '$saltKey.$suffix',
+      attemptsKey: '$attemptsKey.$suffix',
+      lockedUntilKey: '$lockedUntilKey.$suffix',
+      tokenKey: '$tokenKey.$suffix',
+      tokenExpiryKey: '$tokenExpiryKey.$suffix',
+    );
+  }
+
+  const _PinStorageKeys._({
+    required this.scope,
+    required this.hashKey,
+    required this.saltKey,
+    required this.attemptsKey,
+    required this.lockedUntilKey,
+    required this.tokenKey,
+    required this.tokenExpiryKey,
+  });
+
+  final String? scope;
+  final String hashKey;
+  final String saltKey;
+  final String attemptsKey;
+  final String lockedUntilKey;
+  final String tokenKey;
+  final String tokenExpiryKey;
+
+  bool get isLegacy => scope == null;
+  String get id => scope ?? 'legacy';
 }
 
 /// Result of PIN verification

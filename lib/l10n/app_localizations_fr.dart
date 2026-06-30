@@ -4831,7 +4831,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get security_changePinSubtitle =>
-      'Mettre à jour votre code PIN à 4 chiffres';
+      'Mettre à jour votre code PIN à 6 chiffres';
 
   @override
   String get security_biometricLogin => 'Connexion biométrique';
@@ -5343,14 +5343,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get changePin_enterCurrentPinSubtitle =>
-      'Entrez votre code PIN actuel à 4 chiffres pour continuer';
+      'Entrez votre code PIN actuel à 6 chiffres pour continuer';
 
   @override
   String get changePin_createNewPinTitle => 'Créer un nouveau code PIN';
 
   @override
   String get changePin_createNewPinSubtitle =>
-      'Choisissez un nouveau code PIN à 4 chiffres pour votre compte';
+      'Choisissez un nouveau code PIN à 6 chiffres pour votre compte';
 
   @override
   String get changePin_confirmPinTitle => 'Confirmez votre code PIN';

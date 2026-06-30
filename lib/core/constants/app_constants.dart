@@ -18,7 +18,7 @@ class AppConstants {
   static const maxPinAttempts = 5;
   static const pinLockoutMinutes = 30;
   static const otpLength = 6;
-  static const pinLength = 4;
+  static const pinLength = 6;
   static const maxTransferNote = 200;
   static const maxBulkPaymentItems = 100;
   static const maxFileUploadMb = 10;
@@ -55,6 +55,13 @@ class AppConstants {
 
   // UEMOA countries
   static const uemoaCountries = [
-    'CI', 'SN', 'ML', 'BF', 'NE', 'TG', 'BJ', 'GW',
+    'CI',
+    'SN',
+    'ML',
+    'BF',
+    'NE',
+    'TG',
+    'BJ',
+    'GW',
   ];
 }

@@ -241,9 +241,25 @@ void main() {
       );
       expect(
         pinScreenSource,
-        contains('biometric_usePinInstead'),
+        isNot(contains('biometric_usePinInstead')),
         reason:
-            'unlock transition must let the user return to PIN if navigation stalls',
+            'unlock transition must not show a stale PIN action after unlock has already been accepted',
+      );
+      final biometricAllowedBody = _getterBody(
+        pinScreenSource,
+        '_allowsBiometricUnlock',
+      );
+      expect(
+        biometricAllowedBody,
+        contains('PinContext.sessionLock'),
+        reason:
+            'normal session unlock keeps biometric inline on the PIN screen',
+      );
+      expect(
+        biometricAllowedBody,
+        isNot(contains('PinContext.login')),
+        reason:
+            'login PIN must remain backend-authoritative until a server biometric assertion contract exists',
       );
     },
   );
@@ -261,6 +277,34 @@ void main() {
     expect(loginSource, contains('expectedUserId: expectedUserId'));
     expect(authProviderSource, contains('responseUserId != expectedUserId'));
     expect(authProviderSource, contains('await clearLocalSession()'));
+  });
+
+  test('logout clears user-scoped PIN and identity storage', () {
+    final authProviderSource = File(
+      'lib/features/auth/providers/auth_provider.dart',
+    ).readAsStringSync();
+    final userStateSource = File(
+      'lib/state/user_state_machine.dart',
+    ).readAsStringSync();
+
+    final clearLocalSessionBody = _methodBody(
+      authProviderSource,
+      'clearLocalSession',
+    );
+    final userLogoutBody = _methodBody(userStateSource, 'logout');
+
+    for (final body in [clearLocalSessionBody, userLogoutBody]) {
+      expect(
+        body,
+        contains('pinServiceProvider'),
+        reason:
+            'logout paths must clear user-scoped PIN caches before another account can use the app',
+      );
+      expect(body, contains('StorageKeys.userId'));
+      expect(body, contains('StorageKeys.userPhoneE164'));
+      expect(body, contains('StorageKeys.userDialCode'));
+      expect(body, contains('StorageKeys.userLocalPhone'));
+    }
   });
 
   test('biometric settings do not own enrollment storage', () {
@@ -1513,6 +1557,21 @@ void main() {
           'Change PIN copy must not claim every PIN change requires facial verification.',
     );
   });
+}
+
+String _getterBody(String source, String getterName) {
+  final getterIndex = source.indexOf(
+    RegExp(r'\bget\s+' + RegExp.escape(getterName) + r'\b'),
+  );
+  expect(getterIndex, isNonNegative, reason: '$getterName should exist');
+
+  final arrowIndex = source.indexOf('=>', getterIndex);
+  expect(arrowIndex, isNonNegative, reason: '$getterName should use =>');
+
+  final endIndex = source.indexOf(';', arrowIndex);
+  expect(endIndex, isNonNegative, reason: '$getterName should end with ;');
+
+  return source.substring(arrowIndex + 2, endIndex);
 }
 
 String _methodBody(String source, String methodName) {

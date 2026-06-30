@@ -115,6 +115,16 @@ class _PinScreenState extends ConsumerState<PinScreen>
   }
 
   Future<void> _checkBiometric() async {
+    if (!_allowsBiometricUnlock) {
+      if (mounted) {
+        setState(() {
+          _biometricEnabled = false;
+          _biometricType = BiometricType.none;
+        });
+      }
+      return;
+    }
+
     // Only offer biometric if PIN is confirmed (set) on device
     final pinService = ref.read(pinServiceProvider);
     final hasPin = await pinService.hasPin();
@@ -602,13 +612,6 @@ class _PinScreenState extends ConsumerState<PinScreen>
                       variant: AppTextVariant.titleMedium,
                       color: colors.textPrimary,
                     ),
-                    const SizedBox(height: AppSpacing.xl),
-                    AppButton(
-                      label: l10n.biometric_usePinInstead,
-                      icon: Icons.pin_rounded,
-                      onPressed: _returnToPinEntry,
-                      variant: AppButtonVariant.secondary,
-                    ),
                   ],
                 ),
               ),
@@ -684,17 +687,6 @@ class _PinScreenState extends ConsumerState<PinScreen>
                       ],
 
                       const Spacer(flex: 1),
-
-                      if (_shouldShowBiometricUnlock) ...[
-                        AppButton(
-                          label: _biometricButtonLabel(l10n),
-                          icon: _biometricIcon,
-                          onPressed: _handleBiometric,
-                          variant: AppButtonVariant.secondary,
-                          isFullWidth: true,
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
-                      ],
 
                       PinPad(
                         onDigitPressed: (digit) {
@@ -972,20 +964,15 @@ class _PinScreenState extends ConsumerState<PinScreen>
     return KoridoMark(size: size);
   }
 
-  bool get _shouldShowBiometricUnlock => _biometricEnabled && !_isVerifying;
+  bool get _shouldShowBiometricUnlock =>
+      _allowsBiometricUnlock &&
+      _biometricEnabled &&
+      !_isVerifying &&
+      !_showUnlockTransition &&
+      _biometricType != BiometricType.none;
 
-  String _biometricButtonLabel(AppLocalizations l10n) {
-    switch (_biometricType) {
-      case BiometricType.faceId:
-        return l10n.biometric_type_face_id;
-      case BiometricType.fingerprint:
-        return l10n.biometric_type_fingerprint;
-      case BiometricType.iris:
-        return l10n.biometric_type_iris;
-      case BiometricType.none:
-        return l10n.security_biometricLogin;
-    }
-  }
+  bool get _allowsBiometricUnlock =>
+      widget.pinContext == PinContext.sessionLock;
 
   IconData get _biometricIcon {
     switch (_biometricType) {

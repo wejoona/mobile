@@ -11,7 +11,7 @@ const Duration apiConnectTimeout = Duration(seconds: 10);
 const int apiMaxRetries = 2;
 
 /// PIN configuration
-const int pinLength = 4;
+const int pinLength = 6;
 const int maxPinAttempts = 3;
 const Duration pinLockoutDuration = Duration(minutes: 15);
 const Duration pinTokenValidity = Duration(minutes: 5);

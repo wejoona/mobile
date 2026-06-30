@@ -11,8 +11,8 @@ class PinConfig {
   PinConfig._();
 
   /// Expected PIN length.
-  /// Default: 4 digits
-  static int pinLength = 4;
+  /// Default: 6 digits
+  static int pinLength = 6;
 
   /// Maximum failed attempts before lockout.
   /// Default: 5 attempts
@@ -57,7 +57,7 @@ class PinConfig {
 
   /// Reset all settings to defaults.
   static void reset() {
-    pinLength = 4;
+    pinLength = 6;
     maxAttempts = 5;
     lockoutDuration = const Duration(minutes: 15);
     pbkdf2Iterations = 100000;
@@ -78,7 +78,9 @@ class PinStorageKeys {
   static String get pinHash => '${PinConfig.storageKeyPrefix}hash';
   static String get pinSalt => '${PinConfig.storageKeyPrefix}salt';
   static String get pinAttempts => '${PinConfig.storageKeyPrefix}attempts';
-  static String get pinLockedUntil => '${PinConfig.storageKeyPrefix}locked_until';
+  static String get pinLockedUntil =>
+      '${PinConfig.storageKeyPrefix}locked_until';
   static String get pinToken => '${PinConfig.storageKeyPrefix}token';
-  static String get pinTokenExpiry => '${PinConfig.storageKeyPrefix}token_expiry';
+  static String get pinTokenExpiry =>
+      '${PinConfig.storageKeyPrefix}token_expiry';
 }

@@ -4748,7 +4748,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get security_changePin => 'Change PIN';
 
   @override
-  String get security_changePinSubtitle => 'Update your 4-digit PIN';
+  String get security_changePinSubtitle => 'Update your 6-digit PIN';
 
   @override
   String get security_biometricLogin => 'Biometric Login';
@@ -5247,14 +5247,14 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get changePin_enterCurrentPinSubtitle =>
-      'Enter your current 4-digit PIN to continue';
+      'Enter your current 6-digit PIN to continue';
 
   @override
   String get changePin_createNewPinTitle => 'Create New PIN';
 
   @override
   String get changePin_createNewPinSubtitle =>
-      'Choose a new 4-digit PIN for your account';
+      'Choose a new 6-digit PIN for your account';
 
   @override
   String get changePin_confirmPinTitle => 'Confirm Your PIN';

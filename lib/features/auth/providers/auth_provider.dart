@@ -963,6 +963,7 @@ class AuthNotifier extends Notifier<AuthState> {
     final realtimeService = ref.read(realtimeServiceProvider);
     final sessionService = ref.read(sessionServiceProvider.notifier);
     final biometricService = ref.read(biometricServiceProvider);
+    final pinService = ref.read(pinServiceProvider);
     final userStateMachine = ref.read(userStateMachineProvider.notifier);
     final appFsm = ref.read(appFsmProvider.notifier);
 
@@ -978,8 +979,14 @@ class AuthNotifier extends Notifier<AuthState> {
       ref.invalidate(loginProvider);
     }
 
+    await pinService.clearPin();
     await _storage.delete(key: StorageKeys.accessToken);
     await _storage.delete(key: StorageKeys.refreshToken);
+    await _storage.delete(key: StorageKeys.userId);
+    await _storage.delete(key: StorageKeys.userPhone);
+    await _storage.delete(key: StorageKeys.userPhoneE164);
+    await _storage.delete(key: StorageKeys.userDialCode);
+    await _storage.delete(key: StorageKeys.userLocalPhone);
     await biometricService.disableBiometric();
 
     // Clear user state machine (clears cache, avatar, storage keys)

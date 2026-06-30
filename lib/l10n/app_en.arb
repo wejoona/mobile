@@ -6022,7 +6022,7 @@
   "@security_changePin": {
     "description": "Change PIN option"
   },
-  "security_changePinSubtitle": "Update your 4-digit PIN",
+  "security_changePinSubtitle": "Update your 6-digit PIN",
   "@security_changePinSubtitle": {
     "description": "Change PIN subtitle"
   },
@@ -6620,7 +6620,7 @@
   "@changePin_enterCurrentPinTitle": {
     "description": "Enter current PIN step title"
   },
-  "changePin_enterCurrentPinSubtitle": "Enter your current 4-digit PIN to continue",
+  "changePin_enterCurrentPinSubtitle": "Enter your current 6-digit PIN to continue",
   "@changePin_enterCurrentPinSubtitle": {
     "description": "Enter current PIN step subtitle"
   },
@@ -6628,7 +6628,7 @@
   "@changePin_createNewPinTitle": {
     "description": "Create new PIN step title"
   },
-  "changePin_createNewPinSubtitle": "Choose a new 4-digit PIN for your account",
+  "changePin_createNewPinSubtitle": "Choose a new 6-digit PIN for your account",
   "@changePin_createNewPinSubtitle": {
     "description": "Create new PIN step subtitle"
   },
