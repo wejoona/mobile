@@ -179,7 +179,9 @@ class DepositResult {
     status: response.status.value,
     paymentUrl: response.deepLinkUrl,
     instructions: response.instructions,
-    reference: response.token,
+    reference: response.paymentReference.isNotEmpty
+        ? response.paymentReference
+        : response.token,
     token: response.token,
     paymentMethodType: response.paymentMethodType.value,
   );
@@ -407,6 +409,11 @@ class DepositNotifier extends Notifier<DepositState> {
       final statusCode = e.response?.statusCode;
       if (statusCode == 401 || statusCode == 403) {
         _pollingTimer?.cancel();
+        state = state.copyWith(
+          error:
+              'Your session expired while Korido was checking this deposit. Sign in again, then open transaction history to confirm the final status.',
+          step: DepositFlowStep.statusUnknown,
+        );
         return;
       }
       debugPrint('Deposit status poll error: $e');

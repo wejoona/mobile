@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/deposit/models/deposit_request.dart';
+import 'package:usdc_wallet/features/deposit/models/deposit_response.dart';
 import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
 import 'package:usdc_wallet/features/deposit/models/mobile_money_provider.dart';
 import 'package:usdc_wallet/features/deposit/models/provider_data.dart';
@@ -205,6 +206,27 @@ void main() {
         expect(state.activeDepositId, 'txn_123');
       },
     );
+
+    test('polling session expiry surfaces unknown status', () async {
+      final dio = MockDio()
+        ..queueErrorResponse(statusCode: 401, message: 'Unauthorized');
+      final container = ProviderContainer(
+        overrides: [dioProvider.overrideWithValue(dio)],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(depositProvider.notifier);
+      notifier.hydrateFromResponse(
+        DepositResponse.fromJson(_initiateResponse(paymentMethodType: 'PUSH')),
+      );
+
+      await notifier.checkStatus();
+
+      final state = container.read(depositProvider);
+      expect(state.step, DepositFlowStep.statusUnknown);
+      expect(state.error, contains('session expired'));
+      expect(state.activeDepositId, 'txn_123');
+    });
 
     test('instructions back sends unresolved deposits to status route', () {
       final source = File(

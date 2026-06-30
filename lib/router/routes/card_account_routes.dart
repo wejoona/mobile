@@ -146,13 +146,15 @@ List<RouteBase> cardAccountRoutes() => [
   GoRoute(
     path: '/pin/enter',
     pageBuilder: (context, state) {
-      final query = state.uri.queryParameters;
+      final routeContext = state.extra is EnterPinRouteContext
+          ? state.extra! as EnterPinRouteContext
+          : const EnterPinRouteContext();
       return AppPageTransitions.fade(
         state: state,
         child: EnterPinView(
-          title: query['title'] ?? 'Enter PIN',
-          subtitle: query['subtitle'],
-          showBiometric: query['biometric'] == 'true',
+          title: routeContext.title,
+          subtitle: routeContext.subtitle,
+          showBiometric: routeContext.showBiometric,
         ),
       );
     },

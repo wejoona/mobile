@@ -146,3 +146,20 @@ class PinResetRouteContext {
     return normalized == null || normalized.isEmpty ? null : normalized;
   }
 }
+
+/// Typed route context for generic PIN confirmation screens.
+///
+/// Do not derive biometric availability or security intent from URL query
+/// parameters. Security-sensitive PIN screens must be opened with an explicit
+/// in-process route context so deep links cannot opt into stronger privileges.
+class EnterPinRouteContext {
+  const EnterPinRouteContext({
+    this.title = 'Enter PIN',
+    this.subtitle,
+    this.showBiometric = false,
+  });
+
+  final String title;
+  final String? subtitle;
+  final bool showBiometric;
+}

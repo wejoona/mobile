@@ -5,7 +5,15 @@
 /// - PUSH: Backend initiates, user approves via push notification
 /// - QR_LINK: QR code + deep link to open provider app
 
-enum PaymentMethodType { otp, push, qrLink, card, bankTransfer, crypto }
+enum PaymentMethodType {
+  otp,
+  push,
+  qrLink,
+  card,
+  bankTransfer,
+  crypto,
+  unsupported,
+}
 
 extension PaymentMethodTypeExt on PaymentMethodType {
   String get value {
@@ -22,6 +30,8 @@ extension PaymentMethodTypeExt on PaymentMethodType {
         return 'BANK_TRANSFER';
       case PaymentMethodType.crypto:
         return 'CRYPTO';
+      case PaymentMethodType.unsupported:
+        return 'UNSUPPORTED';
     }
   }
 
@@ -41,7 +51,7 @@ extension PaymentMethodTypeExt on PaymentMethodType {
       case 'CRYPTO':
         return PaymentMethodType.crypto;
       default:
-        return PaymentMethodType.push;
+        return PaymentMethodType.unsupported;
     }
   }
 
@@ -53,6 +63,9 @@ extension PaymentMethodTypeExt on PaymentMethodType {
 
   /// Whether this type shows a QR code and/or deep link
   bool get hasQrOrLink => this == PaymentMethodType.qrLink;
+
+  /// Whether Korido knows how to render and progress this payment method.
+  bool get isSupported => this != PaymentMethodType.unsupported;
 }
 
 enum MobileMoneyProvider { orangeMoney, mtnMomo, moovMoney, wave }

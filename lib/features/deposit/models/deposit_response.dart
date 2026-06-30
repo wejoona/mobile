@@ -19,6 +19,10 @@ class DepositResponse {
   final String? convertedCurrency;
   final double? exchangeRate;
   final String providerCode;
+  final String paymentReference;
+  final String supportReference;
+  final String railProvider;
+  final String executionProvider;
   final String? failureReason;
 
   const DepositResponse({
@@ -37,6 +41,10 @@ class DepositResponse {
     this.convertedCurrency,
     this.exchangeRate,
     this.providerCode = '',
+    this.paymentReference = '',
+    this.supportReference = '',
+    this.railProvider = '',
+    this.executionProvider = '',
     this.failureReason,
   });
 
@@ -51,8 +59,8 @@ class DepositResponse {
       paymentMethodType: PaymentMethodTypeExt.fromString(
         json['paymentMethodType'] as String? ??
             paymentInstructions?['paymentMethodType'] as String? ??
-            paymentInstructions?['type'] as String? ??
-            'PUSH',
+            paymentInstructions?['methodType'] as String? ??
+            '',
       ),
       instructions:
           json['instructions'] as String? ??
@@ -97,6 +105,30 @@ class DepositResponse {
           json['channelId'] as String? ??
           paymentInstructions?['provider'] as String? ??
           '',
+      paymentReference:
+          json['paymentReference'] as String? ??
+          json['reference'] as String? ??
+          paymentInstructions?['paymentReference'] as String? ??
+          paymentInstructions?['reference'] as String? ??
+          '',
+      supportReference:
+          json['supportReference'] as String? ??
+          json['supportId'] as String? ??
+          paymentInstructions?['supportReference'] as String? ??
+          paymentInstructions?['supportId'] as String? ??
+          '',
+      railProvider:
+          json['railProvider'] as String? ??
+          json['paymentRail'] as String? ??
+          paymentInstructions?['railProvider'] as String? ??
+          paymentInstructions?['paymentRail'] as String? ??
+          '',
+      executionProvider:
+          json['executionProvider'] as String? ??
+          json['processor'] as String? ??
+          paymentInstructions?['executionProvider'] as String? ??
+          paymentInstructions?['processor'] as String? ??
+          '',
       failureReason: json['failureReason'] as String?,
     );
   }
@@ -117,6 +149,10 @@ class DepositResponse {
     String? convertedCurrency,
     double? exchangeRate,
     String? providerCode,
+    String? paymentReference,
+    String? supportReference,
+    String? railProvider,
+    String? executionProvider,
     String? failureReason,
   }) {
     return DepositResponse(
@@ -135,6 +171,10 @@ class DepositResponse {
       convertedCurrency: convertedCurrency ?? this.convertedCurrency,
       exchangeRate: exchangeRate ?? this.exchangeRate,
       providerCode: providerCode ?? this.providerCode,
+      paymentReference: paymentReference ?? this.paymentReference,
+      supportReference: supportReference ?? this.supportReference,
+      railProvider: railProvider ?? this.railProvider,
+      executionProvider: executionProvider ?? this.executionProvider,
       failureReason: failureReason ?? this.failureReason,
     );
   }
@@ -170,6 +210,18 @@ class DepositResponse {
       providerCode: update.providerCode.isNotEmpty
           ? update.providerCode
           : providerCode,
+      paymentReference: update.paymentReference.isNotEmpty
+          ? update.paymentReference
+          : paymentReference,
+      supportReference: update.supportReference.isNotEmpty
+          ? update.supportReference
+          : supportReference,
+      railProvider: update.railProvider.isNotEmpty
+          ? update.railProvider
+          : railProvider,
+      executionProvider: update.executionProvider.isNotEmpty
+          ? update.executionProvider
+          : executionProvider,
       failureReason: update.failureReason,
     );
   }
