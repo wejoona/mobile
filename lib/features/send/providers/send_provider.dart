@@ -358,6 +358,10 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
   /// Verify PIN and store token for subsequent transfer execution.
   /// Must be called before executeTransfer().
   Future<bool> verifyPin(String pin) async {
+    if (state.isLoading || state.isSubmitting) {
+      return false;
+    }
+
     state = state.copyWith(isLoading: true, error: null);
     try {
       final pinService = ref.read(pinServiceProvider);
@@ -384,6 +388,10 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
 
   /// Reuse a still-valid backend PIN token, usually after biometric auth.
   Future<bool> useExistingPinToken() async {
+    if (state.isLoading || state.isSubmitting) {
+      return false;
+    }
+
     final pinService = ref.read(pinServiceProvider);
     final pinToken = await pinService.getPinToken();
     if (pinToken == null) {

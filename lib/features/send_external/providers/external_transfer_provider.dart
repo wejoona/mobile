@@ -220,6 +220,10 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
 
   /// Verify PIN and store token for subsequent transfer execution.
   Future<bool> verifyPin(String pin) async {
+    if (state.isLoading || state.isSubmitting) {
+      return false;
+    }
+
     state = state.copyWith(isLoading: true, error: null);
     try {
       final pinService = ref.read(pinServiceProvider);

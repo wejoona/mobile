@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,11 +16,18 @@ import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
-class ConfirmScreen extends ConsumerWidget {
+class ConfirmScreen extends ConsumerStatefulWidget {
   const ConfirmScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ConfirmScreen> createState() => _ConfirmScreenState();
+}
+
+class _ConfirmScreenState extends ConsumerState<ConfirmScreen> {
+  bool _isAuthorizing = false;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(sendMoneyProvider);
     final colors = context.colors;
@@ -242,98 +251,21 @@ class ConfirmScreen extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.all(AppSpacing.screenPadding),
               child: AppButton(
-                label: localizedSendCopy(
-                  context,
-                  en: 'Continue to PIN',
-                  fr: 'Continuer vers le PIN',
-                ),
-                icon: Icons.lock_outline,
-                onPressed: () async {
-                  HapticFeedback.mediumImpact();
-
-                  final latestState = ref.read(sendMoneyProvider);
-                  if (await _queueDraftIfOffline(context, ref, latestState)) {
-                    return;
-                  }
-
-                  try {
-                    final sendNotifier = ref.read(sendMoneyProvider.notifier);
-                    sendNotifier.clearStepUpAuthorization();
-
-                    // Risk-based step-up evaluation
-                    final securityService = ref.read(
-                      riskBasedSecurityServiceProvider,
-                    );
-                    final riskRecipientId =
-                        state.recipient?.userId ??
-                        state.recipient?.username ??
-                        state.recipient?.phoneNumber;
-                    final decision = await securityService.evaluateTransaction(
-                      type: 'transfer',
-                      amount: state.amount!,
-                      currency: 'USDC',
-                      recipientId: riskRecipientId,
-                      recipientType: 'internal',
-                    );
-
-                    if (decision.stepUpRequired) {
-                      if (decision.stepUpType == StepUpType.manualReview) {
-                        if (!context.mounted) return;
-                        HapticFeedback.heavyImpact();
-                        await RiskStepUpDialog.show(
-                          context,
-                          decision: decision,
-                        );
-                        return;
-                      }
-
-                      if (!context.mounted) return;
-                      final passed = await RiskStepUpDialog.show(
+                label: _isAuthorizing
+                    ? localizedSendCopy(
                         context,
-                        decision: decision,
-                      );
-                      if (!passed) return;
-                      final stepUpToken = decision.challengeToken?.trim();
-                      if (stepUpToken == null || stepUpToken.isEmpty) {
-                        if (!context.mounted) return;
-                        HapticFeedback.heavyImpact();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              localizedSendCopy(
-                                context,
-                                en: 'Security challenge is incomplete. Please try again before sending money.',
-                                fr: 'La vérification de sécurité est incomplète. Réessayez avant d’envoyer de l’argent.',
-                              ),
-                            ),
-                            backgroundColor: context.colors.error,
-                          ),
-                        );
-                        return;
-                      }
-                      sendNotifier.markStepUpAuthorized(stepUpToken);
-                    }
-                  } catch (e) {
-                    if (!context.mounted) return;
-                    HapticFeedback.heavyImpact();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          localizedSendCopy(
-                            context,
-                            en: 'Security check unavailable. Please try again before sending money.',
-                            fr: 'La vérification de sécurité est indisponible. Réessayez avant d’envoyer de l’argent.',
-                          ),
-                        ),
-                        backgroundColor: context.colors.error,
+                        en: 'Checking security...',
+                        fr: 'Vérification en cours...',
+                      )
+                    : localizedSendCopy(
+                        context,
+                        en: 'Continue to PIN',
+                        fr: 'Continuer vers le PIN',
                       ),
-                    );
-                    return;
-                  }
-
-                  if (!context.mounted) return;
-                  context.fsmPush('/send/pin');
-                },
+                icon: Icons.lock_outline,
+                onPressed: _isAuthorizing
+                    ? null
+                    : () => _continueToPin(context),
                 isFullWidth: true,
               ),
             ),
@@ -341,6 +273,116 @@ class ConfirmScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _continueToPin(BuildContext context) async {
+    if (_isAuthorizing) {
+      return;
+    }
+
+    setState(() => _isAuthorizing = true);
+    unawaited(HapticFeedback.mediumImpact());
+
+    try {
+      final latestState = ref.read(sendMoneyProvider);
+      if (await _queueDraftIfOffline(context, ref, latestState)) {
+        return;
+      }
+
+      try {
+        final sendNotifier = ref.read(sendMoneyProvider.notifier);
+        sendNotifier.clearStepUpAuthorization();
+
+        // Risk-based step-up evaluation.
+        final securityService = ref.read(riskBasedSecurityServiceProvider);
+        final riskRecipientId =
+            latestState.recipient?.userId ??
+            latestState.recipient?.username ??
+            latestState.recipient?.phoneNumber;
+        final amount = latestState.amount;
+        if (amount == null || amount <= 0) {
+          return;
+        }
+
+        final decision = await securityService.evaluateTransaction(
+          type: 'transfer',
+          amount: amount,
+          currency: 'USDC',
+          recipientId: riskRecipientId,
+          recipientType: 'internal',
+        );
+
+        if (decision.stepUpRequired) {
+          if (decision.stepUpType == StepUpType.manualReview) {
+            if (!context.mounted) {
+              return;
+            }
+            unawaited(HapticFeedback.heavyImpact());
+            await RiskStepUpDialog.show(context, decision: decision);
+            return;
+          }
+
+          if (!context.mounted) {
+            return;
+          }
+          final passed = await RiskStepUpDialog.show(
+            context,
+            decision: decision,
+          );
+          if (!passed) {
+            return;
+          }
+          final stepUpToken = decision.challengeToken?.trim();
+          if (stepUpToken == null || stepUpToken.isEmpty) {
+            if (!context.mounted) {
+              return;
+            }
+            unawaited(HapticFeedback.heavyImpact());
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  localizedSendCopy(
+                    context,
+                    en: 'Security challenge is incomplete. Please try again before sending money.',
+                    fr: 'La vérification de sécurité est incomplète. Réessayez avant d’envoyer de l’argent.',
+                  ),
+                ),
+                backgroundColor: context.colors.error,
+              ),
+            );
+            return;
+          }
+          sendNotifier.markStepUpAuthorized(stepUpToken);
+        }
+      } on Object catch (_) {
+        if (!context.mounted) {
+          return;
+        }
+        unawaited(HapticFeedback.heavyImpact());
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              localizedSendCopy(
+                context,
+                en: 'Security check unavailable. Please try again before sending money.',
+                fr: 'La vérification de sécurité est indisponible. Réessayez avant d’envoyer de l’argent.',
+              ),
+            ),
+            backgroundColor: context.colors.error,
+          ),
+        );
+        return;
+      }
+
+      if (!context.mounted) {
+        return;
+      }
+      unawaited(context.fsmPush('/send/pin'));
+    } finally {
+      if (mounted) {
+        setState(() => _isAuthorizing = false);
+      }
+    }
   }
 
   Future<bool> _queueDraftIfOffline(
@@ -353,6 +395,10 @@ class ConfirmScreen extends ConsumerWidget {
         state.amount == null ||
         !state.recipient!.canSend) {
       return false;
+    }
+
+    if (mounted && _isAuthorizing) {
+      setState(() => _isAuthorizing = false);
     }
 
     await OfflineQueueDialog.show(
