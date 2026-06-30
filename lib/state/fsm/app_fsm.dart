@@ -387,6 +387,10 @@ class AppGuards {
       return const GuardDenied('/home', 'Unknown route');
     }
 
+    if (state.session is SessionLocked && !contract.isAllowedWhenLocked) {
+      return const GuardDenied('/session-locked', 'Session locked');
+    }
+
     if (contract.requiresWallet) {
       if (!state.hasWallet) {
         if (state.needsWalletCreation) {

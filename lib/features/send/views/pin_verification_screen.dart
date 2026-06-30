@@ -137,6 +137,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
                       ),
                       child: PinInputWidget(
                         length: 6,
+                        enabled: !_isLoading,
                         onChanged: (pin) {
                           setState(() {
                             _error = null;
@@ -151,7 +152,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
                     if (_biometricAvailable) ...[
                       SizedBox(height: AppSpacing.md),
                       TextButton.icon(
-                        onPressed: _handleBiometric,
+                        onPressed: _isLoading ? null : _handleBiometric,
                         icon: Icon(
                           Icons.fingerprint,
                           color: context.colors.gold,
@@ -285,6 +286,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
   }
 
   Future<void> _handlePinComplete(String pin) async {
+    if (_isLoading) return;
     final l10n = AppLocalizations.of(context)!;
     FocusScope.of(context).unfocus();
 
@@ -332,6 +334,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
   }
 
   Future<void> _handleBiometric() async {
+    if (_isLoading) return;
     final l10n = AppLocalizations.of(context)!;
 
     setState(() {

@@ -2,13 +2,12 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/config/api_config.dart';
 import 'package:usdc_wallet/config/environment_config.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
-import 'package:usdc_wallet/state/fsm/app_fsm.dart';
-import 'package:usdc_wallet/state/fsm/session_fsm.dart';
+import 'package:usdc_wallet/services/session/session_service.dart';
+import 'package:usdc_wallet/services/storage/secure_storage_provider.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/services/security/security_headers_interceptor.dart'
     show securityHeadersInterceptorProvider;
@@ -21,6 +20,8 @@ import 'package:usdc_wallet/mocks/index.dart';
 import 'package:usdc_wallet/services/security/certificate_pinning.dart';
 import 'package:usdc_wallet/services/offline/offline_queue_interceptor.dart';
 import 'package:usdc_wallet/services/app_version/mobile_version_policy_service.dart';
+
+export 'package:usdc_wallet/services/storage/secure_storage_provider.dart';
 
 /// API Configuration
 /// SECURITY: Use HTTPS in production, HTTP only for local development
@@ -50,42 +51,10 @@ class ApiConfig {
   static const Duration receiveTimeout = Duration(seconds: 30);
 }
 
-/// Secure Storage Keys
-class StorageKeys {
-  static const String accessToken = 'access_token';
-  static const String refreshToken = 'refresh_token';
-  static const String userId = 'user_id';
-  static const String userPhone = 'user_phone';
-  static const String userDialCode = 'user_dial_code';
-  static const String userLocalPhone = 'user_local_phone';
-  static const String userPhoneE164 = 'user_phone_e164';
-  static const String recoveryAccessToken = 'recovery_access_token';
-  static const String recoveryAccessTokenPhone = 'recovery_access_token_phone';
-  static const String recoveryAccessTokenScope = 'recovery_access_token_scope';
-  static const String recoveryAccessTokenCreatedAt =
-      'recovery_access_token_created_at';
-  static const String userPin = 'user_pin';
-  static const String biometricEnabled = 'biometric_enabled';
-  static const String rememberedPhone = 'remembered_phone';
-  static const String avatarUrl = 'avatar_url';
-}
-
 /// Dio request metadata keys used by app services.
 abstract final class ApiRequestExtra {
   static const String useRecoveryToken = 'useRecoveryToken';
 }
-
-/// Secure Storage Provider
-final secureStorageProvider = Provider<FlutterSecureStorage>((ref) {
-  return const FlutterSecureStorage(
-    aOptions: AndroidOptions(),
-    iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
-  );
-});
-
-/// Bumped when an auth token is known to be invalid and local auth state must
-/// be cleared without calling the backend logout endpoint.
-final authSessionInvalidatedProvider = StateProvider<int>((ref) => 0);
 
 /// Cache Interceptor Provider
 final cacheInterceptorProvider = Provider<CacheInterceptor>((ref) {
@@ -329,15 +298,12 @@ class AuthInterceptor extends Interceptor {
         // explicit logout clears the session.
         if (currentToken == null || currentToken == originalToken) {
           try {
-            _ref
-                .read(appFsmProvider.notifier)
-                .dispatch(
-                  const AppSessionEvent(
-                    SessionLock(reason: 'Token refresh failed'),
-                  ),
-                );
+            _ref.read(sessionServiceProvider.notifier).lockSession();
           } catch (_) {
-            // FSM might not be available in all contexts
+            // Session service might not be available in all contexts.
+            try {
+              _ref.read(appFsmProvider.notifier).lockSession();
+            } catch (_) {}
           }
         }
         // Otherwise, retry with the new token from the concurrent refresh.

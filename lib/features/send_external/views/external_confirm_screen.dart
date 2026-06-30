@@ -531,6 +531,7 @@ class _PinVerificationDialogState extends State<_PinVerificationDialog> {
           const SizedBox(height: AppSpacing.lg),
           TextField(
             controller: _pinController,
+            enabled: !_isVerifying,
             keyboardType: TextInputType.number,
             obscureText: true,
             maxLength: 6,
@@ -565,6 +566,7 @@ class _PinVerificationDialogState extends State<_PinVerificationDialog> {
               LengthLimitingTextInputFormatter(6),
             ],
             onChanged: (value) {
+              if (_isVerifying) return;
               if (_error != null) setState(() => _error = null);
               if (value.length == 6) _verifyPin(value);
             },
@@ -597,6 +599,7 @@ class _PinVerificationDialogState extends State<_PinVerificationDialog> {
   }
 
   Future<void> _verifyPin(String pin) async {
+    if (_isVerifying) return;
     setState(() {
       _isVerifying = true;
       _error = null;

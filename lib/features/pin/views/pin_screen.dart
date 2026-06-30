@@ -73,6 +73,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
   String _replacementPinConfirmation = '';
   ProviderSubscription<AuthState>? _authSubscription;
   ProviderSubscription<SessionState>? _sessionSubscription;
+  ProviderSubscription<AppState>? _appFsmSubscription;
 
   @override
   void initState() {
@@ -84,6 +85,10 @@ class _PinScreenState extends ConsumerState<PinScreen>
     );
     _sessionSubscription = ref.listenManual<SessionState>(
       sessionServiceProvider,
+      (_, _) => _dismissIfAlreadyUnlocked(),
+    );
+    _appFsmSubscription = ref.listenManual<AppState>(
+      appFsmProvider,
       (_, _) => _dismissIfAlreadyUnlocked(),
     );
     unawaited(_checkBiometric());
@@ -99,6 +104,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
     _biometricAttempt++;
     _authSubscription?.close();
     _sessionSubscription?.close();
+    _appFsmSubscription?.close();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -517,12 +523,15 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
     final authState = ref.read(authProvider);
     final sessionState = ref.read(sessionServiceProvider);
+    final appFsmState = ref.read(appFsmProvider);
+    final fsmSessionLocked = appFsmState.session is SessionLocked;
     final shouldDismiss = switch (widget.pinContext) {
       PinContext.login => authState.isAuthenticated,
       PinContext.sessionLock =>
         authState.isAuthenticated &&
             !authState.isLocked &&
-            !sessionState.isLocked,
+            !sessionState.isLocked &&
+            !fsmSessionLocked,
       PinContext.confirmAction => false,
     };
 

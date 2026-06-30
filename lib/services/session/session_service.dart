@@ -2,11 +2,13 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:usdc_wallet/config/api_config.dart';
 import 'package:usdc_wallet/utils/logger.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/settings/providers/security_settings_provider.dart';
 import 'package:usdc_wallet/services/security/security_headers_interceptor.dart';
+import 'package:usdc_wallet/services/storage/secure_storage_provider.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Session configuration
 class SessionConfig {
@@ -188,6 +190,9 @@ class SessionService extends Notifier<SessionState> {
     // Sync with AuthProvider so router shows lock screen
     try {
       unawaited(ref.read(authProvider.notifier).setLocked());
+    } catch (_) {}
+    try {
+      ref.read(appFsmProvider.notifier).lockSession(reason: 'Session locked');
     } catch (_) {}
   }
 
@@ -462,9 +467,13 @@ class SessionService extends Notifier<SessionState> {
     try {
       final dio = Dio(
         BaseOptions(
-          baseUrl: ApiConfig.baseUrl,
-          connectTimeout: ApiConfig.connectTimeout,
-          receiveTimeout: ApiConfig.receiveTimeout,
+          baseUrl: ApiConfiguration.baseUrl,
+          connectTimeout: const Duration(
+            milliseconds: ApiConfiguration.connectTimeout,
+          ),
+          receiveTimeout: const Duration(
+            milliseconds: ApiConfiguration.receiveTimeout,
+          ),
         ),
       );
       final securityHeaders = await ref
