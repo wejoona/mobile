@@ -706,11 +706,23 @@ void main() {
       reason:
           'login PIN may stay open only while the OTP-created pending PIN session exists',
     );
+    final pinSource = File(
+      'lib/features/pin/views/pin_screen.dart',
+    ).readAsStringSync();
     expect(
-      File('lib/features/pin/views/pin_screen.dart').readAsStringSync(),
+      pinSource,
       contains('_queuedUnlockedRedirect = true;'),
       reason:
           'PIN success should own one authenticated-app navigation instead of racing the auth-state listener',
+    );
+    final pinSuccessBody = _methodBody(pinSource, '_onSuccess');
+    expect(pinSuccessBody, contains('case PinContext.sessionLock:'));
+    expect(pinSuccessBody, contains('if (!mounted)'));
+    expect(
+      pinSource,
+      contains('void _showUnlockFailure() {\n    if (!mounted) return;'),
+      reason:
+          'session unlock can be disposed by auth/FSM refresh before failure UI updates',
     );
     expect(redirectorSource, isNot(contains('isPublicPath(location)')));
     expect(routeContractSource, contains("pattern: '/signup'"));
@@ -785,6 +797,14 @@ void main() {
     expect(routesSource, contains("returnTo.startsWith('/login')"));
     expect(routesSource, contains("returnTo.startsWith('/onboarding')"));
     expect(routesSource, contains("returnTo.startsWith('/session-locked')"));
+    expect(routesSource, contains('appRouteContractFor(uri.path)'));
+    expect(routesSource, contains('contract.isSecurityRecovery'));
+    expect(routesSource, contains('contract.isAuthDeadEnd'));
+    expect(routesSource, contains('contract.isFsmRoute'));
+    expect(
+      routesSource,
+      contains('contract.role == AppRouteRole.securityStep'),
+    );
     expect(routesSource, contains("_safeReturnTo(state) ?? '/home'"));
     expect(redirectorSource, contains('_safeUnlockedReturnTo(returnTo)'));
     expect(redirectorSource, contains("state.uri.queryParameters['returnTo']"));

@@ -17,6 +17,7 @@ import 'package:usdc_wallet/features/splash/views/splash_view.dart';
 import 'package:usdc_wallet/features/wallet/views/create_wallet_view.dart';
 import 'package:usdc_wallet/router/page_transitions.dart';
 import 'package:usdc_wallet/services/legal/legal_documents_service.dart';
+import 'package:usdc_wallet/state/fsm/app_route_contract.dart';
 
 List<RouteBase> authStateRoutes() => [
   // Splash Screen (no transition)
@@ -298,6 +299,16 @@ String? _safeReturnTo(GoRouterState state) {
       returnTo.startsWith('/signup') ||
       returnTo.startsWith('/onboarding') ||
       returnTo.startsWith('/session-locked')) {
+    return null;
+  }
+
+  final contract = appRouteContractFor(uri.path);
+  if (contract.isSecurityRecovery ||
+      contract.isAuthDeadEnd ||
+      contract.isSignupRoute ||
+      contract.isLegacySignupRoute ||
+      contract.isFsmRoute ||
+      contract.role == AppRouteRole.securityStep) {
     return null;
   }
 

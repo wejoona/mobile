@@ -213,6 +213,8 @@ class AuthInterceptor extends Interceptor {
     final isAccountRecoveryEndpoint = _isAccountRecoveryEndpoint(
       err.requestOptions.path,
     );
+    final usesRecoveryToken =
+        err.requestOptions.extra[ApiRequestExtra.useRecoveryToken] == true;
     final optionalAuthEndpoints = ['/feature-flags/me'];
     final isOptionalAuthEndpoint = optionalAuthEndpoints.any(
       (e) => err.requestOptions.path.contains(e),
@@ -222,7 +224,9 @@ class AuthInterceptor extends Interceptor {
       return handler.next(err);
     }
 
-    if (err.response?.statusCode == 401 && isAccountRecoveryEndpoint) {
+    if (err.response?.statusCode == 401 &&
+        isAccountRecoveryEndpoint &&
+        usesRecoveryToken) {
       await _clearRecoveryAuthorization(_ref.read(secureStorageProvider));
       return handler.next(err);
     }

@@ -191,6 +191,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
         if (mounted) {
           _transitionThen(() async {
             final unlocked = await _applySessionUnlock();
+            if (!mounted) {
+              return;
+            }
             if (!unlocked) {
               _showUnlockFailure();
               return;
@@ -210,6 +213,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
                 } on Object {}
               }),
             );
+            if (!mounted) {
+              return;
+            }
             context.fsmEnterAuthenticatedApp(
               route: widget.successRoute ?? '/home',
             );
@@ -295,6 +301,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
   }
 
   void _showUnlockFailure() {
+    if (!mounted) return;
     setState(() {
       _hasCompletedSuccess = false;
       _queuedUnlockedRedirect = false;
