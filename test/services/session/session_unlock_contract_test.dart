@@ -1498,6 +1498,10 @@ void main() {
     expect(manualReviewBody, contains('_scheduleManualReviewNavigation()'));
     expect(manualReviewBody, contains('_markManualReviewCreationFailed'));
     expect(kycLivenessSource, contains('_retryManualReviewCreation'));
+    expect(kycLivenessSource, contains('_minimumFaceMatchScore'));
+    expect(kycLivenessSource, contains('result.faceMatchScore ?? 0'));
+    expect(kycLivenessSource, contains('liveness_face_match_missing'));
+    expect(kycLivenessSource, contains('liveness_face_match_low'));
     expect(
       manualReviewBody,
       isNot(contains('_isComplete = false')),

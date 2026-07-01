@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/features/qr_payment/services/qr_code_service.dart';
 import 'package:usdc_wallet/features/qr_payment/models/qr_payment_data.dart';
@@ -282,4 +284,57 @@ void main() {
       expect(data.amount, 50.0);
     });
   });
+
+  group('ScanQrScreen contract', () {
+    test('invalid QR feedback keeps camera scanning', () {
+      final source = File(
+        'lib/features/qr_payment/views/scan_qr_screen.dart',
+      ).readAsStringSync();
+      final detectBody = _methodBody(source, '_onDetect');
+      final galleryBody = _methodBody(source, '_importFromGallery');
+
+      expect(detectBody, contains('if (parsedData == null)'));
+      expect(detectBody, contains('_showInvalidQrFeedback()'));
+      expect(
+        detectBody.indexOf('_showInvalidQrFeedback()'),
+        lessThan(detectBody.indexOf('_scannedData = parsedData')),
+        reason: 'invalid camera scans must not set scanned data or stop camera',
+      );
+      expect(galleryBody, contains('if (parsedData == null)'));
+      expect(galleryBody, contains('_showInvalidQrFeedback()'));
+      expect(
+        galleryBody.indexOf('_showInvalidQrFeedback()'),
+        lessThan(galleryBody.indexOf('_scannedData = parsedData')),
+        reason:
+            'invalid gallery QR imports must not enter an empty scanned-result state',
+      );
+    });
+  });
+}
+
+String _methodBody(String source, String methodName) {
+  final start = source.indexOf('$methodName(');
+  if (start == -1) {
+    throw StateError('Missing method $methodName');
+  }
+
+  final openBrace = source.indexOf('{', start);
+  if (openBrace == -1) {
+    throw StateError('Missing method body for $methodName');
+  }
+
+  var depth = 0;
+  for (var i = openBrace; i < source.length; i++) {
+    final char = source[i];
+    if (char == '{') {
+      depth++;
+    } else if (char == '}') {
+      depth--;
+      if (depth == 0) {
+        return source.substring(openBrace, i + 1);
+      }
+    }
+  }
+
+  throw StateError('Unclosed method body for $methodName');
 }

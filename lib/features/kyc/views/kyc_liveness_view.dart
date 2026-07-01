@@ -26,6 +26,8 @@ class KycLivenessView extends ConsumerStatefulWidget {
 }
 
 class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
+  static const double _minimumFaceMatchScore = 0.85;
+
   bool _isComplete = false;
   bool _hasFailed = false;
   bool _isCreatingManualReview = false;
@@ -47,15 +49,45 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
 
   void _onLivenessComplete(LivenessResult result) {
     debugPrint(
-      '[KYC Liveness] Complete: isLive=${result.isLive}, confidence=${result.confidence}, decision=${result.decision}',
+      '[KYC Liveness] Complete: isLive=${result.isLive}, confidence=${result.confidence}, faceMatch=${result.faceMatchScore}, decision=${result.decision}',
     );
 
     final decision = result.decision;
     _decision = decision;
     _navigationTimer?.cancel();
 
+    if (!result.isLive) {
+      setState(() {
+        _hasFailed = true;
+        _errorMessage =
+            result.failureReason ??
+            AppLocalizations.of(context)!.liveness_failed;
+      });
+      return;
+    }
+
+    final faceMatchScore = result.faceMatchScore ?? 0;
+    final hasStrongFaceMatch = faceMatchScore >= _minimumFaceMatchScore;
+
     switch (decision) {
       case LivenessDecision.autoApprove:
+        if (!hasStrongFaceMatch) {
+          unawaited(
+            _routeKycToManualReview(
+              LivenessManualReviewRequest(
+                reason: result.faceMatchScore == null
+                    ? 'liveness_face_match_missing'
+                    : 'liveness_face_match_low',
+                message:
+                    'Automated liveness passed, but identity face match needs manual review. '
+                    'Face match: ${result.faceMatchScore?.toStringAsFixed(2) ?? 'missing'}. '
+                    'Flow: kyc_liveness.',
+              ),
+            ),
+          );
+          return;
+        }
+
         // High score — auto-approve, proceed to review
         ref.read(kycProvider.notifier).setLivenessProof(result.stepUpProofId);
         setState(() => _isComplete = true);
