@@ -28,14 +28,18 @@ class BulkSubmitState {
     bool? isSubmitting,
     String? error,
     String? pinToken,
+    bool clearPinToken = false,
     String? idempotencyKey,
+    bool clearIdempotencyKey = false,
     bool? isComplete,
   }) => BulkSubmitState(
     isLoading: isLoading ?? this.isLoading,
     isSubmitting: isSubmitting ?? this.isSubmitting,
     error: error,
-    pinToken: pinToken ?? this.pinToken,
-    idempotencyKey: idempotencyKey ?? this.idempotencyKey,
+    pinToken: clearPinToken ? null : pinToken ?? this.pinToken,
+    idempotencyKey: clearIdempotencyKey
+        ? null
+        : idempotencyKey ?? this.idempotencyKey,
     isComplete: isComplete ?? this.isComplete,
   );
 }
@@ -108,11 +112,19 @@ class BulkSubmitNotifier extends Notifier<BulkSubmitState> {
         pinToken: state.pinToken!,
         idempotencyKey: state.idempotencyKey!,
       );
-      state = state.copyWith(isSubmitting: false, isComplete: true);
+      state = state.copyWith(
+        isSubmitting: false,
+        isComplete: true,
+        clearPinToken: true,
+        clearIdempotencyKey: true,
+      );
       return true;
     } catch (e) {
       state = state.copyWith(isSubmitting: false, error: e.toString());
       return false;
+    } finally {
+      await ref.read(pinServiceProvider).clearPinToken();
+      state = state.copyWith(isSubmitting: false, clearPinToken: true);
     }
   }
 

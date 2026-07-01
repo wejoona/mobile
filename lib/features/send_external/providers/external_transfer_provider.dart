@@ -83,7 +83,9 @@ class ExternalTransferState {
     ExternalTransferResult? result,
     bool? isEstimatingFee,
     String? pinToken,
+    bool clearPinToken = false,
     String? idempotencyKey,
+    bool clearIdempotencyKey = false,
     String? stepUpChallengeToken,
     bool clearStepUpChallengeToken = false,
     bool? isSubmitting,
@@ -104,8 +106,10 @@ class ExternalTransferState {
           : balanceError ?? this.balanceError,
       result: result ?? this.result,
       isEstimatingFee: isEstimatingFee ?? this.isEstimatingFee,
-      pinToken: pinToken ?? this.pinToken,
-      idempotencyKey: idempotencyKey ?? this.idempotencyKey,
+      pinToken: clearPinToken ? null : pinToken ?? this.pinToken,
+      idempotencyKey: clearIdempotencyKey
+          ? null
+          : idempotencyKey ?? this.idempotencyKey,
       stepUpChallengeToken: clearStepUpChallengeToken
           ? null
           : stepUpChallengeToken ?? this.stepUpChallengeToken,
@@ -167,6 +171,8 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
       address: address,
       addressValidation: validation,
       error: validation.isValid ? null : validation.error,
+      clearPinToken: true,
+      clearIdempotencyKey: true,
     );
   }
 
@@ -186,13 +192,23 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
 
   /// Set transfer amount and estimate fee
   Future<void> setAmount(double amount) async {
-    state = state.copyWith(amount: amount, isEstimatingFee: true);
+    state = state.copyWith(
+      amount: amount,
+      isEstimatingFee: true,
+      clearPinToken: true,
+      clearIdempotencyKey: true,
+    );
     await _estimateFee();
   }
 
   /// Set network and estimate fee
   Future<void> setNetwork(NetworkOption network) async {
-    state = state.copyWith(selectedNetwork: network, isEstimatingFee: true);
+    state = state.copyWith(
+      selectedNetwork: network,
+      isEstimatingFee: true,
+      clearPinToken: true,
+      clearIdempotencyKey: true,
+    );
     await _estimateFee();
   }
 
@@ -308,6 +324,7 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
       final appReviewService = ref.read(appReviewServiceProvider);
       await appReviewService.trackSuccessfulTransaction();
 
+      state = state.copyWith(clearPinToken: true, clearIdempotencyKey: true);
       return true;
     } catch (e) {
       final moneyFlowError = moneyFlowLimitExceptionFromError(
@@ -320,6 +337,9 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
         error: moneyFlowError?.message ?? _friendlyExternalSendError(e),
       );
       return false;
+    } finally {
+      await ref.read(pinServiceProvider).clearPinToken();
+      state = state.copyWith(clearPinToken: true, isSubmitting: false);
     }
   }
 

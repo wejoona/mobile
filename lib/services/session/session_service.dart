@@ -52,6 +52,17 @@ enum SessionStatus {
   locked,
 }
 
+enum SessionRefreshStatus { success, rejected, unavailable }
+
+class SessionRefreshResult {
+  final SessionRefreshStatus status;
+
+  const SessionRefreshResult(this.status);
+
+  bool get success => status == SessionRefreshStatus.success;
+  bool get rejected => status == SessionRefreshStatus.rejected;
+}
+
 class SessionState {
   final SessionStatus status;
   final DateTime? lastActivity;
@@ -107,6 +118,7 @@ class SessionService extends Notifier<SessionState> {
   Timer? _countdownTimer;
   Timer? _tokenRefreshTimer;
   DateTime? _backgroundEnteredAt;
+  Future<SessionRefreshResult>? _refreshInFlight;
 
   SessionService({SessionConfig? config})
     : _config = config ?? const SessionConfig();
@@ -303,6 +315,23 @@ class SessionService extends Notifier<SessionState> {
     return token != null;
   }
 
+  Future<SessionRefreshResult> refreshStoredSession() async {
+    final existing = _refreshInFlight;
+    if (existing != null) {
+      return existing;
+    }
+
+    final future = _performRefreshToken();
+    _refreshInFlight = future;
+    try {
+      return await future;
+    } finally {
+      if (identical(_refreshInFlight, future)) {
+        _refreshInFlight = null;
+      }
+    }
+  }
+
   // Private methods
 
   Future<void> _checkExistingSession(FlutterSecureStorage storage) async {
@@ -330,23 +359,26 @@ class SessionService extends Notifier<SessionState> {
           }
           if (refreshToken != null) {
             // Attempt to refresh the token
-            final refreshed = await _refreshToken();
+            final refreshed = await refreshStoredSession();
             if (!ref.mounted) {
               return;
             }
-            if (!refreshed) {
+            if (refreshed.rejected) {
               if (!_canApplyStartupRestore) {
                 return;
               }
               await _invalidateLocalSession();
               return;
             }
+            if (!refreshed.success) {
+              expiresAt = DateTime.now().add(_config.tokenRefreshThreshold);
+            }
             // Re-read to check if refresh succeeded
             final newToken = await storage.read(key: _accessTokenKey);
             if (!ref.mounted) {
               return;
             }
-            if (newToken == null || newToken == token) {
+            if (refreshed.success && (newToken == null || newToken == token)) {
               if (!_canApplyStartupRestore) {
                 return;
               }
@@ -452,17 +484,19 @@ class SessionService extends Notifier<SessionState> {
     if (refreshAt.isAfter(now)) {
       final delay = refreshAt.difference(now);
       _tokenRefreshTimer = Timer(delay, () {
-        unawaited(_refreshToken());
+        unawaited(refreshStoredSession());
       });
     } else if (expiresAt.isAfter(now)) {
       // Already past refresh threshold but not expired, refresh now
-      unawaited(_refreshToken());
+      unawaited(refreshStoredSession());
     }
   }
 
-  Future<bool> _refreshToken() async {
+  Future<SessionRefreshResult> _performRefreshToken() async {
     final refreshToken = await getRefreshToken();
-    if (refreshToken == null) return false;
+    if (refreshToken == null) {
+      return const SessionRefreshResult(SessionRefreshStatus.rejected);
+    }
 
     try {
       final dio = Dio(
@@ -489,7 +523,7 @@ class SessionService extends Notifier<SessionState> {
       if (response.statusCode == 200) {
         final payload = _responsePayload(response.data);
         if (payload == null) {
-          return false;
+          return const SessionRefreshResult(SessionRefreshStatus.unavailable);
         }
 
         final newAccessToken = payload['accessToken'] as String?;
@@ -497,7 +531,7 @@ class SessionService extends Notifier<SessionState> {
         final expiresIn = _parseExpiresIn(payload['expiresIn']) ?? 900;
 
         if (newAccessToken == null || newAccessToken.isEmpty) {
-          return false;
+          return const SessionRefreshResult(SessionRefreshStatus.unavailable);
         }
 
         await _storage.write(key: _accessTokenKey, value: newAccessToken);
@@ -514,12 +548,21 @@ class SessionService extends Notifier<SessionState> {
 
         const AppLogger('Debug').debug('Token refreshed successfully');
         _startTokenRefreshTimer();
-        return true;
+        return const SessionRefreshResult(SessionRefreshStatus.success);
       }
-      return false;
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        return const SessionRefreshResult(SessionRefreshStatus.rejected);
+      }
+      return const SessionRefreshResult(SessionRefreshStatus.unavailable);
+    } on DioException catch (e) {
+      const AppLogger('Token refresh failed').error('Token refresh failed', e);
+      if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
+        return const SessionRefreshResult(SessionRefreshStatus.rejected);
+      }
+      return const SessionRefreshResult(SessionRefreshStatus.unavailable);
     } on Object catch (e) {
       const AppLogger('Token refresh failed').error('Token refresh failed', e);
-      return false;
+      return const SessionRefreshResult(SessionRefreshStatus.unavailable);
     }
   }
 

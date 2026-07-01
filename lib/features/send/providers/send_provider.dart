@@ -83,7 +83,9 @@ class SendMoneyState {
     bool clearBalanceError = false,
     double? fee,
     String? pinToken,
+    bool clearPinToken = false,
     String? idempotencyKey,
+    bool clearIdempotencyKey = false,
     String? stepUpChallengeToken,
     bool clearStepUpChallengeToken = false,
     String? pendingTransferId,
@@ -104,8 +106,10 @@ class SendMoneyState {
           ? null
           : balanceError ?? this.balanceError,
       fee: fee ?? this.fee,
-      pinToken: pinToken ?? this.pinToken,
-      idempotencyKey: idempotencyKey ?? this.idempotencyKey,
+      pinToken: clearPinToken ? null : pinToken ?? this.pinToken,
+      idempotencyKey: clearIdempotencyKey
+          ? null
+          : idempotencyKey ?? this.idempotencyKey,
       stepUpChallengeToken: clearStepUpChallengeToken
           ? null
           : stepUpChallengeToken ?? this.stepUpChallengeToken,
@@ -297,6 +301,8 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       error: null,
       recipient: recipient,
       clearStepUpChallengeToken: true,
+      clearPinToken: true,
+      clearIdempotencyKey: true,
     );
   }
 
@@ -321,12 +327,34 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       amount: amount,
       fee: fee,
       clearStepUpChallengeToken: true,
+      clearPinToken: true,
+      clearIdempotencyKey: true,
     );
   }
 
   /// Set optional note
   void setNote(String? note) {
-    state = state.copyWith(note: note);
+    state = state.copyWith(
+      note: note,
+      clearPinToken: true,
+      clearIdempotencyKey: true,
+    );
+  }
+
+  /// Prefill payment details from a trusted upstream intent such as a Korido QR.
+  void prefillPaymentDetails({double? amount, String? note}) {
+    if ((amount == null || amount <= 0) && (note == null || note.isEmpty)) {
+      return;
+    }
+
+    state = state.copyWith(
+      amount: amount != null && amount > 0 ? amount : null,
+      note: note?.trim().isEmpty == true ? null : note?.trim(),
+      fee: 0,
+      clearStepUpChallengeToken: true,
+      clearPinToken: true,
+      clearIdempotencyKey: true,
+    );
   }
 
   /// Restore a queued offline transfer as a draft that requires fresh PIN auth.
@@ -513,6 +541,7 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
             .cancelPendingTransfer(state.pendingTransferId!);
       }
 
+      state = state.copyWith(clearPinToken: true, clearIdempotencyKey: true);
       return true;
     } catch (e) {
       final moneyFlowError = moneyFlowLimitExceptionFromError(
@@ -526,6 +555,9 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       );
       await hapticService.error();
       return false;
+    } finally {
+      await ref.read(pinServiceProvider).clearPinToken();
+      state = state.copyWith(clearPinToken: true, isSubmitting: false);
     }
   }
 

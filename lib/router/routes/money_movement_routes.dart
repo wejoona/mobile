@@ -48,6 +48,8 @@ List<RouteBase> moneyMovementRoutes() => [
       var initialUsername = query['username'] ?? query['recipientUsername'];
       var initialRecipientId = query['recipientId'];
       var initialName = query['name'];
+      var initialAmount = query['amount'];
+      var initialNote = query['note'] ?? query['reference'];
 
       if (extra is Map) {
         final extraPhone =
@@ -58,6 +60,8 @@ List<RouteBase> moneyMovementRoutes() => [
         final extraUsername = extra['username'] ?? extra['recipientUsername'];
         final extraRecipientId = extra['recipientId'];
         final extraName = extra['name'] ?? extra['recipientName'];
+        final extraAmount = extra['amount'];
+        final extraNote = extra['note'] ?? extra['reference'];
         if (initialPhone == null && extraPhone is String) {
           initialPhone = extraPhone;
         }
@@ -70,6 +74,12 @@ List<RouteBase> moneyMovementRoutes() => [
         if (initialName == null && extraName is String) {
           initialName = extraName;
         }
+        if (initialAmount == null && extraAmount is String) {
+          initialAmount = extraAmount;
+        }
+        if (initialNote == null && extraNote is String) {
+          initialNote = extraNote;
+        }
       }
 
       return AppPageTransitions.verticalSlide(
@@ -79,6 +89,8 @@ List<RouteBase> moneyMovementRoutes() => [
           initialUsername: initialUsername,
           initialRecipientId: initialRecipientId,
           initialName: initialName,
+          initialAmount: double.tryParse(initialAmount ?? ''),
+          initialNote: initialNote,
         ),
       );
     },

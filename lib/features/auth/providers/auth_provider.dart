@@ -231,32 +231,20 @@ class AuthNotifier extends Notifier<AuthState> {
     String refreshToken, {
     required int restoreVersion,
   }) async {
-    try {
-      final response = await _authService.refreshToken(
-        refreshToken: refreshToken,
-      );
-      if (!ref.mounted) return false;
-      if (!_isCurrentSessionMutation(restoreVersion)) return false;
-      await _storage.write(
-        key: StorageKeys.accessToken,
-        value: response.accessToken,
-      );
-      if (response.refreshToken != null) {
-        await _storage.write(
-          key: StorageKeys.refreshToken,
-          value: response.refreshToken!,
-        );
-      }
-      return true;
-    } on ApiException catch (e) {
-      if (_isRefreshRejected(e)) {
-        await clearLocalSession();
-        return false;
-      }
-      return true;
-    } catch (_) {
+    final result = await ref
+        .read(sessionServiceProvider.notifier)
+        .refreshStoredSession();
+    if (!ref.mounted) return false;
+    if (!_isCurrentSessionMutation(restoreVersion)) return false;
+
+    if (result.success) {
       return true;
     }
+    if (result.rejected) {
+      await clearLocalSession();
+      return false;
+    }
+    return true;
   }
 
   bool _isCurrentSessionMutation(int expectedVersion) =>
@@ -391,38 +379,22 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<bool> _refreshTokenOnUnlock() async {
-    try {
-      final storedRefresh = await _storage.read(key: StorageKeys.refreshToken);
-      if (storedRefresh == null) return false;
-
-      final response = await _authService.refreshToken(
-        refreshToken: storedRefresh,
-      );
-
-      await _storage.write(
-        key: StorageKeys.accessToken,
-        value: response.accessToken,
-      );
-      if (response.refreshToken != null) {
-        await _storage.write(
-          key: StorageKeys.refreshToken,
-          value: response.refreshToken!,
-        );
-      }
+    final result = await ref
+        .read(sessionServiceProvider.notifier)
+        .refreshStoredSession();
+    if (result.success) {
       return true;
-    } on ApiException catch (e) {
+    }
+    if (result.rejected) {
       // Stored refresh tokens can survive app reinstall on iOS keychain.
       // If the backend rejects them, clear local state immediately instead of
       // leaving the user trapped behind a PIN screen with an invalid session.
-      if (_isRefreshRejected(e)) {
-        await clearLocalSession();
-      }
-      return false;
-    } catch (_) {
-      // Keep the locked state on transient/local failures. The next API call can
-      // still retry through the interceptor.
+      await clearLocalSession();
       return false;
     }
+    // Keep the locked state on transient/local failures. The next API call can
+    // still retry through the interceptor.
+    return false;
   }
 
   /// Register new user
