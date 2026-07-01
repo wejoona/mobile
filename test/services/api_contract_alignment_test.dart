@@ -284,7 +284,7 @@ void main() {
       expect(stellarOnly.walletAddress, 'G_STELLAR_ONLY');
     });
 
-    test('receive address is sourced from canonical wallet balance', () {
+    test('receive QR encodes canonical wallet balance address', () {
       final endpointSource = File(
         'lib/core/constants/api_endpoints.dart',
       ).readAsStringSync();
@@ -303,9 +303,12 @@ void main() {
         receiveViewSource,
         contains('else if (walletState.hasWalletAddress)'),
       );
-      expect(receiveViewSource, contains('data: walletState.walletAddress!'));
+      expect(
+        receiveViewSource,
+        contains('walletAddress: walletState.walletAddress'),
+      );
+      expect(receiveViewSource, contains('data: receiveQrData!'));
       expect(receiveViewSource, isNot(contains('|| userId.isNotEmpty')));
-      expect(receiveViewSource, isNot(contains('korido://pay')));
       expect(receiveViewSource, isNot(contains('walletReceive')));
     });
 

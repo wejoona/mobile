@@ -32,17 +32,21 @@ void main() {
       test('should generate QR with all fields', () {
         final qr = service.generateReceiveQr(
           phone: '+22507123456',
+          userId: 'user-123',
           amount: 100.50,
           currency: 'USD',
           name: 'John Doe',
           reference: 'INV-001',
+          walletAddress: '0xabc123',
         );
 
         expect(qr, contains('+22507123456'));
+        expect(qr, contains('user-123'));
         expect(qr, contains('100.5'));
         expect(qr, contains('USD'));
         expect(qr, contains('John Doe'));
         expect(qr, contains('INV-001'));
+        expect(qr, contains('0xabc123'));
       });
     });
 
@@ -84,7 +88,7 @@ void main() {
 
       test('should parse URL with all parameters', () {
         final qrString =
-            'joonapay://pay?phone=+22507123456&amount=100&currency=USD&name=John%20Doe&reference=INV-001';
+            'joonapay://pay?phone=+22507123456&amount=100&currency=USD&name=John%20Doe&reference=INV-001&address=0xabc123';
         final data = service.parseQrData(qrString);
 
         expect(data, isNotNull);
@@ -93,6 +97,21 @@ void main() {
         expect(data.currency, 'USD');
         expect(data.name, 'John Doe');
         expect(data.reference, 'INV-001');
+        expect(data.walletAddress, '0xabc123');
+      });
+
+      test('generated receive QR round-trips phone and wallet address', () {
+        final qrString = service.generateReceiveQr(
+          phone: '+22507123456',
+          walletAddress: '0xabc123',
+          currency: 'USDC',
+        );
+        final data = service.parseQrData(qrString);
+
+        expect(data, isNotNull);
+        expect(data!.phone, '+22507123456');
+        expect(data.walletAddress, '0xabc123');
+        expect(data.currency, 'USDC');
       });
     });
 
