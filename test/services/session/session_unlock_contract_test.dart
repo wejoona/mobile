@@ -281,6 +281,13 @@ void main() {
 
     expect(loginSource, contains('biometricService.getBoundUserId()'));
     expect(loginSource, contains('boundUserId == storedUserId'));
+    expect(loginSource, contains('_LoginMode.returningUnlock'));
+    expect(loginSource, isNot(contains('_LoginMode.biometric')));
+    expect(loginSource, isNot(contains('_buildBiometricScreen')));
+    expect(loginSource, contains('_buildReturningUnlockScreen'));
+    expect(loginSource, contains('PinPad('));
+    expect(loginSource, contains('verifyPinLocally(_returningPin)'));
+    expect(loginSource, contains('_unlockWithStoredRefreshToken('));
     expect(loginSource, contains('expectedUserId: expectedUserId'));
     expect(authProviderSource, contains('responseUserId != expectedUserId'));
     expect(authProviderSource, contains('await clearLocalSession()'));
