@@ -223,6 +223,13 @@ void main() {
         contains('showBiometric: _shouldShowBiometricUnlock'),
       );
       expect(
+        pinScreenSource,
+        contains("ValueKey('pin-biometric-unlock-action')"),
+        reason:
+            'session lock must expose biometric unlock as a direct action, not only a keypad icon',
+      );
+      expect(pinScreenSource, contains('label: l10n.session_useBiometric'));
+      expect(
         loginProviderSource,
         isNot(contains('Future<bool> verifyBiometric()')),
         reason:

@@ -697,6 +697,20 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
                       const Spacer(flex: 1),
 
+                      if (_shouldShowBiometricUnlock) ...[
+                        AppButton(
+                          key: const ValueKey('pin-biometric-unlock-action'),
+                          label: l10n.session_useBiometric,
+                          semanticLabel: l10n.session_unlockReason,
+                          icon: _biometricIcon,
+                          onPressed: _handleBiometric,
+                          variant: AppButtonVariant.secondary,
+                          size: AppButtonSize.large,
+                          isFullWidth: true,
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                      ],
+
                       PinPad(
                         onDigitPressed: (digit) {
                           if (_pin.length >= 6) return;
