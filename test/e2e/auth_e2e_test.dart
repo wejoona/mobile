@@ -64,7 +64,7 @@ void main() {
         '/dev/otp/${Uri.encodeComponent(authPhone)}',
       );
       final otpPayload = otpRes.data?['data'] as Map<String, dynamic>?;
-      final otp = otpPayload?['otp']?.toString() ?? '123456';
+      final otp = otpPayload?['otp']?.toString() ?? defaultTestOtp;
 
       final res = await client.post('/auth/verify-otp', {
         'phone': authPhone,
@@ -101,7 +101,9 @@ void main() {
     });
 
     test('POST /auth/verify-otp — missing phone returns 400', () async {
-      final res = await client.post('/auth/verify-otp', {'otp': '123456'});
+      final res = await client.post('/auth/verify-otp', {
+        'otp': defaultTestOtp,
+      });
       expect(res.statusCode, 400);
     });
 

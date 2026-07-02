@@ -303,8 +303,8 @@ class E2EClient {
     if (otpRes.statusCode == 200 && otpRes.data?['data']?['otp'] != null) {
       otp = otpRes.data!['data']['otp'].toString();
     } else {
-      // Fall back to default dev OTP
-      otp = '123456';
+      // Fall back to the configured default OTP for staging/dogfood stacks.
+      otp = defaultTestOtp;
     }
 
     // Step 3: Verify OTP → get tokens
