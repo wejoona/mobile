@@ -51,10 +51,19 @@ void main() {
       res.expectOk();
     });
 
-    test('GET /deposits/providers — returns providers', () async {
-      final res = await client.get('/deposits/providers');
-      res.expectOk();
-    });
+    test(
+      'GET /deposits/providers — retired reader returns canonical route',
+      () async {
+        final res = await client.get('/deposits/providers');
+        expect(res.statusCode, 410);
+        final error = res.data?['error'];
+        expect(error, isA<Map<String, dynamic>>());
+        expect(
+          (error! as Map<String, dynamic>)['canonicalEndpoint'],
+          '/api/v1/wallet/deposit/providers',
+        );
+      },
+    );
 
     test(
       'GET /wallet/deposit/channels — returns mobile deposit channels',
