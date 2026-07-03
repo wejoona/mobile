@@ -63,15 +63,33 @@ void main() {
     final sessionLockedSource = File(
       'lib/features/fsm_states/views/session_locked_view.dart',
     ).readAsStringSync();
+    final authProviderSource = File(
+      'lib/features/auth/providers/auth_provider.dart',
+    ).readAsStringSync();
+    final sessionServiceSource = File(
+      'lib/services/session/session_service.dart',
+    ).readAsStringSync();
 
     final pinLoginUnlockBody = _methodBody(pinScreenSource, '_applyUnlock');
     final pinUnlockBody = _methodBody(pinScreenSource, '_applySessionUnlock');
     final pinSuccessBody = _methodBody(pinScreenSource, '_onSuccess');
+    final pinSessionFallbackBody = _methodBody(
+      pinScreenSource,
+      '_verifySessionLockPin',
+    );
     final biometricUnlockBody = _methodBody(
       biometricPromptSource,
       '_completeUnlock',
     );
     final sessionLockedUnlockBody = _methodBody(sessionLockedSource, '_unlock');
+    final refreshOnUnlockBody = _methodBody(
+      authProviderSource,
+      '_refreshTokenOnUnlock',
+    );
+    final applyRefreshedUserBody = _methodBody(
+      authProviderSource,
+      '_applyRefreshedSessionUser',
+    );
     final navigationExtensionSource = File(
       'lib/router/navigation_extensions.dart',
     ).readAsStringSync();
@@ -116,6 +134,102 @@ void main() {
       isNot(contains('countryCode: loginState.dialCode')),
       reason:
           'dial code is display/input state and must not be the primary API country value',
+    );
+    expect(
+      pinLoginUnlockBody,
+      contains('cacheConfirmedPin(acceptedPin)'),
+      reason:
+          'backend-accepted login PIN must populate the local unlock cache after auth scope is known',
+    );
+    expect(
+      pinLoginUnlockBody.indexOf('completePinLogin('),
+      lessThan(pinLoginUnlockBody.indexOf('cacheConfirmedPin(acceptedPin)')),
+      reason:
+          'PIN cache must be written after completePinLogin persists the authenticated user scope',
+    );
+    expect(
+      _methodBody(pinScreenSource, '_verifyPin'),
+      isNot(contains('await pinService.cacheConfirmedPin(_pin);')),
+      reason:
+          'PIN must not be cached under the pre-login phone/legacy scope before authenticated user scope exists',
+    );
+    expect(
+      pinSessionFallbackBody,
+      isNot(contains("localResult.message != 'PIN not set'")),
+      reason:
+          'session unlock must not trust local PIN before checking backend truth',
+    );
+    expect(
+      pinSessionFallbackBody,
+      contains('refreshAccessTokenForForegroundRequest()'),
+      reason:
+          'session unlock must refresh token material before authoritative backend PIN verification',
+    );
+    expect(
+      pinSessionFallbackBody,
+      contains('verifyPinWithBackend('),
+      reason:
+          'session unlock must check backend PIN truth before using the local cache',
+    );
+    expect(
+      pinSessionFallbackBody.indexOf('verifyPinWithBackend('),
+      lessThan(pinSessionFallbackBody.indexOf('verifyPinLocally(_pin)')),
+      reason:
+          'session unlock backend verification must happen before local fallback',
+    );
+    expect(
+      pinSessionFallbackBody,
+      contains('cacheConfirmedPin(_pin)'),
+      reason:
+          'successful backend session unlock must rebuild the user-scoped local cache',
+    );
+    expect(
+      pinSessionFallbackBody,
+      contains('clearPin()'),
+      reason:
+          'authoritative backend PIN rejection must invalidate stale local PIN cache',
+    );
+    expect(
+      pinSessionFallbackBody,
+      contains('_shouldUseLocalPinFallback('),
+      reason:
+          'local PIN fallback must be explicitly gated to transient online failures',
+    );
+    expect(
+      pinSessionFallbackBody,
+      contains('Unable to verify PIN online'),
+      reason:
+          'missing local cache plus unavailable backend should not surface the internal PIN-not-set state',
+    );
+    expect(
+      sessionServiceSource,
+      contains('final refreshedUser = _parseUser(payload);'),
+      reason:
+          'session refresh must preserve the backend user payload instead of discarding hasPin',
+    );
+    expect(
+      sessionServiceSource,
+      contains('user: refreshedUser'),
+      reason:
+          'session refresh result must carry refreshed user state to the auth layer',
+    );
+    expect(
+      refreshOnUnlockBody,
+      contains('_applyRefreshedSessionUser(result)'),
+      reason:
+          'unlock must apply refreshed user.hasPin before authenticated routing',
+    );
+    expect(
+      applyRefreshedUserBody,
+      contains('user: user'),
+      reason:
+          'refreshed backend user must replace stale AuthState.user before the router guard runs',
+    );
+    expect(
+      applyRefreshedUserBody,
+      contains('StorageKeys.userId'),
+      reason:
+          'refreshed backend user scope must stay aligned with secure storage',
     );
     expect(
       pinSuccessBody,
@@ -223,6 +337,13 @@ void main() {
         contains('showBiometric: _shouldShowBiometricUnlock'),
       );
       expect(
+        pinScreenSource,
+        contains("ValueKey('pin-biometric-unlock-action')"),
+        reason:
+            'session lock must expose biometric unlock as a direct action, not only a keypad icon',
+      );
+      expect(pinScreenSource, contains('label: l10n.session_useBiometric'));
+      expect(
         loginProviderSource,
         isNot(contains('Future<bool> verifyBiometric()')),
         reason:
@@ -241,9 +362,25 @@ void main() {
       );
       expect(
         pinScreenSource,
-        contains('biometric_usePinInstead'),
+        isNot(contains('biometric_usePinInstead')),
         reason:
-            'unlock transition must let the user return to PIN if navigation stalls',
+            'unlock transition must not show a stale PIN action after unlock has already been accepted',
+      );
+      final biometricAllowedBody = _getterBody(
+        pinScreenSource,
+        '_allowsBiometricUnlock',
+      );
+      expect(
+        biometricAllowedBody,
+        contains('PinContext.sessionLock'),
+        reason:
+            'normal session unlock keeps biometric inline on the PIN screen',
+      );
+      expect(
+        biometricAllowedBody,
+        isNot(contains('PinContext.login')),
+        reason:
+            'login PIN must remain backend-authoritative until a server biometric assertion contract exists',
       );
     },
   );
@@ -258,9 +395,49 @@ void main() {
 
     expect(loginSource, contains('biometricService.getBoundUserId()'));
     expect(loginSource, contains('boundUserId == storedUserId'));
+    expect(loginSource, contains('final hasPin = await pinService.hasPin()'));
+    expect(loginSource, contains('hasPin || biometricAvailable'));
+    expect(loginSource, contains('_LoginMode.returningUnlock'));
+    expect(loginSource, isNot(contains('_LoginMode.biometric')));
+    expect(loginSource, isNot(contains('_buildBiometricScreen')));
+    expect(loginSource, contains('_buildReturningUnlockScreen'));
+    expect(loginSource, contains('PinPad('));
+    expect(loginSource, contains('showBiometric: _showReturningBiometric'));
+    expect(loginSource, contains('if (_showReturningBiometric)'));
+    expect(loginSource, contains('case BiometricType.faceId:'));
+    expect(loginSource, contains('verifyPinLocally(_returningPin)'));
+    expect(loginSource, contains('_unlockWithStoredRefreshToken('));
     expect(loginSource, contains('expectedUserId: expectedUserId'));
     expect(authProviderSource, contains('responseUserId != expectedUserId'));
     expect(authProviderSource, contains('await clearLocalSession()'));
+  });
+
+  test('logout clears user-scoped PIN and identity storage', () {
+    final authProviderSource = File(
+      'lib/features/auth/providers/auth_provider.dart',
+    ).readAsStringSync();
+    final userStateSource = File(
+      'lib/state/user_state_machine.dart',
+    ).readAsStringSync();
+
+    final clearLocalSessionBody = _methodBody(
+      authProviderSource,
+      'clearLocalSession',
+    );
+    final userLogoutBody = _methodBody(userStateSource, 'logout');
+
+    for (final body in [clearLocalSessionBody, userLogoutBody]) {
+      expect(
+        body,
+        contains('pinServiceProvider'),
+        reason:
+            'logout paths must clear user-scoped PIN caches before another account can use the app',
+      );
+      expect(body, contains('StorageKeys.userId'));
+      expect(body, contains('StorageKeys.userPhoneE164'));
+      expect(body, contains('StorageKeys.userDialCode'));
+      expect(body, contains('StorageKeys.userLocalPhone'));
+    }
   });
 
   test('biometric settings do not own enrollment storage', () {
@@ -655,11 +832,23 @@ void main() {
       reason:
           'login PIN may stay open only while the OTP-created pending PIN session exists',
     );
+    final pinSource = File(
+      'lib/features/pin/views/pin_screen.dart',
+    ).readAsStringSync();
     expect(
-      File('lib/features/pin/views/pin_screen.dart').readAsStringSync(),
+      pinSource,
       contains('_queuedUnlockedRedirect = true;'),
       reason:
           'PIN success should own one authenticated-app navigation instead of racing the auth-state listener',
+    );
+    final pinSuccessBody = _methodBody(pinSource, '_onSuccess');
+    expect(pinSuccessBody, contains('case PinContext.sessionLock:'));
+    expect(pinSuccessBody, contains('if (!mounted)'));
+    expect(
+      pinSource,
+      contains('void _showUnlockFailure() {\n    if (!mounted) return;'),
+      reason:
+          'session unlock can be disposed by auth/FSM refresh before failure UI updates',
     );
     expect(redirectorSource, isNot(contains('isPublicPath(location)')));
     expect(routeContractSource, contains("pattern: '/signup'"));
@@ -734,6 +923,14 @@ void main() {
     expect(routesSource, contains("returnTo.startsWith('/login')"));
     expect(routesSource, contains("returnTo.startsWith('/onboarding')"));
     expect(routesSource, contains("returnTo.startsWith('/session-locked')"));
+    expect(routesSource, contains('appRouteContractFor(uri.path)'));
+    expect(routesSource, contains('contract.isSecurityRecovery'));
+    expect(routesSource, contains('contract.isAuthDeadEnd'));
+    expect(routesSource, contains('contract.isFsmRoute'));
+    expect(
+      routesSource,
+      contains('contract.role == AppRouteRole.securityStep'),
+    );
     expect(routesSource, contains("_safeReturnTo(state) ?? '/home'"));
     expect(redirectorSource, contains('_safeUnlockedReturnTo(returnTo)'));
     expect(redirectorSource, contains("state.uri.queryParameters['returnTo']"));
@@ -1427,6 +1624,10 @@ void main() {
     expect(manualReviewBody, contains('_scheduleManualReviewNavigation()'));
     expect(manualReviewBody, contains('_markManualReviewCreationFailed'));
     expect(kycLivenessSource, contains('_retryManualReviewCreation'));
+    expect(kycLivenessSource, contains('_minimumFaceMatchScore'));
+    expect(kycLivenessSource, contains('result.faceMatchScore ?? 0'));
+    expect(kycLivenessSource, contains('liveness_face_match_missing'));
+    expect(kycLivenessSource, contains('liveness_face_match_low'));
     expect(
       manualReviewBody,
       isNot(contains('_isComplete = false')),
@@ -1513,6 +1714,21 @@ void main() {
           'Change PIN copy must not claim every PIN change requires facial verification.',
     );
   });
+}
+
+String _getterBody(String source, String getterName) {
+  final getterIndex = source.indexOf(
+    RegExp(r'\bget\s+' + RegExp.escape(getterName) + r'\b'),
+  );
+  expect(getterIndex, isNonNegative, reason: '$getterName should exist');
+
+  final arrowIndex = source.indexOf('=>', getterIndex);
+  expect(arrowIndex, isNonNegative, reason: '$getterName should use =>');
+
+  final endIndex = source.indexOf(';', arrowIndex);
+  expect(endIndex, isNonNegative, reason: '$getterName should end with ;');
+
+  return source.substring(arrowIndex + 2, endIndex);
 }
 
 String _methodBody(String source, String methodName) {

@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/app_version/mobile_version_policy_service.dart';
+import 'package:usdc_wallet/services/session/session_service.dart';
 import '../helpers/test_utils.dart';
 
 final _authInterceptorTestProvider = Provider<AuthInterceptor>(
@@ -349,7 +350,10 @@ void main() {
           ..interceptors.add(container.read(_authInterceptorTestProvider));
 
         await expectLater(
-          dio.post('/user/pin/reset'),
+          dio.post(
+            '/user/pin/reset',
+            options: Options(extra: {ApiRequestExtra.useRecoveryToken: true}),
+          ),
           throwsA(
             isA<DioException>().having(
               (error) => error.response?.statusCode,
@@ -362,6 +366,52 @@ void main() {
         expect(mockStorage.storage[StorageKeys.recoveryAccessToken], isNull);
         expect(mockStorage.storage[StorageKeys.accessToken], 'active.access');
         expect(mockStorage.storage[StorageKeys.refreshToken], 'active.refresh');
+        expect(container.read(authSessionInvalidatedProvider), equals(0));
+      },
+    );
+
+    test(
+      'normal liveness 401 does not clear scoped recovery authorization',
+      () async {
+        final container = ProviderContainer(
+          overrides: [secureStorageProvider.overrideWithValue(mockStorage)],
+        );
+        addTearDown(container.dispose);
+
+        await mockStorage.write(
+          key: StorageKeys.accessToken,
+          value: 'expired.access',
+        );
+        await mockStorage.write(
+          key: StorageKeys.recoveryAccessToken,
+          value: 'recovery.access',
+        );
+        await mockStorage.write(
+          key: StorageKeys.recoveryAccessTokenScope,
+          value: 'pin_reset',
+        );
+
+        final adapter = _RecordingStatusAdapter(statusCode: 401);
+        final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
+          ..httpClientAdapter = adapter
+          ..interceptors.add(container.read(_authInterceptorTestProvider));
+
+        await expectLater(
+          dio.post('/kyc/liveness/session'),
+          throwsA(
+            isA<DioException>().having(
+              (error) => error.response?.statusCode,
+              'statusCode',
+              401,
+            ),
+          ),
+        );
+
+        expect(
+          mockStorage.storage[StorageKeys.recoveryAccessToken],
+          'recovery.access',
+        );
+        expect(container.read(sessionServiceProvider).isLocked, isTrue);
         expect(container.read(authSessionInvalidatedProvider), equals(0));
       },
     );

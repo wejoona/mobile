@@ -5,7 +5,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/core/image_cache/image_cache_config.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/services/index.dart';
-import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/services/storage/sync_service.dart';
 import 'package:usdc_wallet/state/app_state.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
@@ -492,8 +491,13 @@ class UserStateMachine extends Notifier<UserState> {
   }
 
   Future<void> logout() async {
+    await ref.read(pinServiceProvider).clearPin();
     await _storage.delete(key: _tokenKey);
     await _storage.delete(key: _phoneKey);
+    await _storage.delete(key: StorageKeys.userId);
+    await _storage.delete(key: StorageKeys.userPhoneE164);
+    await _storage.delete(key: StorageKeys.userDialCode);
+    await _storage.delete(key: StorageKeys.userLocalPhone);
     await _storage.delete(key: 'local_avatar_path');
 
     // Clear local cache

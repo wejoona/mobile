@@ -179,12 +179,24 @@ class _PaymentInstructionsScreenState
     DepositResponse response,
     ThemeColors colors,
   ) {
+    final paymentReference = response.paymentReference.isNotEmpty
+        ? response.paymentReference
+        : response.token;
+    final paymentRail = response.railProvider.isNotEmpty
+        ? response.railProvider
+        : response.providerCode;
+    final executionProvider = response.executionProvider.trim();
+    final shouldShowExecutionProvider =
+        executionProvider.isNotEmpty &&
+        executionProvider != paymentRail &&
+        executionProvider != response.providerCode;
+
     final rows = <Widget>[
-      if (response.token.isNotEmpty)
+      if (paymentReference.isNotEmpty)
         _ReferenceRow(
-          label: 'Reference',
-          value: response.token,
-          copyValue: response.token,
+          label: 'Payment reference',
+          value: paymentReference,
+          copyValue: paymentReference,
           colors: colors,
         ),
       _ReferenceRow(
@@ -192,10 +204,23 @@ class _PaymentInstructionsScreenState
         value: Formatters.formatDateTime(response.expiresAt),
         colors: colors,
       ),
-      if (response.providerCode.isNotEmpty)
+      if (paymentRail.isNotEmpty)
         _ReferenceRow(
-          label: 'Provider',
-          value: response.providerCode,
+          label: 'Payment rail',
+          value: paymentRail,
+          colors: colors,
+        ),
+      if (shouldShowExecutionProvider)
+        _ReferenceRow(
+          label: 'Processed by',
+          value: executionProvider,
+          colors: colors,
+        ),
+      if (response.supportReference.isNotEmpty)
+        _ReferenceRow(
+          label: 'Support reference',
+          value: response.supportReference,
+          copyValue: response.supportReference,
           colors: colors,
         ),
     ];
@@ -289,6 +314,15 @@ class _PaymentInstructionsScreenState
           Icons.account_balance_wallet,
           l10n.deposit_cryptoTransfer,
           response.instructions,
+        );
+      case PaymentMethodType.unsupported:
+        return _buildStaticInstructionContent(
+          colors,
+          Icons.error_outline_rounded,
+          'Payment method unavailable',
+          response.instructions.isNotEmpty
+              ? response.instructions
+              : 'This deposit method is not available in this version of Korido. Choose another method or contact support.',
         );
     }
   }
@@ -565,9 +599,14 @@ class _PaymentInstructionsScreenState
   }
 
   void _handleBack() {
-    // Stop polling and go back
+    final state = ref.read(depositProvider);
+    if (state.hasUnresolvedDeposit) {
+      context.fsmGo('/deposit/status');
+      return;
+    }
+
     ref.read(depositProvider.notifier).goBack();
-    context.fsmPop();
+    context.fsmSafePop(fallbackRoute: '/deposit/provider');
   }
 }
 

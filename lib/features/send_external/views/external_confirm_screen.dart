@@ -23,12 +23,14 @@ class ExternalConfirmScreen extends ConsumerStatefulWidget {
 }
 
 class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
-  bool _isLoading = false;
+  bool _isConfirming = false;
+  bool _isExecuting = false;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(externalTransferProvider);
+    final isBusy = _isConfirming || state.isSubmitting;
 
     if (!state.canProceedToConfirm) {
       // Navigate back if invalid state
@@ -260,8 +262,8 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
               padding: EdgeInsets.all(AppSpacing.lg),
               child: AppButton(
                 label: l10n.sendExternal_confirmAndSend,
-                onPressed: _handleConfirm,
-                isLoading: _isLoading,
+                onPressed: isBusy ? null : _handleConfirm,
+                isLoading: _isExecuting || state.isSubmitting,
                 isFullWidth: true,
               ),
             ),
@@ -344,27 +346,41 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
   }
 
   Future<void> _handleConfirm() async {
+    if (_isConfirming || ref.read(externalTransferProvider).isSubmitting) {
+      return;
+    }
+
+    setState(() => _isConfirming = true);
     final notifier = ref.read(externalTransferProvider.notifier);
     notifier.clearStepUpAuthorization();
 
-    // Require PIN/biometric verification before executing irreversible blockchain transfer
-    final verified = await _verifyIdentity();
-    if (!verified || !mounted) {
-      return;
-    }
-
-    final latestState = ref.read(externalTransferProvider);
-    final stepUp = await _authorizeExternalTransferRisk(
-      amount: latestState.amount!,
-      destinationAddress: latestState.address!,
-    );
-    if (!stepUp.canProceed || !mounted) {
-      return;
-    }
-    notifier.markStepUpAuthorized(stepUp.stepUpToken);
-
-    setState(() => _isLoading = true);
     try {
+      // Require PIN/biometric verification before executing irreversible blockchain transfer.
+      final verified = await _verifyIdentity();
+      if (!verified || !mounted) {
+        return;
+      }
+
+      final latestState = ref.read(externalTransferProvider);
+      final amount = latestState.amount;
+      final address = latestState.address;
+      if (amount == null || address == null || address.isEmpty) {
+        return;
+      }
+
+      final stepUp = await _authorizeExternalTransferRisk(
+        amount: amount,
+        destinationAddress: address,
+      );
+      if (!stepUp.canProceed || !mounted) {
+        return;
+      }
+      notifier.markStepUpAuthorized(stepUp.stepUpToken);
+
+      if (mounted) {
+        setState(() => _isExecuting = true);
+      }
+
       final success = await ref
           .read(externalTransferProvider.notifier)
           .executeTransfer();
@@ -372,14 +388,16 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
       if (mounted) {
         if (success) {
           context.fsmGo('/send-external/result');
-        } else {
-          // Error is already set in state and displayed
-          setState(() => _isLoading = false);
         }
       }
-    } catch (e) {
+    } on Object catch (_) {
+      // The provider owns the visible error state for transfer execution.
+    } finally {
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isConfirming = false;
+          _isExecuting = false;
+        });
       }
     }
   }
@@ -531,6 +549,7 @@ class _PinVerificationDialogState extends State<_PinVerificationDialog> {
           const SizedBox(height: AppSpacing.lg),
           TextField(
             controller: _pinController,
+            enabled: !_isVerifying,
             keyboardType: TextInputType.number,
             obscureText: true,
             maxLength: 6,
@@ -565,6 +584,7 @@ class _PinVerificationDialogState extends State<_PinVerificationDialog> {
               LengthLimitingTextInputFormatter(6),
             ],
             onChanged: (value) {
+              if (_isVerifying) return;
               if (_error != null) setState(() => _error = null);
               if (value.length == 6) _verifyPin(value);
             },
@@ -597,6 +617,7 @@ class _PinVerificationDialogState extends State<_PinVerificationDialog> {
   }
 
   Future<void> _verifyPin(String pin) async {
+    if (_isVerifying) return;
     setState(() {
       _isVerifying = true;
       _error = null;

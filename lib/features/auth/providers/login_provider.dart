@@ -94,7 +94,7 @@ class LoginNotifier extends Notifier<LoginState> {
       return;
     }
 
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.withoutPendingSession().copyWith(isLoading: true);
     _appFsm.login(phoneValue.localNumber, phoneValue.apiCountryCode);
 
     try {

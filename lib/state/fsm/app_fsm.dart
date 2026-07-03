@@ -185,9 +185,11 @@ class AppState extends FsmState {
       return AppScreen.sessionLocked;
     }
 
-    // Session biometric prompt
+    // Session biometric prompt resolves to the unified unlock screen.
+    // The unlock screen owns both PIN and biometric entry so returning users
+    // never need an extra detour just to choose PIN entry.
     if (session is SessionBiometricPrompt) {
-      return AppScreen.biometricPrompt;
+      return AppScreen.sessionLocked;
     }
 
     // Session device changed
@@ -383,6 +385,10 @@ class AppGuards {
 
     if (contract.role == AppRouteRole.unknown) {
       return const GuardDenied('/home', 'Unknown route');
+    }
+
+    if (state.session is SessionLocked && !contract.isAllowedWhenLocked) {
+      return const GuardDenied('/session-locked', 'Session locked');
     }
 
     if (contract.requiresWallet) {

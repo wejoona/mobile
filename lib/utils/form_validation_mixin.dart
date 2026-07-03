@@ -69,8 +69,9 @@ mixin FormValidationMixin {
     if (value == null || value.trim().isEmpty) {
       return null; // Email often optional
     }
-    if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
-        .hasMatch(value.trim())) {
+    if (!RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    ).hasMatch(value.trim())) {
       return 'Please enter a valid email address';
     }
     return null;
@@ -93,8 +94,8 @@ mixin FormValidationMixin {
     return null;
   }
 
-  /// Validates a PIN (4-6 digits).
-  String? validatePin(String? value, {int length = 4}) {
+  /// Validates a PIN (6 digits by default).
+  String? validatePin(String? value, {int length = 6}) {
     if (value == null || value.isEmpty) {
       return 'PIN is required';
     }

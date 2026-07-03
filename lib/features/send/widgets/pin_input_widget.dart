@@ -9,6 +9,7 @@ class PinInputWidget extends StatefulWidget {
   final ValueChanged<String>? onCompleted;
   final String? error;
   final bool obscureText;
+  final bool enabled;
 
   const PinInputWidget({
     super.key,
@@ -17,6 +18,7 @@ class PinInputWidget extends StatefulWidget {
     this.onCompleted,
     this.error,
     this.obscureText = true,
+    this.enabled = true,
   });
 
   @override
@@ -37,6 +39,7 @@ class _PinInputWidgetState extends State<PinInputWidget> {
           onCompleted: widget.onCompleted,
           error: widget.error,
           obscureText: widget.obscureText,
+          enabled: widget.enabled,
         ),
         if (widget.error != null) ...[
           const SizedBox(height: AppSpacing.sm),

@@ -100,8 +100,15 @@ class E2EClient {
 
   final String baseUrl;
   final http.Client _client;
+  final String deviceIdentifier =
+      Platform.environment['E2E_DEVICE_ID'] ??
+      const String.fromEnvironment(
+        'E2E_DEVICE_ID',
+        defaultValue: 'e2e-test-device-001',
+      );
   String? _accessToken;
   String? _refreshToken;
+  String? _tokenPhone;
 
   String? get accessToken => _accessToken;
   String? get refreshToken => _refreshToken;
@@ -109,6 +116,7 @@ class E2EClient {
   Map<String, String> get _headers => {
     'Content-Type': 'application/json',
     'X-Test-Bypass': _testBypassSecret,
+    'X-Device-Id': deviceIdentifier,
     if (_accessToken != null) 'Authorization': 'Bearer $_accessToken',
   };
 
@@ -120,6 +128,7 @@ class E2EClient {
   void clearTokens() {
     _accessToken = null;
     _refreshToken = null;
+    _tokenPhone = null;
   }
 
   // ── HTTP verbs ──
@@ -273,12 +282,13 @@ class E2EClient {
     // If pre-configured token provided, use it directly
     if (_envAuthToken.isNotEmpty) {
       _accessToken = _envAuthToken;
+      _tokenPhone = phone;
       return;
     }
 
-    if (await _loadCachedTokens()) {
+    if (await _loadCachedTokens(phone)) {
       final sessionProbe = await get('/sessions');
-      if (sessionProbe.statusCode != 401) {
+      if (sessionProbe.isOk) {
         return;
       }
       await _clearTokenCache();
@@ -303,8 +313,8 @@ class E2EClient {
     if (otpRes.statusCode == 200 && otpRes.data?['data']?['otp'] != null) {
       otp = otpRes.data!['data']['otp'].toString();
     } else {
-      // Fall back to default dev OTP
-      otp = '123456';
+      // Fall back to the configured default OTP for staging/dogfood stacks.
+      otp = defaultTestOtp;
     }
 
     // Step 3: Verify OTP → get tokens
@@ -321,6 +331,7 @@ class E2EClient {
       _refreshToken =
           data?['refreshToken']?.toString() ??
           data?['refresh_token']?.toString();
+      _tokenPhone = phone;
     }
 
     if (_accessToken == null || _accessToken!.isEmpty) {
@@ -333,7 +344,7 @@ class E2EClient {
     }
 
     final sessionProbe = await get('/sessions');
-    if (sessionProbe.statusCode == 401) {
+    if (!sessionProbe.isOk) {
       throw AssertionError(
         'Live E2E login returned an invalid access token.\n'
         'Base URL: $baseUrl\n'
@@ -343,7 +354,7 @@ class E2EClient {
       );
     }
 
-    await _saveCachedTokens();
+    await _saveCachedTokens(phone);
   }
 
   void _expectAuthStepOk(String step, E2EResponse response) {
@@ -398,7 +409,7 @@ class E2EClient {
       _accessToken = data?['accessToken'] ?? data?['access_token'];
       _refreshToken =
           data?['refreshToken'] ?? data?['refresh_token'] ?? _refreshToken;
-      await _saveCachedTokens();
+      await _saveCachedTokens(_tokenPhone ?? testPhone);
       return true;
     }
     return false;
@@ -417,17 +428,20 @@ class E2EClient {
     );
   }
 
-  Future<bool> _loadCachedTokens() async {
+  Future<bool> _loadCachedTokens(String phone) async {
     if (!await _tokenCacheFile.exists()) return false;
     try {
       final cached =
           jsonDecode(await _tokenCacheFile.readAsString())
               as Map<String, dynamic>;
       if (cached['baseUrl'] != baseUrl) return false;
+      if (cached['phone'] != phone) return false;
+      if (cached['deviceIdentifier'] != deviceIdentifier) return false;
       final access = cached['accessToken']?.toString();
       final refresh = cached['refreshToken']?.toString();
       if (access == null || access.isEmpty) return false;
       _accessToken = access;
+      _tokenPhone = phone;
       if (refresh != null && refresh.isNotEmpty) {
         _refreshToken = refresh;
       }
@@ -438,11 +452,13 @@ class E2EClient {
     }
   }
 
-  Future<void> _saveCachedTokens() async {
+  Future<void> _saveCachedTokens(String phone) async {
     if (_accessToken == null || _accessToken!.isEmpty) return;
     await _tokenCacheFile.writeAsString(
       jsonEncode({
         'baseUrl': baseUrl,
+        'phone': phone,
+        'deviceIdentifier': deviceIdentifier,
         'accessToken': _accessToken,
         'refreshToken': _refreshToken,
         'createdAt': DateTime.now().toIso8601String(),

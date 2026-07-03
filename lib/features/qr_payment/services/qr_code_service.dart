@@ -10,13 +10,16 @@ class QrCodeService {
     String? currency,
     String? name,
     String? reference,
+    String? walletAddress,
   }) {
     final data = QrPaymentData(
       phone: phone,
+      userId: userId ?? '',
       amount: amount,
       currency: currency ?? 'USD',
       name: name,
       reference: reference,
+      walletAddress: walletAddress,
     );
 
     return data.toQrString();
@@ -61,6 +64,7 @@ class QrCodeService {
           currency: uri.queryParameters['currency'],
           name: uri.queryParameters['name'],
           reference: uri.queryParameters['reference'],
+          walletAddress: uri.queryParameters['address'],
         );
       }
 

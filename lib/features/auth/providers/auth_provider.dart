@@ -231,32 +231,20 @@ class AuthNotifier extends Notifier<AuthState> {
     String refreshToken, {
     required int restoreVersion,
   }) async {
-    try {
-      final response = await _authService.refreshToken(
-        refreshToken: refreshToken,
-      );
-      if (!ref.mounted) return false;
-      if (!_isCurrentSessionMutation(restoreVersion)) return false;
-      await _storage.write(
-        key: StorageKeys.accessToken,
-        value: response.accessToken,
-      );
-      if (response.refreshToken != null) {
-        await _storage.write(
-          key: StorageKeys.refreshToken,
-          value: response.refreshToken!,
-        );
-      }
-      return true;
-    } on ApiException catch (e) {
-      if (_isRefreshRejected(e)) {
-        await clearLocalSession();
-        return false;
-      }
-      return true;
-    } catch (_) {
+    final result = await ref
+        .read(sessionServiceProvider.notifier)
+        .refreshStoredSession();
+    if (!ref.mounted) return false;
+    if (!_isCurrentSessionMutation(restoreVersion)) return false;
+
+    if (result.success) {
       return true;
     }
+    if (result.rejected) {
+      await clearLocalSession();
+      return false;
+    }
+    return true;
   }
 
   bool _isCurrentSessionMutation(int expectedVersion) =>
@@ -391,38 +379,58 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<bool> _refreshTokenOnUnlock() async {
-    try {
-      final storedRefresh = await _storage.read(key: StorageKeys.refreshToken);
-      if (storedRefresh == null) return false;
-
-      final response = await _authService.refreshToken(
-        refreshToken: storedRefresh,
-      );
-
-      await _storage.write(
-        key: StorageKeys.accessToken,
-        value: response.accessToken,
-      );
-      if (response.refreshToken != null) {
-        await _storage.write(
-          key: StorageKeys.refreshToken,
-          value: response.refreshToken!,
-        );
-      }
+    final result = await ref
+        .read(sessionServiceProvider.notifier)
+        .refreshStoredSession();
+    if (result.success) {
+      await _applyRefreshedSessionUser(result);
       return true;
-    } on ApiException catch (e) {
+    }
+    if (result.rejected) {
       // Stored refresh tokens can survive app reinstall on iOS keychain.
       // If the backend rejects them, clear local state immediately instead of
       // leaving the user trapped behind a PIN screen with an invalid session.
-      if (_isRefreshRejected(e)) {
-        await clearLocalSession();
-      }
-      return false;
-    } catch (_) {
-      // Keep the locked state on transient/local failures. The next API call can
-      // still retry through the interceptor.
+      await clearLocalSession();
       return false;
     }
+    // Keep the locked state on transient/local failures. The next API call can
+    // still retry through the interceptor.
+    return false;
+  }
+
+  Future<void> _applyRefreshedSessionUser(SessionRefreshResult result) async {
+    final user = result.user;
+    if (user == null) {
+      return;
+    }
+
+    final phoneValue = await _persistPhoneValue(
+      phone: user.phone,
+      countryCode: user.countryCode,
+    );
+    await _storage.write(key: StorageKeys.userId, value: user.id);
+
+    state = state.copyWith(
+      user: user,
+      phone: phoneValue?.localNumber ?? user.phone,
+      countryCode: phoneValue?.isoCountryCode ?? user.countryCode,
+      error: null,
+    );
+
+    final refreshedKycStatus = _projectKycStatus(
+      result.kycStatus ?? user.kycStatus?.toApiString(),
+    );
+
+    ref
+        .read(userStateMachineProvider.notifier)
+        .updateProfile(
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          avatarUrl: user.avatarUrl,
+          avatarThumb: user.avatarBase64,
+          kycStatus: refreshedKycStatus,
+        );
   }
 
   /// Register new user
@@ -963,6 +971,7 @@ class AuthNotifier extends Notifier<AuthState> {
     final realtimeService = ref.read(realtimeServiceProvider);
     final sessionService = ref.read(sessionServiceProvider.notifier);
     final biometricService = ref.read(biometricServiceProvider);
+    final pinService = ref.read(pinServiceProvider);
     final userStateMachine = ref.read(userStateMachineProvider.notifier);
     final appFsm = ref.read(appFsmProvider.notifier);
 
@@ -978,8 +987,14 @@ class AuthNotifier extends Notifier<AuthState> {
       ref.invalidate(loginProvider);
     }
 
+    await pinService.clearPin();
     await _storage.delete(key: StorageKeys.accessToken);
     await _storage.delete(key: StorageKeys.refreshToken);
+    await _storage.delete(key: StorageKeys.userId);
+    await _storage.delete(key: StorageKeys.userPhone);
+    await _storage.delete(key: StorageKeys.userPhoneE164);
+    await _storage.delete(key: StorageKeys.userDialCode);
+    await _storage.delete(key: StorageKeys.userLocalPhone);
     await biometricService.disableBiometric();
 
     // Clear user state machine (clears cache, avatar, storage keys)

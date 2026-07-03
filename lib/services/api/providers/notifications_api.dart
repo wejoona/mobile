@@ -36,11 +36,16 @@ class NotificationsApi {
       _dio.delete('/notifications/device-token/${Uri.encodeComponent(token)}');
 
   /// Legacy facade for FCM/APNs token registration.
-  Future<Response> registerPushToken(Map<String, dynamic> data) =>
-      registerDeviceToken({
-        'token': data['token'],
-        'platform': _notificationPlatform(data['platform']),
-      });
+  Future<Response> registerPushToken(
+    Map<String, dynamic> data,
+  ) => registerDeviceToken({
+    'token': data['token'],
+    'platform': _notificationPlatform(data['platform']),
+    if (_hasValue(data['deviceId'])) 'deviceId': _trim(data['deviceId']),
+    if (_hasValue(data['deviceName'])) 'deviceName': _trim(data['deviceName']),
+    if (_hasValue(data['appVersion'])) 'appVersion': _trim(data['appVersion']),
+    if (_hasValue(data['osVersion'])) 'osVersion': _trim(data['osVersion']),
+  });
 
   /// Legacy facade for FCM/APNs token removal.
   Future<Response> removePushToken(Map<String, dynamic> data) {
@@ -78,3 +83,7 @@ String _notificationPlatform(Object? platform) {
   }
   return 'ios';
 }
+
+bool _hasValue(Object? value) => value is String && value.trim().isNotEmpty;
+
+String _trim(Object? value) => value.toString().trim();

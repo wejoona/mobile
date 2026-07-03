@@ -310,10 +310,11 @@ class MockInterceptor extends Interceptor {
     if (path == '/config/mobile-version') {
       return MockResponse.success({
         'platform': options.queryParameters['platform'] ?? 'unknown',
-        'currentVersion': options.queryParameters['version'] ?? '1.0.0',
+        'currentVersion': options.queryParameters['version'] ?? '0.9.0',
         'currentBuildNumber': options.queryParameters['buildNumber'] ?? '1',
-        'latestVersion': '1.0.0',
-        'minimumSupportedVersion': '1.0.0',
+        'latestVersion': options.queryParameters['version'] ?? '0.9.0',
+        'minimumSupportedVersion':
+            options.queryParameters['version'] ?? '0.9.0',
         'latestBuildNumber': null,
         'minimumSupportedBuildNumber': null,
         'forceUpgrade': false,

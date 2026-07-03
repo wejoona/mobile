@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
+import 'package:usdc_wallet/features/qr_payment/services/qr_code_service.dart';
 import 'package:usdc_wallet/features/qr_payment/widgets/qr_display.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/index.dart';
 
@@ -19,6 +21,8 @@ class ReceiveView extends ConsumerStatefulWidget {
 }
 
 class _ReceiveViewState extends ConsumerState<ReceiveView> {
+  final _qrService = QrCodeService();
+
   @override
   void initState() {
     super.initState();
@@ -32,7 +36,18 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
     final walletState = ref.watch(walletStateMachineProvider);
+    final authState = ref.watch(authProvider);
     final limitsState = ref.watch(limitsProvider);
+    final user = authState.user;
+    final receiveQrData = walletState.hasWalletAddress
+        ? _qrService.generateReceiveQr(
+            phone: user?.phone ?? authState.phone ?? '',
+            userId: user?.id,
+            currency: 'USDC',
+            name: user?.displayName,
+            walletAddress: walletState.walletAddress,
+          )
+        : null;
     final receivePermissions = limitsState.limits?.permissions;
     final canReceive = receivePermissions?.canReceive == true;
     final receiveBlockReason =
@@ -79,7 +94,7 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
               _buildReceiveBlockedState(context, receiveBlockReason)
             else if (walletState.hasWalletAddress)
               QrCodeDisplay(
-                data: walletState.walletAddress!,
+                data: receiveQrData!,
                 size: 220,
                 title: l10n.receive_receiveUsdc,
                 subtitle: l10n.receive_onlySendUsdc,
@@ -253,11 +268,11 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
     AppLocalizations l10n,
     String address,
   ) {
-    Clipboard.setData(ClipboardData(text: address));
+    unawaited(Clipboard.setData(ClipboardData(text: address)));
 
     // SECURITY: Auto-clear clipboard after 60 seconds
     Future.delayed(const Duration(seconds: 60), () {
-      Clipboard.setData(const ClipboardData(text: ''));
+      unawaited(Clipboard.setData(const ClipboardData(text: '')));
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -270,10 +285,12 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
   }
 
   void _shareAddress(AppLocalizations l10n, String address) {
-    SharePlus.instance.share(
-      ShareParams(
-        text: l10n.receive_shareMessage(address),
-        title: l10n.receive_shareSubject,
+    unawaited(
+      SharePlus.instance.share(
+        ShareParams(
+          text: l10n.receive_shareMessage(address),
+          title: l10n.receive_shareSubject,
+        ),
       ),
     );
   }

@@ -5628,7 +5628,7 @@
   "@security_changePin": {
     "description": "Change PIN option"
   },
-  "security_changePinSubtitle": "Atualizar your 4-digit pin",
+  "security_changePinSubtitle": "Atualizar your 6-digit pin",
   "@security_changePinSubtitle": {
     "description": "Change PIN subtitle"
   },
@@ -6226,7 +6226,7 @@
   "@changePin_enterCurrentPinTitle": {
     "description": "Enter current PIN step title"
   },
-  "changePin_enterCurrentPinSubtitle": "Enter your current 4-digit pin to continuar",
+  "changePin_enterCurrentPinSubtitle": "Enter your current 6-digit pin to continuar",
   "@changePin_enterCurrentPinSubtitle": {
     "description": "Enter current PIN step subtitle"
   },
@@ -6234,7 +6234,7 @@
   "@changePin_createNewPinTitle": {
     "description": "Create new PIN step title"
   },
-  "changePin_createNewPinSubtitle": "Choose a new 4-digit pin for your conta",
+  "changePin_createNewPinSubtitle": "Choose a new 6-digit pin for your conta",
   "@changePin_createNewPinSubtitle": {
     "description": "Create new PIN step subtitle"
   },

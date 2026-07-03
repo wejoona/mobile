@@ -49,12 +49,13 @@ class FormValidators {
   }
 
   /// PIN validation (digits only, exact length).
-  static String? pin(String? value, {int length = 4}) {
+  static String? pin(String? value, {int length = 6}) {
     if (value == null || value.isEmpty) return 'PIN is required';
     if (value.length != length) return 'PIN must be $length digits';
-    if (!RegExp(r'^\d+$').hasMatch(value)) return 'PIN must contain only digits';
+    if (!RegExp(r'^\d+$').hasMatch(value))
+      return 'PIN must contain only digits';
     // Check for sequential patterns
-    if (_isSequential(value)) return 'PIN cannot be sequential (e.g. 1234)';
+    if (_isSequential(value)) return 'PIN cannot be sequential (e.g. 123456)';
     // Check for repeated digits
     if (value.split('').toSet().length == 1) {
       return 'PIN cannot be all the same digit';
@@ -66,7 +67,8 @@ class FormValidators {
   static String? otp(String? value, {int length = 6}) {
     if (value == null || value.isEmpty) return 'OTP is required';
     if (value.length != length) return 'OTP must be $length digits';
-    if (!RegExp(r'^\d+$').hasMatch(value)) return 'OTP must contain only digits';
+    if (!RegExp(r'^\d+$').hasMatch(value))
+      return 'OTP must contain only digits';
     return null;
   }
 

@@ -87,10 +87,13 @@ void main() {
             'mobile must not invent a biometric-only money-flow decision when backend risk is unavailable.',
       );
 
-      final riskFailureIndex = source.indexOf('} catch (e) {');
+      final riskFailureMatch = RegExp(
+        r'}\s+(?:on\s+\w+\s+)?catch\s*\([^)]*\)\s*\{',
+      ).firstMatch(source);
       final pinRouteIndex = source.indexOf("context.fsmPush('/send/pin')");
-      expect(riskFailureIndex, isNonNegative);
+      expect(riskFailureMatch, isNotNull);
       expect(pinRouteIndex, isNonNegative);
+      final riskFailureIndex = riskFailureMatch!.start;
       expect(riskFailureIndex, lessThan(pinRouteIndex));
       expect(
         source.substring(riskFailureIndex, pinRouteIndex),

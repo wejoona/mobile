@@ -4,8 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/settings/providers/security_settings_provider.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
-import 'package:usdc_wallet/state/fsm/session_fsm.dart';
-import 'package:usdc_wallet/state/fsm/app_fsm.dart';
+import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/services/realtime/realtime_service.dart';
 
 /// Minimum grace period before locking — covers camera, image picker, biometric prompts.
@@ -96,11 +95,7 @@ class AppLifecycleObserver extends WidgetsBindingObserver {
 
     if (kDebugMode)
       debugPrint('[Lifecycle] Auto-lock triggered after grace period');
-    _ref
-        .read(appFsmProvider.notifier)
-        .dispatch(
-          const AppSessionEvent(SessionLock(reason: 'App backgrounded')),
-        );
+    _ref.read(sessionServiceProvider.notifier).lockSession();
   }
 }
 

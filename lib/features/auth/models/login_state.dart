@@ -53,23 +53,40 @@ class LoginState {
     bool? rememberDevice,
     int? pinAttempts,
     bool? isLocked,
+    bool clearOtp = false,
+    bool clearSession = false,
+    bool clearUser = false,
   }) {
     return LoginState(
       currentStep: currentStep ?? this.currentStep,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       dialCode: dialCode ?? this.dialCode,
-      otp: otp ?? this.otp,
+      otp: clearOtp ? null : otp ?? this.otp,
       isLoading: isLoading ?? this.isLoading,
       error: error,
       otpResendCountdown: otpResendCountdown ?? this.otpResendCountdown,
-      sessionToken: sessionToken ?? this.sessionToken,
-      refreshToken: refreshToken ?? this.refreshToken,
-      sessionExpiresIn: sessionExpiresIn ?? this.sessionExpiresIn,
-      user: user ?? this.user,
-      kycStatus: kycStatus ?? this.kycStatus,
+      sessionToken: clearSession ? null : sessionToken ?? this.sessionToken,
+      refreshToken: clearSession ? null : refreshToken ?? this.refreshToken,
+      sessionExpiresIn: clearSession
+          ? null
+          : sessionExpiresIn ?? this.sessionExpiresIn,
+      user: clearUser ? null : user ?? this.user,
+      kycStatus: clearUser ? null : kycStatus ?? this.kycStatus,
       rememberDevice: rememberDevice ?? this.rememberDevice,
       pinAttempts: pinAttempts ?? this.pinAttempts,
       isLocked: isLocked ?? this.isLocked,
+    );
+  }
+
+  LoginState withoutPendingSession({LoginStep? currentStep}) {
+    return copyWith(
+      currentStep: currentStep,
+      clearOtp: true,
+      clearSession: true,
+      clearUser: true,
+      pinAttempts: 0,
+      isLocked: false,
+      error: null,
     );
   }
 

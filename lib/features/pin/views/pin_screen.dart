@@ -73,6 +73,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
   String _replacementPinConfirmation = '';
   ProviderSubscription<AuthState>? _authSubscription;
   ProviderSubscription<SessionState>? _sessionSubscription;
+  ProviderSubscription<AppState>? _appFsmSubscription;
 
   @override
   void initState() {
@@ -84,6 +85,10 @@ class _PinScreenState extends ConsumerState<PinScreen>
     );
     _sessionSubscription = ref.listenManual<SessionState>(
       sessionServiceProvider,
+      (_, _) => _dismissIfAlreadyUnlocked(),
+    );
+    _appFsmSubscription = ref.listenManual<AppState>(
+      appFsmProvider,
       (_, _) => _dismissIfAlreadyUnlocked(),
     );
     unawaited(_checkBiometric());
@@ -99,6 +104,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
     _biometricAttempt++;
     _authSubscription?.close();
     _sessionSubscription?.close();
+    _appFsmSubscription?.close();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -115,6 +121,16 @@ class _PinScreenState extends ConsumerState<PinScreen>
   }
 
   Future<void> _checkBiometric() async {
+    if (!_allowsBiometricUnlock) {
+      if (mounted) {
+        setState(() {
+          _biometricEnabled = false;
+          _biometricType = BiometricType.none;
+        });
+      }
+      return;
+    }
+
     // Only offer biometric if PIN is confirmed (set) on device
     final pinService = ref.read(pinServiceProvider);
     final hasPin = await pinService.hasPin();
@@ -153,8 +169,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
       case PinContext.login:
         // Show brief transition, then unlock + navigate to home together.
         if (mounted) {
+          final acceptedPin = _pin;
           _transitionThen(() async {
-            final unlocked = await _applyUnlock();
+            final unlocked = await _applyUnlock(acceptedPin: acceptedPin);
             if (!unlocked) {
               if (mounted) {
                 _showUnlockFailure();
@@ -175,6 +192,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
         if (mounted) {
           _transitionThen(() async {
             final unlocked = await _applySessionUnlock();
+            if (!mounted) {
+              return;
+            }
             if (!unlocked) {
               _showUnlockFailure();
               return;
@@ -194,6 +214,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
                 } on Object {}
               }),
             );
+            if (!mounted) {
+              return;
+            }
             context.fsmEnterAuthenticatedApp(
               route: widget.successRoute ?? '/home',
             );
@@ -208,7 +231,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
   /// Unlock auth + session state. Kept separate so callers can run it in the
   /// same frame as navigation (see [_onSuccess]).
-  Future<bool> _applyUnlock() async {
+  Future<bool> _applyUnlock({String? acceptedPin}) async {
     if (widget.pinContext == PinContext.login) {
       final loginState = ref.read(loginProvider);
       final accessToken = loginState.sessionToken;
@@ -216,7 +239,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
         return false;
       }
       final loginPhoneValue = loginState.phoneValue;
-      return ref
+      final unlocked = await ref
           .read(authProvider.notifier)
           .completePinLogin(
             accessToken: accessToken,
@@ -227,6 +250,10 @@ class _PinScreenState extends ConsumerState<PinScreen>
             kycStatus: loginState.kycStatus,
             expiresIn: loginState.sessionExpiresIn,
           );
+      if (unlocked && acceptedPin != null && acceptedPin.isNotEmpty) {
+        await ref.read(pinServiceProvider).cacheConfirmedPin(acceptedPin);
+      }
+      return unlocked;
     }
 
     return _applySessionUnlock();
@@ -279,6 +306,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
   }
 
   void _showUnlockFailure() {
+    if (!mounted) return;
     setState(() {
       _hasCompletedSuccess = false;
       _queuedUnlockedRedirect = false;
@@ -333,9 +361,11 @@ class _PinScreenState extends ConsumerState<PinScreen>
     });
 
     final pinService = ref.read(pinServiceProvider);
-    final result = widget.pinContext == PinContext.login
-        ? await _verifyLoginPinWithBackend(pinService, l10n)
-        : await pinService.verifyPinLocally(_pin);
+    final result = switch (widget.pinContext) {
+      PinContext.login => await _verifyLoginPinWithBackend(pinService, l10n),
+      PinContext.sessionLock => await _verifySessionLockPin(pinService),
+      PinContext.confirmAction => await pinService.verifyPinLocally(_pin),
+    };
 
     if (!mounted) return;
 
@@ -362,9 +392,6 @@ class _PinScreenState extends ConsumerState<PinScreen>
         _errorMessage = null;
       });
     } else if (result.success) {
-      if (widget.pinContext == PinContext.login) {
-        await pinService.cacheConfirmedPin(_pin);
-      }
       _onSuccess();
     } else {
       setState(() {
@@ -398,6 +425,58 @@ class _PinScreenState extends ConsumerState<PinScreen>
     }
 
     return pinService.verifyPinWithBackend(_pin, accessToken: accessToken);
+  }
+
+  Future<PinVerificationResult> _verifySessionLockPin(
+    PinService pinService,
+  ) async {
+    final refreshed = await ref
+        .read(authProvider.notifier)
+        .refreshAccessTokenForForegroundRequest();
+    final accessToken = await ref
+        .read(secureStorageProvider)
+        .read(key: StorageKeys.accessToken);
+
+    if (accessToken != null && accessToken.isNotEmpty) {
+      final backendResult = await pinService.verifyPinWithBackend(
+        _pin,
+        accessToken: accessToken,
+      );
+      if (backendResult.success) {
+        await pinService.cacheConfirmedPin(_pin);
+        return backendResult;
+      }
+      if (!_shouldUseLocalPinFallback(
+        backendResult,
+        refreshedBeforeVerify: refreshed,
+      )) {
+        await pinService.clearPin();
+        return backendResult;
+      }
+    }
+
+    final localResult = await pinService.verifyPinLocally(_pin);
+    if (localResult.message == 'PIN not set') {
+      return PinVerificationResult(
+        success: false,
+        message:
+            'Unable to verify PIN online. Please sign in again to set your PIN on this device.',
+      );
+    }
+    return localResult;
+  }
+
+  bool _shouldUseLocalPinFallback(
+    PinVerificationResult result, {
+    required bool refreshedBeforeVerify,
+  }) {
+    if (result.success || result.requiresPinChange || result.isLocked) {
+      return false;
+    }
+    if (result.message == 'Unable to verify PIN. Please try again.') {
+      return true;
+    }
+    return !refreshedBeforeVerify && result.message == 'Incorrect PIN';
   }
 
   Future<void> _handleBiometric() async {
@@ -507,12 +586,15 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
     final authState = ref.read(authProvider);
     final sessionState = ref.read(sessionServiceProvider);
+    final appFsmState = ref.read(appFsmProvider);
+    final fsmSessionLocked = appFsmState.session is SessionLocked;
     final shouldDismiss = switch (widget.pinContext) {
       PinContext.login => authState.isAuthenticated,
       PinContext.sessionLock =>
         authState.isAuthenticated &&
             !authState.isLocked &&
-            !sessionState.isLocked,
+            !sessionState.isLocked &&
+            !fsmSessionLocked,
       PinContext.confirmAction => false,
     };
 
@@ -602,13 +684,6 @@ class _PinScreenState extends ConsumerState<PinScreen>
                       variant: AppTextVariant.titleMedium,
                       color: colors.textPrimary,
                     ),
-                    const SizedBox(height: AppSpacing.xl),
-                    AppButton(
-                      label: l10n.biometric_usePinInstead,
-                      icon: Icons.pin_rounded,
-                      onPressed: _returnToPinEntry,
-                      variant: AppButtonVariant.secondary,
-                    ),
                   ],
                 ),
               ),
@@ -687,10 +762,13 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
                       if (_shouldShowBiometricUnlock) ...[
                         AppButton(
-                          label: _biometricButtonLabel(l10n),
+                          key: const ValueKey('pin-biometric-unlock-action'),
+                          label: l10n.session_useBiometric,
+                          semanticLabel: l10n.session_unlockReason,
                           icon: _biometricIcon,
                           onPressed: _handleBiometric,
                           variant: AppButtonVariant.secondary,
+                          size: AppButtonSize.large,
                           isFullWidth: true,
                         ),
                         const SizedBox(height: AppSpacing.lg),
@@ -972,20 +1050,15 @@ class _PinScreenState extends ConsumerState<PinScreen>
     return KoridoMark(size: size);
   }
 
-  bool get _shouldShowBiometricUnlock => _biometricEnabled && !_isVerifying;
+  bool get _shouldShowBiometricUnlock =>
+      _allowsBiometricUnlock &&
+      _biometricEnabled &&
+      !_isVerifying &&
+      !_showUnlockTransition &&
+      _biometricType != BiometricType.none;
 
-  String _biometricButtonLabel(AppLocalizations l10n) {
-    switch (_biometricType) {
-      case BiometricType.faceId:
-        return l10n.biometric_type_face_id;
-      case BiometricType.fingerprint:
-        return l10n.biometric_type_fingerprint;
-      case BiometricType.iris:
-        return l10n.biometric_type_iris;
-      case BiometricType.none:
-        return l10n.security_biometricLogin;
-    }
-  }
+  bool get _allowsBiometricUnlock =>
+      widget.pinContext == PinContext.sessionLock;
 
   IconData get _biometricIcon {
     switch (_biometricType) {

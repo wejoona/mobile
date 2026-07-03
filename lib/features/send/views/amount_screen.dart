@@ -31,6 +31,16 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
   @override
   void initState() {
     super.initState();
+    final sendState = ref.read(sendMoneyProvider);
+    final initialAmount = sendState.amount;
+    if (initialAmount != null && initialAmount > 0) {
+      _amountController.text = initialAmount.toStringAsFixed(2);
+      _draftAmount = initialAmount;
+    }
+    final initialNote = sendState.note?.trim();
+    if (initialNote != null && initialNote.isNotEmpty) {
+      _noteController.text = initialNote;
+    }
     Future.microtask(() {
       ref.read(limitsProvider.notifier).fetchLimits();
       final sendState = ref.read(sendMoneyProvider);

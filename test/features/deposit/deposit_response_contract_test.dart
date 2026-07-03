@@ -320,8 +320,12 @@ void main() {
         'status': 'INITIATED',
         'paymentInstructions': {
           'type': 'mobile_money',
+          'methodType': 'OTP',
           'provider': 'orange',
           'reference': 'DEP-123',
+          'supportReference': 'SUP-DEP-123',
+          'railProvider': 'orange_money_ci',
+          'executionProvider': 'direct_orange_ci',
           'instructions': 'Send 12000 XOF to the number above.',
         },
         'expiresAt': '2026-05-25T12:15:00.000Z',
@@ -334,9 +338,30 @@ void main() {
       expect(response.convertedCurrency, 'USDC');
       expect(response.exchangeRate, 600);
       expect(response.providerCode, 'orange');
-      expect(response.paymentMethodType, PaymentMethodType.push);
+      expect(response.paymentMethodType, PaymentMethodType.otp);
+      expect(response.paymentReference, 'DEP-123');
+      expect(response.supportReference, 'SUP-DEP-123');
+      expect(response.railProvider, 'orange_money_ci');
+      expect(response.executionProvider, 'direct_orange_ci');
       expect(response.status, DepositStatus.initiated);
       expect(response.instructions, 'Send 12000 XOF to the number above.');
+    });
+
+    test('does not treat a payment category as an executable method', () {
+      final response = DepositResponse.fromJson({
+        'depositId': 'dep_123',
+        'amount': 12000,
+        'sourceCurrency': 'XOF',
+        'status': 'INITIATED',
+        'paymentInstructions': {
+          'type': 'mobile_money',
+          'provider': 'orange',
+          'reference': 'DEP-123',
+        },
+      });
+
+      expect(response.paymentMethodType, PaymentMethodType.unsupported);
+      expect(response.paymentReference, 'DEP-123');
     });
 
     test('normalizes settled and timeout statuses', () {

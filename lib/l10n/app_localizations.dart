@@ -8871,7 +8871,7 @@ abstract class AppLocalizations {
   /// Change PIN subtitle
   ///
   /// In en, this message translates to:
-  /// **'Update your 4-digit PIN'**
+  /// **'Update your 6-digit PIN'**
   String get security_changePinSubtitle;
 
   /// Biometric login option
@@ -9753,7 +9753,7 @@ abstract class AppLocalizations {
   /// Enter current PIN step subtitle
   ///
   /// In en, this message translates to:
-  /// **'Enter your current 4-digit PIN to continue'**
+  /// **'Enter your current 6-digit PIN to continue'**
   String get changePin_enterCurrentPinSubtitle;
 
   /// Create new PIN step title
@@ -9765,7 +9765,7 @@ abstract class AppLocalizations {
   /// Create new PIN step subtitle
   ///
   /// In en, this message translates to:
-  /// **'Choose a new 4-digit PIN for your account'**
+  /// **'Choose a new 6-digit PIN for your account'**
   String get changePin_createNewPinSubtitle;
 
   /// Confirm PIN step title

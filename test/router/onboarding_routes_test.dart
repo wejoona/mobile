@@ -727,6 +727,20 @@ void main() {
         '/pay/test-code?source=qr',
       );
     });
+
+    test(
+      '/pin/enter cannot enable security behavior from query parameters',
+      () {
+        final source = File(
+          'lib/router/routes/card_account_routes.dart',
+        ).readAsStringSync();
+
+        expect(source, contains('EnterPinRouteContext'));
+        expect(source, isNot(contains("query['biometric']")));
+        expect(source, isNot(contains("query['title']")));
+        expect(source, isNot(contains("query['subtitle']")));
+      },
+    );
   });
 }
 

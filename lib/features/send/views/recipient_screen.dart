@@ -27,12 +27,16 @@ class RecipientScreen extends ConsumerStatefulWidget {
     this.initialUsername,
     this.initialRecipientId,
     this.initialName,
+    this.initialAmount,
+    this.initialNote,
   });
 
   final String? initialPhone;
   final String? initialUsername;
   final String? initialRecipientId;
   final String? initialName;
+  final double? initialAmount;
+  final String? initialNote;
 
   @override
   ConsumerState<RecipientScreen> createState() => _RecipientScreenState();
@@ -712,6 +716,13 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
         );
         return;
       }
+
+      ref
+          .read(sendMoneyProvider.notifier)
+          .prefillPaymentDetails(
+            amount: widget.initialAmount,
+            note: widget.initialNote,
+          );
 
       if (mounted) {
         unawaited(context.fsmPush('/send/amount'));

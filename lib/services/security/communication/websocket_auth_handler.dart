@@ -4,13 +4,14 @@ import 'package:usdc_wallet/utils/logger.dart';
 /// Handles authentication for WebSocket connections.
 class WebSocketAuthHandler {
   static const _tag = 'WsAuth';
+  static const _clientVersion = '0.9.0';
   final AppLogger _log = AppLogger(_tag);
 
   /// Create authenticated connection headers.
   Map<String, String> createAuthHeaders(String token) {
     return {
       'Authorization': 'Bearer $token',
-      'X-Client-Version': '1.0.0',
+      'X-Client-Version': _clientVersion,
     };
   }
 

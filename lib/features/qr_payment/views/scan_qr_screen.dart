@@ -34,6 +34,7 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen>
   bool _isCheckingPermission = false;
   MobileScannerException? _scannerRuntimeError;
   QrPaymentData? _scannedData;
+  DateTime? _lastInvalidQrFeedbackAt;
 
   @override
   void initState() {
@@ -581,6 +582,10 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen>
       if (barcode.rawValue == null) return;
 
       final parsedData = _qrService.parseQrData(barcode.rawValue!);
+      if (parsedData == null) {
+        _showInvalidQrFeedback();
+        return;
+      }
 
       setState(() {
         _scannedData = parsedData;
@@ -614,6 +619,10 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen>
     if (barcode.rawValue == null) return;
 
     final parsedData = _qrService.parseQrData(barcode.rawValue!);
+    if (parsedData == null) {
+      _showInvalidQrFeedback();
+      return;
+    }
 
     setState(() {
       _scannedData = parsedData;
@@ -625,6 +634,27 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen>
       unawaited(controller.stop());
     }
     unawaited(HapticFeedback.mediumImpact());
+  }
+
+  void _showInvalidQrFeedback() {
+    final now = DateTime.now();
+    final lastFeedback = _lastInvalidQrFeedbackAt;
+    if (lastFeedback != null &&
+        now.difference(lastFeedback) < const Duration(seconds: 2)) {
+      return;
+    }
+
+    _lastInvalidQrFeedbackAt = now;
+    unawaited(HapticFeedback.lightImpact());
+
+    if (!mounted) {
+      return;
+    }
+
+    final l10n = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(l10n.qr_invalidCodeMessage)));
   }
 }
 

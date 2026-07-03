@@ -248,6 +248,10 @@ class AppFsmNotifier extends FsmNotifier<AppState, AppEvent> {
     dispatch(const AppSessionEvent(SessionUnlock()));
   }
 
+  void lockSession({String? reason}) {
+    dispatch(AppSessionEvent(SessionLock(reason: reason)));
+  }
+
   /// Called when OTP is received from API
   void onOtpReceived({int? expiresIn}) {
     dispatch(AppAuthEvent(AuthOtpReceived(expiresIn: expiresIn)));

@@ -760,9 +760,10 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
 
     try {
       final pinService = ref.read(pinServiceProvider);
-      final result = await pinService.verifyPinLocally(_currentPin);
+      final result = await pinService.verifyPinWithBackend(_currentPin);
 
       if (result.success) {
+        await pinService.cacheConfirmedPin(_currentPin);
         setState(() {
           _currentStep = PinStep.newPin;
           _isLoading = false;

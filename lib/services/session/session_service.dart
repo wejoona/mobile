@@ -2,11 +2,14 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:usdc_wallet/config/api_config.dart';
 import 'package:usdc_wallet/utils/logger.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/settings/providers/security_settings_provider.dart';
+import 'package:usdc_wallet/domain/entities/user.dart';
 import 'package:usdc_wallet/services/security/security_headers_interceptor.dart';
+import 'package:usdc_wallet/services/storage/secure_storage_provider.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Session configuration
 class SessionConfig {
@@ -48,6 +51,19 @@ enum SessionStatus {
 
   /// Session is locked (requires PIN/biometric)
   locked,
+}
+
+enum SessionRefreshStatus { success, rejected, unavailable }
+
+class SessionRefreshResult {
+  final SessionRefreshStatus status;
+  final User? user;
+  final String? kycStatus;
+
+  const SessionRefreshResult(this.status, {this.user, this.kycStatus});
+
+  bool get success => status == SessionRefreshStatus.success;
+  bool get rejected => status == SessionRefreshStatus.rejected;
 }
 
 class SessionState {
@@ -105,6 +121,8 @@ class SessionService extends Notifier<SessionState> {
   Timer? _countdownTimer;
   Timer? _tokenRefreshTimer;
   DateTime? _backgroundEnteredAt;
+  Future<SessionRefreshResult>? _refreshInFlight;
+  int _sessionGeneration = 0;
 
   SessionService({SessionConfig? config})
     : _config = config ?? const SessionConfig();
@@ -129,6 +147,8 @@ class SessionService extends Notifier<SessionState> {
     String? refreshToken,
     Duration? tokenValidity,
   }) async {
+    _sessionGeneration++;
+    _refreshInFlight = null;
     final now = DateTime.now();
     final expiresAt = tokenValidity != null ? now.add(tokenValidity) : null;
 
@@ -189,6 +209,9 @@ class SessionService extends Notifier<SessionState> {
     try {
       unawaited(ref.read(authProvider.notifier).setLocked());
     } catch (_) {}
+    try {
+      ref.read(appFsmProvider.notifier).lockSession(reason: 'Session locked');
+    } catch (_) {}
   }
 
   /// Unlock the session after successful PIN/biometric
@@ -212,6 +235,8 @@ class SessionService extends Notifier<SessionState> {
 
   /// End the session (logout)
   Future<void> endSession() async {
+    _sessionGeneration++;
+    _refreshInFlight = null;
     _cancelAllTimers();
 
     // Clear stored tokens
@@ -298,6 +323,23 @@ class SessionService extends Notifier<SessionState> {
     return token != null;
   }
 
+  Future<SessionRefreshResult> refreshStoredSession() async {
+    final existing = _refreshInFlight;
+    if (existing != null) {
+      return existing;
+    }
+
+    final future = _performRefreshToken();
+    _refreshInFlight = future;
+    try {
+      return await future;
+    } finally {
+      if (identical(_refreshInFlight, future)) {
+        _refreshInFlight = null;
+      }
+    }
+  }
+
   // Private methods
 
   Future<void> _checkExistingSession(FlutterSecureStorage storage) async {
@@ -325,23 +367,26 @@ class SessionService extends Notifier<SessionState> {
           }
           if (refreshToken != null) {
             // Attempt to refresh the token
-            final refreshed = await _refreshToken();
+            final refreshed = await refreshStoredSession();
             if (!ref.mounted) {
               return;
             }
-            if (!refreshed) {
+            if (refreshed.rejected) {
               if (!_canApplyStartupRestore) {
                 return;
               }
               await _invalidateLocalSession();
               return;
             }
+            if (!refreshed.success) {
+              expiresAt = DateTime.now().add(_config.tokenRefreshThreshold);
+            }
             // Re-read to check if refresh succeeded
             final newToken = await storage.read(key: _accessTokenKey);
             if (!ref.mounted) {
               return;
             }
-            if (newToken == null || newToken == token) {
+            if (refreshed.success && (newToken == null || newToken == token)) {
               if (!_canApplyStartupRestore) {
                 return;
               }
@@ -447,24 +492,31 @@ class SessionService extends Notifier<SessionState> {
     if (refreshAt.isAfter(now)) {
       final delay = refreshAt.difference(now);
       _tokenRefreshTimer = Timer(delay, () {
-        unawaited(_refreshToken());
+        unawaited(refreshStoredSession());
       });
     } else if (expiresAt.isAfter(now)) {
       // Already past refresh threshold but not expired, refresh now
-      unawaited(_refreshToken());
+      unawaited(refreshStoredSession());
     }
   }
 
-  Future<bool> _refreshToken() async {
+  Future<SessionRefreshResult> _performRefreshToken() async {
     final refreshToken = await getRefreshToken();
-    if (refreshToken == null) return false;
+    if (refreshToken == null) {
+      return const SessionRefreshResult(SessionRefreshStatus.rejected);
+    }
+    final refreshGeneration = _sessionGeneration;
 
     try {
       final dio = Dio(
         BaseOptions(
-          baseUrl: ApiConfig.baseUrl,
-          connectTimeout: ApiConfig.connectTimeout,
-          receiveTimeout: ApiConfig.receiveTimeout,
+          baseUrl: ApiConfiguration.baseUrl,
+          connectTimeout: const Duration(
+            milliseconds: ApiConfiguration.connectTimeout,
+          ),
+          receiveTimeout: const Duration(
+            milliseconds: ApiConfiguration.receiveTimeout,
+          ),
         ),
       );
       final securityHeaders = await ref
@@ -480,37 +532,75 @@ class SessionService extends Notifier<SessionState> {
       if (response.statusCode == 200) {
         final payload = _responsePayload(response.data);
         if (payload == null) {
-          return false;
+          return const SessionRefreshResult(SessionRefreshStatus.unavailable);
         }
 
         final newAccessToken = payload['accessToken'] as String?;
         final newRefreshToken = payload['refreshToken'] as String?;
         final expiresIn = _parseExpiresIn(payload['expiresIn']) ?? 900;
+        final refreshedUser = _parseUser(payload);
+        final kycStatus =
+            (payload['kycStatus'] ?? payload['kyc_status']) as String?;
 
         if (newAccessToken == null || newAccessToken.isEmpty) {
-          return false;
+          return const SessionRefreshResult(SessionRefreshStatus.unavailable);
         }
 
-        await _storage.write(key: _accessTokenKey, value: newAccessToken);
+        if (refreshGeneration != _sessionGeneration) {
+          return const SessionRefreshResult(SessionRefreshStatus.unavailable);
+        }
+
+        final accessWritten = await _writeRefreshValueIfCurrent(
+          refreshGeneration,
+          key: _accessTokenKey,
+          value: newAccessToken,
+        );
+        if (!accessWritten) {
+          return const SessionRefreshResult(SessionRefreshStatus.unavailable);
+        }
         if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
-          await _storage.write(key: _refreshTokenKey, value: newRefreshToken);
+          final refreshWritten = await _writeRefreshValueIfCurrent(
+            refreshGeneration,
+            key: _refreshTokenKey,
+            value: newRefreshToken,
+          );
+          if (!refreshWritten) {
+            return const SessionRefreshResult(SessionRefreshStatus.unavailable);
+          }
         }
 
         final expiresAt = DateTime.now().add(Duration(seconds: expiresIn));
-        await _storage.write(
+        final expiryWritten = await _writeRefreshValueIfCurrent(
+          refreshGeneration,
           key: _tokenExpiryKey,
           value: expiresAt.toIso8601String(),
         );
+        if (!expiryWritten) {
+          return const SessionRefreshResult(SessionRefreshStatus.unavailable);
+        }
         state = state.copyWith(tokenExpiresAt: expiresAt);
 
         const AppLogger('Debug').debug('Token refreshed successfully');
         _startTokenRefreshTimer();
-        return true;
+        return SessionRefreshResult(
+          SessionRefreshStatus.success,
+          user: refreshedUser,
+          kycStatus: kycStatus,
+        );
       }
-      return false;
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        return const SessionRefreshResult(SessionRefreshStatus.rejected);
+      }
+      return const SessionRefreshResult(SessionRefreshStatus.unavailable);
+    } on DioException catch (e) {
+      const AppLogger('Token refresh failed').error('Token refresh failed', e);
+      if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
+        return const SessionRefreshResult(SessionRefreshStatus.rejected);
+      }
+      return const SessionRefreshResult(SessionRefreshStatus.unavailable);
     } on Object catch (e) {
       const AppLogger('Token refresh failed').error('Token refresh failed', e);
-      return false;
+      return const SessionRefreshResult(SessionRefreshStatus.unavailable);
     }
   }
 
@@ -537,6 +627,39 @@ class SessionService extends Notifier<SessionState> {
       return normalized;
     }
     return null;
+  }
+
+  User? _parseUser(Map<String, dynamic> payload) {
+    final rawUser = payload['user'];
+    if (rawUser is Map<String, dynamic>) {
+      return User.fromJson(rawUser);
+    }
+    if (rawUser is Map) {
+      return User.fromJson(Map<String, dynamic>.from(rawUser));
+    }
+    return null;
+  }
+
+  Future<bool> _writeRefreshValueIfCurrent(
+    int refreshGeneration, {
+    required String key,
+    required String value,
+  }) async {
+    if (refreshGeneration != _sessionGeneration) {
+      return false;
+    }
+
+    await _storage.write(key: key, value: value);
+
+    if (refreshGeneration == _sessionGeneration) {
+      return true;
+    }
+
+    final currentValue = await _storage.read(key: key);
+    if (currentValue == value) {
+      await _storage.delete(key: key);
+    }
+    return false;
   }
 
   int? _parseExpiresIn(Object? value) {
