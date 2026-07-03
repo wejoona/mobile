@@ -41,13 +41,18 @@ class MobileVersionPolicy {
   final DateTime checkedAt;
 
   factory MobileVersionPolicy.fromJson(Map<String, dynamic> json) {
+    final currentVersion = _stringValue(json['currentVersion']);
+    final latestVersion =
+        _stringValue(json['latestVersion']) ?? currentVersion ?? '0.9.0';
+    final minimumSupportedVersion =
+        _stringValue(json['minimumSupportedVersion']) ?? latestVersion;
+
     return MobileVersionPolicy(
       platform: _stringValue(json['platform']) ?? 'unknown',
-      currentVersion: _stringValue(json['currentVersion']),
+      currentVersion: currentVersion,
       currentBuildNumber: _stringValue(json['currentBuildNumber']),
-      latestVersion: _stringValue(json['latestVersion']) ?? '1.0.0',
-      minimumSupportedVersion:
-          _stringValue(json['minimumSupportedVersion']) ?? '1.0.0',
+      latestVersion: latestVersion,
+      minimumSupportedVersion: minimumSupportedVersion,
       latestBuildNumber: _stringValue(json['latestBuildNumber']),
       minimumSupportedBuildNumber: _stringValue(
         json['minimumSupportedBuildNumber'],

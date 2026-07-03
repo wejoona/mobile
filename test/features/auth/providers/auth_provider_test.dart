@@ -107,6 +107,12 @@ class MockPushNotificationService extends Mock
 /// Mock SessionService for testing
 class MockSessionNotifier extends Notifier<SessionState>
     implements SessionService {
+  MockSessionNotifier({required this.authService, required this.storage});
+
+  final AuthService authService;
+  final MockSecureStorage storage;
+  int _sessionGeneration = 0;
+
   @override
   SessionState build() => const SessionState();
 
@@ -116,17 +122,75 @@ class MockSessionNotifier extends Notifier<SessionState>
     String? refreshToken,
     Duration? tokenValidity,
   }) async {
+    _sessionGeneration++;
     state = const SessionState(status: SessionStatus.active);
   }
 
   @override
-  Future<void> endSession() async {}
+  Future<void> endSession() async {
+    _sessionGeneration++;
+    await storage.delete(key: StorageKeys.accessToken);
+    await storage.delete(key: StorageKeys.refreshToken);
+  }
 
   @override
   void recordActivity() {}
 
   @override
   Future<void> extendSession() async {}
+
+  @override
+  Future<SessionRefreshResult> refreshStoredSession() async {
+    final refreshToken = await storage.read(key: StorageKeys.refreshToken);
+    if (refreshToken == null || refreshToken.isEmpty) {
+      return const SessionRefreshResult(SessionRefreshStatus.unavailable);
+    }
+    final refreshGeneration = _sessionGeneration;
+
+    try {
+      final response = await authService.refreshToken(
+        refreshToken: refreshToken,
+      );
+      if (refreshGeneration != _sessionGeneration) {
+        return const SessionRefreshResult(SessionRefreshStatus.unavailable);
+      }
+      await storage.write(
+        key: StorageKeys.accessToken,
+        value: response.accessToken,
+      );
+      if (refreshGeneration != _sessionGeneration) {
+        if (storage.storage[StorageKeys.accessToken] == response.accessToken) {
+          await storage.delete(key: StorageKeys.accessToken);
+        }
+        return const SessionRefreshResult(SessionRefreshStatus.unavailable);
+      }
+      if (response.refreshToken != null && response.refreshToken!.isNotEmpty) {
+        await storage.write(
+          key: StorageKeys.refreshToken,
+          value: response.refreshToken,
+        );
+        if (refreshGeneration != _sessionGeneration) {
+          if (storage.storage[StorageKeys.refreshToken] ==
+              response.refreshToken) {
+            await storage.delete(key: StorageKeys.refreshToken);
+          }
+          return const SessionRefreshResult(SessionRefreshStatus.unavailable);
+        }
+      }
+      return SessionRefreshResult(
+        SessionRefreshStatus.success,
+        user: response.user,
+        kycStatus: response.kycStatus,
+      );
+    } on ApiException catch (error) {
+      if (error.statusCode == 401 || error.statusCode == 403) {
+        return const SessionRefreshResult(SessionRefreshStatus.rejected);
+      }
+      return const SessionRefreshResult(SessionRefreshStatus.unavailable);
+    } on Object {
+      return const SessionRefreshResult(SessionRefreshStatus.unavailable);
+    }
+  }
 
   @override
   void unlockSession() {
@@ -196,7 +260,12 @@ void main() {
           mockDeviceRegistrationService,
         ),
         secureStorageProvider.overrideWithValue(mockStorage),
-        sessionServiceProvider.overrideWith(() => MockSessionNotifier()),
+        sessionServiceProvider.overrideWith(
+          () => MockSessionNotifier(
+            authService: mockAuthService,
+            storage: mockStorage,
+          ),
+        ),
         appFsmProvider.overrideWith(() => MockAppFsmNotifier()),
         kycStateMachineProvider.overrideWith(() => MockKycStateMachine()),
         userStateMachineProvider.overrideWith(() => MockUserStateMachine()),

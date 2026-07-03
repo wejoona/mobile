@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -17,6 +18,7 @@ class HelpView extends ConsumerStatefulWidget {
 class _HelpViewState extends ConsumerState<HelpView> {
   final _searchController = TextEditingController();
   String _searchQuery = '';
+  String _appVersion = '0.9.0';
   int? _expandedFaqIndex;
 
   final List<_FaqItem> _faqs = [
@@ -93,6 +95,22 @@ class _HelpViewState extends ConsumerState<HelpView> {
               faq.category.toLowerCase().contains(query),
         )
         .toList();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAppVersion();
+  }
+
+  Future<void> _loadAppVersion() async {
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      if (!mounted) return;
+      setState(() => _appVersion = packageInfo.version);
+    } on Object {
+      // Keep the release fallback visible if package metadata is unavailable.
+    }
   }
 
   @override
@@ -281,7 +299,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
                       ),
                       const SizedBox(width: AppSpacing.sm),
                       AppText(
-                        'Korido v1.0.0',
+                        'Korido v$_appVersion',
                         variant: AppTextVariant.bodySmall,
                         color: colors.textTertiary,
                       ),
@@ -662,7 +680,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
     showLicensePage(
       context: context,
       applicationName: 'Korido',
-      applicationVersion: '1.0.0',
+      applicationVersion: _appVersion,
     );
   }
 }

@@ -122,6 +122,7 @@ class SessionService extends Notifier<SessionState> {
   Timer? _tokenRefreshTimer;
   DateTime? _backgroundEnteredAt;
   Future<SessionRefreshResult>? _refreshInFlight;
+  int _sessionGeneration = 0;
 
   SessionService({SessionConfig? config})
     : _config = config ?? const SessionConfig();
@@ -146,6 +147,8 @@ class SessionService extends Notifier<SessionState> {
     String? refreshToken,
     Duration? tokenValidity,
   }) async {
+    _sessionGeneration++;
+    _refreshInFlight = null;
     final now = DateTime.now();
     final expiresAt = tokenValidity != null ? now.add(tokenValidity) : null;
 
@@ -232,6 +235,8 @@ class SessionService extends Notifier<SessionState> {
 
   /// End the session (logout)
   Future<void> endSession() async {
+    _sessionGeneration++;
+    _refreshInFlight = null;
     _cancelAllTimers();
 
     // Clear stored tokens
@@ -500,6 +505,7 @@ class SessionService extends Notifier<SessionState> {
     if (refreshToken == null) {
       return const SessionRefreshResult(SessionRefreshStatus.rejected);
     }
+    final refreshGeneration = _sessionGeneration;
 
     try {
       final dio = Dio(
@@ -540,16 +546,38 @@ class SessionService extends Notifier<SessionState> {
           return const SessionRefreshResult(SessionRefreshStatus.unavailable);
         }
 
-        await _storage.write(key: _accessTokenKey, value: newAccessToken);
+        if (refreshGeneration != _sessionGeneration) {
+          return const SessionRefreshResult(SessionRefreshStatus.unavailable);
+        }
+
+        final accessWritten = await _writeRefreshValueIfCurrent(
+          refreshGeneration,
+          key: _accessTokenKey,
+          value: newAccessToken,
+        );
+        if (!accessWritten) {
+          return const SessionRefreshResult(SessionRefreshStatus.unavailable);
+        }
         if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
-          await _storage.write(key: _refreshTokenKey, value: newRefreshToken);
+          final refreshWritten = await _writeRefreshValueIfCurrent(
+            refreshGeneration,
+            key: _refreshTokenKey,
+            value: newRefreshToken,
+          );
+          if (!refreshWritten) {
+            return const SessionRefreshResult(SessionRefreshStatus.unavailable);
+          }
         }
 
         final expiresAt = DateTime.now().add(Duration(seconds: expiresIn));
-        await _storage.write(
+        final expiryWritten = await _writeRefreshValueIfCurrent(
+          refreshGeneration,
           key: _tokenExpiryKey,
           value: expiresAt.toIso8601String(),
         );
+        if (!expiryWritten) {
+          return const SessionRefreshResult(SessionRefreshStatus.unavailable);
+        }
         state = state.copyWith(tokenExpiresAt: expiresAt);
 
         const AppLogger('Debug').debug('Token refreshed successfully');
@@ -610,6 +638,28 @@ class SessionService extends Notifier<SessionState> {
       return User.fromJson(Map<String, dynamic>.from(rawUser));
     }
     return null;
+  }
+
+  Future<bool> _writeRefreshValueIfCurrent(
+    int refreshGeneration, {
+    required String key,
+    required String value,
+  }) async {
+    if (refreshGeneration != _sessionGeneration) {
+      return false;
+    }
+
+    await _storage.write(key: key, value: value);
+
+    if (refreshGeneration == _sessionGeneration) {
+      return true;
+    }
+
+    final currentValue = await _storage.read(key: key);
+    if (currentValue == value) {
+      await _storage.delete(key: key);
+    }
+    return false;
   }
 
   int? _parseExpiresIn(Object? value) {
