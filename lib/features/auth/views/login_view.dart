@@ -42,6 +42,8 @@ class _LoginViewState extends ConsumerState<LoginView>
   bool _biometricInProgress = false;
   String? _biometricError;
   String? _returningUserId;
+  bool _returningBiometricEnabled = false;
+  BiometricType _returningBiometricType = BiometricType.none;
   String _returningPin = '';
   bool _returningPinHasError = false;
   String? _returningPinMessage;
@@ -74,33 +76,60 @@ class _LoginViewState extends ConsumerState<LoginView>
   Future<void> _determineLoginMode() async {
     final biometricService = ref.read(biometricServiceProvider);
     final storage = ref.read(secureStorageProvider);
+    final pinService = ref.read(pinServiceProvider);
 
     final storedUserId = await storage.read(key: StorageKeys.userId);
-    final boundUserId = await biometricService.getBoundUserId();
-    final isEnabled =
+    final refreshToken = await storage.read(key: StorageKeys.refreshToken);
+    final hasStoredSession =
         storedUserId != null &&
         storedUserId.isNotEmpty &&
+        refreshToken != null &&
+        refreshToken.isNotEmpty;
+    if (!hasStoredSession) {
+      _showPhoneLogin();
+      return;
+    }
+
+    final hasPin = await pinService.hasPin();
+    final boundUserId = await biometricService.getBoundUserId();
+    final isBiometricEnabled =
         boundUserId == storedUserId &&
         await biometricService.isBiometricEnabled(userId: storedUserId);
-    final refreshToken = await storage.read(key: StorageKeys.refreshToken);
+    final biometricAvailable =
+        isBiometricEnabled && await biometricService.isAvailable();
+    final biometricType = biometricAvailable
+        ? await biometricService.getAvailableType()
+        : BiometricType.none;
 
-    if (isEnabled && refreshToken != null && mounted) {
+    if ((hasPin || biometricAvailable) && mounted) {
       setState(() {
         _returningUserId = storedUserId;
+        _returningBiometricEnabled =
+            biometricAvailable && biometricType != BiometricType.none;
+        _returningBiometricType = _returningBiometricEnabled
+            ? biometricType
+            : BiometricType.none;
         _mode = _LoginMode.returningUnlock;
       });
       unawaited(_animationController.forward());
       // Don't auto-prompt biometric on boot — let user tap the button
     } else {
-      if (mounted) {
-        setState(() {
-          _returningUserId = null;
-          _mode = _LoginMode.phone;
-        });
-        unawaited(_animationController.forward());
-        _focusPhoneInputSoon();
-      }
+      _showPhoneLogin();
     }
+  }
+
+  void _showPhoneLogin() {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _returningUserId = null;
+      _returningBiometricEnabled = false;
+      _returningBiometricType = BiometricType.none;
+      _mode = _LoginMode.phone;
+    });
+    unawaited(_animationController.forward());
+    _focusPhoneInputSoon();
   }
 
   Future<void> _doBiometricAuth({
@@ -148,6 +177,9 @@ class _LoginViewState extends ConsumerState<LoginView>
     if (refreshToken == null || expectedUserId == null) {
       return;
     }
+    if (!_showReturningBiometric) {
+      return;
+    }
     unawaited(
       _doBiometricAuth(
         refreshToken: refreshToken,
@@ -161,6 +193,8 @@ class _LoginViewState extends ConsumerState<LoginView>
       _mode = _LoginMode.phone;
       _biometricError = null;
       _returningUserId = null;
+      _returningBiometricEnabled = false;
+      _returningBiometricType = BiometricType.none;
       _returningPin = '';
       _returningPinHasError = false;
       _returningPinMessage = null;
@@ -467,22 +501,26 @@ class _LoginViewState extends ConsumerState<LoginView>
                       _returningPinHasError = false;
                     });
                   },
-                  biometricIcon: Icons.fingerprint_rounded,
-                  onBiometricPressed: _triggerReturningBiometric,
+                  showBiometric: _showReturningBiometric,
+                  biometricIcon: _returningBiometricIcon,
+                  onBiometricPressed: _showReturningBiometric
+                      ? _triggerReturningBiometric
+                      : null,
                 ),
 
               const SizedBox(height: AppSpacing.md),
-              AppButton(
-                label: l10n.session_useBiometric,
-                semanticLabel: l10n.session_unlockReason,
-                icon: Icons.fingerprint_rounded,
-                onPressed: _biometricInProgress
-                    ? null
-                    : _triggerReturningBiometric,
-                variant: AppButtonVariant.secondary,
-                size: AppButtonSize.large,
-                isFullWidth: true,
-              ),
+              if (_showReturningBiometric)
+                AppButton(
+                  label: l10n.session_useBiometric,
+                  semanticLabel: l10n.session_unlockReason,
+                  icon: _returningBiometricIcon,
+                  onPressed: _biometricInProgress
+                      ? null
+                      : _triggerReturningBiometric,
+                  variant: AppButtonVariant.secondary,
+                  size: AppButtonSize.large,
+                  isFullWidth: true,
+                ),
 
               const Spacer(flex: 1),
 
@@ -605,6 +643,21 @@ class _LoginViewState extends ConsumerState<LoginView>
   // ──────────────────────────────────────────
   // SHARED COMPONENTS
   // ──────────────────────────────────────────
+
+  bool get _showReturningBiometric =>
+      _returningBiometricEnabled &&
+      _returningBiometricType != BiometricType.none;
+
+  IconData get _returningBiometricIcon {
+    switch (_returningBiometricType) {
+      case BiometricType.faceId:
+        return Icons.face_rounded;
+      case BiometricType.fingerprint:
+      case BiometricType.iris:
+      case BiometricType.none:
+        return Icons.fingerprint_rounded;
+    }
+  }
 
   Widget _buildLogo(ThemeColors colors, {double size = 72}) {
     return KoridoMark(size: size);
