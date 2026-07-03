@@ -67,6 +67,10 @@ void main() {
     final pinLoginUnlockBody = _methodBody(pinScreenSource, '_applyUnlock');
     final pinUnlockBody = _methodBody(pinScreenSource, '_applySessionUnlock');
     final pinSuccessBody = _methodBody(pinScreenSource, '_onSuccess');
+    final pinSessionFallbackBody = _methodBody(
+      pinScreenSource,
+      '_verifySessionLockPin',
+    );
     final biometricUnlockBody = _methodBody(
       biometricPromptSource,
       '_completeUnlock',
@@ -134,6 +138,54 @@ void main() {
       isNot(contains('await pinService.cacheConfirmedPin(_pin);')),
       reason:
           'PIN must not be cached under the pre-login phone/legacy scope before authenticated user scope exists',
+    );
+    expect(
+      pinSessionFallbackBody,
+      isNot(contains("localResult.message != 'PIN not set'")),
+      reason:
+          'session unlock must not trust local PIN before checking backend truth',
+    );
+    expect(
+      pinSessionFallbackBody,
+      contains('refreshAccessTokenForForegroundRequest()'),
+      reason:
+          'session unlock must refresh token material before authoritative backend PIN verification',
+    );
+    expect(
+      pinSessionFallbackBody,
+      contains('verifyPinWithBackend('),
+      reason:
+          'session unlock must check backend PIN truth before using the local cache',
+    );
+    expect(
+      pinSessionFallbackBody.indexOf('verifyPinWithBackend('),
+      lessThan(pinSessionFallbackBody.indexOf('verifyPinLocally(_pin)')),
+      reason:
+          'session unlock backend verification must happen before local fallback',
+    );
+    expect(
+      pinSessionFallbackBody,
+      contains('cacheConfirmedPin(_pin)'),
+      reason:
+          'successful backend session unlock must rebuild the user-scoped local cache',
+    );
+    expect(
+      pinSessionFallbackBody,
+      contains('clearPin()'),
+      reason:
+          'authoritative backend PIN rejection must invalidate stale local PIN cache',
+    );
+    expect(
+      pinSessionFallbackBody,
+      contains('_shouldUseLocalPinFallback('),
+      reason:
+          'local PIN fallback must be explicitly gated to transient online failures',
+    );
+    expect(
+      pinSessionFallbackBody,
+      contains('Unable to verify PIN online'),
+      reason:
+          'missing local cache plus unavailable backend should not surface the internal PIN-not-set state',
     );
     expect(
       pinSuccessBody,

@@ -361,9 +361,11 @@ class _PinScreenState extends ConsumerState<PinScreen>
     });
 
     final pinService = ref.read(pinServiceProvider);
-    final result = widget.pinContext == PinContext.login
-        ? await _verifyLoginPinWithBackend(pinService, l10n)
-        : await pinService.verifyPinLocally(_pin);
+    final result = switch (widget.pinContext) {
+      PinContext.login => await _verifyLoginPinWithBackend(pinService, l10n),
+      PinContext.sessionLock => await _verifySessionLockPin(pinService),
+      PinContext.confirmAction => await pinService.verifyPinLocally(_pin),
+    };
 
     if (!mounted) return;
 
@@ -423,6 +425,58 @@ class _PinScreenState extends ConsumerState<PinScreen>
     }
 
     return pinService.verifyPinWithBackend(_pin, accessToken: accessToken);
+  }
+
+  Future<PinVerificationResult> _verifySessionLockPin(
+    PinService pinService,
+  ) async {
+    final refreshed = await ref
+        .read(authProvider.notifier)
+        .refreshAccessTokenForForegroundRequest();
+    final accessToken = await ref
+        .read(secureStorageProvider)
+        .read(key: StorageKeys.accessToken);
+
+    if (accessToken != null && accessToken.isNotEmpty) {
+      final backendResult = await pinService.verifyPinWithBackend(
+        _pin,
+        accessToken: accessToken,
+      );
+      if (backendResult.success) {
+        await pinService.cacheConfirmedPin(_pin);
+        return backendResult;
+      }
+      if (!_shouldUseLocalPinFallback(
+        backendResult,
+        refreshedBeforeVerify: refreshed,
+      )) {
+        await pinService.clearPin();
+        return backendResult;
+      }
+    }
+
+    final localResult = await pinService.verifyPinLocally(_pin);
+    if (localResult.message == 'PIN not set') {
+      return PinVerificationResult(
+        success: false,
+        message:
+            'Unable to verify PIN online. Please sign in again to set your PIN on this device.',
+      );
+    }
+    return localResult;
+  }
+
+  bool _shouldUseLocalPinFallback(
+    PinVerificationResult result, {
+    required bool refreshedBeforeVerify,
+  }) {
+    if (result.success || result.requiresPinChange || result.isLocked) {
+      return false;
+    }
+    if (result.message == 'Unable to verify PIN. Please try again.') {
+      return true;
+    }
+    return !refreshedBeforeVerify && result.message == 'Incorrect PIN';
   }
 
   Future<void> _handleBiometric() async {
