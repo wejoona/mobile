@@ -118,6 +118,24 @@ void main() {
           'dial code is display/input state and must not be the primary API country value',
     );
     expect(
+      pinLoginUnlockBody,
+      contains('cacheConfirmedPin(acceptedPin)'),
+      reason:
+          'backend-accepted login PIN must populate the local unlock cache after auth scope is known',
+    );
+    expect(
+      pinLoginUnlockBody.indexOf('completePinLogin('),
+      lessThan(pinLoginUnlockBody.indexOf('cacheConfirmedPin(acceptedPin)')),
+      reason:
+          'PIN cache must be written after completePinLogin persists the authenticated user scope',
+    );
+    expect(
+      _methodBody(pinScreenSource, '_verifyPin'),
+      isNot(contains('await pinService.cacheConfirmedPin(_pin);')),
+      reason:
+          'PIN must not be cached under the pre-login phone/legacy scope before authenticated user scope exists',
+    );
+    expect(
       pinSuccessBody,
       contains('_transitionThen'),
       reason:

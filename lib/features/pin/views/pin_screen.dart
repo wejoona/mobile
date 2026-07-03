@@ -169,8 +169,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
       case PinContext.login:
         // Show brief transition, then unlock + navigate to home together.
         if (mounted) {
+          final acceptedPin = _pin;
           _transitionThen(() async {
-            final unlocked = await _applyUnlock();
+            final unlocked = await _applyUnlock(acceptedPin: acceptedPin);
             if (!unlocked) {
               if (mounted) {
                 _showUnlockFailure();
@@ -230,7 +231,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
   /// Unlock auth + session state. Kept separate so callers can run it in the
   /// same frame as navigation (see [_onSuccess]).
-  Future<bool> _applyUnlock() async {
+  Future<bool> _applyUnlock({String? acceptedPin}) async {
     if (widget.pinContext == PinContext.login) {
       final loginState = ref.read(loginProvider);
       final accessToken = loginState.sessionToken;
@@ -238,7 +239,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
         return false;
       }
       final loginPhoneValue = loginState.phoneValue;
-      return ref
+      final unlocked = await ref
           .read(authProvider.notifier)
           .completePinLogin(
             accessToken: accessToken,
@@ -249,6 +250,10 @@ class _PinScreenState extends ConsumerState<PinScreen>
             kycStatus: loginState.kycStatus,
             expiresIn: loginState.sessionExpiresIn,
           );
+      if (unlocked && acceptedPin != null && acceptedPin.isNotEmpty) {
+        await ref.read(pinServiceProvider).cacheConfirmedPin(acceptedPin);
+      }
+      return unlocked;
     }
 
     return _applySessionUnlock();
@@ -385,9 +390,6 @@ class _PinScreenState extends ConsumerState<PinScreen>
         _errorMessage = null;
       });
     } else if (result.success) {
-      if (widget.pinContext == PinContext.login) {
-        await pinService.cacheConfirmedPin(_pin);
-      }
       _onSuccess();
     } else {
       setState(() {

@@ -295,7 +295,7 @@ class PinService {
   /// Use this only after a canonical server mutation such as `/user/pin/reset`
   /// succeeds. It deliberately does not call any backend PIN endpoint.
   Future<bool> cacheConfirmedPin(String pin) async {
-    if (!_isValidPin(pin) || _isWeakPin(pin)) {
+    if (!_isValidPin(pin)) {
       return false;
     }
 

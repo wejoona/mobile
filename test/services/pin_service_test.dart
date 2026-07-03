@@ -178,6 +178,18 @@ void main() {
         expect(result.message, 'PIN not set');
       },
     );
+
+    test(
+      'should cache a backend-confirmed legacy weak PIN for local unlock',
+      () async {
+        await mockStorage.write(key: 'user_id', value: 'user-a');
+
+        expect(await pinService.cacheConfirmedPin('123456'), isTrue);
+
+        final result = await pinService.verifyPinLocally('123456');
+        expect(result.success, isTrue);
+      },
+    );
   });
 
   group('Verify PIN with backend API', () {
@@ -610,14 +622,14 @@ void main() {
       expect((await pinService.verifyPinLocally('739251')).success, isTrue);
     });
 
-    test('should reject weak confirmed PIN values', () async {
+    test('should cache backend-confirmed weak legacy PIN values', () async {
       // Act
       final result = await pinService.cacheConfirmedPin('123456');
 
       // Assert
-      expect(result, isFalse);
+      expect(result, isTrue);
       expect(mockDio.requestHistory, isEmpty);
-      expect(await pinService.hasPin(), isFalse);
+      expect((await pinService.verifyPinLocally('123456')).success, isTrue);
     });
   });
 
