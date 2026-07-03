@@ -63,6 +63,12 @@ void main() {
     final sessionLockedSource = File(
       'lib/features/fsm_states/views/session_locked_view.dart',
     ).readAsStringSync();
+    final authProviderSource = File(
+      'lib/features/auth/providers/auth_provider.dart',
+    ).readAsStringSync();
+    final sessionServiceSource = File(
+      'lib/services/session/session_service.dart',
+    ).readAsStringSync();
 
     final pinLoginUnlockBody = _methodBody(pinScreenSource, '_applyUnlock');
     final pinUnlockBody = _methodBody(pinScreenSource, '_applySessionUnlock');
@@ -76,6 +82,14 @@ void main() {
       '_completeUnlock',
     );
     final sessionLockedUnlockBody = _methodBody(sessionLockedSource, '_unlock');
+    final refreshOnUnlockBody = _methodBody(
+      authProviderSource,
+      '_refreshTokenOnUnlock',
+    );
+    final applyRefreshedUserBody = _methodBody(
+      authProviderSource,
+      '_applyRefreshedSessionUser',
+    );
     final navigationExtensionSource = File(
       'lib/router/navigation_extensions.dart',
     ).readAsStringSync();
@@ -186,6 +200,36 @@ void main() {
       contains('Unable to verify PIN online'),
       reason:
           'missing local cache plus unavailable backend should not surface the internal PIN-not-set state',
+    );
+    expect(
+      sessionServiceSource,
+      contains('final refreshedUser = _parseUser(payload);'),
+      reason:
+          'session refresh must preserve the backend user payload instead of discarding hasPin',
+    );
+    expect(
+      sessionServiceSource,
+      contains('user: refreshedUser'),
+      reason:
+          'session refresh result must carry refreshed user state to the auth layer',
+    );
+    expect(
+      refreshOnUnlockBody,
+      contains('_applyRefreshedSessionUser(result)'),
+      reason:
+          'unlock must apply refreshed user.hasPin before authenticated routing',
+    );
+    expect(
+      applyRefreshedUserBody,
+      contains('user: user'),
+      reason:
+          'refreshed backend user must replace stale AuthState.user before the router guard runs',
+    );
+    expect(
+      applyRefreshedUserBody,
+      contains('StorageKeys.userId'),
+      reason:
+          'refreshed backend user scope must stay aligned with secure storage',
     );
     expect(
       pinSuccessBody,

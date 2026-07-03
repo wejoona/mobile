@@ -6,6 +6,7 @@ import 'package:usdc_wallet/config/api_config.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/settings/providers/security_settings_provider.dart';
+import 'package:usdc_wallet/domain/entities/user.dart';
 import 'package:usdc_wallet/services/security/security_headers_interceptor.dart';
 import 'package:usdc_wallet/services/storage/secure_storage_provider.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
@@ -56,8 +57,10 @@ enum SessionRefreshStatus { success, rejected, unavailable }
 
 class SessionRefreshResult {
   final SessionRefreshStatus status;
+  final User? user;
+  final String? kycStatus;
 
-  const SessionRefreshResult(this.status);
+  const SessionRefreshResult(this.status, {this.user, this.kycStatus});
 
   bool get success => status == SessionRefreshStatus.success;
   bool get rejected => status == SessionRefreshStatus.rejected;
@@ -529,6 +532,9 @@ class SessionService extends Notifier<SessionState> {
         final newAccessToken = payload['accessToken'] as String?;
         final newRefreshToken = payload['refreshToken'] as String?;
         final expiresIn = _parseExpiresIn(payload['expiresIn']) ?? 900;
+        final refreshedUser = _parseUser(payload);
+        final kycStatus =
+            (payload['kycStatus'] ?? payload['kyc_status']) as String?;
 
         if (newAccessToken == null || newAccessToken.isEmpty) {
           return const SessionRefreshResult(SessionRefreshStatus.unavailable);
@@ -548,7 +554,11 @@ class SessionService extends Notifier<SessionState> {
 
         const AppLogger('Debug').debug('Token refreshed successfully');
         _startTokenRefreshTimer();
-        return const SessionRefreshResult(SessionRefreshStatus.success);
+        return SessionRefreshResult(
+          SessionRefreshStatus.success,
+          user: refreshedUser,
+          kycStatus: kycStatus,
+        );
       }
       if (response.statusCode == 401 || response.statusCode == 403) {
         return const SessionRefreshResult(SessionRefreshStatus.rejected);
@@ -587,6 +597,17 @@ class SessionService extends Notifier<SessionState> {
         return Map<String, dynamic>.from(nestedData);
       }
       return normalized;
+    }
+    return null;
+  }
+
+  User? _parseUser(Map<String, dynamic> payload) {
+    final rawUser = payload['user'];
+    if (rawUser is Map<String, dynamic>) {
+      return User.fromJson(rawUser);
+    }
+    if (rawUser is Map) {
+      return User.fromJson(Map<String, dynamic>.from(rawUser));
     }
     return null;
   }

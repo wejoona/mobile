@@ -383,6 +383,7 @@ class AuthNotifier extends Notifier<AuthState> {
         .read(sessionServiceProvider.notifier)
         .refreshStoredSession();
     if (result.success) {
+      await _applyRefreshedSessionUser(result);
       return true;
     }
     if (result.rejected) {
@@ -395,6 +396,41 @@ class AuthNotifier extends Notifier<AuthState> {
     // Keep the locked state on transient/local failures. The next API call can
     // still retry through the interceptor.
     return false;
+  }
+
+  Future<void> _applyRefreshedSessionUser(SessionRefreshResult result) async {
+    final user = result.user;
+    if (user == null) {
+      return;
+    }
+
+    final phoneValue = await _persistPhoneValue(
+      phone: user.phone,
+      countryCode: user.countryCode,
+    );
+    await _storage.write(key: StorageKeys.userId, value: user.id);
+
+    state = state.copyWith(
+      user: user,
+      phone: phoneValue?.localNumber ?? user.phone,
+      countryCode: phoneValue?.isoCountryCode ?? user.countryCode,
+      error: null,
+    );
+
+    final refreshedKycStatus = _projectKycStatus(
+      result.kycStatus ?? user.kycStatus?.toApiString(),
+    );
+
+    ref
+        .read(userStateMachineProvider.notifier)
+        .updateProfile(
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          avatarUrl: user.avatarUrl,
+          avatarThumb: user.avatarBase64,
+          kycStatus: refreshedKycStatus,
+        );
   }
 
   /// Register new user
