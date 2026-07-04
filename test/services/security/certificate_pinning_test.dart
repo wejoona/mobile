@@ -16,7 +16,7 @@ void main() {
       );
       expect(CertificatePinning.hostRequiresPinning('joonapay.com'), isTrue);
       expect(
-        CertificatePinning.hostRequiresPinning('korido-api.joonalabs.com'),
+        CertificatePinning.hostRequiresPinning('api.joonalabs.com'),
         isFalse,
       );
       expect(
@@ -62,9 +62,7 @@ void main() {
         contains(previousApexLeafDer),
       );
       expect(
-        CertificatePinning.trustedFingerprintsForHost(
-          'korido-api.joonalabs.com',
-        ),
+        CertificatePinning.trustedFingerprintsForHost('api.joonalabs.com'),
         isEmpty,
       );
       expect(

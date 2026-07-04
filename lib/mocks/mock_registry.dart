@@ -195,7 +195,7 @@ class MockRegistry {
       },
       'servers': [
         {'url': 'https://korido-api.joonapay.com', 'description': 'Production'},
-        {'url': 'https://korido-api.joonalabs.com', 'description': 'Staging'},
+        {'url': 'https://api.joonalabs.com/korido', 'description': 'Staging'},
         {'url': 'http://localhost:3000', 'description': 'Development'},
       ],
       'components': {

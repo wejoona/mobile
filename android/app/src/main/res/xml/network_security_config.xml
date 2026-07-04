@@ -39,7 +39,7 @@
 
     <!-- Joonalabs staging uses platform TLS until its Cloudflare certificate is live and pinned. -->
     <domain-config cleartextTrafficPermitted="false">
-        <domain includeSubdomains="false">korido-api.joonalabs.com</domain>
+        <domain includeSubdomains="false">api.joonalabs.com</domain>
         <trust-anchors>
             <certificates src="system" />
         </trust-anchors>

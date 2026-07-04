@@ -76,7 +76,7 @@ void main() {
       expect(stagingPins, isEmpty);
       expect(
         CertificatePinRegistry.validatePin(
-          'korido-api.joonalabs.com',
+          'api.joonalabs.com',
           'wrong-pin',
           isProduction: false,
         ),
@@ -94,7 +94,7 @@ void main() {
       );
       expect(
         CertificatePinRegistry.validatePin(
-          'sub.korido-api.joonalabs.com',
+          'sub.api.joonalabs.com',
           'wrong-pin',
           isProduction: false,
         ),
