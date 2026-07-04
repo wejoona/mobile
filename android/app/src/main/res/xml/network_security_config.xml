@@ -23,16 +23,23 @@
         </trust-anchors>
     </base-config>
 
-    <!-- Korido API hosts with certificate pinning. -->
+    <!-- Korido production API host with certificate pinning. -->
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="false">korido-api.joonapay.com</domain>
-        <domain includeSubdomains="false">staging-korido-api.joonapay.com</domain>
         <pin-set expiration="2026-09-16">
-            <!-- Leaf SPKI SHA-256 for Korido API hosts, verified 2026-06-20. -->
+            <!-- Leaf SPKI SHA-256 for Korido production API, verified 2026-06-20. -->
             <pin digest="SHA-256">DcXImxqsw11wXDKaem3Be3mcFibKSosQGkPpNOw9Zuw=</pin>
             <!-- Google Trust Services WE1 intermediate SPKI backup pin. -->
             <pin digest="SHA-256">kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=</pin>
         </pin-set>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <!-- Joonalabs staging uses platform TLS until its Cloudflare certificate is live and pinned. -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="false">korido-api.joonalabs.com</domain>
         <trust-anchors>
             <certificates src="system" />
         </trust-anchors>

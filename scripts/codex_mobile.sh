@@ -85,7 +85,7 @@ KORIDO_SIM_UDID="${KORIDO_SIM_UDID:-C796EC5E-0EBE-4E08-BF64-4DCDC84753D3}"
 KORIDO_SIM_BUNDLE_ID="${KORIDO_SIM_BUNDLE_ID:-com.joonapay.usdcWallet.dev}"
 KORIDO_SIM_BLOCKED_BUNDLE_IDS="${KORIDO_SIM_BLOCKED_BUNDLE_IDS:-ci.heritagepay.wallet}"
 KORIDO_ENV="${KORIDO_ENV:-staging}"
-KORIDO_API_URL="${KORIDO_API_URL:-https://staging-korido-api.joonapay.com/api/v1}"
+KORIDO_API_URL="${KORIDO_API_URL:-https://korido-api.joonalabs.com/api/v1}"
 KORIDO_DEFAULT_OTP="${KORIDO_DEFAULT_OTP:-123456}"
 export KORIDO_SIM_UDID
 export KORIDO_SIM_BUNDLE_ID
@@ -149,7 +149,7 @@ Defaults:
   KORIDO_SIM_BUNDLE_ID=com.joonapay.usdcWallet.dev
   KORIDO_SIM_BLOCKED_BUNDLE_IDS=ci.heritagepay.wallet
   KORIDO_ENV=staging
-  KORIDO_API_URL=https://staging-korido-api.joonapay.com/api/v1
+  KORIDO_API_URL=https://korido-api.joonalabs.com/api/v1
   KORIDO_DEFAULT_OTP=123456
 
 Override with env vars when needed. Keep this wrapper as the stable approval

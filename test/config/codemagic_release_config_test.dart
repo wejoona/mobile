@@ -76,7 +76,7 @@ void main() {
       expect(codemagic, contains('ENV=staging'));
       expect(
         codemagic,
-        contains('API_URL=https://staging-korido-api.joonapay.com/api/v1'),
+        contains('API_URL=https://korido-api.joonalabs.com/api/v1'),
       );
       expect(
         codemagic,
@@ -100,7 +100,7 @@ void main() {
       expect(stagingEnv, contains('"ENV": "staging"'));
       expect(
         stagingEnv,
-        contains('"API_URL": "https://staging-korido-api.joonapay.com/api/v1"'),
+        contains('"API_URL": "https://korido-api.joonalabs.com/api/v1"'),
       );
       expect(stagingEnv, contains('"SENTRY_DSN": "https://'));
       expect(stagingEnv, isNot(contains('api-staging')));

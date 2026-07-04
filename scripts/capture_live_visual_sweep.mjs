@@ -12,7 +12,7 @@ const screenshotDir = resolve(
 const manifestPath = resolve(screenshotDir, 'capture-manifest.json');
 const deviceId = process.env.KORIDO_SIM_UDID;
 const apiUrl =
-  process.env.KORIDO_API_URL ?? 'https://staging-korido-api.joonapay.com/api/v1';
+  process.env.KORIDO_API_URL ?? 'https://korido-api.joonalabs.com/api/v1';
 const env = process.env.KORIDO_ENV ?? 'staging';
 const extraFlutterArgs = process.argv.slice(2);
 

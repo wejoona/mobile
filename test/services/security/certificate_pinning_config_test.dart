@@ -70,53 +70,37 @@ void main() {
       );
     });
 
-    test(
-      'pins staging API explicitly without wildcard subdomain inheritance',
-      () {
-        final stagingPins = CertificatePinRegistry.getPins(isProduction: false);
+    test('keeps staging unpinned until joonalabs TLS is live', () {
+      final stagingPins = CertificatePinRegistry.getPins(isProduction: false);
 
-        expect(stagingPins, hasLength(1));
-        expect(stagingPins.single.host, 'staging-korido-api.joonapay.com');
-        expect(stagingPins.single.includeSubdomains, isFalse);
-        expect(
-          stagingPins.single.sha256Pins,
-          containsAll([apiLeafSpki, gtsWe1Spki]),
-        );
-        expect(
-          CertificatePinRegistry.validatePin(
-            'staging-korido-api.joonapay.com',
-            apiLeafSpki,
-            isProduction: false,
-          ),
-          isTrue,
-        );
-        expect(
-          CertificatePinRegistry.validatePin(
-            'staging-korido-api.joonapay.com',
-            'wrong-pin',
-            isProduction: false,
-          ),
-          isFalse,
-        );
-        expect(
-          CertificatePinRegistry.validatePin(
-            'api.joonapay.com',
-            'wrong-pin',
-            isProduction: false,
-          ),
-          isTrue,
-          reason: 'Unconfigured hosts fall back to normal platform TLS.',
-        );
-        expect(
-          CertificatePinRegistry.validatePin(
-            'sub.staging-korido-api.joonapay.com',
-            'wrong-pin',
-            isProduction: false,
-          ),
-          isTrue,
-          reason: 'Subdomains are not pinned when includeSubdomains is false.',
-        );
-      },
-    );
+      expect(stagingPins, isEmpty);
+      expect(
+        CertificatePinRegistry.validatePin(
+          'korido-api.joonalabs.com',
+          'wrong-pin',
+          isProduction: false,
+        ),
+        isTrue,
+        reason: 'Unconfigured staging hosts fall back to normal platform TLS.',
+      );
+      expect(
+        CertificatePinRegistry.validatePin(
+          'api.joonapay.com',
+          'wrong-pin',
+          isProduction: false,
+        ),
+        isTrue,
+        reason: 'Unconfigured hosts fall back to normal platform TLS.',
+      );
+      expect(
+        CertificatePinRegistry.validatePin(
+          'sub.korido-api.joonalabs.com',
+          'wrong-pin',
+          isProduction: false,
+        ),
+        isTrue,
+        reason: 'Subdomains are not pinned when includeSubdomains is false.',
+      );
+    });
   });
 }
