@@ -14,6 +14,7 @@ import 'package:usdc_wallet/state/kyc_state_machine.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Auth State
 enum AuthStatus {
@@ -222,7 +223,7 @@ class AuthNotifier extends Notifier<AuthState> {
       if (!ref.mounted) return;
       state = state.copyWith(
         status: AuthStatus.unauthenticated,
-        error: e.toString(),
+        error: UserFacingErrors.message(e),
       );
     }
   }
@@ -666,10 +667,10 @@ class AuthNotifier extends Notifier<AuthState> {
       ref.read(appFsmProvider.notifier).onAuthFailed(e.message);
       return false;
     } catch (e) {
-      state = state.copyWith(status: AuthStatus.error, error: e.toString());
+      state = state.copyWith(status: AuthStatus.error, error: UserFacingErrors.message(e));
 
       // Sync with FSM: notify auth failed
-      ref.read(appFsmProvider.notifier).onAuthFailed(e.toString());
+      ref.read(appFsmProvider.notifier).onAuthFailed(UserFacingErrors.message(e));
       return false;
     }
   }
@@ -781,8 +782,8 @@ class AuthNotifier extends Notifier<AuthState> {
       ref.read(appFsmProvider.notifier).onAuthFailed(e.message);
       return false;
     } catch (e) {
-      state = state.copyWith(status: AuthStatus.error, error: e.toString());
-      ref.read(appFsmProvider.notifier).onAuthFailed(e.toString());
+      state = state.copyWith(status: AuthStatus.error, error: UserFacingErrors.message(e));
+      ref.read(appFsmProvider.notifier).onAuthFailed(UserFacingErrors.message(e));
       return false;
     }
   }

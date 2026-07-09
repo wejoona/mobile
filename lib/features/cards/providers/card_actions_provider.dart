@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
 import 'package:usdc_wallet/features/cards/providers/cards_provider.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Card action state (freeze/unfreeze/cancel).
 class CardActionState {
@@ -28,7 +29,7 @@ class CardActionsNotifier extends Notifier<CardActionState> {
       state = const CardActionState(isComplete: true);
       ref.invalidate(cardsProvider);
     } catch (e) {
-      state = CardActionState(error: e.toString());
+      state = CardActionState(error: UserFacingErrors.message(e));
     }
   }
 
@@ -40,7 +41,7 @@ class CardActionsNotifier extends Notifier<CardActionState> {
       state = const CardActionState(isComplete: true);
       ref.invalidate(cardsProvider);
     } catch (e) {
-      state = CardActionState(error: e.toString());
+      state = CardActionState(error: UserFacingErrors.message(e));
     }
   }
 
@@ -52,7 +53,7 @@ class CardActionsNotifier extends Notifier<CardActionState> {
       state = const CardActionState(isComplete: true);
       ref.invalidate(cardsProvider);
     } catch (e) {
-      state = CardActionState(error: e.toString());
+      state = CardActionState(error: UserFacingErrors.message(e));
     }
   }
 
@@ -68,7 +69,7 @@ class CardActionsNotifier extends Notifier<CardActionState> {
       state = const CardActionState(isComplete: true);
       ref.invalidate(cardsProvider);
     } catch (e) {
-      state = CardActionState(error: e.toString());
+      state = CardActionState(error: UserFacingErrors.message(e));
     }
   }
 }

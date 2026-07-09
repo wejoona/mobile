@@ -8,6 +8,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Minimal "What's your name?" screen shown after first login
 /// when the user profile has no firstName set.
@@ -57,7 +58,7 @@ class _ProfileCompleteViewState extends ConsumerState<ProfileCompleteView> {
       }
     } catch (e) {
       setState(() {
-        _error = e.toString();
+        _error = UserFacingErrors.message(e);
       });
     } finally {
       if (mounted) {

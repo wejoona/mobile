@@ -6,6 +6,7 @@ import 'package:usdc_wallet/features/payment_links/providers/payment_links_provi
 import 'package:usdc_wallet/features/payment_links/widgets/payment_link_card.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Payment links list screen.
 class PaymentLinksListView extends ConsumerWidget {
@@ -33,7 +34,7 @@ class PaymentLinksListView extends ConsumerWidget {
         ),
         error: (e, _) => Center(
           child: Text(
-            AppLocalizations.of(context)!.paymentLinks_error(e.toString()),
+            AppLocalizations.of(context)!.paymentLinks_error(UserFacingErrors.message(e)),
           ),
         ),
         data: (links) {

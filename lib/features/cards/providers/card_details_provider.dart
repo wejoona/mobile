@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:usdc_wallet/domain/entities/card.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
 import 'package:usdc_wallet/features/cards/providers/cards_provider.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Run 385: Card details provider with sensitive data reveal
 class CardDetailsState {
@@ -58,7 +59,7 @@ class CardDetailsNotifier extends StateNotifier<CardDetailsState> {
       final card = KoridoCard.fromJson(data);
       state = state.copyWith(isLoading: false, card: card);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
     }
   }
 
@@ -84,7 +85,7 @@ class CardDetailsNotifier extends StateNotifier<CardDetailsState> {
       _ref.invalidate(cardsProvider);
       await loadCard(_cardId);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
     }
   }
 
@@ -97,7 +98,7 @@ class CardDetailsNotifier extends StateNotifier<CardDetailsState> {
       _ref.invalidate(cardsProvider);
       await loadCard(_cardId);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
     }
   }
 }

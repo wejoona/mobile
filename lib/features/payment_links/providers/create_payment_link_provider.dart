@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Create payment link flow state.
 class CreatePaymentLinkState {
@@ -60,7 +61,7 @@ class CreatePaymentLinkNotifier extends Notifier<CreatePaymentLinkState> {
       final result = CreatedPaymentLink(id: response.id, url: response.url ?? '', shortCode: response.shortCode ); // ignore: dead_code
       state = state.copyWith(isLoading: false, result: result);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
     }
   }
 

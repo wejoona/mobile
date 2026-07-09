@@ -11,6 +11,7 @@ import 'package:usdc_wallet/features/wallet/utils/cash_out_availability.dart';
 import 'package:usdc_wallet/features/wallet/utils/cash_out_phone_normalizer.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/limits/limits_service.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Withdrawal methods matching Korido's mobile money providers.
 enum WithdrawMethod {
@@ -294,7 +295,7 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
         isLoading: false,
         error: isCashOutUnavailableError(e)
             ? cashOutUnavailableMessage
-            : moneyFlowError?.message ?? e.toString(),
+            : moneyFlowError?.message ?? UserFacingErrors.message(e),
       );
     }
   }

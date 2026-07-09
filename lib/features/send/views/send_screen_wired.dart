@@ -8,6 +8,7 @@ import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/phone_hints.dart';
 
 /// Fully wired send money screen.
 class SendScreenWired extends ConsumerStatefulWidget {
@@ -34,6 +35,7 @@ class _SendScreenWiredState extends ConsumerState<SendScreenWired> {
   Widget build(BuildContext context) {
     final sendState = ref.watch(sendMoneyProvider);
     final balance = ref.watch(availableBalanceProvider);
+    final phoneHint = ref.watch(phoneInputHintProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text(AppStrings.sendMoney)),
@@ -55,7 +57,7 @@ class _SendScreenWiredState extends ConsumerState<SendScreenWired> {
               controller: _phoneController,
               decoration: InputDecoration(
                 labelText: AppStrings.recipient,
-                hintText: '+225 07 XX XX XX XX',
+                hintText: phoneHint,
                 prefixIcon: const Icon(Icons.person_outline),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.contacts_outlined),

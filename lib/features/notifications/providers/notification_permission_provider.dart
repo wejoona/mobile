@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart'
     as notifications;
 import 'package:usdc_wallet/services/notifications/push_notification_service.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Notification Permission State
 class NotificationPermissionState {
@@ -71,7 +72,7 @@ class NotificationPermissionNotifier
       state = state.copyWith(isEnabled: isEnabled, isLoading: false);
       return isEnabled;
     } on Object catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
       return false;
     }
   }

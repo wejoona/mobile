@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
 import 'package:usdc_wallet/features/beneficiaries/repositories/beneficiaries_repository.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Beneficiaries State
 class BeneficiariesState {
@@ -87,7 +88,7 @@ class BeneficiariesNotifier extends Notifier<BeneficiariesState> {
       final beneficiaries = await _repository.getBeneficiaries();
       state = state.copyWith(isLoading: false, beneficiaries: beneficiaries);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
     }
   }
 
@@ -109,7 +110,7 @@ class BeneficiariesNotifier extends Notifier<BeneficiariesState> {
 
       return beneficiary;
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: UserFacingErrors.message(e));
       return null;
     }
   }
@@ -130,7 +131,7 @@ class BeneficiariesNotifier extends Notifier<BeneficiariesState> {
 
       return true;
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: UserFacingErrors.message(e));
       return false;
     }
   }
@@ -146,7 +147,7 @@ class BeneficiariesNotifier extends Notifier<BeneficiariesState> {
 
       return true;
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: UserFacingErrors.message(e));
       return false;
     }
   }
@@ -162,7 +163,7 @@ class BeneficiariesNotifier extends Notifier<BeneficiariesState> {
       }).toList();
       state = state.copyWith(beneficiaries: updatedList);
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: UserFacingErrors.message(e));
     }
   }
 

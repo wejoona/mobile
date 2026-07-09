@@ -5,6 +5,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/providers/missing_providers.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 class SpendingSummaryCard extends ConsumerWidget {
   const SpendingSummaryCard({super.key});
@@ -18,7 +19,7 @@ class SpendingSummaryCard extends ConsumerWidget {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(
         child: AppText(
-          AppLocalizations.of(context)!.insights_error(e.toString()),
+          AppLocalizations.of(context)!.insights_error(UserFacingErrors.message(e)),
           textAlign: TextAlign.center,
         ),
       ),

@@ -16,6 +16,7 @@ import 'package:usdc_wallet/features/qr_payment/services/qr_code_service.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart' as user_state;
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Screen for displaying user's QR code to receive payments
 class ReceiveQrScreen extends ConsumerStatefulWidget {
@@ -372,7 +373,7 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              AppLocalizations.of(context)!.common_errorFormat(e.toString()),
+              AppLocalizations.of(context)!.common_errorFormat(UserFacingErrors.message(e)),
             ),
             backgroundColor: context.colors.error,
           ),
@@ -427,7 +428,7 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              AppLocalizations.of(context)!.common_errorFormat(e.toString()),
+              AppLocalizations.of(context)!.common_errorFormat(UserFacingErrors.message(e)),
             ),
             backgroundColor: context.colors.error,
           ),

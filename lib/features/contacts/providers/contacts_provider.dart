@@ -9,6 +9,7 @@ import 'package:usdc_wallet/mocks/mock_config.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/contacts/contacts_service.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// App contacts provider — wired to Dio (mock interceptor handles fallback).
 final appContactsProvider = FutureProvider<List<Contact>>((ref) async {
@@ -191,7 +192,7 @@ class ContactsNotifier extends Notifier<ContactsState> {
         lastSyncResult: ContactSyncResult(joonaPayUsersFound: joonaPayCount),
       );
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
     }
   }
 

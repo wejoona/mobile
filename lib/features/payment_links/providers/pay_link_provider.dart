@@ -5,6 +5,7 @@ import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/core/utils/transaction_headers.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// State for paying a payment link (from deep link or QR).
 class PayLinkState {
@@ -97,7 +98,7 @@ class PayLinkNotifier extends Notifier<PayLinkState> {
       );
       state = state.copyWith(isLoading: false, linkDetail: detail);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
     }
   }
 
@@ -121,7 +122,7 @@ class PayLinkNotifier extends Notifier<PayLinkState> {
       );
       return false;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
       return false;
     }
   }
@@ -152,7 +153,7 @@ class PayLinkNotifier extends Notifier<PayLinkState> {
       state = state.copyWith(isProcessing: false, isComplete: true);
       ref.invalidate(walletBalanceProvider);
     } catch (e) {
-      state = state.copyWith(isProcessing: false, error: e.toString());
+      state = state.copyWith(isProcessing: false, error: UserFacingErrors.message(e));
     }
   }
 

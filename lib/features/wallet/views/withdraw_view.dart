@@ -21,6 +21,7 @@ import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/utils/context_extensions.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Withdrawal method type
 enum WithdrawMethod { mobileMoney, bankTransfer, crypto }
@@ -450,7 +451,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString()),
+            content: Text(UserFacingErrors.message(e)),
             backgroundColor: context.colors.error,
           ),
         );
@@ -629,7 +630,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     } catch (e) {
       if (!mounted) return;
       context.showSnack(
-        AppLocalizations.of(context)!.common_errorFormat(e.toString()),
+        AppLocalizations.of(context)!.common_errorFormat(UserFacingErrors.message(e)),
         tone: AppSnackTone.error,
       );
     } finally {

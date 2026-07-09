@@ -8,6 +8,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/beneficiaries/providers/beneficiaries_provider.dart';
 import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/phone_hints.dart';
 
 /// Add/Edit Beneficiary Screen
 class AddBeneficiaryScreen extends ConsumerStatefulWidget {
@@ -102,6 +103,7 @@ class _AddBeneficiaryScreenState extends ConsumerState<AddBeneficiaryScreen> {
     final colors = context.colors;
     final isEdit = widget.beneficiaryId != null;
     final state = ref.watch(beneficiariesProvider);
+    final phoneHint = ref.watch(phoneInputHintProvider);
 
     if (isEdit && _existingBeneficiary == null) {
       if (!_requestedBeneficiariesLoad &&
@@ -194,7 +196,7 @@ class _AddBeneficiaryScreenState extends ConsumerState<AddBeneficiaryScreen> {
                 label: l10n.beneficiaries_fieldPhone,
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
-                hint: '+225 XX XX XX XX',
+                hint: phoneHint,
                 enabled: !isEdit, // Can't change phone in edit mode
               ),
               SizedBox(height: AppSpacing.md),

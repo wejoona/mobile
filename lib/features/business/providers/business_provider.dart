@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/business_profile.dart';
 import 'package:usdc_wallet/domain/enums/account_type.dart';
 import 'package:usdc_wallet/services/business/business_service.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Business State
 class BusinessState {
@@ -59,7 +60,7 @@ class BusinessNotifier extends Notifier<BusinessState> {
         await loadBusinessProfile();
       }
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
     }
   }
 
@@ -71,7 +72,7 @@ class BusinessNotifier extends Notifier<BusinessState> {
       final profile = await _businessService.getBusinessProfile();
       state = state.copyWith(isLoading: false, businessProfile: profile);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
     }
   }
 
@@ -90,7 +91,7 @@ class BusinessNotifier extends Notifier<BusinessState> {
 
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
       return false;
     }
   }
@@ -122,7 +123,7 @@ class BusinessNotifier extends Notifier<BusinessState> {
 
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
       return false;
     }
   }

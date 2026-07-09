@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
 import 'package:usdc_wallet/features/cards/providers/cards_provider.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Create card flow state.
 class CreateCardState {
@@ -78,7 +79,7 @@ class CreateCardNotifier extends Notifier<CreateCardState> {
       state = state.copyWith(isLoading: false, isComplete: true);
       ref.invalidate(cardsProvider);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
     }
   }
 

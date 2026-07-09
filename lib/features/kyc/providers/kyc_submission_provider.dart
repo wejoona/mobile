@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
 import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// KYC submission flow state.
 class KycSubmissionState {
@@ -94,7 +95,7 @@ class KycSubmissionNotifier extends Notifier<KycSubmissionState> {
       state = state.copyWith(isLoading: false, isComplete: true, currentStep: KycStep.submitted);
       ref.invalidate(kycProfileProvider);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
     }
   }
 

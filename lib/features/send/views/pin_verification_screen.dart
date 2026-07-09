@@ -12,6 +12,7 @@ import 'package:usdc_wallet/features/send/widgets/send_flow_visuals.dart';
 import 'package:usdc_wallet/features/send/views/offline_queue_dialog.dart';
 import 'package:usdc_wallet/services/offline/offline_queue_interceptor.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 class PinVerificationScreen extends ConsumerStatefulWidget {
   const PinVerificationScreen({super.key});
@@ -326,7 +327,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = e.toString();
+          _error = UserFacingErrors.message(e);
           _isLoading = false;
         });
       }
@@ -384,7 +385,7 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = e.toString();
+          _error = UserFacingErrors.message(e);
           _isLoading = false;
         });
       }

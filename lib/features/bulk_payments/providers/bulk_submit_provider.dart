@@ -4,6 +4,7 @@ import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// State for bulk payment submission with PIN and balance validation.
 class BulkSubmitState {
@@ -78,7 +79,7 @@ class BulkSubmitNotifier extends Notifier<BulkSubmitState> {
       );
       return false;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
       return false;
     }
   }
@@ -120,7 +121,7 @@ class BulkSubmitNotifier extends Notifier<BulkSubmitState> {
       );
       return true;
     } catch (e) {
-      state = state.copyWith(isSubmitting: false, error: e.toString());
+      state = state.copyWith(isSubmitting: false, error: UserFacingErrors.message(e));
       return false;
     } finally {
       await ref.read(pinServiceProvider).clearPinToken();

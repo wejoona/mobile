@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/recurring_transfers/models/recurring_transfer.dart';
 import 'package:usdc_wallet/features/recurring_transfers/models/recurring_transfer_detail_state.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Recurring transfers list provider — wired to RecurringTransfersService.
 final recurringTransfersProvider = FutureProvider<List<RecurringTransfer>>((ref) async {
@@ -46,6 +47,6 @@ final recurringTransferDetailProvider = FutureProvider.family<RecurringTransferD
     final history = await service.getExecutionHistory(id);
     return RecurringTransferDetailState(transfer: transfer, history: history);
   } catch (e) {
-    return RecurringTransferDetailState(error: e.toString());
+    return RecurringTransferDetailState(error: UserFacingErrors.message(e));
   }
 });

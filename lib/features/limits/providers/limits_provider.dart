@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/limit.dart';
 import 'package:usdc_wallet/services/limits/limits_service.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// User transaction limits provider — wired to LimitsService.
 final transactionLimitsProvider = FutureProvider<TransactionLimits>((
@@ -72,7 +73,7 @@ class LimitsNotifier extends Notifier<LimitsState> {
         clearError: true,
       );
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
     }
   }
 }

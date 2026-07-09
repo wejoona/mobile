@@ -4,6 +4,7 @@ import 'package:usdc_wallet/features/bulk_payments/providers/bulk_payments_provi
 import 'package:usdc_wallet/features/bulk_payments/widgets/bulk_payment_card.dart';
 import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Bulk payments list screen.
 class BulkPaymentsView extends ConsumerWidget {
@@ -20,7 +21,7 @@ class BulkPaymentsView extends ConsumerWidget {
       ),
       body: paymentsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.bulkPayments_error(e.toString()))),
+        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.bulkPayments_error(UserFacingErrors.message(e)))),
         data: (payments) {
           if (payments.isEmpty) {
             return const EmptyState(

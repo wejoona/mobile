@@ -1,7 +1,10 @@
 import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdc_wallet/utils/logger.dart';
+
+const _featureFlagsLogger = AppLogger('FeatureFlags');
 
 /// Feature flag keys from backend
 class FeatureFlagKeys {
@@ -91,11 +94,11 @@ class FeatureFlagsService {
       // Check if we need to refresh
       if (_lastFetch != null &&
           DateTime.now().difference(_lastFetch!) < _refreshInterval) {
-        AppLogger('Debug').debug('[FeatureFlags] Cache still fresh, skipping fetch');
+        _featureFlagsLogger.debug('Cache still fresh, skipping fetch');
         return _flags;
       }
 
-      AppLogger('Debug').debug('[FeatureFlags] Fetching from API...');
+      _featureFlagsLogger.debug('Fetching from API...');
       final response = await _dio.get('/feature-flags/me');
 
       if (response.statusCode == 200 && response.data != null) {
@@ -109,15 +112,23 @@ class FeatureFlagsService {
         await _saveToCache();
         _lastFetch = DateTime.now();
 
-        AppLogger('Debug').debug('[FeatureFlags] Fetched ${_flags.length} flags');
+        _featureFlagsLogger.debug('Fetched ${_flags.length} flags');
         return _flags;
       }
 
-      AppLogger('Debug').debug('[FeatureFlags] Failed to fetch: ${response.statusCode}');
+      _featureFlagsLogger.debug('Failed to fetch: ${response.statusCode}');
+      return _flags;
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 401) {
+        _featureFlagsLogger.debug(
+          'Unauthenticated; using cached/default flags',
+        );
+        return _flags;
+      }
+      _featureFlagsLogger.error('Error fetching flags', error);
       return _flags;
     } catch (e) {
-      AppLogger('[FeatureFlags] Error fetching flags').error('[FeatureFlags] Error fetching flags', e);
-      // Return cached flags on error
+      _featureFlagsLogger.error('Error fetching flags', e);
       return _flags;
     }
   }

@@ -6,6 +6,7 @@ import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/utils/phone_hints.dart';
 
 /// Create recurring transfer screen.
 class CreateRecurringScreen extends ConsumerStatefulWidget {
@@ -32,6 +33,7 @@ class _CreateRecurringScreenState extends ConsumerState<CreateRecurringScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(createRecurringProvider);
     final notifier = ref.read(createRecurringProvider.notifier);
+    final phoneHint = ref.watch(phoneInputHintProvider);
 
     ref.listen<CreateRecurringState>(createRecurringProvider, (_, next) {
       if (next.isComplete) {
@@ -52,7 +54,7 @@ class _CreateRecurringScreenState extends ConsumerState<CreateRecurringScreen> {
               controller: _phoneController,
               decoration: InputDecoration(
                 labelText: AppStrings.recipient,
-                hintText: '+225 07 XX XX XX XX',
+                hintText: phoneHint,
                 prefixIcon: const Icon(Icons.person_outline),
               ),
               keyboardType: TextInputType.phone,

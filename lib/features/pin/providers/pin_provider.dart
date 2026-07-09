@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/features/pin/models/pin_state.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// PIN state provider
 final pinStateProvider = NotifierProvider<PinNotifier, PinState>(
@@ -52,7 +53,7 @@ class PinNotifier extends Notifier<PinState> {
         return false;
       }
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
       return false;
     }
   }
@@ -84,7 +85,7 @@ class PinNotifier extends Notifier<PinState> {
         return false;
       }
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
       return false;
     }
   }
@@ -110,7 +111,7 @@ class PinNotifier extends Notifier<PinState> {
       state = state.copyWith(isLoading: false, error: 'Failed to cache PIN');
       return false;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
       return false;
     }
   }

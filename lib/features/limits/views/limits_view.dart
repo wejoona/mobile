@@ -8,6 +8,7 @@ import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
 import 'package:usdc_wallet/features/kyc/widgets/kyc_status_card.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Transaction limits overview screen.
 class LimitsView extends ConsumerWidget {
@@ -47,7 +48,7 @@ class LimitsView extends ConsumerWidget {
               AppCard(
                 variant: AppCardVariant.flat,
                 child: AppText(
-                  l10n.limits_error(e.toString()),
+                  l10n.limits_error(UserFacingErrors.message(e)),
                   variant: AppTextVariant.bodyMedium,
                   color: colors.errorText,
                   textAlign: TextAlign.center,

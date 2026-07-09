@@ -3,6 +3,7 @@ import 'package:usdc_wallet/config/west_african_banks.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/features/bank_linking/providers/bank_accounts_provider.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 typedef WestAfricanBank = BankInfo;
 
@@ -66,7 +67,7 @@ class LinkBankNotifier extends Notifier<LinkBankState> {
       state = state.copyWith(isLoading: false, isComplete: true);
       ref.invalidate(bankAccountsProvider);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
     }
   }
 

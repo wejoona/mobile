@@ -9,6 +9,7 @@ import 'package:usdc_wallet/features/notifications/widgets/notification_tile.dar
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/notifications/notification_route_intent.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Notifications list screen.
 class NotificationsView extends ConsumerStatefulWidget {
@@ -71,9 +72,9 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
                 unreadCount,
                 colors,
                 l10n,
-                staleError: e.toString(),
+                staleError: UserFacingErrors.message(e),
               )
-            : _buildErrorState(e.toString(), l10n),
+            : _buildErrorState(UserFacingErrors.message(e), l10n),
         data: (notifications) =>
             _buildNotificationsFeed(notifications, unreadCount, colors, l10n),
       ),

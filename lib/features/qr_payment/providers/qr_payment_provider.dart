@@ -8,6 +8,7 @@ import 'package:usdc_wallet/features/qr_payment/models/qr_payment_data.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// QR payment types.
 enum QrPaymentType { p2p, merchant, paymentLink }
@@ -100,7 +101,7 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
       );
       return false;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
       return false;
     }
   }
@@ -210,7 +211,7 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
       state = state.copyWith(isProcessing: false, isComplete: true);
       ref.invalidate(walletBalanceProvider);
     } catch (e) {
-      state = state.copyWith(isProcessing: false, error: e.toString());
+      state = state.copyWith(isProcessing: false, error: UserFacingErrors.message(e));
     }
   }
 

@@ -7,6 +7,7 @@ import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/features/bank_linking/models/bank.dart';
 import 'package:usdc_wallet/features/bank_linking/models/linked_bank_account.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 // State
 class BankLinkingState {
@@ -81,7 +82,7 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
         error: ApiException.fromDioError(e).message,
       );
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
     }
   }
 
@@ -107,7 +108,7 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
         error: ApiException.fromDioError(e).message,
       );
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
     }
   }
 
@@ -149,7 +150,7 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
       );
       return false;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
       return false;
     }
   }
@@ -179,7 +180,7 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
       );
       return false;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
       return false;
     }
   }
@@ -206,7 +207,7 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
       );
       return false;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
       return false;
     }
   }
@@ -233,7 +234,7 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
       );
       return false;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
       return false;
     }
   }

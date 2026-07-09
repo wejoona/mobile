@@ -7,6 +7,7 @@ import 'package:usdc_wallet/state/app_state.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/state/transaction_state_machine.dart';
 import 'package:usdc_wallet/features/beneficiaries/providers/beneficiaries_provider.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Offline State
 class OfflineState {
@@ -192,7 +193,7 @@ class OfflineNotifier extends Notifier<OfflineState> {
         pendingTransferCount: _queue?.getPendingCount() ?? 0,
       );
     } catch (e) {
-      state = state.copyWith(isSyncing: false, syncError: e.toString());
+      state = state.copyWith(isSyncing: false, syncError: UserFacingErrors.message(e));
     }
   }
 
@@ -222,7 +223,7 @@ class OfflineNotifier extends Notifier<OfflineState> {
 
         await _queue!.markCompleted(transfer.id);
       } catch (e) {
-        await _queue!.markFailed(transfer.id, e.toString());
+        await _queue!.markFailed(transfer.id, UserFacingErrors.message(e));
       }
     }
 
