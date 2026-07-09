@@ -6,6 +6,8 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/connectivity/connectivity_provider.dart';
+import 'package:usdc_wallet/services/feature_flags/feature_flags_extensions.dart';
+import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Navigation shell for bottom navigation - derives state from current route.
@@ -38,6 +40,8 @@ class MainShell extends ConsumerWidget {
     final selectedIndex = _getSelectedIndex(location);
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
+    final flags = ref.watch(featureFlagsProvider);
+    final showCardsBadge = flags.canUseVirtualCards;
 
     return Scaffold(
       body: Column(
@@ -75,16 +79,20 @@ class MainShell extends ConsumerWidget {
             label: l10n.navigation_home,
           ),
           NavigationDestination(
-            icon: Badge(
-              backgroundColor: colors.warning,
-              smallSize: 8,
-              child: const Icon(Icons.credit_card_outlined),
-            ),
-            selectedIcon: Badge(
-              backgroundColor: colors.warning,
-              smallSize: 8,
-              child: const Icon(Icons.credit_card),
-            ),
+            icon: showCardsBadge
+                ? Badge(
+                    backgroundColor: colors.warning,
+                    smallSize: 8,
+                    child: const Icon(Icons.credit_card_outlined),
+                  )
+                : const Icon(Icons.credit_card_outlined),
+            selectedIcon: showCardsBadge
+                ? Badge(
+                    backgroundColor: colors.warning,
+                    smallSize: 8,
+                    child: const Icon(Icons.credit_card),
+                  )
+                : const Icon(Icons.credit_card),
             label: l10n.navigation_cards,
           ),
           NavigationDestination(

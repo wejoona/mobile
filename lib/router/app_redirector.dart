@@ -512,77 +512,84 @@ bool _hasActiveSignupContext(SignupFlowState state) =>
 
 bool _hasNonBlank(String? value) => value != null && value.trim().isNotEmpty;
 
+String _comingSoonRoute(String slug) => '/feature-coming-soon?feature=$slug';
+
 String? _featureFlagRedirect(String location, Map<String, bool> flags) {
   if (flags.isEmpty) {
+    return null;
+  }
+
+  if (location == '/feature-coming-soon') {
     return null;
   }
 
   if (location == '/withdraw' &&
       !flags.canWithdraw &&
       !flags.canUseMobileMoneyWithdrawals) {
-    return '/home';
+    return _comingSoonRoute('withdraw');
   }
   if (location.startsWith('/send-external') && !flags.canUseExternalTransfers) {
-    return '/home';
+    return _comingSoonRoute('external_transfers');
   }
 
   if (location == '/airtime' && !flags.canBuyAirtime) {
-    return '/home';
+    return _comingSoonRoute('airtime');
   }
   if ((location == '/bills' || location.startsWith('/bill-payments')) &&
       !flags.canPayBills &&
       !flags.canUseBillPayments) {
-    return '/home';
+    return _comingSoonRoute('bills');
   }
 
   if (location == '/savings' &&
       !flags.canSetSavingsGoals &&
       !flags.canUseSavingsPots) {
-    return '/home';
+    return _comingSoonRoute('savings');
   }
   if (location.startsWith('/savings-pots') && !flags.canUseSavingsPots) {
-    return '/home';
+    return _comingSoonRoute('savings_pots');
   }
-  if ((location == '/card' || location.startsWith('/cards/')) &&
-      !flags.canUseVirtualCards) {
-    return '/home';
+  if (!flags.canUseVirtualCards) {
+    if (location == '/card' || location.startsWith('/cards/')) {
+      return '/cards';
+    }
   }
   if (location == '/split' && !flags.canSplitBills) {
-    return '/home';
+    return _comingSoonRoute('split_bills');
   }
   if (location == '/budget' && !flags.canUseBudget) {
-    return '/home';
+    return _comingSoonRoute('budget');
   }
   if ((location == '/scheduled' ||
           location.startsWith('/recurring-transfers')) &&
       !flags.canScheduleTransfers) {
-    return '/home';
+    return _comingSoonRoute('recurring_transfers');
   }
 
   if (location == '/analytics' && !flags.canViewAnalytics) {
-    return '/home';
+    return _comingSoonRoute('analytics');
   }
   if (location == '/converter' && !flags.canUseCurrencyConverter) {
-    return '/home';
+    return _comingSoonRoute('currency_converter');
   }
   if (location == '/request' &&
       !flags.canRequestMoney &&
       !flags.canUsePaymentLinks) {
-    return '/home';
+    return _comingSoonRoute('request_money');
   }
   if (location == '/recipients' && !flags.canUseSavedRecipients) {
-    return '/home';
+    return _comingSoonRoute('saved_recipients');
   }
   if (location.startsWith('/payment-links') && !flags.canUsePaymentLinks) {
-    return '/home';
+    return _comingSoonRoute('payment_links');
   }
   if (location == '/referrals' &&
       !flags.canReferFriends &&
       !flags.canUseReferralProgram) {
-    return '/home';
+    return _comingSoonRoute('referrals');
   }
   if (_isMerchantQrPath(location) && !flags.canUseMerchantQr) {
-    return '/home';
+    return _comingSoonRoute('merchant_qr');
   }
 
   return null;

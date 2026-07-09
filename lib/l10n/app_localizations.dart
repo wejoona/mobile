@@ -11202,6 +11202,90 @@ abstract class AppLocalizations {
   /// **'Make sure you are sending to a Solana USDC address'**
   String get withdraw_networkWarning;
 
+  /// Withdrawal amount validation error for non-numeric input
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid amount'**
+  String get withdraw_invalidAmount;
+
+  /// Withdrawal amount validation error for zero or negative amount
+  ///
+  /// In en, this message translates to:
+  /// **'Amount must be greater than 0'**
+  String get withdraw_amountMustBePositive;
+
+  /// Withdrawal amount validation error when balance is too low
+  ///
+  /// In en, this message translates to:
+  /// **'Insufficient balance'**
+  String get withdraw_insufficientBalance;
+
+  /// Withdrawal amount validation error for amount below minimum
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum withdrawal is \$1'**
+  String get withdraw_minimumAmount;
+
+  /// Shown when a withdrawal requires manual risk review
+  ///
+  /// In en, this message translates to:
+  /// **'This withdrawal needs manual review before it can continue.'**
+  String get withdraw_manualReviewRequired;
+
+  /// Shown when step-up security challenge token is missing
+  ///
+  /// In en, this message translates to:
+  /// **'Security challenge is incomplete. Please try again before withdrawing.'**
+  String get withdraw_securityChallengeIncomplete;
+
+  /// Withdrawal processing time and fee info
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawals typically process within 1-3 business days. Fees may apply depending on the method.'**
+  String get withdraw_processingDaysInfo;
+
+  /// Quick amount button to use full available balance
+  ///
+  /// In en, this message translates to:
+  /// **'MAX'**
+  String get withdraw_maxLabel;
+
+  /// Loading message while fetching mobile money withdrawal options
+  ///
+  /// In en, this message translates to:
+  /// **'Checking available withdrawal rails...'**
+  String get withdraw_checkingRails;
+
+  /// Shown when no mobile money rails are available for a country
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile money withdrawals are not available for {country} yet.'**
+  String withdraw_mobileMoneyUnavailable(String country);
+
+  /// Lists supported mobile money withdrawal providers
+  ///
+  /// In en, this message translates to:
+  /// **'Available rails: {rails}'**
+  String withdraw_availableRails(String rails);
+
+  /// Bank name input label for bank transfer withdrawals
+  ///
+  /// In en, this message translates to:
+  /// **'Bank Name'**
+  String get withdraw_bankNameLabel;
+
+  /// Bank account number input label for bank transfer withdrawals
+  ///
+  /// In en, this message translates to:
+  /// **'Account Number'**
+  String get withdraw_accountNumberLabel;
+
+  /// Shown when entered mobile money number does not match supported providers
+  ///
+  /// In en, this message translates to:
+  /// **'This {country} mobile money number is not supported yet. Available rails: {rails}.'**
+  String withdraw_unsupportedMobileNumber(String country, String rails);
+
   /// Cookie policy title
   ///
   /// In en, this message translates to:
@@ -14471,6 +14555,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Update Korido'**
   String get forceUpdate_button;
+
+  /// Generic coming soon message for disabled features
+  ///
+  /// In en, this message translates to:
+  /// **'This feature is not available yet. Join the waitlist and we\'ll notify you when it launches.'**
+  String get featureComingSoon_description;
+
+  /// Button label to subscribe to feature launch notifications
+  ///
+  /// In en, this message translates to:
+  /// **'Notify Me When Available'**
+  String get featureComingSoon_notifyMe;
+
+  /// Success snackbar after subscribing to a feature waitlist
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll be notified when this feature is available'**
+  String get featureComingSoon_notifySuccess;
+
+  /// Message shown on route placeholder fallback pages
+  ///
+  /// In en, this message translates to:
+  /// **'This page could not be opened. The item may have moved, expired, or is not available for your account.'**
+  String get routePlaceholder_unavailable;
+
+  /// Generic go back button label
+  ///
+  /// In en, this message translates to:
+  /// **'Go back'**
+  String get common_goBack;
 }
 
 class _AppLocalizationsDelegate

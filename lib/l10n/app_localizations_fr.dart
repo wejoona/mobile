@@ -6134,6 +6134,59 @@ class AppLocalizationsFr extends AppLocalizations {
       'Assurez-vous d\'envoyer vers une adresse Solana USDC';
 
   @override
+  String get withdraw_invalidAmount => 'Montant invalide';
+
+  @override
+  String get withdraw_amountMustBePositive =>
+      'Le montant doit être supérieur à 0';
+
+  @override
+  String get withdraw_insufficientBalance => 'Solde insuffisant';
+
+  @override
+  String get withdraw_minimumAmount => 'Le retrait minimum est de 1 \$';
+
+  @override
+  String get withdraw_manualReviewRequired =>
+      'Ce retrait nécessite une vérification manuelle avant de pouvoir continuer.';
+
+  @override
+  String get withdraw_securityChallengeIncomplete =>
+      'Le défi de sécurité est incomplet. Veuillez réessayer avant de retirer.';
+
+  @override
+  String get withdraw_processingDaysInfo =>
+      'Les retraits sont généralement traités sous 1 à 3 jours ouvrables. Des frais peuvent s\'appliquer selon la méthode.';
+
+  @override
+  String get withdraw_maxLabel => 'MAX';
+
+  @override
+  String get withdraw_checkingRails =>
+      'Vérification des rails de retrait disponibles...';
+
+  @override
+  String withdraw_mobileMoneyUnavailable(String country) {
+    return 'Les retraits Mobile Money ne sont pas encore disponibles pour $country.';
+  }
+
+  @override
+  String withdraw_availableRails(String rails) {
+    return 'Rails disponibles : $rails';
+  }
+
+  @override
+  String get withdraw_bankNameLabel => 'Nom de la banque';
+
+  @override
+  String get withdraw_accountNumberLabel => 'Numéro de compte';
+
+  @override
+  String withdraw_unsupportedMobileNumber(String country, String rails) {
+    return 'Ce numéro Mobile Money $country n\'est pas encore pris en charge. Rails disponibles : $rails.';
+  }
+
+  @override
   String get legal_cookiePolicy => 'Politique de cookies';
 
   @override
@@ -8024,4 +8077,23 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get forceUpdate_button => 'Mettre à jour Korido';
+
+  @override
+  String get featureComingSoon_description =>
+      'Cette fonctionnalité n\'est pas encore disponible. Rejoignez la liste d\'attente et nous vous préviendrons dès son lancement.';
+
+  @override
+  String get featureComingSoon_notifyMe =>
+      'Me prévenir quand c\'est disponible';
+
+  @override
+  String get featureComingSoon_notifySuccess =>
+      'Nous vous préviendrons quand cette fonctionnalité sera disponible';
+
+  @override
+  String get routePlaceholder_unavailable =>
+      'Cette page n\'a pas pu être ouverte. L\'élément a peut-être été déplacé, a expiré ou n\'est pas disponible pour votre compte.';
+
+  @override
+  String get common_goBack => 'Retour';
 }

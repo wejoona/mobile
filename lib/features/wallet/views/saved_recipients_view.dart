@@ -10,6 +10,7 @@ import 'package:usdc_wallet/domain/entities/contact.dart';
 import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart';
 import 'package:usdc_wallet/features/wallet/providers/saved_recipients_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/utils/phone_hints.dart';
 
 class SavedRecipientsView extends ConsumerStatefulWidget {
   const SavedRecipientsView({super.key});
@@ -659,6 +660,7 @@ class _AddRecipientSheetState extends ConsumerState<_AddRecipientSheet> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
+    final phoneHint = ref.watch(phoneInputHintProvider);
 
     return SafeArea(
       top: false,
@@ -732,7 +734,7 @@ class _AddRecipientSheetState extends ConsumerState<_AddRecipientSheet> {
               AppInput(
                 controller: _phoneController,
                 label: AppStrings.phoneNumber,
-                hint: '+225 07 48 80 56 63',
+                hint: phoneHint,
                 prefixIcon: Icons.phone_outlined,
                 variant: AppInputVariant.phone,
                 keyboardType: TextInputType.phone,

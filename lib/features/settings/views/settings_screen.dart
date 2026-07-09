@@ -15,6 +15,8 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/mocks/mock_config.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/currency/currency_provider.dart';
+import 'package:usdc_wallet/services/feature_flags/feature_flags_service.dart';
+import 'package:usdc_wallet/services/feature_flags/feature_gate.dart';
 import 'package:usdc_wallet/services/currency/currency_service.dart';
 import 'package:usdc_wallet/services/localization/language_provider.dart';
 import 'package:usdc_wallet/state/index.dart';
@@ -164,42 +166,48 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
             const SizedBox(height: AppSpacing.xxl),
 
-            // Referral Card - Gold accent
-            AppCard(
-              variant: AppCardVariant.goldAccent,
-              onTap: () => context.fsmPush('/referrals'),
-              child: Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: colors.gold.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(AppRadius.md),
+            // Referral Card - Gold accent (hidden when referrals disabled)
+            AnyFeatureGate(
+              flags: const [
+                FeatureFlagKeys.referrals,
+                FeatureFlagKeys.referralProgram,
+              ],
+              child: AppCard(
+                variant: AppCardVariant.goldAccent,
+                onTap: () => context.fsmPush('/referrals'),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: colors.gold.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                      ),
+                      child: Icon(Icons.card_giftcard, color: colors.gold),
                     ),
-                    child: Icon(Icons.card_giftcard, color: colors.gold),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        AppText(
-                          l10n.settings_referEarn,
-                          variant: AppTextVariant.titleSmall,
-                          color: colors.gold,
-                        ),
-                        const SizedBox(height: AppSpacing.xxs),
-                        AppText(
-                          l10n.settings_referDescription,
-                          variant: AppTextVariant.bodySmall,
-                          color: colors.textSecondary,
-                        ),
-                      ],
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppText(
+                            l10n.settings_referEarn,
+                            variant: AppTextVariant.titleSmall,
+                            color: colors.gold,
+                          ),
+                          const SizedBox(height: AppSpacing.xxs),
+                          AppText(
+                            l10n.settings_referDescription,
+                            variant: AppTextVariant.bodySmall,
+                            color: colors.textSecondary,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  Icon(Icons.chevron_right, color: colors.gold),
-                ],
+                    Icon(Icons.chevron_right, color: colors.gold),
+                  ],
+                ),
               ),
             ),
 

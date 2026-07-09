@@ -7609,6 +7609,80 @@
   "@withdraw_networkWarning": {
     "description": "Warning about network compatibility"
   },
+  "withdraw_invalidAmount": "Invalid amount",
+  "@withdraw_invalidAmount": {
+    "description": "Withdrawal amount validation error for non-numeric input"
+  },
+  "withdraw_amountMustBePositive": "Amount must be greater than 0",
+  "@withdraw_amountMustBePositive": {
+    "description": "Withdrawal amount validation error for zero or negative amount"
+  },
+  "withdraw_insufficientBalance": "Insufficient balance",
+  "@withdraw_insufficientBalance": {
+    "description": "Withdrawal amount validation error when balance is too low"
+  },
+  "withdraw_minimumAmount": "Minimum withdrawal is $1",
+  "@withdraw_minimumAmount": {
+    "description": "Withdrawal amount validation error for amount below minimum"
+  },
+  "withdraw_manualReviewRequired": "This withdrawal needs manual review before it can continue.",
+  "@withdraw_manualReviewRequired": {
+    "description": "Shown when a withdrawal requires manual risk review"
+  },
+  "withdraw_securityChallengeIncomplete": "Security challenge is incomplete. Please try again before withdrawing.",
+  "@withdraw_securityChallengeIncomplete": {
+    "description": "Shown when step-up security challenge token is missing"
+  },
+  "withdraw_processingDaysInfo": "Withdrawals typically process within 1-3 business days. Fees may apply depending on the method.",
+  "@withdraw_processingDaysInfo": {
+    "description": "Withdrawal processing time and fee info"
+  },
+  "withdraw_maxLabel": "MAX",
+  "@withdraw_maxLabel": {
+    "description": "Quick amount button to use full available balance"
+  },
+  "withdraw_checkingRails": "Checking available withdrawal rails...",
+  "@withdraw_checkingRails": {
+    "description": "Loading message while fetching mobile money withdrawal options"
+  },
+  "withdraw_mobileMoneyUnavailable": "Mobile money withdrawals are not available for {country} yet.",
+  "@withdraw_mobileMoneyUnavailable": {
+    "description": "Shown when no mobile money rails are available for a country",
+    "placeholders": {
+      "country": {
+        "type": "String"
+      }
+    }
+  },
+  "withdraw_availableRails": "Available rails: {rails}",
+  "@withdraw_availableRails": {
+    "description": "Lists supported mobile money withdrawal providers",
+    "placeholders": {
+      "rails": {
+        "type": "String"
+      }
+    }
+  },
+  "withdraw_bankNameLabel": "Bank Name",
+  "@withdraw_bankNameLabel": {
+    "description": "Bank name input label for bank transfer withdrawals"
+  },
+  "withdraw_accountNumberLabel": "Account Number",
+  "@withdraw_accountNumberLabel": {
+    "description": "Bank account number input label for bank transfer withdrawals"
+  },
+  "withdraw_unsupportedMobileNumber": "This {country} mobile money number is not supported yet. Available rails: {rails}.",
+  "@withdraw_unsupportedMobileNumber": {
+    "description": "Shown when entered mobile money number does not match supported providers",
+    "placeholders": {
+      "country": {
+        "type": "String"
+      },
+      "rails": {
+        "type": "String"
+      }
+    }
+  },
   "legal_cookiePolicy": "Cookie Policy",
   "@legal_cookiePolicy": {
     "description": "Cookie policy title"
@@ -9080,5 +9154,25 @@
   "forceUpdate_button": "Update Korido",
   "@forceUpdate_button": {
     "description": "Button label that opens the app store"
+  },
+  "featureComingSoon_description": "This feature is not available yet. Join the waitlist and we'll notify you when it launches.",
+  "@featureComingSoon_description": {
+    "description": "Generic coming soon message for disabled features"
+  },
+  "featureComingSoon_notifyMe": "Notify Me When Available",
+  "@featureComingSoon_notifyMe": {
+    "description": "Button label to subscribe to feature launch notifications"
+  },
+  "featureComingSoon_notifySuccess": "You'll be notified when this feature is available",
+  "@featureComingSoon_notifySuccess": {
+    "description": "Success snackbar after subscribing to a feature waitlist"
+  },
+  "routePlaceholder_unavailable": "This page could not be opened. The item may have moved, expired, or is not available for your account.",
+  "@routePlaceholder_unavailable": {
+    "description": "Message shown on route placeholder fallback pages"
+  },
+  "common_goBack": "Go back",
+  "@common_goBack": {
+    "description": "Generic go back button label"
   }
 }

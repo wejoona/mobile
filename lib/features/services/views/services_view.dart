@@ -144,6 +144,17 @@ class ServicesView extends ConsumerWidget {
       );
     }
 
+    if (flags.canUseExternalTransfers) {
+      services.add(
+        ServiceItem(
+          icon: Icons.account_balance_wallet,
+          title: l10n.sendExternal_title,
+          description: l10n.sendExternal_info,
+          route: '/send-external',
+        ),
+      );
+    }
+
     if (flags.canReceive) {
       services.add(
         ServiceItem(

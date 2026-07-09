@@ -26,6 +26,8 @@ import 'package:usdc_wallet/features/wallet/widgets/wallet_home_actions.dart';
 import 'package:usdc_wallet/features/wallet/widgets/wallet_home_status_widgets.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/currency/currency_provider.dart';
+import 'package:usdc_wallet/services/feature_flags/feature_flags_extensions.dart';
+import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/utils/context_extensions.dart';
@@ -991,69 +993,92 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     BuildContext context,
     WidgetRef ref,
     AppLocalizations l10n,
-  ) => [
-    WalletQuickActionData(
-      icon: Icons.send_rounded,
-      label: l10n.home_quickAction_send,
-      route: '/send',
-      onTap: () => unawaited(
-        _openMoneyFlow(
-          context,
-          ref,
-          l10n,
-          operation: TransactionLimitOperation.send,
-          route: '/send',
+  ) {
+    final flags = ref.watch(featureFlagsProvider);
+    final actions = <WalletQuickActionData>[
+      WalletQuickActionData(
+        icon: Icons.send_rounded,
+        label: l10n.home_quickAction_send,
+        route: '/send',
+        onTap: () => unawaited(
+          _openMoneyFlow(
+            context,
+            ref,
+            l10n,
+            operation: TransactionLimitOperation.send,
+            route: '/send',
+          ),
         ),
       ),
-    ),
-    WalletQuickActionData(
-      icon: Icons.qr_code_2_rounded,
-      label: l10n.home_quickAction_receive,
-      route: '/receive',
-      onTap: () => unawaited(
-        _openMoneyFlow(
-          context,
-          ref,
-          l10n,
-          operation: TransactionLimitOperation.receive,
-          route: '/receive',
+      WalletQuickActionData(
+        icon: Icons.qr_code_2_rounded,
+        label: l10n.home_quickAction_receive,
+        route: '/receive',
+        onTap: () => unawaited(
+          _openMoneyFlow(
+            context,
+            ref,
+            l10n,
+            operation: TransactionLimitOperation.receive,
+            route: '/receive',
+          ),
         ),
       ),
-    ),
-    WalletQuickActionData(
-      icon: Icons.add_circle_outline_rounded,
-      label: l10n.home_quickAction_deposit,
-      route: '/deposit/amount',
-      onTap: () => unawaited(
-        _openMoneyFlow(
-          context,
-          ref,
-          l10n,
-          operation: TransactionLimitOperation.deposit,
-          route: '/deposit/amount',
+      WalletQuickActionData(
+        icon: Icons.add_circle_outline_rounded,
+        label: l10n.home_quickAction_deposit,
+        route: '/deposit/amount',
+        onTap: () => unawaited(
+          _openMoneyFlow(
+            context,
+            ref,
+            l10n,
+            operation: TransactionLimitOperation.deposit,
+            route: '/deposit/amount',
+          ),
         ),
       ),
-    ),
-    WalletQuickActionData(
-      icon: Icons.south_west_rounded,
-      label: l10n.navigation_withdraw,
-      route: '/withdraw',
-      onTap: () => unawaited(
-        _openMoneyFlow(
-          context,
-          ref,
-          l10n,
-          operation: TransactionLimitOperation.withdraw,
+    ];
+
+    if (flags.canWithdraw || flags.canUseMobileMoneyWithdrawals) {
+      actions.add(
+        WalletQuickActionData(
+          icon: Icons.south_west_rounded,
+          label: l10n.navigation_withdraw,
           route: '/withdraw',
+          onTap: () => unawaited(
+            _openMoneyFlow(
+              context,
+              ref,
+              l10n,
+              operation: TransactionLimitOperation.withdraw,
+              route: '/withdraw',
+            ),
+          ),
         ),
+      );
+    }
+
+    actions.addAll([
+      WalletQuickActionData(
+        icon: Icons.history_rounded,
+        label: l10n.home_quickAction_history,
+        route: '/transactions',
       ),
-    ),
-    WalletQuickActionData(
-      icon: Icons.history_rounded,
-      label: l10n.home_quickAction_history,
-      route: '/transactions',
-    ),
-  ];
+      WalletQuickActionData(
+        icon: Icons.qr_code_scanner,
+        label: l10n.services_scanQr,
+        route: '/scan',
+      ),
+      WalletQuickActionData(
+        icon: Icons.apps_rounded,
+        label: l10n.navigation_services,
+        route: '/services',
+      ),
+    ]);
+
+    return actions;
+  }
 
   Future<void> _openMoneyFlow(
     BuildContext context,
@@ -1100,13 +1125,12 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
 
       context.showSnack(
         _localizedText(
-          en: 'We will verify account permissions before completion. You can continue for now.',
-          fr: 'Nous verifierons vos permissions avant la finalisation. Vous pouvez continuer.',
+          en: 'Unable to verify account permissions right now. Please try again shortly.',
+          fr: 'Impossible de vérifier vos permissions pour le moment. Réessayez bientôt.',
         ),
         tone: AppSnackTone.warning,
         duration: const Duration(seconds: 4),
       );
-      unawaited(context.fsmPush(route));
       return;
     }
 

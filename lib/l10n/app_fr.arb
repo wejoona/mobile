@@ -3147,6 +3147,20 @@
   "withdraw_failed": "Le retrait a échoué. Veuillez réessayer.",
   "withdraw_initiated": "Retrait initié",
   "withdraw_notifySuccess": "Nous vous préviendrons lorsque ce rail de retrait sera prêt.",
+  "withdraw_invalidAmount": "Montant invalide",
+  "withdraw_amountMustBePositive": "Le montant doit être supérieur à 0",
+  "withdraw_insufficientBalance": "Solde insuffisant",
+  "withdraw_minimumAmount": "Le retrait minimum est de 1 $",
+  "withdraw_manualReviewRequired": "Ce retrait nécessite une vérification manuelle avant de pouvoir continuer.",
+  "withdraw_securityChallengeIncomplete": "Le défi de sécurité est incomplet. Veuillez réessayer avant de retirer.",
+  "withdraw_processingDaysInfo": "Les retraits sont généralement traités sous 1 à 3 jours ouvrables. Des frais peuvent s'appliquer selon la méthode.",
+  "withdraw_maxLabel": "MAX",
+  "withdraw_checkingRails": "Vérification des rails de retrait disponibles...",
+  "withdraw_mobileMoneyUnavailable": "Les retraits Mobile Money ne sont pas encore disponibles pour {country}.",
+  "withdraw_availableRails": "Rails disponibles : {rails}",
+  "withdraw_bankNameLabel": "Nom de la banque",
+  "withdraw_accountNumberLabel": "Numéro de compte",
+  "withdraw_unsupportedMobileNumber": "Ce numéro Mobile Money {country} n'est pas encore pris en charge. Rails disponibles : {rails}.",
   "auth_useBiometric": "Utiliser la biométrie",
   "security_accountSecurity": "Sécurité du compte",
   "security_wellProtected": "Votre compte est bien protégé",
@@ -3252,5 +3266,10 @@
       }
     }
   },
-  "forceUpdate_button": "Mettre à jour Korido"
+  "forceUpdate_button": "Mettre à jour Korido",
+  "featureComingSoon_description": "Cette fonctionnalité n'est pas encore disponible. Rejoignez la liste d'attente et nous vous préviendrons dès son lancement.",
+  "featureComingSoon_notifyMe": "Me prévenir quand c'est disponible",
+  "featureComingSoon_notifySuccess": "Nous vous préviendrons quand cette fonctionnalité sera disponible",
+  "routePlaceholder_unavailable": "Cette page n'a pas pu être ouverte. L'élément a peut-être été déplacé, a expiré ou n'est pas disponible pour votre compte.",
+  "common_goBack": "Retour"
 }

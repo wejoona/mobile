@@ -5,18 +5,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 
 /// Neutral fallback for routes that cannot be resolved from their arguments.
-class RoutePlaceholderPage extends StatelessWidget {
+class RoutePlaceholderPage extends ConsumerWidget {
   const RoutePlaceholderPage({required String title, super.key})
     : _title = title;
 
   final String _title;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = ThemeColors.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -61,13 +63,13 @@ class RoutePlaceholderPage extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 AppText(
-                  'This page could not be opened. The item may have moved, expired, or is not available for your account.',
+                  l10n.routePlaceholder_unavailable,
                   color: colors.textSecondary,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppSpacing.xxl),
                 AppButton(
-                  label: 'Go back',
+                  label: l10n.common_goBack,
                   onPressed: () => context.fsmSafePop(fallbackRoute: '/home'),
                 ),
               ],
