@@ -48,6 +48,7 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
     final state = ref.watch(connectivityProvider);
 
     // Track offline -> online transition
@@ -76,16 +77,19 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner>
       return const SizedBox.shrink();
     }
 
+    final bannerColor = _getBannerColor(colors, state, _showReconnectedMessage);
+    final onBanner = _bannerForeground(colors);
+
     return AnimatedSize(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          color: _getBannerColor(state, _showReconnectedMessage),
+          color: bannerColor,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
+              color: colors.scrim.withValues(alpha: colors.isDark ? 0.35 : 0.18),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -99,13 +103,18 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner>
           bottom: false,
           child: Row(
             children: [
-              _buildIcon(state, _showReconnectedMessage),
+              _buildIcon(state, _showReconnectedMessage, onBanner),
               SizedBox(width: AppSpacing.md),
               Expanded(
-                child: _buildContent(l10n, state, _showReconnectedMessage),
+                child: _buildContent(
+                  l10n,
+                  state,
+                  _showReconnectedMessage,
+                  onBanner,
+                ),
               ),
               if (state.pendingCount > 0 && !state.isProcessingQueue)
-                _buildPendingBadge(state.pendingCount),
+                _buildPendingBadge(state.pendingCount, onBanner),
             ],
           ),
         ),
@@ -114,18 +123,28 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner>
   }
 
   /// Get banner background color based on state
-  Color _getBannerColor(ConnectivityState state, bool showReconnected) {
+  Color _getBannerColor(
+    ThemeColors colors,
+    ConnectivityState state,
+    bool showReconnected,
+  ) {
     if (showReconnected) {
-      return AppColors.successBase;
+      return colors.success;
     } else if (state.isProcessingQueue) {
-      return AppColors.infoBase;
+      return colors.info;
     } else {
-      return AppColors.warningBase;
+      return colors.warning;
     }
   }
 
+  Color _bannerForeground(ThemeColors colors) => colors.textInverse;
+
   /// Build status icon
-  Widget _buildIcon(ConnectivityState state, bool showReconnected) {
+  Widget _buildIcon(
+    ConnectivityState state,
+    bool showReconnected,
+    Color foreground,
+  ) {
     IconData icon;
 
     if (showReconnected) {
@@ -141,7 +160,7 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner>
       child: Icon(
         icon,
         key: ValueKey(icon),
-        color: Colors.white,
+        color: foreground,
         size: 20,
       ),
     );
@@ -152,26 +171,31 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner>
     AppLocalizations l10n,
     ConnectivityState state,
     bool showReconnected,
+    Color foreground,
   ) {
     if (showReconnected) {
-      return _buildReconnectedContent(l10n, state);
+      return _buildReconnectedContent(l10n, state, foreground);
     } else if (state.isProcessingQueue) {
-      return _buildSyncingContent(l10n, state);
+      return _buildSyncingContent(l10n, state, foreground);
     } else {
-      return _buildOfflineContent(l10n, state);
+      return _buildOfflineContent(l10n, state, foreground);
     }
   }
 
   /// Build offline content
-  Widget _buildOfflineContent(AppLocalizations l10n, ConnectivityState state) {
+  Widget _buildOfflineContent(
+    AppLocalizations l10n,
+    ConnectivityState state,
+    Color foreground,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           l10n.offline_banner_title,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: foreground,
             fontSize: 14,
             fontWeight: FontWeight.w600,
             height: 1.3,
@@ -184,7 +208,7 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner>
               timeago.format(state.lastSync!, locale: 'en_short'),
             ),
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.9),
+              color: foreground.withValues(alpha: 0.9),
               fontSize: 12,
               height: 1.3,
             ),
@@ -195,15 +219,19 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner>
   }
 
   /// Build syncing content
-  Widget _buildSyncingContent(AppLocalizations l10n, ConnectivityState state) {
+  Widget _buildSyncingContent(
+    AppLocalizations l10n,
+    ConnectivityState state,
+    Color foreground,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           l10n.offline_banner_syncing,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: foreground,
             fontSize: 14,
             fontWeight: FontWeight.w600,
             height: 1.3,
@@ -213,8 +241,8 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner>
         SizedBox(
           height: 2,
           child: LinearProgressIndicator(
-            backgroundColor: Colors.white.withValues(alpha: 0.3),
-            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+            backgroundColor: foreground.withValues(alpha: 0.3),
+            valueColor: AlwaysStoppedAnimation<Color>(foreground),
           ),
         ),
       ],
@@ -225,11 +253,12 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner>
   Widget _buildReconnectedContent(
     AppLocalizations l10n,
     ConnectivityState state,
+    Color foreground,
   ) {
     return Text(
       l10n.offline_banner_reconnected,
-      style: const TextStyle(
-        color: Colors.white,
+      style: TextStyle(
+        color: foreground,
         fontSize: 14,
         fontWeight: FontWeight.w600,
         height: 1.3,
@@ -238,20 +267,20 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner>
   }
 
   /// Build pending operations badge
-  Widget _buildPendingBadge(int count) {
+  Widget _buildPendingBadge(int count, Color foreground) {
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: AppSpacing.sm,
         vertical: AppSpacing.xxs,
       ),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.3),
+        color: foreground.withValues(alpha: 0.24),
         borderRadius: BorderRadius.circular(AppRadius.full),
       ),
       child: Text(
         '$count',
-        style: const TextStyle(
-          color: Colors.white,
+        style: TextStyle(
+          color: foreground,
           fontSize: 12,
           fontWeight: FontWeight.w700,
         ),
@@ -266,6 +295,7 @@ class OfflineIndicator extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     final isOnline = ref.watch(isOnlineProvider);
 
     if (isOnline) {
@@ -278,10 +308,10 @@ class OfflineIndicator extends ConsumerWidget {
         vertical: AppSpacing.xxs,
       ),
       decoration: BoxDecoration(
-        color: AppColors.warningBase.withValues(alpha: 0.2),
+        color: colors.warningBg,
         borderRadius: BorderRadius.circular(AppRadius.sm),
         border: Border.all(
-          color: AppColors.warningBase,
+          color: colors.warning,
           width: 1,
         ),
       ),
@@ -291,13 +321,13 @@ class OfflineIndicator extends ConsumerWidget {
           Icon(
             Icons.cloud_off,
             size: 12,
-            color: AppColors.warningText,
+            color: colors.warningText,
           ),
           SizedBox(width: AppSpacing.xxs),
           Text(
             'Offline',
             style: TextStyle(
-              color: AppColors.warningText,
+              color: colors.warningText,
               fontSize: 11,
               fontWeight: FontWeight.w600,
             ),
@@ -314,13 +344,15 @@ class OfflineBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: AppSpacing.xs,
         vertical: AppSpacing.xxs,
       ),
       decoration: BoxDecoration(
-        color: AppColors.warningBase.withValues(alpha: 0.15),
+        color: colors.warningBg,
         borderRadius: BorderRadius.circular(AppRadius.xs),
       ),
       child: Row(
@@ -329,13 +361,13 @@ class OfflineBadge extends StatelessWidget {
           Icon(
             Icons.schedule,
             size: 10,
-            color: AppColors.warningText,
+            color: colors.warningText,
           ),
           SizedBox(width: AppSpacing.xxs),
           Text(
             'Queued',
             style: TextStyle(
-              color: AppColors.warningText,
+              color: colors.warningText,
               fontSize: 9,
               fontWeight: FontWeight.w600,
               height: 1,

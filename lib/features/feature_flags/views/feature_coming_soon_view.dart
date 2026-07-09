@@ -34,7 +34,8 @@ class _FeatureComingSoonViewState extends ConsumerState<FeatureComingSoonView> {
     return Scaffold(
       backgroundColor: context.colors.canvas,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: context.colors.canvas,
+        scrolledUnderElevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded, color: context.colors.textPrimary),
           onPressed: () => context.fsmSafePop(fallbackRoute: '/home'),

@@ -31,9 +31,9 @@ class BalanceCard extends ConsumerWidget {
       variant: AppCardVariant.flat,
       onTap: onTap,
       borderRadius: AppRadius.xxl,
-      borderColor: colors.gold.withValues(alpha: colors.isDark ? 0.24 : 0.18),
+      borderColor: colors.gold.withValues(alpha: colors.isDark ? 0.24 : 0.28),
       backgroundColor: Color.alphaBlend(
-        colors.gold.withValues(alpha: colors.isDark ? 0.08 : 0.04),
+        colors.gold.withValues(alpha: colors.isDark ? 0.08 : 0.07),
         colors.container,
       ),
       padding: const EdgeInsets.all(AppSpacing.xxl),

@@ -27,10 +27,11 @@ class ErrorFallbackUI extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final errorInfo = _getErrorInfo(error, l10n);
+    final colors = context.colors;
+    final errorInfo = _getErrorInfo(error, l10n, colors);
 
     return Container(
-      color: AppColors.obsidian,
+      color: colors.canvas,
       padding: EdgeInsets.all(AppSpacing.xxl),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -47,7 +48,7 @@ class ErrorFallbackUI extends StatelessWidget {
           AppText(
             errorInfo.title,
             style: AppTypography.headlineMedium.copyWith(
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             textAlign: TextAlign.center,
           ),
@@ -57,7 +58,7 @@ class ErrorFallbackUI extends StatelessWidget {
           AppText(
             errorInfo.message,
             style: AppTypography.bodyLarge.copyWith(
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
             textAlign: TextAlign.center,
           ),
@@ -71,17 +72,17 @@ class ErrorFallbackUI extends StatelessWidget {
                 vertical: AppSpacing.sm,
               ),
               decoration: BoxDecoration(
-                color: AppColors.elevated,
+                color: colors.elevated,
                 borderRadius: BorderRadius.circular(AppRadius.sm),
                 border: Border.all(
-                  color: AppColors.borderSubtle,
+                  color: colors.borderSubtle,
                   width: 1,
                 ),
               ),
               child: AppText(
                 'Context: ${this.context}',
                 style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.textTertiary,
+                  color: colors.textTertiary,
                 ),
               ),
             ),
@@ -117,14 +118,18 @@ class ErrorFallbackUI extends StatelessWidget {
     );
   }
 
-  _ErrorInfo _getErrorInfo(Object error, AppLocalizations l10n) {
+  _ErrorInfo _getErrorInfo(
+    Object error,
+    AppLocalizations l10n,
+    ThemeColors colors,
+  ) {
     // Network errors
     if (error is NetworkError || error.isNetworkError) {
       return _ErrorInfo(
         title: l10n.error_network.split('.').first,
         message: error.userFriendlyMessage,
         icon: Icons.wifi_off_rounded,
-        color: AppColors.warning,
+        color: colors.warning,
       );
     }
 
@@ -134,7 +139,7 @@ class ErrorFallbackUI extends StatelessWidget {
         title: 'Authentication Error',
         message: error.userFriendlyMessage,
         icon: Icons.lock_outline_rounded,
-        color: AppColors.error,
+        color: colors.error,
       );
     }
 
@@ -144,7 +149,7 @@ class ErrorFallbackUI extends StatelessWidget {
         title: 'Validation Error',
         message: error.userFriendlyMessage,
         icon: Icons.warning_amber_rounded,
-        color: AppColors.warning,
+        color: colors.warning,
       );
     }
 
@@ -154,7 +159,7 @@ class ErrorFallbackUI extends StatelessWidget {
         title: 'Unable to Complete',
         message: error.userFriendlyMessage,
         icon: Icons.info_outline_rounded,
-        color: AppColors.info,
+        color: colors.info,
       );
     }
 
@@ -164,7 +169,7 @@ class ErrorFallbackUI extends StatelessWidget {
         title: 'Storage Error',
         message: error.message,
         icon: Icons.sd_storage_rounded,
-        color: AppColors.error,
+        color: colors.error,
       );
     }
 
@@ -174,7 +179,7 @@ class ErrorFallbackUI extends StatelessWidget {
         title: 'Biometric Error',
         message: error.message,
         icon: Icons.fingerprint_rounded,
-        color: AppColors.warning,
+        color: colors.warning,
       );
     }
 
@@ -184,7 +189,7 @@ class ErrorFallbackUI extends StatelessWidget {
         title: 'Camera Error',
         message: error.message,
         icon: Icons.camera_alt_outlined,
-        color: AppColors.warning,
+        color: colors.warning,
       );
     }
 
@@ -194,7 +199,7 @@ class ErrorFallbackUI extends StatelessWidget {
         title: 'QR Code Error',
         message: error.message,
         icon: Icons.qr_code_rounded,
-        color: AppColors.warning,
+        color: colors.warning,
       );
     }
 
@@ -203,7 +208,7 @@ class ErrorFallbackUI extends StatelessWidget {
       title: l10n.common_error,
       message: l10n.error_generic,
       icon: Icons.error_outline_rounded,
-      color: AppColors.error,
+      color: colors.error,
     );
   }
 }
@@ -239,14 +244,15 @@ class CompactErrorWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
 
     return Container(
       padding: EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.elevated,
+        color: colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(
-          color: AppColors.errorBase.withValues(alpha: 0.3),
+          color: colors.error.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -258,14 +264,14 @@ class CompactErrorWidget extends StatelessWidget {
               Icon(
                 Icons.error_outline_rounded,
                 size: 20,
-                color: AppColors.errorText,
+                color: colors.errorText,
               ),
               SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: AppText(
                   message,
                   style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ),
               ),
@@ -306,6 +312,7 @@ class EmptyStateErrorWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
 
     return Center(
       child: Padding(
@@ -316,13 +323,13 @@ class EmptyStateErrorWidget extends StatelessWidget {
             Icon(
               icon,
               size: 64,
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
             ),
             SizedBox(height: AppSpacing.lg),
             AppText(
               title,
               style: AppTypography.titleMedium.copyWith(
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -330,7 +337,7 @@ class EmptyStateErrorWidget extends StatelessWidget {
             AppText(
               message,
               style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -364,6 +371,7 @@ class SnackbarError {
     VoidCallback? onRetry,
   }) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -371,7 +379,7 @@ class SnackbarError {
           children: [
             Icon(
               Icons.error_outline_rounded,
-              color: AppColors.textPrimary,
+              color: colors.textInverse,
               size: 20,
             ),
             SizedBox(width: AppSpacing.sm),
@@ -379,13 +387,13 @@ class SnackbarError {
               child: Text(
                 message,
                 style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.textPrimary,
+                  color: colors.textInverse,
                 ),
               ),
             ),
           ],
         ),
-        backgroundColor: AppColors.errorBase,
+        backgroundColor: colors.error,
         duration: duration,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
@@ -394,7 +402,7 @@ class SnackbarError {
         action: onRetry != null
             ? SnackBarAction(
                 label: l10n.action_retry,
-                textColor: AppColors.gold500,
+                textColor: colors.gold,
                 onPressed: onRetry,
               )
             : null,

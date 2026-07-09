@@ -47,7 +47,7 @@ class WalletBalanceCard extends StatelessWidget {
               AppText(
                 'Available Balance',
                 variant: AppTextVariant.labelLarge,
-                color: AppColors.textInverse.withValues(alpha: 0.72),
+                color: colors.onGold.withValues(alpha: 0.72),
               ),
               GestureDetector(
                 onTap: onToggleVisibility,
@@ -55,7 +55,7 @@ class WalletBalanceCard extends StatelessWidget {
                   isBalanceHidden
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
-                  color: Colors.white70,
+                  color: colors.onGold.withValues(alpha: 0.72),
                   size: 20,
                 ),
               ),
@@ -65,14 +65,14 @@ class WalletBalanceCard extends StatelessWidget {
           AmountText.fromText(
             isBalanceHidden ? r'$••••••' : formatCurrency(balance, currency),
             size: AmountTextSize.large,
-            color: AppColors.textInverse,
+            color: colors.onGold,
           ),
           if (pendingBalance != null && pendingBalance! > 0) ...[
             const SizedBox(height: 4),
             AppText(
               'Pending: ${formatCurrency(pendingBalance!, currency)}',
               variant: AppTextVariant.moneySmall,
-              color: AppColors.textInverse.withValues(alpha: 0.64),
+              color: colors.onGold.withValues(alpha: 0.64),
             ),
           ],
           const SizedBox(height: 24),
@@ -83,6 +83,7 @@ class WalletBalanceCard extends StatelessWidget {
                   icon: Icons.arrow_downward_rounded,
                   label: 'Deposit',
                   onTap: onDeposit,
+                  labelColor: colors.onGold,
                 ),
               ),
               const SizedBox(width: 12),
@@ -91,6 +92,7 @@ class WalletBalanceCard extends StatelessWidget {
                   icon: Icons.arrow_upward_rounded,
                   label: 'Send',
                   onTap: onSend,
+                  labelColor: colors.onGold,
                 ),
               ),
             ],
@@ -102,10 +104,16 @@ class WalletBalanceCard extends StatelessWidget {
 }
 
 class _ActionButton extends StatelessWidget {
-  const _ActionButton({required this.icon, required this.label, this.onTap});
+  const _ActionButton({
+    required this.icon,
+    required this.label,
+    required this.labelColor,
+    this.onTap,
+  });
 
   final IconData icon;
   final String label;
+  final Color labelColor;
   final VoidCallback? onTap;
 
   @override
@@ -115,18 +123,18 @@ class _ActionButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.15),
+          color: labelColor.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: Colors.white, size: 18),
+            Icon(icon, color: labelColor, size: 18),
             const SizedBox(width: 8),
             Text(
               label,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: labelColor,
                 fontWeight: FontWeight.w600,
               ),
             ),

@@ -112,16 +112,21 @@ class InfoCallout extends StatelessWidget {
       case InfoCalloutTone.neutral:
         return _InfoCalloutPalette(
           foreground: colors.iconSecondary,
-          background: colors.elevated,
+          background: colors.isDark
+              ? colors.elevated
+              : Color.alphaBlend(
+                  colors.gold.withValues(alpha: 0.05),
+                  colors.container,
+                ),
           border: colors.borderSubtle,
         );
       case InfoCalloutTone.brand:
         return _InfoCalloutPalette(
           foreground: colors.gold,
           background: colors.gold.withValues(
-            alpha: colors.isDark ? 0.12 : 0.08,
+            alpha: colors.isDark ? 0.12 : 0.10,
           ),
-          border: colors.gold.withValues(alpha: 0.22),
+          border: colors.gold.withValues(alpha: colors.isDark ? 0.22 : 0.28),
         );
     }
   }

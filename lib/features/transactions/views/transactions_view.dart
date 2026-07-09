@@ -444,14 +444,27 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: colors.gold.withValues(
-                  alpha: colors.isDark ? 0.14 : 0.1,
+                color: Color.alphaBlend(
+                  colors.gold.withValues(alpha: colors.isDark ? 0.14 : 0.16),
+                  colors.container,
                 ),
                 borderRadius: BorderRadius.circular(AppRadius.lg),
                 border: Border.all(
-                  color: colors.gold.withValues(alpha: 0.2),
+                  color: colors.gold.withValues(
+                    alpha: colors.isDark ? 0.20 : 0.28,
+                  ),
                   width: 1,
                 ),
+                boxShadow: colors.isDark
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: const Color(0x245A431B),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                          spreadRadius: -6,
+                        ),
+                      ],
               ),
               child: Icon(
                 hasFilters
@@ -538,7 +551,10 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
     if (isNoAccountError || isAuthError) {
       icon = Icons.account_balance_wallet_outlined;
       iconColor = colors.gold;
-      bgColor = colors.gold.withValues(alpha: colors.isDark ? 0.15 : 0.1);
+      bgColor = Color.alphaBlend(
+        colors.gold.withValues(alpha: colors.isDark ? 0.15 : 0.14),
+        colors.container,
+      );
       title = l10n.transactions_noAccountTitle;
       message = l10n.transactions_noAccountMessage;
       buttonLabel = l10n.wallet_createWallet;
@@ -942,7 +958,10 @@ class _TransactionGroup extends StatelessWidget {
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: iconColor.withValues(alpha: colors.isDark ? 0.15 : 0.1),
+        color: Color.alphaBlend(
+          iconColor.withValues(alpha: colors.isDark ? 0.15 : 0.14),
+          colors.elevated,
+        ),
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Icon(icon, color: iconColor, size: 20),

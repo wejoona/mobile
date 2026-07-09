@@ -85,7 +85,7 @@ class ReferralCard extends StatelessWidget {
                 Container(
                   height: 30,
                   width: 1,
-                  color: context.colors.elevated,
+                  color: context.colors.borderSubtle,
                 ),
                 _StatItem(
                   label: l10n.referrals_totalEarned,

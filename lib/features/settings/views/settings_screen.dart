@@ -436,12 +436,18 @@ class _SettingsTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: AppCard(
-        variant: AppCardVariant.flat,
+        variant: colors.isDark ? AppCardVariant.flat : AppCardVariant.elevated,
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
           vertical: AppSpacing.md,
         ),
         borderRadius: AppRadius.lg,
+        backgroundColor: colors.isDark
+            ? null
+            : Color.alphaBlend(
+                colors.gold.withValues(alpha: 0.03),
+                colors.container,
+              ),
         onTap: onTap,
         child: Row(
           children: [
@@ -785,12 +791,18 @@ class _ThemeOption extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.sm),
       child: AppCard(
-        variant: AppCardVariant.flat,
+        variant: colors.isDark ? AppCardVariant.flat : AppCardVariant.elevated,
         borderRadius: AppRadius.md,
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
           vertical: AppSpacing.md,
         ),
+        backgroundColor: isSelected
+            ? Color.alphaBlend(
+                colors.gold.withValues(alpha: colors.isDark ? 0.06 : 0.08),
+                colors.container,
+              )
+            : null,
         onTap: onTap,
         child: Row(
           children: [

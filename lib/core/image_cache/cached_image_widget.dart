@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
 import 'package:usdc_wallet/core/image_cache/image_cache_config.dart';
-import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Optimized cached network image widget with built-in error handling
 /// and loading states for different image types
@@ -34,6 +34,7 @@ class CachedImageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final cacheManager = ImageCacheConfig.getManager(cacheType);
 
     Widget imageWidget = CachedNetworkImage(
@@ -43,10 +44,11 @@ class CachedImageWidget extends StatelessWidget {
       height: height,
       fit: fit,
       placeholder: showLoadingIndicator
-          ? (context, url) => placeholder ?? _buildDefaultPlaceholder()
+          ? (context, url) =>
+                placeholder ?? _buildDefaultPlaceholder(colors)
           : null,
       errorWidget: (context, url, error) =>
-          errorWidget ?? _buildDefaultErrorWidget(),
+          errorWidget ?? _buildDefaultErrorWidget(colors),
       // Optimize for performance
       memCacheWidth: width != null ? (width! * 2).toInt() : null,
       memCacheHeight: height != null ? (height! * 2).toInt() : null,
@@ -73,11 +75,11 @@ class CachedImageWidget extends StatelessWidget {
     return imageWidget;
   }
 
-  Widget _buildDefaultPlaceholder() {
+  Widget _buildDefaultPlaceholder(ThemeColors colors) {
     return Container(
       width: width,
       height: height,
-      color: AppColors.charcoal.withValues(alpha: 0.3),
+      color: colors.surface.withValues(alpha: colors.isDark ? 0.55 : 0.85),
       child: Center(
         child: SizedBox(
           width: 24,
@@ -85,7 +87,7 @@ class CachedImageWidget extends StatelessWidget {
           child: CircularProgressIndicator(
             strokeWidth: 2,
             valueColor: AlwaysStoppedAnimation<Color>(
-              AppColors.gold500.withValues(alpha: 0.5),
+              colors.gold.withValues(alpha: 0.55),
             ),
           ),
         ),
@@ -93,7 +95,7 @@ class CachedImageWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildDefaultErrorWidget() {
+  Widget _buildDefaultErrorWidget(ThemeColors colors) {
     IconData iconData;
     switch (cacheType) {
       case ImageCacheType.profilePhoto:
@@ -117,11 +119,11 @@ class CachedImageWidget extends StatelessWidget {
     return Container(
       width: width,
       height: height,
-      color: AppColors.charcoal.withValues(alpha: 0.3),
+      color: colors.surface.withValues(alpha: colors.isDark ? 0.55 : 0.85),
       child: Icon(
         iconData,
         size: (width ?? 40) * 0.4,
-        color: AppColors.silver.withValues(alpha: 0.5),
+        color: colors.iconSecondary,
       ),
     );
   }
@@ -144,8 +146,10 @@ class ProfilePhotoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     if (imageUrl == null || imageUrl!.isEmpty) {
-      return _buildFallback();
+      return _buildFallback(colors);
     }
 
     return CachedImageWidget(
@@ -155,18 +159,19 @@ class ProfilePhotoWidget extends StatelessWidget {
       height: size,
       fit: BoxFit.cover,
       borderRadius: BorderRadius.circular(size / 2),
-      backgroundColor: backgroundColor ?? AppColors.charcoal,
-      errorWidget: _buildFallback(),
+      backgroundColor: backgroundColor ?? colors.elevated,
+      errorWidget: _buildFallback(colors),
     );
   }
 
-  Widget _buildFallback() {
+  Widget _buildFallback(ThemeColors colors) {
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.gold500.withValues(alpha: 0.2),
+        color: backgroundColor ?? colors.goldSubtle,
         shape: BoxShape.circle,
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Center(
         child: Text(
@@ -174,7 +179,7 @@ class ProfilePhotoWidget extends StatelessWidget {
           style: TextStyle(
             fontSize: size * 0.4,
             fontWeight: FontWeight.w600,
-            color: AppColors.gold500,
+            color: colors.gold,
           ),
         ),
       ),
@@ -197,13 +202,15 @@ class BankLogoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     Widget logo = CachedImageWidget(
       imageUrl: imageUrl,
       cacheType: ImageCacheType.bankLogo,
       width: size,
       height: size,
       fit: BoxFit.contain,
-      backgroundColor: Colors.white,
+      backgroundColor: colors.container,
       borderRadius: BorderRadius.circular(AppRadius.sm),
     );
 
@@ -213,7 +220,7 @@ class BankLogoWidget extends StatelessWidget {
         height: size,
         decoration: BoxDecoration(
           border: Border.all(
-            color: AppColors.silver.withValues(alpha: 0.2),
+            color: colors.borderSubtle,
             width: 1,
           ),
           borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -239,6 +246,7 @@ class QRCodeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // QR codes require a white background for reliable scanning.
     return CachedImageWidget(
       imageUrl: imageUrl,
       cacheType: ImageCacheType.qrCode,
@@ -264,6 +272,8 @@ class MerchantLogoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return CachedImageWidget(
       imageUrl: imageUrl,
       cacheType: ImageCacheType.merchantLogo,
@@ -271,7 +281,7 @@ class MerchantLogoWidget extends StatelessWidget {
       height: size,
       fit: BoxFit.cover,
       borderRadius: BorderRadius.circular(AppRadius.md),
-      backgroundColor: AppColors.charcoal,
+      backgroundColor: colors.surface,
     );
   }
 }

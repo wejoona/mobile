@@ -27,9 +27,14 @@ class WalletBalanceInfoPill extends StatelessWidget {
       vertical: AppSpacing.xs,
     ),
     decoration: BoxDecoration(
-      color: _color.withValues(alpha: _colors.isDark ? 0.16 : 0.10),
+      color: Color.alphaBlend(
+        _color.withValues(alpha: _colors.isDark ? 0.16 : 0.14),
+        _colors.container,
+      ),
       borderRadius: BorderRadius.circular(AppRadius.full),
-      border: Border.all(color: _color.withValues(alpha: 0.20)),
+      border: Border.all(
+        color: _color.withValues(alpha: _colors.isDark ? 0.20 : 0.26),
+      ),
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
@@ -39,9 +44,7 @@ class WalletBalanceInfoPill extends StatelessWidget {
         AppText(
           _label,
           variant: AppTextVariant.labelMedium,
-          color: _colors.isDark
-              ? _colors.textSecondary
-              : _colors.textPrimary.withValues(alpha: 0.78),
+          color: _colors.isDark ? _colors.textSecondary : _colors.textPrimary,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -63,7 +66,13 @@ class WalletLoadingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => AppCard(
-    variant: AppCardVariant.flat,
+    variant: _colors.isDark ? AppCardVariant.flat : AppCardVariant.elevated,
+    backgroundColor: _colors.isDark
+        ? null
+        : Color.alphaBlend(
+            _colors.gold.withValues(alpha: 0.04),
+            _colors.container,
+          ),
     child: Column(
       children: [
         CircularProgressIndicator(color: _colors.gold, strokeWidth: 2),
@@ -140,7 +149,13 @@ class WalletErrorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => AppCard(
-    variant: AppCardVariant.flat,
+    variant: _colors.isDark ? AppCardVariant.flat : AppCardVariant.elevated,
+    backgroundColor: _colors.isDark
+        ? null
+        : Color.alphaBlend(
+            _colors.error.withValues(alpha: 0.04),
+            _colors.container,
+          ),
     child: Center(
       child: Column(
         children: [
