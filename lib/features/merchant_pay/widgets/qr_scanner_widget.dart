@@ -72,6 +72,10 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    final overlayInk = colors.textInverse;
+    final controlBackdrop = colors.scrim.withValues(alpha: 0.72);
+
     return Stack(
       children: [
         // Camera preview
@@ -84,7 +88,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
         ),
 
         // Overlay
-        _buildOverlay(context),
+        _buildOverlay(context, colors),
 
         // Top controls
         Positioned(
@@ -100,10 +104,10 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
                 icon: Container(
                   padding: const EdgeInsets.all(AppSpacing.sm),
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.5),
+                    color: controlBackdrop,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.arrow_back, color: Colors.white),
+                  child: Icon(Icons.arrow_back, color: overlayInk),
                 ),
               ),
               // Torch button
@@ -112,12 +116,12 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
                 icon: Container(
                   padding: const EdgeInsets.all(AppSpacing.sm),
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.5),
+                    color: controlBackdrop,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     _torchOn ? Icons.flash_on : Icons.flash_off,
-                    color: Colors.white,
+                    color: overlayInk,
                   ),
                 ),
               ),
@@ -135,7 +139,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
               Text(
                 widget.title,
                 style: AppTypography.titleMedium.copyWith(
-                  color: Colors.white,
+                  color: overlayInk,
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
@@ -144,7 +148,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
               Text(
                 widget.subtitle,
                 style: AppTypography.bodyMedium.copyWith(
-                  color: Colors.white.withValues(alpha: 0.8),
+                  color: overlayInk.withValues(alpha: 0.82),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -155,13 +159,13 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
     );
   }
 
-  Widget _buildOverlay(BuildContext context) {
+  Widget _buildOverlay(BuildContext context, ThemeColors colors) {
     final size = MediaQuery.of(context).size;
     final scanAreaSize = size.width * 0.7;
 
     return ColorFiltered(
       colorFilter: ColorFilter.mode(
-        Colors.black.withValues(alpha: 0.5),
+        colors.scrim.withValues(alpha: 0.72),
         BlendMode.srcOut,
       ),
       child: Stack(
@@ -188,6 +192,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
   }
 
   Widget _buildErrorWidget(BuildContext context, MobileScannerException error) {
+    final colors = context.colors;
     String errorMessage;
 
     switch (error.errorCode) {
@@ -205,16 +210,16 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
     }
 
     return Container(
-      color: Colors.black,
+      color: colors.canvas,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, color: Colors.white, size: 64),
+            Icon(Icons.error_outline, color: colors.error, size: 64),
             const SizedBox(height: AppSpacing.lg),
             Text(
               errorMessage,
-              style: AppTypography.bodyLarge.copyWith(color: Colors.white),
+              style: AppTypography.bodyLarge.copyWith(color: colors.textPrimary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.xxl),

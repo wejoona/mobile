@@ -144,6 +144,17 @@ class ServicesView extends ConsumerWidget {
       );
     }
 
+    if (flags.canUseExternalTransfers) {
+      services.add(
+        ServiceItem(
+          icon: Icons.account_balance_wallet,
+          title: l10n.sendExternal_title,
+          description: l10n.sendExternal_info,
+          route: '/send-external',
+        ),
+      );
+    }
+
     if (flags.canReceive) {
       services.add(
         ServiceItem(
@@ -360,49 +371,54 @@ class _ServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    final isDark = colors.isDark;
+
+    return AppCard(
+      variant: isDark ? AppCardVariant.flat : AppCardVariant.elevated,
+      borderRadius: AppRadius.lg,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      backgroundColor: Color.alphaBlend(
+        colors.gold.withValues(alpha: isDark ? 0.04 : 0.06),
+        colors.container,
+      ),
+      borderColor: colors.borderGold.withValues(alpha: isDark ? 0.22 : 0.30),
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        decoration: BoxDecoration(
-          color: colors.container,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: colors.borderSubtle),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Icon
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: colors.gold.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(AppRadius.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Color.alphaBlend(
+                colors.gold.withValues(alpha: isDark ? 0.15 : 0.18),
+                colors.elevated,
               ),
-              child: Icon(icon, color: colors.gold, size: 24),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              border: Border.all(
+                color: colors.gold.withValues(alpha: isDark ? 0.20 : 0.24),
+              ),
             ),
-            const SizedBox(height: AppSpacing.md),
-            // Title
-            AppText(
-              title,
-              variant: AppTextVariant.labelLarge,
-              color: colors.textPrimary,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: AppSpacing.xxs),
-            // Description
-            AppText(
-              description,
-              variant: AppTextVariant.bodySmall,
-              color: colors.textTertiary,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
+            child: Icon(icon, color: colors.gold, size: 24),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          AppText(
+            title,
+            variant: AppTextVariant.labelLarge,
+            color: colors.textPrimary,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: AppSpacing.xxs),
+          AppText(
+            description,
+            variant: AppTextVariant.bodySmall,
+            color: colors.textSecondary,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }

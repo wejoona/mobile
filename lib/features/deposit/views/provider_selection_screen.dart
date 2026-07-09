@@ -16,6 +16,7 @@ import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_
 import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/utils/context_extensions.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Provider Selection Screen
 ///
@@ -385,7 +386,7 @@ class ProviderSelectionScreen extends ConsumerWidget {
     } catch (e) {
       if (!context.mounted) return;
       context.showSnack(
-        l10n.common_errorFormat(e.toString()),
+        l10n.common_errorFormat(UserFacingErrors.message(e)),
         tone: AppSnackTone.error,
       );
     }

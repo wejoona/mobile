@@ -431,7 +431,10 @@ class UserAvatar extends StatelessWidget {
       [const Color(0xFFDCE9E5), const Color(0xFFB8D3CC)], // Sage
       [const Color(0xFFE7E4F1), const Color(0xFFCFC6E3)], // Soft indigo
       [const Color(0xFFF0DED5), const Color(0xFFDAB9A6)], // Clay
-      [AppColors.gold100, AppColors.gold300], // Gold
+      [
+        context.colors.isDark ? AppColors.gold100 : AppColorsLight.gold100,
+        context.colors.isDark ? AppColors.gold300 : AppColorsLight.gold300,
+      ], // Gold
     ];
 
     return gradients[nameHash % gradients.length];
@@ -442,9 +445,7 @@ class UserAvatar extends StatelessWidget {
       return context.colors.textPrimary;
     }
 
-    return context.colors.isDark
-        ? AppColors.textInverse
-        : AppColors.textPrimary;
+    return context.colors.textPrimary;
   }
 
   int _hashName() {

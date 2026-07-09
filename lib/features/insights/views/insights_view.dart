@@ -5,6 +5,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/insights/providers/insights_provider.dart';
 import 'package:usdc_wallet/features/insights/widgets/spending_chart.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Spending insights screen.
 class InsightsView extends ConsumerWidget {
@@ -43,7 +44,7 @@ class InsightsView extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 AppText(
-                  l10n.insights_error(e.toString()),
+                  l10n.insights_error(UserFacingErrors.message(e)),
                   variant: AppTextVariant.bodyMedium,
                   color: colors.textSecondary,
                   textAlign: TextAlign.center,

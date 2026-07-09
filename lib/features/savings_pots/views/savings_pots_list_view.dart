@@ -8,6 +8,7 @@ import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
 import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Savings pots list screen.
 class SavingsPotsListView extends ConsumerWidget {
@@ -35,7 +36,7 @@ class SavingsPotsListView extends ConsumerWidget {
         ),
         error: (e, _) => Center(
           child: Text(
-            AppLocalizations.of(context)!.savingsPots_error(e.toString()),
+            AppLocalizations.of(context)!.savingsPots_error(UserFacingErrors.message(e)),
           ),
         ),
         data: (pots) {

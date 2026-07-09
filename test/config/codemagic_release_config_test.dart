@@ -54,15 +54,15 @@ void main() {
       );
     });
 
-    test('builds staging iOS and Android with staging dart defines', () {
-      const stagingDefine =
-          r'--dart-define-from-file="$CM_BUILD_DIR/env.staging.json"';
+    test('builds TestFlight iOS and Android with public release dart defines', () {
+      const releaseDefine =
+          r'--dart-define-from-file="$CM_BUILD_DIR/env.prod.json"';
 
-      expect(codemagic, contains(stagingDefine));
+      expect(codemagic, contains(releaseDefine));
       expect(
         RegExp(
           r'flutter build ipa --release[\s\S]*?'
-          r'--dart-define-from-file="\$CM_BUILD_DIR/env\.staging\.json"',
+          r'--dart-define-from-file="\$CM_BUILD_DIR/env\.prod\.json"',
         ).hasMatch(codemagic),
         isTrue,
       );
@@ -73,11 +73,12 @@ void main() {
         ).hasMatch(codemagic),
         isTrue,
       );
-      expect(codemagic, contains('ENV=staging'));
+      expect(codemagic, contains('ENV=production'));
       expect(
         codemagic,
-        contains('API_URL=https://staging-korido-api.joonapay.com/api/v1'),
+        contains('API_URL=https://korido-api.joonapay.com/api/v1'),
       );
+      expect(codemagic, isNot(contains('API_URL=https://api.joonalabs.com')));
       expect(
         codemagic,
         contains(
@@ -96,11 +97,11 @@ void main() {
       expect(prodEnv, isNot(contains('USE_MOCKS')));
     });
 
-    test('staging dart define file follows staging DNS prefix convention', () {
+    test('lab dart define file remains explicit about the Joonalabs route', () {
       expect(stagingEnv, contains('"ENV": "staging"'));
       expect(
         stagingEnv,
-        contains('"API_URL": "https://staging-korido-api.joonapay.com/api/v1"'),
+        contains('"API_URL": "https://api.joonalabs.com/korido/v1"'),
       );
       expect(stagingEnv, contains('"SENTRY_DSN": "https://'));
       expect(stagingEnv, isNot(contains('api-staging')));

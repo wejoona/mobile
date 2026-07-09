@@ -6023,6 +6023,57 @@ class AppLocalizationsAr extends AppLocalizations {
       'Make sure you are sending to a Solana USDC address';
 
   @override
+  String get withdraw_invalidAmount => 'Invalid amount';
+
+  @override
+  String get withdraw_amountMustBePositive => 'Amount must be greater than 0';
+
+  @override
+  String get withdraw_insufficientBalance => 'Insufficient balance';
+
+  @override
+  String get withdraw_minimumAmount => 'Minimum withdrawal is \$1';
+
+  @override
+  String get withdraw_manualReviewRequired =>
+      'This withdrawal needs manual review before it can continue.';
+
+  @override
+  String get withdraw_securityChallengeIncomplete =>
+      'Security challenge is incomplete. Please try again before withdrawing.';
+
+  @override
+  String get withdraw_processingDaysInfo =>
+      'Withdrawals typically process within 1-3 business days. Fees may apply depending on the method.';
+
+  @override
+  String get withdraw_maxLabel => 'MAX';
+
+  @override
+  String get withdraw_checkingRails => 'Checking available withdrawal rails...';
+
+  @override
+  String withdraw_mobileMoneyUnavailable(String country) {
+    return 'Mobile money withdrawals are not available for $country yet.';
+  }
+
+  @override
+  String withdraw_availableRails(String rails) {
+    return 'Available rails: $rails';
+  }
+
+  @override
+  String get withdraw_bankNameLabel => 'Bank Name';
+
+  @override
+  String get withdraw_accountNumberLabel => 'Account Number';
+
+  @override
+  String withdraw_unsupportedMobileNumber(String country, String rails) {
+    return 'This $country mobile money number is not supported yet. Available rails: $rails.';
+  }
+
+  @override
   String get legal_cookiePolicy => 'Cookie Policy';
 
   @override
@@ -7862,4 +7913,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get forceUpdate_button => 'Update Korido';
+
+  @override
+  String get featureComingSoon_description =>
+      'This feature is not available yet. Join the waitlist and we\'ll notify you when it launches.';
+
+  @override
+  String get featureComingSoon_notifyMe => 'Notify Me When Available';
+
+  @override
+  String get featureComingSoon_notifySuccess =>
+      'You\'ll be notified when this feature is available';
+
+  @override
+  String get routePlaceholder_unavailable =>
+      'This page could not be opened. The item may have moved, expired, or is not available for your account.';
+
+  @override
+  String get common_goBack => 'Go back';
 }

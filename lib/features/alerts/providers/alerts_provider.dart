@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/features/alerts/models/alert_model.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Alert types in the app.
 enum AlertType { info, warning, error, promotion }
@@ -132,7 +133,7 @@ class AlertsNotifier extends Notifier<AlertsListState> {
         hasMore: paginated.hasNext,
       );
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
     }
   }
 

@@ -7,6 +7,7 @@ import 'package:usdc_wallet/features/recurring_transfers/providers/recurring_tra
 import 'package:usdc_wallet/features/recurring_transfers/widgets/recurring_transfer_card.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Recurring transfers list screen.
 class RecurringTransfersListView extends ConsumerWidget {
@@ -33,7 +34,7 @@ class RecurringTransfersListView extends ConsumerWidget {
             const Padding(padding: EdgeInsets.all(16), child: ShimmerList()),
         error: (e, _) => Center(
           child: Text(
-            AppLocalizations.of(context)!.common_errorFormat(e.toString()),
+            AppLocalizations.of(context)!.common_errorFormat(UserFacingErrors.message(e)),
           ),
         ),
         data: (transfers) {

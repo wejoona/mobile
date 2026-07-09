@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/savings_pots/savings_pots_service.dart';
 import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Create savings pot flow state.
 class CreatePotState {
@@ -48,7 +49,7 @@ class CreatePotNotifier extends Notifier<CreatePotState> {
       state = state.copyWith(isLoading: false, isComplete: true);
       ref.invalidate(savingsPotsProvider);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
     }
   }
 

@@ -17,6 +17,7 @@ import 'package:usdc_wallet/services/service_providers.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Screen for paying via a received payment link
 /// Shows link details and allows user to complete payment
@@ -54,7 +55,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = e.toString();
+          _error = UserFacingErrors.message(e);
         });
       }
     }
@@ -174,7 +175,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
     } catch (e) {
       if (mounted) {
         setState(() => _isProcessing = false);
-        _showErrorDialog(l10n.common_error, e.toString());
+        _showErrorDialog(l10n.common_error, UserFacingErrors.message(e));
       }
     }
   }

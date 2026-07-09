@@ -45,6 +45,7 @@ class AppCard extends StatelessWidget {
     this.padding,
     this.margin,
     this.onTap,
+    this.onLongPress,
     this.borderRadius,
     this.isSelected = false,
     this.backgroundColor,
@@ -56,6 +57,7 @@ class AppCard extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
   final EdgeInsetsGeometry? margin;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
   final double? borderRadius;
   final bool isSelected;
   final Color? backgroundColor;
@@ -74,6 +76,7 @@ class AppCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius ?? AppRadius.xl),
         child: InkWell(
           onTap: onTap,
+          onLongPress: onLongPress,
           borderRadius: BorderRadius.circular(borderRadius ?? AppRadius.xl),
           splashColor: _getSplashColor(colors),
           highlightColor: _getHighlightColor(colors),

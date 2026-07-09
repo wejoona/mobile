@@ -9,6 +9,7 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Dialog that handles risk-based step-up verification
 /// Shows appropriate UI based on the step-up type required
@@ -380,7 +381,7 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
           widget.onSuccess();
       }
     } catch (e) {
-      setState(() => _error = e.toString());
+      setState(() => _error = UserFacingErrors.message(e));
     } finally {
       if (mounted && !_showLiveness) {
         setState(() => _isProcessing = false);

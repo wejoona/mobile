@@ -10,25 +10,24 @@ class KoridoMark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final isLight = !colors.isDark;
 
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: isLight ? AppColorsLight.gold500 : null,
-        gradient: isLight
-            ? null
-            : LinearGradient(
+        color: colors.isDark ? null : colors.gold,
+        gradient: colors.isDark
+            ? LinearGradient(
                 colors: colors.goldGradient,
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-              ),
-        borderRadius: BorderRadius.circular(size * 0.28),
-        border: isLight
-            ? Border.all(color: AppColorsLight.gold600.withValues(alpha: 0.18))
+              )
             : null,
-        boxShadow: isLight ? AppShadows.lightGoldGlow : AppShadows.goldGlow,
+        borderRadius: BorderRadius.circular(size * 0.28),
+        border: colors.isDark
+            ? null
+            : Border.all(color: colors.borderGold.withValues(alpha: 0.35)),
+        boxShadow: colors.isDark ? AppShadows.goldGlow : AppShadows.lightGoldGlow,
       ),
       child: Stack(
         alignment: Alignment.center,

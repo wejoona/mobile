@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/design/theme/app_theme.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/core/error_handling/error_reporter.dart';
 import 'package:usdc_wallet/core/error_handling/error_types.dart';
@@ -269,11 +270,15 @@ class _RootErrorBoundaryState extends ConsumerState<RootErrorBoundary> {
   }
 
   Widget _buildRootErrorUI(Object error, StackTrace? stackTrace) {
+    final isDark =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+        Brightness.dark;
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark(),
+      theme: isDark ? AppTheme.darkTheme : AppTheme.lightTheme,
       home: Scaffold(
-        backgroundColor: AppColors.obsidian,
+        backgroundColor: isDark ? AppColors.obsidian : AppColorsLight.canvas,
         body: SafeArea(
           child: ErrorFallbackUI(
             error: error,
@@ -325,9 +330,9 @@ class AsyncErrorBoundary<T> extends ConsumerWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return loadingBuilder?.call(context) ??
-              const Center(
+              Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation(AppColors.gold500),
+                  valueColor: AlwaysStoppedAnimation(context.colors.gold),
                 ),
               );
         }

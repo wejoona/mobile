@@ -5,6 +5,7 @@ import 'package:usdc_wallet/utils/input_formatters.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Bottom sheet for creating a new savings pot.
 class CreatePotSheet extends StatefulWidget {
@@ -45,7 +46,7 @@ class _CreatePotSheetState extends State<CreatePotSheet> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.common_errorFormat(e.toString())), backgroundColor: context.colors.error),
+          SnackBar(content: Text(AppLocalizations.of(context)!.common_errorFormat(UserFacingErrors.message(e))), backgroundColor: context.colors.error),
         );
       }
     } finally {

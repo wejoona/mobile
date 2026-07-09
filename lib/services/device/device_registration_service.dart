@@ -3,15 +3,21 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/settings/repositories/devices_repository.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/notifications/push_notification_service.dart';
 import 'package:usdc_wallet/services/security/device_fingerprint_service.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Service to collect device info and register with the backend
 class DeviceRegistrationService {
-  DeviceRegistrationService(this._devicesRepository, this._fingerprintService);
+  DeviceRegistrationService(
+    this._devicesRepository,
+    this._fingerprintService, {
+    String? Function()? fcmTokenProvider,
+  }) : _fcmTokenProvider = fcmTokenProvider;
 
   final DevicesRepository _devicesRepository;
   final DeviceFingerprintService _fingerprintService;
+  final String? Function()? _fcmTokenProvider;
 
   /// Register the current device with the backend.
   /// Should be called after successful OTP verification / login.
@@ -43,7 +49,7 @@ class DeviceRegistrationService {
         os: fingerprint.os,
         osVersion: fingerprint.osVersion,
         appVersion: fingerprint.appVersion,
-        fcmToken: null,
+        fcmToken: _fcmTokenProvider?.call(),
         locale: fingerprint.locale,
         metadata: {
           'fingerprintHash': fingerprint.fingerprintHash,
@@ -77,5 +83,10 @@ final deviceRegistrationServiceProvider = Provider<DeviceRegistrationService>((
 ) {
   final devicesRepo = ref.watch(devicesRepositoryProvider);
   final fingerprintService = ref.watch(deviceFingerprintServiceProvider);
-  return DeviceRegistrationService(devicesRepo, fingerprintService);
+  return DeviceRegistrationService(
+    devicesRepo,
+    fingerprintService,
+    fcmTokenProvider: () =>
+        ref.read(pushNotificationServiceProvider).currentToken,
+  );
 });

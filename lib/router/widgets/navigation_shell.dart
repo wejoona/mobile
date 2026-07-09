@@ -6,6 +6,8 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/connectivity/connectivity_provider.dart';
+import 'package:usdc_wallet/services/feature_flags/feature_flags_extensions.dart';
+import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Navigation shell for bottom navigation - derives state from current route.
@@ -38,6 +40,8 @@ class MainShell extends ConsumerWidget {
     final selectedIndex = _getSelectedIndex(location);
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
+    final flags = ref.watch(featureFlagsProvider);
+    final showCardsBadge = flags.canUseVirtualCards;
 
     return Scaffold(
       body: Column(
@@ -46,12 +50,31 @@ class MainShell extends ConsumerWidget {
           Expanded(child: child),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
-        backgroundColor: colors.surface,
-        indicatorColor: colors.gold.withValues(alpha: 0.14),
-        surfaceTintColor: Colors.transparent,
-        selectedIndex: selectedIndex,
-        onDestinationSelected: (index) {
+      bottomNavigationBar: DecoratedBox(
+        decoration: BoxDecoration(
+          color: colors.container,
+          border: Border(
+            top: BorderSide(color: colors.borderSubtle),
+          ),
+          boxShadow: colors.isDark
+              ? null
+              : [
+                  BoxShadow(
+                    color: const Color(0x245A431B),
+                    blurRadius: 16,
+                    offset: const Offset(0, -4),
+                    spreadRadius: -8,
+                  ),
+                ],
+        ),
+        child: NavigationBar(
+          backgroundColor: colors.container,
+          indicatorColor: colors.gold.withValues(
+            alpha: colors.isDark ? 0.14 : 0.18,
+          ),
+          surfaceTintColor: Colors.transparent,
+          selectedIndex: selectedIndex,
+          onDestinationSelected: (index) {
           // Navigate based on index.
           switch (index) {
             case 0:
@@ -67,24 +90,28 @@ class MainShell extends ConsumerWidget {
               context.fsmGo('/settings');
               break;
           }
-        },
-        destinations: [
+          },
+          destinations: [
           NavigationDestination(
             icon: const Icon(Icons.home_outlined),
             selectedIcon: const Icon(Icons.home),
             label: l10n.navigation_home,
           ),
           NavigationDestination(
-            icon: Badge(
-              backgroundColor: colors.warning,
-              smallSize: 8,
-              child: const Icon(Icons.credit_card_outlined),
-            ),
-            selectedIcon: Badge(
-              backgroundColor: colors.warning,
-              smallSize: 8,
-              child: const Icon(Icons.credit_card),
-            ),
+            icon: showCardsBadge
+                ? Badge(
+                    backgroundColor: colors.warning,
+                    smallSize: 8,
+                    child: const Icon(Icons.credit_card_outlined),
+                  )
+                : const Icon(Icons.credit_card_outlined),
+            selectedIcon: showCardsBadge
+                ? Badge(
+                    backgroundColor: colors.warning,
+                    smallSize: 8,
+                    child: const Icon(Icons.credit_card),
+                  )
+                : const Icon(Icons.credit_card),
             label: l10n.navigation_cards,
           ),
           NavigationDestination(
@@ -97,7 +124,8 @@ class MainShell extends ConsumerWidget {
             selectedIcon: const Icon(Icons.settings),
             label: l10n.navigation_settings,
           ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -114,7 +142,7 @@ class _ConnectivityBanner extends ConsumerWidget {
       return const SizedBox.shrink();
     }
     final colors = context.colors;
-    final isFr = Localizations.localeOf(context).languageCode == 'fr';
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       width: double.infinity,
@@ -122,12 +150,28 @@ class _ConnectivityBanner extends ConsumerWidget {
         horizontal: AppSpacing.screenPadding,
         vertical: AppSpacing.sm,
       ),
-      color: colors.error.withValues(alpha: 0.14),
-      child: AppText(
-        isFr ? 'Pas de connexion internet' : 'No internet connection',
-        variant: AppTextVariant.labelMedium,
-        color: colors.errorText,
-        textAlign: TextAlign.center,
+      decoration: BoxDecoration(
+        color: colors.errorBg,
+        border: Border(
+          bottom: BorderSide(
+            color: colors.error.withValues(alpha: colors.isDark ? 0.28 : 0.32),
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.wifi_off_rounded, color: colors.errorText, size: 16),
+          const SizedBox(width: AppSpacing.sm),
+          Flexible(
+            child: AppText(
+              l10n.offline_noConnection,
+              variant: AppTextVariant.labelMedium,
+              color: colors.errorText,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
       ),
     );
   }

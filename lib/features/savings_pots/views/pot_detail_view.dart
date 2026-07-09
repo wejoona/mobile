@@ -14,6 +14,7 @@ import 'package:usdc_wallet/features/savings_pots/widgets/withdraw_from_pot_shee
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Detail view for a single savings pot
 class PotDetailView extends ConsumerStatefulWidget {
@@ -55,7 +56,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
       ),
       error: (e, _) => Scaffold(
         backgroundColor: context.colors.canvas,
-        body: Center(child: Text(l10n.savingsPots_error(e.toString()))),
+        body: Center(child: Text(l10n.savingsPots_error(UserFacingErrors.message(e)))),
       ),
       data: (pot) => _buildPotDetail(context, ref, pot, state, l10n),
     );

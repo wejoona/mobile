@@ -17,6 +17,7 @@ import 'package:usdc_wallet/features/merchant_pay/widgets/qr_scanner_widget.dart
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 class ScanView extends ConsumerStatefulWidget {
   const ScanView({super.key});
@@ -271,7 +272,7 @@ class _ScanViewState extends ConsumerState<ScanView>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              AppLocalizations.of(context)!.common_errorFormat(e.toString()),
+              AppLocalizations.of(context)!.common_errorFormat(UserFacingErrors.message(e)),
             ),
             backgroundColor: context.colors.error,
           ),
@@ -316,7 +317,7 @@ class _ScanViewState extends ConsumerState<ScanView>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              AppLocalizations.of(context)!.common_errorFormat(e.toString()),
+              AppLocalizations.of(context)!.common_errorFormat(UserFacingErrors.message(e)),
             ),
             backgroundColor: context.colors.error,
           ),

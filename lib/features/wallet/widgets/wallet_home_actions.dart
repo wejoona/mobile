@@ -97,8 +97,13 @@ class _WalletQuickActionButton extends StatelessWidget {
     final isDark = colors.isDark;
 
     return AppCard(
-      variant: AppCardVariant.flat,
+      variant: isDark ? AppCardVariant.flat : AppCardVariant.elevated,
       borderRadius: AppRadius.lg,
+      backgroundColor: Color.alphaBlend(
+        colors.gold.withValues(alpha: isDark ? 0.04 : 0.06),
+        colors.container,
+      ),
+      borderColor: colors.borderGold.withValues(alpha: isDark ? 0.22 : 0.34),
       onTap: () {
         unawaited(HapticFeedback.lightImpact());
         final onTap = _action.onTap;
@@ -121,8 +126,14 @@ class _WalletQuickActionButton extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: colors.gold.withValues(alpha: isDark ? 0.18 : 0.12),
+                color: Color.alphaBlend(
+                  colors.gold.withValues(alpha: isDark ? 0.18 : 0.16),
+                  colors.elevated,
+                ),
                 borderRadius: BorderRadius.circular(AppRadius.md),
+                border: Border.all(
+                  color: colors.gold.withValues(alpha: isDark ? 0.20 : 0.24),
+                ),
               ),
               child: Icon(_action.icon, color: colors.gold, size: 24),
             ),
@@ -130,7 +141,7 @@ class _WalletQuickActionButton extends StatelessWidget {
             AppText(
               _action.label,
               variant: AppTextVariant.labelSmall,
-              color: isDark ? colors.textSecondary : colors.textPrimary,
+              color: colors.textPrimary,
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

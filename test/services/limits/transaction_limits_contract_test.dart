@@ -193,7 +193,7 @@ void main() {
       expect(source, contains('moneyFlowLimitErrorFor('));
     });
 
-    test('home money-flow actions continue when permissions are unknown', () {
+    test('home money-flow actions fail closed when permissions are unknown', () {
       final source = File(
         'lib/features/wallet/views/wallet_home_screen.dart',
       ).readAsStringSync();
@@ -208,13 +208,13 @@ void main() {
       expect(unknownPermissionsBlock, contains('fetchLimits()'));
       expect(
         unresolvedPermissionsBlock,
-        contains('context.fsmPush(route)'),
+        isNot(contains('context.fsmPush(route)')),
         reason:
-            'Home quick actions may enter money-flow setup when limits are temporarily unavailable; backend writers still verify permissions before completion.',
+            'Home quick actions must not enter money flows when limits cannot be verified.',
       );
       expect(
         unresolvedPermissionsBlock,
-        contains('We will verify account permissions before completion'),
+        contains('Unable to verify account permissions right now'),
       );
       expect(source, contains('operation: TransactionLimitOperation.withdraw'));
       expect(source, contains("route: '/withdraw'"));

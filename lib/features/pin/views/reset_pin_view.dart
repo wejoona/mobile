@@ -28,6 +28,7 @@ import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/utils/input_formatters.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 import 'package:usdc_wallet/utils/verification_cooldown.dart';
 
 /// Reset PIN View
@@ -788,7 +789,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         setState(() {
           _isLoading = false;
           _otpNoticeMessage = null;
-          _errorMessage = e.toString();
+          _errorMessage = UserFacingErrors.message(e);
         });
       }
     }

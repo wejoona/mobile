@@ -182,10 +182,31 @@ class _SplashViewState extends ConsumerState<SplashView>
     final l10n = AppLocalizations.of(context)!;
     final size = MediaQuery.of(context).size;
 
+    final shimmerHighlight =
+        colors.isDark ? Colors.white : colors.textInverse;
+
     return Scaffold(
       backgroundColor: colors.canvas,
       body: Stack(
         children: [
+          if (!colors.isDark)
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      colors.gold.withValues(alpha: 0.06),
+                      colors.canvas,
+                      colors.canvas,
+                    ],
+                    stops: const [0, 0.35, 1],
+                  ),
+                ),
+              ),
+            ),
+
           // Subtle radial gradient background
           Positioned.fill(
             child: AnimatedBuilder(
@@ -193,7 +214,7 @@ class _SplashViewState extends ConsumerState<SplashView>
               builder: (context, _) => CustomPaint(
                 painter: _RadialGlowPainter(
                   color: colors.gold,
-                  opacity: _pulseAnimation.value * 0.15,
+                  opacity: _pulseAnimation.value * (colors.isDark ? 0.15 : 0.22),
                   center: Offset(size.width / 2, size.height * 0.4),
                 ),
               ),
@@ -264,7 +285,7 @@ class _SplashViewState extends ConsumerState<SplashView>
                         colors: [
                           colors.gold,
                           colors.gold.withValues(alpha: 0.5),
-                          Colors.white,
+                          shimmerHighlight,
                           colors.gold.withValues(alpha: 0.5),
                           colors.gold,
                         ],
@@ -272,10 +293,10 @@ class _SplashViewState extends ConsumerState<SplashView>
                         begin: Alignment(_shimmerAnimation.value - 1, 0),
                         end: Alignment(_shimmerAnimation.value, 0),
                       ).createShader(bounds),
-                      child: const AppText(
+                      child: AppText(
                         'Korido',
                         variant: AppTextVariant.headlineLarge,
-                        color: Colors.white,
+                        color: shimmerHighlight,
                         fontWeight: FontWeight.w700,
                       ),
                     ),

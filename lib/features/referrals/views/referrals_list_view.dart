@@ -6,6 +6,7 @@ import 'package:usdc_wallet/features/referrals/widgets/referral_card.dart';
 import 'package:usdc_wallet/utils/duration_extensions.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Referrals program screen.
 class ReferralsListView extends ConsumerWidget {
@@ -20,7 +21,7 @@ class ReferralsListView extends ConsumerWidget {
       appBar: AppBar(title: Text(AppLocalizations.of(context)!.referrals_title)),
       body: referralAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.referrals_error(e.toString()))),
+        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.referrals_error(UserFacingErrors.message(e)))),
         data: (info) => RefreshIndicator(
           onRefresh: () => ref.refresh(referralProvider.future),
           child: ListView(

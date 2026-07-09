@@ -91,9 +91,26 @@ class _OnboardingViewState extends ConsumerState<OnboardingView>
 
     return Scaffold(
       backgroundColor: colors.canvas,
-      body: SafeArea(
-        child: Column(
-          children: [
+      body: Stack(
+        children: [
+          if (!colors.isDark)
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: const Alignment(0, -0.55),
+                    radius: 1.1,
+                    colors: [
+                      colors.gold.withValues(alpha: 0.08),
+                      colors.canvas,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          SafeArea(
+            child: Column(
+              children: [
             // Top bar: Skip
             Padding(
               padding: const EdgeInsets.symmetric(
@@ -184,8 +201,10 @@ class _OnboardingViewState extends ConsumerState<OnboardingView>
                 ],
               ),
             ),
-          ],
-        ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -350,20 +369,11 @@ class _OnboardingPageContent extends StatelessWidget {
 enum _IllustrationType { wallet, transfer, mobile, shield }
 
 Color _onboardingAccentFor(_IllustrationType type, ThemeColors colors) {
-  if (colors.isDark) {
-    return switch (type) {
-      _IllustrationType.wallet => AppColors.gold500,
-      _IllustrationType.transfer => AppColors.successText,
-      _IllustrationType.mobile => AppColors.infoText,
-      _IllustrationType.shield => AppColors.gold400,
-    };
-  }
-
   return switch (type) {
-    _IllustrationType.wallet => AppColorsLight.gold500,
-    _IllustrationType.transfer => const Color(0xFF2F6F5E),
-    _IllustrationType.mobile => const Color(0xFF315F83),
-    _IllustrationType.shield => const Color(0xFF6B6253),
+    _IllustrationType.wallet => colors.gold,
+    _IllustrationType.transfer => colors.successText,
+    _IllustrationType.mobile => colors.infoText,
+    _IllustrationType.shield => colors.goldLight,
   };
 }
 
@@ -450,13 +460,11 @@ class _WalletIllustration extends StatelessWidget {
   final ThemeColors colors;
 
   Color get _coinSurface =>
-      colors.isDark ? AppColors.gold50 : AppColorsLight.container;
+      colors.isDark ? AppColors.gold50 : colors.container;
 
-  Color get _coinBorder =>
-      colors.isDark ? AppColors.gold200 : AppColorsLight.borderGold;
+  Color get _coinBorder => colors.borderGold;
 
-  Color get _coinSymbol =>
-      colors.isDark ? AppColors.gold700 : AppColorsLight.gold600;
+  Color get _coinSymbol => colors.isDark ? AppColors.gold700 : colors.gold;
 
   @override
   Widget build(BuildContext context) {
@@ -521,6 +529,10 @@ class _WalletIllustration extends StatelessWidget {
   }
 
   Widget _buildCard(Color color, double yOffset) {
+    final lineColor = colors.isDark
+        ? colors.textInverse
+        : colors.onGold;
+
     return Transform.translate(
       offset: Offset(0, yOffset),
       child: Container(
@@ -529,7 +541,7 @@ class _WalletIllustration extends StatelessWidget {
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          border: Border.all(color: lineColor.withValues(alpha: 0.14)),
         ),
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -540,7 +552,7 @@ class _WalletIllustration extends StatelessWidget {
               width: 40,
               height: 6,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.4),
+                color: lineColor.withValues(alpha: 0.42),
                 borderRadius: BorderRadius.circular(3),
               ),
             ),
@@ -549,7 +561,7 @@ class _WalletIllustration extends StatelessWidget {
               width: 80,
               height: 6,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: lineColor.withValues(alpha: 0.22),
                 borderRadius: BorderRadius.circular(3),
               ),
             ),
@@ -617,8 +629,12 @@ class _TransferIllustration extends StatelessWidget {
               ),
             ],
           ),
-          child: const Center(
-            child: Icon(Icons.bolt_rounded, color: Colors.white, size: 28),
+          child: Center(
+            child: Icon(
+              Icons.bolt_rounded,
+              color: colors.textInverse,
+              size: 28,
+            ),
           ),
         ),
       ],
@@ -730,7 +746,7 @@ class _MobileIllustration extends StatelessWidget {
         Positioned(
           bottom: 30,
           left: 50,
-          child: _buildBadge('XOF', const Color(0xFF2F6F5E), colors),
+          child: _buildBadge('XOF', colors.successText, colors),
         ),
       ],
     );
@@ -739,9 +755,9 @@ class _MobileIllustration extends StatelessWidget {
   List<Widget> _buildOperatorRows(Color accent, ThemeColors colors) {
     final operators = [
       ('USDC', accent),
-      ('Bank', const Color(0xFF2F6F5E)),
+      ('Bank', colors.successText),
       ('Card', colors.gold),
-      ('Cash', const Color(0xFFB88A2C)),
+      ('Cash', colors.warningText),
     ];
 
     return [
@@ -765,8 +781,8 @@ class _MobileIllustration extends StatelessWidget {
                 child: Center(
                   child: Text(
                     op.$1[0],
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: colors.textInverse,
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                     ),
@@ -861,8 +877,12 @@ class _ShieldIllustration extends StatelessWidget {
               ),
             ],
           ),
-          child: const Center(
-            child: Icon(Icons.check_rounded, color: Colors.white, size: 48),
+          child: Center(
+            child: Icon(
+              Icons.check_rounded,
+              color: colors.textInverse,
+              size: 48,
+            ),
           ),
         ),
         // Lock badge

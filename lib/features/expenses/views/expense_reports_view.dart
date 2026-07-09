@@ -16,6 +16,7 @@ import 'package:usdc_wallet/design/components/primitives/app_card.dart';
 import 'package:usdc_wallet/features/expenses/providers/expenses_provider.dart';
 import 'package:usdc_wallet/domain/entities/expense.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 class ExpenseReportsView extends ConsumerStatefulWidget {
   const ExpenseReportsView({super.key});
@@ -415,7 +416,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.expenses_reportError(e.toString())),
+            content: Text(AppLocalizations.of(context)!.expenses_reportError(UserFacingErrors.message(e))),
             backgroundColor: context.colors.error,
           ),
         );
@@ -472,7 +473,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.expenses_reportError(e.toString())),
+            content: Text(AppLocalizations.of(context)!.expenses_reportError(UserFacingErrors.message(e))),
             backgroundColor: context.colors.error,
           ),
         );

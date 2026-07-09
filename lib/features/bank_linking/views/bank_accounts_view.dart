@@ -5,6 +5,7 @@ import 'package:usdc_wallet/features/bank_linking/widgets/bank_account_card.dart
 import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
 import 'package:usdc_wallet/design/components/primitives/confirmation_dialog.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Bank accounts list screen.
 class BankAccountsView extends ConsumerWidget {
@@ -22,7 +23,7 @@ class BankAccountsView extends ConsumerWidget {
       ),
       body: accountsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.common_errorFormat(e.toString()))),
+        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.common_errorFormat(UserFacingErrors.message(e)))),
         data: (accounts) {
           if (accounts.isEmpty) {
             return const EmptyState(

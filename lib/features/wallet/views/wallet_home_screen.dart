@@ -26,6 +26,8 @@ import 'package:usdc_wallet/features/wallet/widgets/wallet_home_actions.dart';
 import 'package:usdc_wallet/features/wallet/widgets/wallet_home_status_widgets.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/currency/currency_provider.dart';
+import 'package:usdc_wallet/services/feature_flags/feature_flags_extensions.dart';
+import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/utils/context_extensions.dart';
@@ -268,8 +270,8 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
               constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
               child: Text(
                 unreadCount > 99 ? '99+' : '$unreadCount',
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: colors.onGold,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                 ),
@@ -405,14 +407,12 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
 
     final balanceHasActivity =
         primaryBalance > 0 || pendingBalance > 0 || totalBalance > 0;
-    final surfaceStart = colors.isDark
-        ? Color.alphaBlend(colors.gold.withValues(alpha: 0.07), colors.surface)
-        : Color.alphaBlend(
-            colors.gold.withValues(alpha: 0.055),
-            colors.surface,
-          );
+    final surfaceStart = Color.alphaBlend(
+      colors.gold.withValues(alpha: colors.isDark ? 0.07 : 0.08),
+      colors.surface,
+    );
     final surfaceColor = Color.alphaBlend(
-      colors.gold.withValues(alpha: colors.isDark ? 0.035 : 0.025),
+      colors.gold.withValues(alpha: colors.isDark ? 0.035 : 0.045),
       surfaceStart,
     );
 
@@ -773,13 +773,10 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
       vertical: AppSpacing.sm,
     ),
     decoration: BoxDecoration(
-      color: Color.alphaBlend(
-        colors.warning.withValues(alpha: colors.isDark ? 0.16 : 0.10),
-        colors.surface,
-      ),
+      color: colors.warningBg,
       borderRadius: BorderRadius.circular(AppRadius.md),
       border: Border.all(
-        color: colors.warning.withValues(alpha: colors.isDark ? 0.28 : 0.22),
+        color: colors.warning.withValues(alpha: colors.isDark ? 0.28 : 0.32),
       ),
     ),
     child: Row(
@@ -991,69 +988,92 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     BuildContext context,
     WidgetRef ref,
     AppLocalizations l10n,
-  ) => [
-    WalletQuickActionData(
-      icon: Icons.send_rounded,
-      label: l10n.home_quickAction_send,
-      route: '/send',
-      onTap: () => unawaited(
-        _openMoneyFlow(
-          context,
-          ref,
-          l10n,
-          operation: TransactionLimitOperation.send,
-          route: '/send',
+  ) {
+    final flags = ref.watch(featureFlagsProvider);
+    final actions = <WalletQuickActionData>[
+      WalletQuickActionData(
+        icon: Icons.send_rounded,
+        label: l10n.home_quickAction_send,
+        route: '/send',
+        onTap: () => unawaited(
+          _openMoneyFlow(
+            context,
+            ref,
+            l10n,
+            operation: TransactionLimitOperation.send,
+            route: '/send',
+          ),
         ),
       ),
-    ),
-    WalletQuickActionData(
-      icon: Icons.qr_code_2_rounded,
-      label: l10n.home_quickAction_receive,
-      route: '/receive',
-      onTap: () => unawaited(
-        _openMoneyFlow(
-          context,
-          ref,
-          l10n,
-          operation: TransactionLimitOperation.receive,
-          route: '/receive',
+      WalletQuickActionData(
+        icon: Icons.qr_code_2_rounded,
+        label: l10n.home_quickAction_receive,
+        route: '/receive',
+        onTap: () => unawaited(
+          _openMoneyFlow(
+            context,
+            ref,
+            l10n,
+            operation: TransactionLimitOperation.receive,
+            route: '/receive',
+          ),
         ),
       ),
-    ),
-    WalletQuickActionData(
-      icon: Icons.add_circle_outline_rounded,
-      label: l10n.home_quickAction_deposit,
-      route: '/deposit/amount',
-      onTap: () => unawaited(
-        _openMoneyFlow(
-          context,
-          ref,
-          l10n,
-          operation: TransactionLimitOperation.deposit,
-          route: '/deposit/amount',
+      WalletQuickActionData(
+        icon: Icons.add_circle_outline_rounded,
+        label: l10n.home_quickAction_deposit,
+        route: '/deposit/amount',
+        onTap: () => unawaited(
+          _openMoneyFlow(
+            context,
+            ref,
+            l10n,
+            operation: TransactionLimitOperation.deposit,
+            route: '/deposit/amount',
+          ),
         ),
       ),
-    ),
-    WalletQuickActionData(
-      icon: Icons.south_west_rounded,
-      label: l10n.navigation_withdraw,
-      route: '/withdraw',
-      onTap: () => unawaited(
-        _openMoneyFlow(
-          context,
-          ref,
-          l10n,
-          operation: TransactionLimitOperation.withdraw,
+    ];
+
+    if (flags.canWithdraw || flags.canUseMobileMoneyWithdrawals) {
+      actions.add(
+        WalletQuickActionData(
+          icon: Icons.south_west_rounded,
+          label: l10n.navigation_withdraw,
           route: '/withdraw',
+          onTap: () => unawaited(
+            _openMoneyFlow(
+              context,
+              ref,
+              l10n,
+              operation: TransactionLimitOperation.withdraw,
+              route: '/withdraw',
+            ),
+          ),
         ),
+      );
+    }
+
+    actions.addAll([
+      WalletQuickActionData(
+        icon: Icons.history_rounded,
+        label: l10n.home_quickAction_history,
+        route: '/transactions',
       ),
-    ),
-    WalletQuickActionData(
-      icon: Icons.history_rounded,
-      label: l10n.home_quickAction_history,
-      route: '/transactions',
-    ),
-  ];
+      WalletQuickActionData(
+        icon: Icons.qr_code_scanner,
+        label: l10n.services_scanQr,
+        route: '/scan',
+      ),
+      WalletQuickActionData(
+        icon: Icons.apps_rounded,
+        label: l10n.navigation_services,
+        route: '/services',
+      ),
+    ]);
+
+    return actions;
+  }
 
   Future<void> _openMoneyFlow(
     BuildContext context,
@@ -1100,13 +1120,12 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
 
       context.showSnack(
         _localizedText(
-          en: 'We will verify account permissions before completion. You can continue for now.',
-          fr: 'Nous verifierons vos permissions avant la finalisation. Vous pouvez continuer.',
+          en: 'Unable to verify account permissions right now. Please try again shortly.',
+          fr: 'Impossible de vérifier vos permissions pour le moment. Réessayez bientôt.',
         ),
         tone: AppSnackTone.warning,
         duration: const Duration(seconds: 4),
       );
-      unawaited(context.fsmPush(route));
       return;
     }
 
@@ -1210,17 +1229,29 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
             padding: const EdgeInsets.all(AppSpacing.lg),
             margin: const EdgeInsets.only(bottom: AppSpacing.xxl),
             decoration: BoxDecoration(
-              color: colors.warningBase.withValues(alpha: 0.15),
+              color: colors.warningBg,
               borderRadius: BorderRadius.circular(AppRadius.lg),
               border: Border.all(
-                color: colors.warningBase.withValues(alpha: 0.3),
+                color: colors.warning.withValues(
+                  alpha: colors.isDark ? 0.30 : 0.36,
+                ),
               ),
+              boxShadow: colors.isDark
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: const Color(0x245A431B),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                        spreadRadius: -6,
+                      ),
+                    ],
             ),
             child: Row(
               children: [
                 Icon(
                   Icons.verified_user_outlined,
-                  color: colors.warningBase,
+                  color: colors.warningText,
                   size: 24,
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -1237,14 +1268,14 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                       AppText(
                         l10n.home_kycBanner_action,
                         variant: AppTextVariant.bodySmall,
-                        color: colors.warningBase,
+                        color: colors.warningText,
                       ),
                     ],
                   ),
                 ),
                 Icon(
                   Icons.arrow_forward_ios,
-                  color: colors.warningBase,
+                  color: colors.warningText,
                   size: 16,
                 ),
               ],
@@ -1338,8 +1369,13 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     AppLocalizations l10n,
     ThemeColors colors,
   ) => AppCard(
+    variant: colors.isDark ? AppCardVariant.flat : AppCardVariant.elevated,
     borderRadius: AppRadius.lg,
     padding: const EdgeInsets.all(AppSpacing.xl),
+    backgroundColor: Color.alphaBlend(
+      colors.gold.withValues(alpha: colors.isDark ? 0.03 : 0.05),
+      colors.container,
+    ),
     child: SizedBox(
       width: double.infinity,
       child: Column(
@@ -1348,12 +1384,18 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: colors.textTertiary.withValues(alpha: 0.1),
+              color: Color.alphaBlend(
+                colors.gold.withValues(alpha: colors.isDark ? 0.10 : 0.14),
+                colors.elevated,
+              ),
               borderRadius: BorderRadius.circular(AppRadius.full),
+              border: Border.all(
+                color: colors.gold.withValues(alpha: 0.18),
+              ),
             ),
             child: Icon(
               Icons.receipt_long_outlined,
-              color: colors.textTertiary,
+              color: colors.gold,
               size: 32,
             ),
           ),

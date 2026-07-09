@@ -104,15 +104,30 @@ class EmptyState extends StatelessWidget {
       return customIllustration!;
     }
 
+    final iconWellColor = colors.isDark
+        ? colors.elevated
+        : Color.alphaBlend(
+            colors.gold.withValues(alpha: 0.08),
+            colors.elevated,
+          );
+
     return Container(
       width: 80,
       height: 80,
       decoration: BoxDecoration(
-        color: colors.elevated,
+        color: iconWellColor,
         shape: BoxShape.circle,
-        border: Border.all(color: colors.borderSubtle, width: 1),
+        border: Border.all(
+          color: colors.isDark ? colors.borderSubtle : colors.borderGold,
+          width: 1,
+        ),
+        boxShadow: colors.isDark ? null : AppShadows.lightSm,
       ),
-      child: Icon(icon, size: 40, color: colors.iconSecondary),
+      child: Icon(
+        icon,
+        size: 40,
+        color: colors.isDark ? colors.iconSecondary : colors.gold,
+      ),
     );
   }
 
@@ -232,6 +247,8 @@ class _ThemeColors {
   Color get elevated => isDark ? AppColors.elevated : AppColorsLight.elevated;
   Color get borderSubtle =>
       isDark ? AppColors.borderSubtle : AppColorsLight.borderSubtle;
+  Color get borderGold =>
+      isDark ? AppColors.borderGold : AppColorsLight.borderGold;
   Color get iconSecondary =>
       isDark ? AppColors.textSecondary : AppColorsLight.textSecondary;
   Color get gold => isDark ? AppColors.gold500 : AppColorsLight.gold500;

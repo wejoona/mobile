@@ -16,10 +16,8 @@ void main() {
       );
       expect(CertificatePinning.hostRequiresPinning('joonapay.com'), isTrue);
       expect(
-        CertificatePinning.hostRequiresPinning(
-          'staging-korido-api.joonapay.com',
-        ),
-        isTrue,
+        CertificatePinning.hostRequiresPinning('api.joonalabs.com'),
+        isFalse,
       );
       expect(
         CertificatePinning.hostRequiresPinning('api.joonapay.com'),
@@ -64,10 +62,8 @@ void main() {
         contains(previousApexLeafDer),
       );
       expect(
-        CertificatePinning.trustedFingerprintsForHost(
-          'staging-korido-api.joonapay.com',
-        ),
-        contains(apiLeafDer),
+        CertificatePinning.trustedFingerprintsForHost('api.joonalabs.com'),
+        isEmpty,
       );
       expect(
         CertificatePinning.trustedFingerprintsForHost('joonapay.com'),
@@ -90,11 +86,7 @@ void main() {
 
         expect(
           pinsByHost.keys,
-          containsAll([
-            'korido-api.joonapay.com',
-            'staging-korido-api.joonapay.com',
-            'joonapay.com',
-          ]),
+          containsAll(['korido-api.joonapay.com', 'joonapay.com']),
         );
         expect(
           pinsByHost['korido-api.joonapay.com'],
@@ -102,10 +94,6 @@ void main() {
             'gvcwFV4jHJrKyc2rrHFNlZbenxWnWywAezu5tpkv7is=',
             'BWCq7vFEHnLEBB9FD9tOUTlIeFRPNHIJL7vPHgNjodc=',
           ]),
-        );
-        expect(
-          pinsByHost['staging-korido-api.joonapay.com'],
-          contains('gvcwFV4jHJrKyc2rrHFNlZbenxWnWywAezu5tpkv7is='),
         );
         expect(
           pinsByHost['joonapay.com'],

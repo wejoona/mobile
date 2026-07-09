@@ -20,7 +20,7 @@ class _ForcedUpgradeVersionPolicyController
       forceUpgrade: true,
       upgradeRecommended: true,
       breakingApiChange: true,
-      apiUrl: 'https://staging-korido-api.joonapay.com/api/v1',
+      apiUrl: 'https://api.joonalabs.com/korido/v1',
       checkedAt: DateTime.utc(2026, 6, 17),
     ),
   );

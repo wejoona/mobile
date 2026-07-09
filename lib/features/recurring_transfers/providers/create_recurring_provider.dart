@@ -6,6 +6,7 @@ import 'package:usdc_wallet/features/recurring_transfers/models/transfer_frequen
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
 import 'package:usdc_wallet/features/recurring_transfers/providers/recurring_transfers_provider.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Create recurring transfer flow state.
 class CreateRecurringState {
@@ -113,7 +114,7 @@ class CreateRecurringNotifier extends Notifier<CreateRecurringState> {
       state = state.copyWith(isLoading: false, isComplete: true);
       ref.invalidate(recurringTransfersProvider);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
     }
   }
 

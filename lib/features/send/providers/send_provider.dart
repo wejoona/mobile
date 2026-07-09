@@ -20,6 +20,7 @@ import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Send Money State
 class SendMoneyState {
@@ -148,7 +149,7 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       state = state.copyWith(
         isBalanceLoading: false,
         hasVerifiedBalance: false,
-        balanceError: e.toString(),
+        balanceError: UserFacingErrors.message(e),
       );
     }
   }
@@ -257,7 +258,7 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       state = state.copyWith(
         isLoading: false,
         clearRecipient: true,
-        error: e.toString(),
+        error: UserFacingErrors.message(e),
       );
     }
   }

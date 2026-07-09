@@ -82,7 +82,7 @@ class KoridoCardSurface extends StatelessWidget {
                           ? _formatCardNumber(card.maskedNumber)
                           : '•••• •••• •••• ${card.last4}',
                       variant: AppTextVariant.monoLarge,
-                      color: AppColors.textPrimary,
+                      color: colors.textInverse,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -95,15 +95,17 @@ class KoridoCardSurface extends StatelessWidget {
                             label: 'Titulaire',
                             value: (card.nickname ?? 'Korido Card')
                                 .toUpperCase(),
+                            colors: colors,
                           ),
                         ),
                         _CardMeta(
                           label: 'Expire',
                           value: card.expiryDate,
                           alignEnd: true,
+                          colors: colors,
                         ),
                         const SizedBox(width: AppSpacing.lg),
-                        _BrandMark(label: card.brand),
+                        _BrandMark(label: card.brand, colors: colors),
                       ],
                     ),
                   ],
@@ -120,13 +122,34 @@ class KoridoCardSurface extends StatelessWidget {
     if (!card.isActive) {
       return colors.isDark
           ? [AppColors.slate, AppColors.graphite]
-          : [const Color(0xFF6D7078), const Color(0xFF3D4047)];
+          : [
+              Color.alphaBlend(
+                colors.textPrimary.withValues(alpha: 0.42),
+                colors.container,
+              ),
+              Color.alphaBlend(
+                colors.textPrimary.withValues(alpha: 0.72),
+                colors.surface,
+              ),
+            ];
     }
 
+    final inkBase = colors.isDark ? AppColors.obsidian : AppColorsLight.textPrimary;
+    final inkMid = colors.isDark
+        ? const Color(0xFF131318)
+        : const Color(0xFF2A2722);
+    final inkDeep = colors.isDark ? AppColors.graphite : const Color(0xFF3D3830);
+
     return [
-      Color.alphaBlend(colors.gold.withValues(alpha: 0.16), AppColors.obsidian),
-      const Color(0xFF131318),
-      Color.alphaBlend(colors.gold.withValues(alpha: 0.08), AppColors.graphite),
+      Color.alphaBlend(
+        colors.gold.withValues(alpha: colors.isDark ? 0.16 : 0.24),
+        inkBase,
+      ),
+      inkMid,
+      Color.alphaBlend(
+        colors.gold.withValues(alpha: colors.isDark ? 0.08 : 0.14),
+        inkDeep,
+      ),
     ];
   }
 
@@ -148,11 +171,13 @@ class _CardMeta extends StatelessWidget {
   const _CardMeta({
     required this.label,
     required this.value,
+    required this.colors,
     this.alignEnd = false,
   });
 
   final String label;
   final String value;
+  final ThemeColors colors;
   final bool alignEnd;
 
   @override
@@ -165,13 +190,13 @@ class _CardMeta extends StatelessWidget {
         AppText(
           label,
           variant: AppTextVariant.labelSmall,
-          color: AppColors.textSecondary,
+          color: colors.textInverse.withValues(alpha: 0.68),
         ),
         const SizedBox(height: AppSpacing.xxs),
         AppText(
           value,
           variant: AppTextVariant.labelMedium,
-          color: AppColors.textPrimary,
+          color: colors.textInverse,
           fontWeight: FontWeight.w700,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -182,16 +207,17 @@ class _CardMeta extends StatelessWidget {
 }
 
 class _BrandMark extends StatelessWidget {
-  const _BrandMark({required this.label});
+  const _BrandMark({required this.label, required this.colors});
 
   final String label;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
     return AppText(
       label.toUpperCase(),
       variant: AppTextVariant.labelLarge,
-      color: AppColors.textPrimary,
+      color: colors.textInverse,
       fontWeight: FontWeight.w800,
     );
   }

@@ -12,6 +12,7 @@ import 'package:usdc_wallet/features/receipts/models/receipt_format.dart';
 import 'package:usdc_wallet/features/receipts/services/receipt_service.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Bottom sheet for sharing transaction receipt.
 class ShareReceiptSheet extends ConsumerStatefulWidget {
@@ -194,7 +195,7 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
       }
     } catch (e) {
       if (!mounted) return;
-      _showError(l10n.common_errorFormat(e.toString()));
+      _showError(l10n.common_errorFormat(UserFacingErrors.message(e)));
     } finally {
       if (mounted) {
         setState(() {
@@ -224,7 +225,7 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
-      _showError(l10n.common_errorFormat(e.toString()));
+      _showError(l10n.common_errorFormat(UserFacingErrors.message(e)));
     } finally {
       if (mounted) {
         setState(() {
@@ -264,7 +265,7 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
       _showSuccess(l10n.qr_savedToGallery);
     } catch (e) {
       if (!mounted) return;
-      _showError(l10n.common_errorFormat(e.toString()));
+      _showError(l10n.common_errorFormat(UserFacingErrors.message(e)));
     } finally {
       if (mounted) {
         setState(() {
@@ -301,7 +302,7 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
       }
     } catch (e) {
       if (!mounted) return;
-      _showError(l10n.common_errorFormat(e.toString()));
+      _showError(l10n.common_errorFormat(UserFacingErrors.message(e)));
     } finally {
       if (mounted) {
         setState(() {

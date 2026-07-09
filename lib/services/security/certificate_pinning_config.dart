@@ -43,18 +43,10 @@ class CertificatePinRegistry {
     ),
   ];
 
-  static const List<CertificatePinningConfig> stagingPins = [
-    CertificatePinningConfig(
-      host: 'staging-korido-api.joonapay.com',
-      includeSubdomains: false,
-      sha256Pins: [
-        // Leaf SPKI SHA-256 for Korido staging API, verified 2026-06-20.
-        'DcXImxqsw11wXDKaem3Be3mcFibKSosQGkPpNOw9Zuw=',
-        // Google Trust Services WE1 intermediate SPKI backup pin.
-        'kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=',
-      ],
-    ),
-  ];
+  // Joonalabs staging DNS/TLS is provisioned after the domain enters
+  // Cloudflare. Keep staging on platform TLS until the live certificate can be
+  // fetched and pinned truthfully.
+  static const List<CertificatePinningConfig> stagingPins = [];
 
   static List<CertificatePinningConfig> getPins({required bool isProduction}) =>
       isProduction ? productionPins : stagingPins;

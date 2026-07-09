@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/wallet/wallet_service.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 // NOTE: walletBalanceProvider is defined in balance_provider.dart (canonical).
 // Do NOT re-declare it here. Import from balance_provider.dart instead.
@@ -151,7 +152,7 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
       state = state.copyWith(isLoading: false, error: e.message);
       return false;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: UserFacingErrors.message(e));
       return false;
     }
   }

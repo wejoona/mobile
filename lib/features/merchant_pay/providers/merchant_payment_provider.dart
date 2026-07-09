@@ -6,6 +6,7 @@ import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/core/utils/amount_conversion.dart';
 import 'package:usdc_wallet/core/utils/transaction_headers.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Merchant payment state.
 class MerchantPaymentState {
@@ -98,7 +99,7 @@ class MerchantPaymentNotifier extends Notifier<MerchantPaymentState> {
       state = state.copyWith(error: result.message ?? 'PIN verification failed');
       return false;
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: UserFacingErrors.message(e));
       return false;
     }
   }
@@ -132,7 +133,7 @@ class MerchantPaymentNotifier extends Notifier<MerchantPaymentState> {
       state = state.copyWith(isProcessing: false, isComplete: true);
       ref.invalidate(walletBalanceProvider);
     } catch (e) {
-      state = state.copyWith(isProcessing: false, error: e.toString());
+      state = state.copyWith(isProcessing: false, error: UserFacingErrors.message(e));
     }
   }
 

@@ -29,6 +29,7 @@ class TransactionRow extends StatelessWidget {
     this.icon,
     this.iconUrl,
     this.onTap,
+    this.onLongPress,
     this.showDivider = false,
     this.currencyCode = 'USDC',
   });
@@ -42,6 +43,7 @@ class TransactionRow extends StatelessWidget {
   final IconData? icon;
   final String? iconUrl;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
   final bool showDivider;
   final String currencyCode;
 
@@ -54,6 +56,7 @@ class TransactionRow extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: onTap,
+            onLongPress: onLongPress,
             borderRadius: BorderRadius.circular(AppRadius.md),
             child: Padding(
               padding: const EdgeInsets.symmetric(

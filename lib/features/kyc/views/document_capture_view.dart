@@ -111,8 +111,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
       ).error('Camera initialization error', e);
       if (mounted) {
         setState(() {
-          _cameraError =
-              'Camera initialization failed: ${e.toString().split('\n').first}';
+          _cameraError = AppLocalizations.of(context)!.kyc_cameraInitFailed;
         });
       }
     }

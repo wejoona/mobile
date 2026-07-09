@@ -6,8 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/primitives/section_header.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/utils/share_utils.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Run 378: Data export view for GDPR compliance and user data portability
 class ExportDataView extends ConsumerStatefulWidget {
@@ -109,7 +111,11 @@ class _ExportDataViewState extends ConsumerState<ExportDataView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur: ${e.toString()}'),
+            content: Text(
+              AppLocalizations.of(context)!.common_errorFormat(
+                UserFacingErrors.message(e),
+              ),
+            ),
             backgroundColor: context.colors.error,
           ),
         );

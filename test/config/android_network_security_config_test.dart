@@ -24,7 +24,7 @@ void main() {
       expect(
         xml,
         contains(
-          '<domain includeSubdomains="false">staging-korido-api.joonapay.com</domain>',
+          '<domain includeSubdomains="false">api.joonalabs.com</domain>',
         ),
       );
       expect(

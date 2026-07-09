@@ -7,6 +7,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/utils/context_extensions.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 class BudgetView extends ConsumerStatefulWidget {
   const BudgetView({super.key});
@@ -136,7 +137,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
     } catch (e) {
       if (!mounted) return;
       context.showSnack(
-        l10n.common_errorFormat(e.toString()),
+        l10n.common_errorFormat(UserFacingErrors.message(e)),
         tone: AppSnackTone.error,
       );
     } finally {

@@ -16,6 +16,7 @@ import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart'
     hide TransactionFilter;
 import 'package:usdc_wallet/features/transactions/widgets/filter_bottom_sheet.dart';
+import 'package:usdc_wallet/features/receipts/views/share_receipt_sheet.dart';
 
 class TransactionsView extends ConsumerStatefulWidget {
   const TransactionsView({super.key});
@@ -443,14 +444,27 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: colors.gold.withValues(
-                  alpha: colors.isDark ? 0.14 : 0.1,
+                color: Color.alphaBlend(
+                  colors.gold.withValues(alpha: colors.isDark ? 0.14 : 0.16),
+                  colors.container,
                 ),
                 borderRadius: BorderRadius.circular(AppRadius.lg),
                 border: Border.all(
-                  color: colors.gold.withValues(alpha: 0.2),
+                  color: colors.gold.withValues(
+                    alpha: colors.isDark ? 0.20 : 0.28,
+                  ),
                   width: 1,
                 ),
+                boxShadow: colors.isDark
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: const Color(0x245A431B),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                          spreadRadius: -6,
+                        ),
+                      ],
               ),
               child: Icon(
                 hasFilters
@@ -537,7 +551,10 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
     if (isNoAccountError || isAuthError) {
       icon = Icons.account_balance_wallet_outlined;
       iconColor = colors.gold;
-      bgColor = colors.gold.withValues(alpha: colors.isDark ? 0.15 : 0.1);
+      bgColor = Color.alphaBlend(
+        colors.gold.withValues(alpha: colors.isDark ? 0.15 : 0.14),
+        colors.container,
+      );
       title = l10n.transactions_noAccountTitle;
       message = l10n.transactions_noAccountMessage;
       buttonLabel = l10n.wallet_createWallet;
@@ -692,11 +709,49 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
               transactions: entry.value,
               onTransactionTap: (tx) =>
                   context.fsmPush('/transactions/${tx.id}', extra: tx),
+              onTransactionLongPress: (tx) =>
+                  _showTransactionActions(context, tx, l10n),
               l10n: l10n,
               isTablet: isTablet,
               isLandscape: isLandscape,
             );
           },
+        ),
+      ),
+    );
+  }
+
+  void _showTransactionActions(
+    BuildContext context,
+    Transaction transaction,
+    AppLocalizations l10n,
+  ) {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.receipt_long_outlined),
+              title: Text(l10n.transactionDetails_title),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                context.fsmPush(
+                  '/transactions/${transaction.id}',
+                  extra: transaction,
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.share_outlined),
+              title: Text(l10n.action_shareReceipt),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                ShareReceiptSheet.show(context, transaction);
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -747,6 +802,7 @@ class _TransactionGroup extends StatelessWidget {
     required this.date,
     required this.transactions,
     required this.onTransactionTap,
+    required this.onTransactionLongPress,
     required this.l10n,
     this.isTablet = false,
     this.isLandscape = false,
@@ -755,6 +811,7 @@ class _TransactionGroup extends StatelessWidget {
   final String date;
   final List<Transaction> transactions;
   final ValueChanged<Transaction> onTransactionTap;
+  final ValueChanged<Transaction> onTransactionLongPress;
   final AppLocalizations l10n;
   final bool isTablet;
   final bool isLandscape;
@@ -789,7 +846,7 @@ class _TransactionGroup extends StatelessWidget {
             spacing: AppSpacing.md,
             runSpacing: AppSpacing.md,
             children: transactions
-                .map((tx) => _buildTransactionCard(tx, colors))
+                .map((tx) => _buildTransactionCard(tx, colors, context))
                 .toList(),
           )
         else
@@ -804,16 +861,22 @@ class _TransactionGroup extends StatelessWidget {
               type: _mapTransactionType(tx),
               status: tx.status,
               onTap: () => onTransactionTap(tx),
+              onLongPress: () => onTransactionLongPress(tx),
             ),
           ),
       ],
     );
   }
 
-  Widget _buildTransactionCard(Transaction tx, ThemeColors colors) {
+  Widget _buildTransactionCard(
+    Transaction tx,
+    ThemeColors colors,
+    BuildContext context,
+  ) {
     return AppCard(
       variant: AppCardVariant.outlined,
       onTap: () => onTransactionTap(tx),
+      onLongPress: () => onTransactionLongPress(tx),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -895,7 +958,10 @@ class _TransactionGroup extends StatelessWidget {
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: iconColor.withValues(alpha: colors.isDark ? 0.15 : 0.1),
+        color: Color.alphaBlend(
+          iconColor.withValues(alpha: colors.isDark ? 0.15 : 0.14),
+          colors.elevated,
+        ),
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Icon(icon, color: iconColor, size: 20),

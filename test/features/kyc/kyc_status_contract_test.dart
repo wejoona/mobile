@@ -210,9 +210,9 @@ void main() {
       );
       expect(
         homeView,
-        contains('We will verify account permissions before completion'),
+        contains('Unable to verify account permissions right now'),
         reason:
-            'Unknown limits should not create a one-tap dead end; backend writers still enforce permissions before completion.',
+            'Unknown limits should block money-flow entry until permissions can be verified.',
       );
     });
 

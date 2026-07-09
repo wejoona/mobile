@@ -9,6 +9,7 @@ import 'package:usdc_wallet/features/sub_business/models/sub_business.dart';
 import 'package:usdc_wallet/features/sub_business/widgets/staff_member_card.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/utils/phone_hints.dart';
 
 /// Screen for managing staff members of a sub-business
 class SubBusinessStaffView extends ConsumerStatefulWidget {
@@ -223,6 +224,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
 
   Future<void> _showAddStaffDialog(AppLocalizations l10n) async {
     final phoneController = TextEditingController();
+    final phoneHint = ref.read(phoneInputHintProvider);
     StaffRole selectedRole = StaffRole.viewer;
 
     // ignore: unused_local_variable
@@ -243,7 +245,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
                 label: l10n.subBusiness_phoneLabel,
                 controller: phoneController,
                 keyboardType: TextInputType.phone,
-                hint: '+225 XX XX XX XX',
+                hint: phoneHint,
               ),
               SizedBox(height: AppSpacing.md),
               AppText(

@@ -21,6 +21,7 @@ import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/utils/context_extensions.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Withdrawal method type
 enum WithdrawMethod { mobileMoney, bankTransfer, crypto }
@@ -95,6 +96,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
   }
 
   void _validateAmount() {
+    final l10n = AppLocalizations.of(context)!;
     final text = _amountController.text;
     if (text.isEmpty) {
       setState(() => _amountError = null);
@@ -103,13 +105,13 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
 
     final amount = double.tryParse(text);
     if (amount == null) {
-      setState(() => _amountError = 'Invalid amount');
+      setState(() => _amountError = l10n.withdraw_invalidAmount);
     } else if (amount <= 0) {
-      setState(() => _amountError = 'Amount must be greater than 0');
+      setState(() => _amountError = l10n.withdraw_amountMustBePositive);
     } else if (amount > _availableBalance) {
-      setState(() => _amountError = 'Insufficient balance');
+      setState(() => _amountError = l10n.withdraw_insufficientBalance);
     } else if (amount < 1) {
-      setState(() => _amountError = 'Minimum withdrawal is \$1');
+      setState(() => _amountError = l10n.withdraw_minimumAmount);
     } else {
       setState(() => _amountError = null);
     }
@@ -202,7 +204,12 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
         mobileMoneyMethod == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_unsupportedMobileMoneyMessage(selectedCountry)),
+          content: Text(
+            _unsupportedMobileMoneyMessage(
+              selectedCountry,
+              AppLocalizations.of(context)!,
+            ),
+          ),
           backgroundColor: context.colors.error,
         ),
       );
@@ -353,8 +360,8 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text(
-                'This withdrawal needs manual review before it can continue.',
+              content: Text(
+                AppLocalizations.of(context)!.withdraw_manualReviewRequired,
               ),
               backgroundColor: context.colors.error,
             ),
@@ -376,8 +383,9 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text(
-                'Security challenge is incomplete. Please try again before withdrawing.',
+              content: Text(
+                AppLocalizations.of(context)!
+                    .withdraw_securityChallengeIncomplete,
               ),
               backgroundColor: context.colors.error,
             ),
@@ -450,7 +458,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString()),
+            content: Text(UserFacingErrors.message(e)),
             backgroundColor: context.colors.error,
           ),
         );
@@ -509,13 +517,19 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     return null;
   }
 
-  String _unsupportedMobileMoneyMessage(CountryConfig country) {
+  String _unsupportedMobileMoneyMessage(
+    CountryConfig country,
+    AppLocalizations l10n,
+  ) {
     final options = _mobileMoneyOptions(country, watch: false);
     final availableRails = options.map((option) => option.name).join(', ');
     if (availableRails.isNotEmpty) {
-      return 'This ${country.name} mobile money number is not supported yet. Available rails: $availableRails.';
+      return l10n.withdraw_unsupportedMobileNumber(
+        country.name,
+        availableRails,
+      );
     }
-    return 'Mobile money withdrawals are not available for ${country.name} yet.';
+    return l10n.withdraw_mobileMoneyUnavailable(country.name);
   }
 
   withdraw_api.WithdrawMethod? _methodForProviderCode(String providerCode) {
@@ -629,7 +643,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     } catch (e) {
       if (!mounted) return;
       context.showSnack(
-        AppLocalizations.of(context)!.common_errorFormat(e.toString()),
+        AppLocalizations.of(context)!.common_errorFormat(UserFacingErrors.message(e)),
         tone: AppSnackTone.error,
       );
     } finally {
@@ -771,10 +785,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: AppText(
-                      // ignore: dead_code
-                      l10n.withdraw_processingInfo ??
-                          // ignore: dead_null_aware_expression
-                          'Withdrawals typically process within 1-3 business days. Fees may apply depending on the method.',
+                      l10n.withdraw_processingDaysInfo,
                       variant: AppTextVariant.bodySmall,
                       color: colors.textSecondary,
                     ),
@@ -877,7 +888,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
               ),
               const SizedBox(width: AppSpacing.sm),
               _QuickAmountButton(
-                label: 'MAX',
+                label: l10n.withdraw_maxLabel,
                 onTap: () {
                   _amountController.text = _availableBalance.toStringAsFixed(2);
                   _validateAmount();
@@ -984,21 +995,21 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
           ] else if (isLoadingOptions) ...[
             const SizedBox(height: AppSpacing.md),
             AppText(
-              'Checking available withdrawal rails...',
+              l10n.withdraw_checkingRails,
               variant: AppTextVariant.bodySmall,
               color: colors.textSecondary,
             ),
           ] else if (!isMobileMoneyAvailable) ...[
             const SizedBox(height: AppSpacing.md),
             AppText(
-              'Mobile money withdrawals are not available for ${selectedCountry.name} yet.',
+              l10n.withdraw_mobileMoneyUnavailable(selectedCountry.name),
               variant: AppTextVariant.bodySmall,
               color: colors.textSecondary,
             ),
           ] else if (optionNames.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.md),
             AppText(
-              'Available rails: $optionNames',
+              l10n.withdraw_availableRails(optionNames),
               variant: AppTextVariant.bodySmall,
               color: colors.textSecondary,
             ),
@@ -1022,13 +1033,13 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
           const SizedBox(height: AppSpacing.md),
           AppInput(
             controller: _bankNameController,
-            label: 'Bank Name',
+            label: l10n.withdraw_bankNameLabel,
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: AppSpacing.md),
           AppInput(
             controller: _accountNumberController,
-            label: 'Account Number',
+            label: l10n.withdraw_accountNumberLabel,
             keyboardType: TextInputType.number,
             onChanged: (_) => setState(() {}),
           ),

@@ -14,6 +14,7 @@ import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/utils/context_extensions.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/utils/user_facing_errors.dart';
 
 /// Cards list screen with visual card display.
 class CardsListView extends ConsumerWidget {
@@ -59,7 +60,7 @@ class CardsListView extends ConsumerWidget {
         loading: _buildLoadingSkeleton,
         error: (e, _) => Center(
           child: AppText(
-            l10n.cards_error(e.toString()),
+            l10n.cards_error(UserFacingErrors.message(e)),
             color: context.colors.textSecondary,
             textAlign: TextAlign.center,
           ),
@@ -153,7 +154,7 @@ class CardsListView extends ConsumerWidget {
     } catch (e) {
       if (!context.mounted) return;
       context.showSnack(
-        l10n.common_errorFormat(e.toString()),
+        l10n.common_errorFormat(UserFacingErrors.message(e)),
         tone: AppSnackTone.error,
       );
       return;

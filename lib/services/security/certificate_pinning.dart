@@ -49,10 +49,6 @@ class CertificatePinning {
   /// [X509Certificate]. Keep these pins exact-host scoped so staging and future
   /// service hosts do not inherit production API pins by accident.
   static const Map<String, List<String>> _trustedFingerprintsByHost = {
-    'staging-korido-api.joonapay.com': [
-      // Leaf DER SHA-256, verified against live certificate on 2026-06-20.
-      'gvcwFV4jHJrKyc2rrHFNlZbenxWnWywAezu5tpkv7is=',
-    ],
     'korido-api.joonapay.com': [
       // Leaf DER SHA-256, verified against live certificate on 2026-06-20.
       'gvcwFV4jHJrKyc2rrHFNlZbenxWnWywAezu5tpkv7is=',

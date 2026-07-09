@@ -22,6 +22,8 @@ class ReferralCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return GradientCard(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
@@ -29,13 +31,13 @@ class ReferralCard extends StatelessWidget {
           children: [
             Icon(Icons.card_giftcard, color: context.colors.gold, size: 40),
             const SizedBox(height: AppSpacing.lg),
-            const AppText(
-              'Invitez vos amis',
+            AppText(
+              l10n.referrals_invite,
               style: AppTextStyle.headingSmall,
             ),
             const SizedBox(height: AppSpacing.xs),
             AppText(
-              'Gagnez 5 USDC pour chaque ami qui rejoint Korido',
+              '${l10n.referrals_earnAmount} ${l10n.referrals_earnDescription}',
               style: AppTextStyle.bodySmall,
               color: context.colors.textSecondary,
               textAlign: TextAlign.center,
@@ -43,7 +45,7 @@ class ReferralCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.xxl),
             // Referral code
             Semantics(
-              label: 'Code de parrainage: $referralCode',
+              label: '${l10n.referrals_yourCode}: $referralCode',
               child: GestureDetector(
                 onTap: () => _copyCode(context),
                 child: Container(
@@ -77,16 +79,16 @@ class ReferralCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _StatItem(
-                  label: 'Invitations',
+                  label: l10n.referrals_friendsInvited,
                   value: '$referralCount',
                 ),
                 Container(
                   height: 30,
                   width: 1,
-                  color: context.colors.elevated,
+                  color: context.colors.borderSubtle,
                 ),
                 _StatItem(
-                  label: 'Gains',
+                  label: l10n.referrals_totalEarned,
                   value: '${earnedAmount.toStringAsFixed(2)} USDC',
                 ),
               ],

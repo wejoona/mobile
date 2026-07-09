@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/features/bill_payments/views/bill_payments_view.dart';
 import 'package:usdc_wallet/features/cards/views/cards_list_view.dart';
+import 'package:usdc_wallet/features/feature_flags/views/feature_coming_soon_view.dart';
 import 'package:usdc_wallet/features/contacts/views/contacts_list_screen.dart';
 import 'package:usdc_wallet/features/insights/views/insights_view.dart';
 import 'package:usdc_wallet/features/payment_links/views/create_link_view.dart';
@@ -15,6 +16,15 @@ import 'package:usdc_wallet/features/wallet/views/split_bill_view.dart';
 import 'package:usdc_wallet/router/page_transitions.dart';
 
 List<RouteBase> featureOverviewRoutes() => [
+  GoRoute(
+    path: '/feature-coming-soon',
+    pageBuilder: (context, state) => AppPageTransitions.fade(
+      state: state,
+      child: FeatureComingSoonView(
+        featureSlug: state.uri.queryParameters['feature'] ?? '',
+      ),
+    ),
+  ),
   // Feature routes
   GoRoute(
     path: '/request',
