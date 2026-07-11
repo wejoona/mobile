@@ -116,7 +116,8 @@ workflows:
             --path "$IPA_PATH" \
             --enable-package-validation \
             --testflight \
-            --altool-verbose-logging
+            --altool-verbose-logging \
+            2>&1 | tee "$CM_BUILD_DIR/build/app-store-publish.log"
 
       - name: Setup Android signing
         script: |
@@ -163,6 +164,7 @@ workflows:
     artifacts:
       - build/app/outputs/bundle/release/app-release.aab
       - build/ios/ipa/*.ipa
+      - build/app-store-publish.log
 
     publishing:
       google_play:
