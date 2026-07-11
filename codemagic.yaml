@@ -66,11 +66,31 @@ workflows:
 
       - name: Set iOS build number
         script: |
+          set -euo pipefail
           cd $CM_BUILD_DIR/ios
-          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_APPLE_ID" 2>/dev/null || echo 0)
-          if [ -z "$LATEST" ]; then LATEST=0; fi
-          NEW_BUILD_NUMBER=$(($LATEST + 1))
-          echo "Latest: $LATEST -> New: $NEW_BUILD_NUMBER"
+          CM_SEQUENCE="${BUILD_NUMBER:-${PROJECT_BUILD_NUMBER:-}}"
+          if ! [[ "$CM_SEQUENCE" =~ ^[0-9]+$ ]]; then
+            echo "Codemagic did not provide a numeric BUILD_NUMBER or PROJECT_BUILD_NUMBER."
+            exit 1
+          fi
+
+          LATEST=""
+          if LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_APPLE_ID"); then
+            if ! [[ "$LATEST" =~ ^[0-9]+$ ]]; then
+              echo "App Store Connect returned a non-numeric build number: $LATEST"
+              exit 1
+            fi
+          else
+            echo "App Store build lookup failed; using the monotonic Codemagic sequence."
+            LATEST=0
+          fi
+
+          STORE_NEXT=$((LATEST + 1))
+          NEW_BUILD_NUMBER=$CM_SEQUENCE
+          if [ "$STORE_NEXT" -gt "$NEW_BUILD_NUMBER" ]; then
+            NEW_BUILD_NUMBER=$STORE_NEXT
+          fi
+          echo "App Store latest: $LATEST; Codemagic sequence: $CM_SEQUENCE; selected: $NEW_BUILD_NUMBER"
           agvtool new-version -all $NEW_BUILD_NUMBER
 
       - name: Build iOS (IPA)
