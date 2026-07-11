@@ -54,15 +54,15 @@ void main() {
       );
     });
 
-    test('builds TestFlight iOS and Android with public release dart defines', () {
+    test('builds staging candidates against the public Joonalabs API', () {
       const releaseDefine =
-          r'--dart-define-from-file="$CM_BUILD_DIR/env.prod.json"';
+          r'--dart-define-from-file="$CM_BUILD_DIR/env.staging.json"';
 
       expect(codemagic, contains(releaseDefine));
       expect(
         RegExp(
           r'flutter build ipa --release[\s\S]*?'
-          r'--dart-define-from-file="\$CM_BUILD_DIR/env\.prod\.json"',
+          r'--dart-define-from-file="\$CM_BUILD_DIR/env\.staging\.json"',
         ).hasMatch(codemagic),
         isTrue,
       );
@@ -73,12 +73,15 @@ void main() {
         ).hasMatch(codemagic),
         isTrue,
       );
-      expect(codemagic, contains('ENV=production'));
+      expect(codemagic, contains('ENV=staging'));
       expect(
         codemagic,
-        contains('API_URL=https://korido-api.joonapay.com/api/v1'),
+        contains('API_URL=https://api.joonalabs.com/korido/v1'),
       );
-      expect(codemagic, isNot(contains('API_URL=https://api.joonalabs.com')));
+      expect(
+        codemagic,
+        isNot(contains('API_URL=https://korido-api.joonapay.com/api/v1')),
+      );
       expect(
         codemagic,
         contains(

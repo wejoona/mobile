@@ -79,7 +79,7 @@ workflows:
           BUILD_NUMBER=$(agvtool what-version -terse)
           echo "Building with number: $BUILD_NUMBER"
           flutter build ipa --release \
-            --dart-define-from-file="$CM_BUILD_DIR/env.prod.json" \
+            --dart-define-from-file="$CM_BUILD_DIR/env.staging.json" \
             --build-number=$BUILD_NUMBER \
             --export-options-plist=/Users/builder/export_options.plist
 
@@ -112,8 +112,8 @@ workflows:
           printf '\nflutter.buildMode=release\nflutter.versionName=%s\nflutter.versionCode=%s\n' \
             "$APP_VERSION_NAME" "$BUILD_NUMBER" >> "$CM_BUILD_DIR/android/local.properties"
 
-          ENV_DEFINE=$(printf 'ENV=production' | base64 | tr -d '\n')
-          API_DEFINE=$(printf 'API_URL=https://korido-api.joonapay.com/api/v1' | base64 | tr -d '\n')
+          ENV_DEFINE=$(printf 'ENV=staging' | base64 | tr -d '\n')
+          API_DEFINE=$(printf 'API_URL=https://api.joonalabs.com/korido/v1' | base64 | tr -d '\n')
           SENTRY_DEFINE=$(printf 'SENTRY_DSN=https://e940855066e902eafd3bf67348d625e7@sentry.wejoona.com/7' | base64 | tr -d '\n')
           DART_DEFINES="$ENV_DEFINE,$API_DEFINE,$SENTRY_DEFINE"
 
