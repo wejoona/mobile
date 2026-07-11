@@ -42,11 +42,11 @@ void main() {
       res.expectOk();
     });
 
-    test('GET /dev/otp/:phone — reports local OTP debug state', () async {
+    test('GET /dev/otp/:phone — staging keeps OTP debug state private', () async {
       final res = await client.get(
         '/dev/otp/${Uri.encodeComponent(authPhone)}',
       );
-      expect(res.statusCode, anyOf(200, 404));
+      expect(res.statusCode, anyOf(403, 404));
       if (res.statusCode == 200) {
         expect(res.data!['data'], isNotNull);
       } else {

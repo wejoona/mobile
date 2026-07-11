@@ -28,10 +28,11 @@ void main() {
       expect(res.data?['status'], 'ok');
     });
 
-    test('GET /health/time — server time', () async {
+    test('GET /health/time — public gateway health stays sanitized', () async {
       final res = await client.get('/health/time');
       res.expectOk();
-      expect(res.data?['serverTime'], isNotNull);
+      expect(res.data?['status'], 'ok');
+      expect(res.data, isNot(contains('serverTime')));
     });
   });
 
