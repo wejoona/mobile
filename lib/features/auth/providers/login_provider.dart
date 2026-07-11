@@ -337,8 +337,8 @@ class LoginNotifier extends Notifier<LoginState> {
       return 'Failed to resend code. Please try again.';
     }
 
-    // SECURITY: Generic error to prevent account enumeration attacks.
-    return 'Unable to log in. Please check your details and try again.';
+    // SECURITY: Keep account existence private while giving new users a path.
+    return "Unable to log in. Check your details, or sign up if you're new.";
   }
 
   /// Start OTP resend countdown

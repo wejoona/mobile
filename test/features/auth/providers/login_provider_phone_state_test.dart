@@ -161,7 +161,7 @@ void main() {
 
       expect(
         container.read(loginProvider).error,
-        'Unable to log in. Please check your details and try again.',
+        "Unable to log in. Check your details, or sign up if you're new.",
       );
     });
 
