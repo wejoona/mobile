@@ -47,12 +47,11 @@ void main() {
         '/dev/otp/${Uri.encodeComponent(authPhone)}',
       );
       expect(res.statusCode, anyOf(403, 404));
-      if (res.statusCode == 200) {
-        expect(res.data!['data'], isNotNull);
-      } else {
-        final error = res.data?['error'] as Map<String, dynamic>?;
-        expect(error?['code'], 'NOT_FOUND');
-      }
+      final error = res.data?['error'] as Map<String, dynamic>?;
+      expect(
+        error?['code'],
+        res.statusCode == 403 ? 'FORBIDDEN' : 'NOT_FOUND',
+      );
     });
 
     test('POST /auth/verify-otp — valid OTP returns tokens', () async {
