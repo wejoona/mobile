@@ -6,6 +6,7 @@ workflows:
     instance_type: mac_mini_m2
 
     integrations:
+      # Publishing requires all Apple agreements to be active for the account.
       app_store_connect: Joonapay appstore
 
     environment:
