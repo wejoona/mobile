@@ -25,6 +25,7 @@ import 'package:usdc_wallet/services/api/providers/payment_links_api.dart';
 import 'package:usdc_wallet/services/api/providers/recurring_transfers_api.dart';
 import 'package:usdc_wallet/services/api/providers/referrals_api.dart';
 import 'package:usdc_wallet/services/api/providers/savings_pots_api.dart';
+import 'package:usdc_wallet/services/api/providers/support_api.dart';
 import 'package:usdc_wallet/services/api/providers/transfers_api.dart';
 import 'package:usdc_wallet/services/api/providers/user_api.dart';
 import 'package:usdc_wallet/services/api/providers/wallet_api.dart';
@@ -50,6 +51,7 @@ class ApiProvider {
       insights = InsightsApi(dio),
       bulkPayments = BulkPaymentsApi(dio),
       expenses = ExpensesApi(dio),
+      support = SupportApi(dio),
       config = ConfigApi(dio);
 
   final UserApi user;
@@ -70,6 +72,7 @@ class ApiProvider {
   final InsightsApi insights;
   final BulkPaymentsApi bulkPayments;
   final ExpensesApi expenses;
+  final SupportApi support;
   final ConfigApi config;
 }
 

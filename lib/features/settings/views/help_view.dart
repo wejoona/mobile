@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -7,6 +9,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/services/api/providers/api_provider.dart';
 
 class HelpView extends ConsumerStatefulWidget {
   const HelpView({super.key});
@@ -555,60 +558,103 @@ class _HelpViewState extends ConsumerState<HelpView> {
   }
 
   void _startLiveChat() {
+    final subjectController = TextEditingController();
+    final messageController = TextEditingController();
     final colors = context.colors;
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: colors.container,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
-      ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: colors.gold.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.support_agent, color: colors.gold, size: 40),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            const AppText(
-              'Start Live Chat',
-              variant: AppTextVariant.titleMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            AppText(
-              'Send a message to the Korido support team and we will follow up by email.',
-              variant: AppTextVariant.bodyMedium,
-              color: colors.textSecondary,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            AppButton(
-              label: 'Email Support',
-              onPressed: () {
-                Navigator.pop(context);
-                _sendEmail(subject: 'Korido Support Request');
-              },
-              variant: AppButtonVariant.primary,
-              isFullWidth: true,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            AppButton(
-              label: 'Cancel',
-              onPressed: () => Navigator.pop(context),
-              variant: AppButtonVariant.secondary,
-              isFullWidth: true,
-            ),
-          ],
+    unawaited(
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: colors.container,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppRadius.xl),
+          ),
         ),
-      ),
+        builder: (sheetContext) => Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: colors.gold.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.support_agent, color: colors.gold, size: 40),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              const AppText(
+                'Contact Support',
+                variant: AppTextVariant.titleMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              AppText(
+                'Create a tracked request for the Korido support team.',
+                variant: AppTextVariant.bodyMedium,
+                color: colors.textSecondary,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              AppInput(
+                controller: subjectController,
+                label: 'Subject',
+                hint: 'What do you need help with?',
+              ),
+              const SizedBox(height: AppSpacing.md),
+              AppInput(
+                controller: messageController,
+                label: 'Message',
+                hint: 'Describe the issue and what you expected.',
+                maxLines: 4,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              AppButton(
+                label: 'Create Request',
+                onPressed: () async {
+                  final subject = subjectController.text.trim();
+                  final message = messageController.text.trim();
+                  if (subject.length < 5 || message.length < 10) return;
+                  try {
+                    final ticket = await ref
+                        .read(apiProvider)
+                        .support
+                        .createTicket(subject: subject, message: message);
+                    if (!mounted) return;
+                    Navigator.pop(sheetContext);
+                    ScaffoldMessenger.of(this.context).showSnackBar(
+                      SnackBar(content: Text('Request ${ticket.id} created')),
+                    );
+                  } on Object {
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(this.context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Could not create the request. Try again.',
+                        ),
+                      ),
+                    );
+                  }
+                },
+                variant: AppButtonVariant.primary,
+                isFullWidth: true,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              AppButton(
+                label: 'Cancel',
+                onPressed: () => Navigator.pop(sheetContext),
+                variant: AppButtonVariant.secondary,
+                isFullWidth: true,
+              ),
+            ],
+          ),
+        ),
+      ).whenComplete(() {
+        subjectController.dispose();
+        messageController.dispose();
+      }),
     );
   }
 
